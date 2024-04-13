@@ -45,7 +45,7 @@ module Archive
     end
     subFiles = []
     filesNestedSomewhere = files.select{|entry| entry[:pathname].start_with?(root[:pathname]) && !(entry[:pathname] == root[:pathname])}
-    for file in filesNestedSomewhere
+    filesNestedSomewhere.each do |file|
       fileDepth = file[:pathname].chomp("/").count "/"
       if(fileDepth == depth+1)
         subFiles << recoverHierarchy(filesNestedSomewhere, file)
@@ -67,11 +67,12 @@ module Archive
     starting_header = -1
 
     # add pre-existing directories to the set
-    for file in files
+    files.each do |file|
 
       # edge case for removing "./" from pathnames
+      # file[:pathname] = file[:pathname].gsub(/\.\.\//) {'..-'}
       if file[:pathname].include?("./")
-        file[:pathname] = file[:pathname].split("./")[1]
+        file[:pathname] = file[:pathname].split("./").last
       end
 
       if(file[:directory])
@@ -79,13 +80,13 @@ module Archive
       end
     end
 
-    for file in files
+    files.each do |file|
       # for each file, check if each of its directories and subdir
       # exist. If it does not, create and add them
       if(!file[:directory])
         paths = file[:pathname].split("/")
         mac_bs_file = false
-        for path in paths do
+        paths.each do |path|
           # note that __MACOSX is actually a folder
           # need to check whether the path includes that
           # for the completeness of cleaned_files
@@ -96,7 +97,7 @@ module Archive
              break
           end
         end
-        for i in 1..(paths.size - 1) do
+        (1..(paths.size - 1)).each do |i|
           new_path = paths[0,paths.size-i].join("/") + "/"
           if(!file_path_set.include?(new_path))
             cleaned_files.append({
