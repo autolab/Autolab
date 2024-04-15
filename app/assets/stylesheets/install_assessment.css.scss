@@ -1,0 +1,89 @@
+@import 'variables';
+// import class / assessment
+
+.install-asmt-container {
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+.install-asmt-table-container {
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+.import-success {
+  background-color: $autolab-light-green !important;
+}
+
+.import-failure {
+  background-color: $autolab-light-red !important;
+}
+
+.assessment-import-table {
+  overflow: hidden;
+  width: 100%;
+  box-shadow: none;
+}
+
+.assessment-import-table tr {
+  border: 1px solid #ddd;
+  border-radius: 15px;
+}
+
+.assessment-import-table td, .assessment-import-table th {
+  padding: 10px 1rem 10px 1rem;
+  vertical-align: middle;
+}
+
+.assessment-import-table th {
+  background-color: $autolab-subtle-gray;
+  font-weight: normal;
+}
+
+.assessment-import-table td:first-child, .assessment-import-table th:first-child{
+  border: none;
+}
+
+.assessment-import-table i {
+  margin-left: auto;
+}
+
+.import-incomplete i {
+  display: none;
+}
+
+.import-complete i {
+  display: block;
+}
+
+.import-complete .error-dropdown {
+  cursor: pointer;
+}
+
+.import-success-messages {
+  display: flex;
+}
+
+.import-success-messages i {
+  margin-left: 0;
+}
+
+.error-dropdown {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  text-align: center;
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+
+.error-dropdown b {
+  padding-right: 10px;
+  display: none;
+}
+
+.assessment-field td {
+  display: flex;
+  flex-direction: column;
+  justify-items: center;
+}

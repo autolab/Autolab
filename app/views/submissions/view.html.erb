@@ -7,6 +7,7 @@
   <%# highlightjs - change the style sheet for different styles %>
   <%= stylesheet_link_tag "highlightjs-styles/vs.css" %>
   <%= external_stylesheet_link_tag "jquery-ui" %>
+  <%= external_stylesheet_link_tag "diff2html" %>
 <% end %>
 
 <% content_for :javascripts do %>
@@ -17,6 +18,7 @@
   <%= external_javascript_include_tag "jquery-ui" %>
   <%= external_javascript_include_tag "scrollTo" %>
   <%= external_javascript_include_tag "golden-layout" %>
+  <%= external_javascript_include_tag "diff2html" %>
   <%# Hidden elements used by fillAnnotationBox in annotation.js %>
   <div style="display: none"><%= render(partial: 'grades') %></div>
   <div style="display: none"><%= render(partial: 'annotation_pane') %></div>
@@ -73,6 +75,7 @@
         <%= render "version_links" %>
       <a href="<%= download_file_url(@submission) %>" class="btn small" title="Download">Download</a>
       <button class="btn small" onclick="resetLayout()">Reset Layout</button>
+        <%= render "release_grades" %>
     </div>
 
     <div class="col s2 center-align">

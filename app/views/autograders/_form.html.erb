@@ -1,36 +1,13 @@
-<% content_for :javascripts do %>
-  <script>
-    $(function() {
-      $(document).on('change', ':file', function() {
-        var input = $(this),
-          numFiles = input.get(0).files ? input.get(0).files.length : 1,
-          label = input.val().replace(/\\/g, '/').replace(/.*\//, '');
-          input.trigger('fileselect', [numFiles, label]);
-      });
-
-      $(document).ready( function() {
-        $('#autograder_makefile:file').on('fileselect', function(event, numFiles, label) {
-          $('#makefile_name').val(label);
-        });
-        $('#autograder_tar:file').on('fileselect', function(event, numFiles, label) {
-            $('#tar_name').val(label);
-        });
-      });
-    });
-  </script>
-<% end %>
-
 <%= form_for @autograder, url: course_assessment_autograder_path(@course, @assessment, @autograder),
                           builder: FormBuilderWithDateTimeInput,
                           html: { multipart: true } do |f| %>
-  <%= f.error_messages %>
-
   <%= f.text_field :autograde_image, display_name: "VM Image",
                                      help_text: "VM image for autograding (e.g. <kbd>rhel.img</kbd>). #{link_to 'Click here', tango_status_course_jobs_path} to view the list of VM images and pools currently being used".html_safe +
-                                                (Rails.configuration.x.docker_image_upload_enabled.presence ? ", or #{link_to 'click here', course_dockers_path} to upload a new docker image.".html_safe : ".") %>
+                                                (Rails.configuration.x.docker_image_upload_enabled.presence ? ", or #{link_to 'click here', course_dockers_path} to upload a new docker image.".html_safe : "."),
+                                     required: true, maxlength: 64 %>
 
-  <%= f.text_field :autograde_timeout, display_name: "Timeout",
-                                       help_text: "Timeout for autograding jobs (secs)" %>
+  <%= f.number_field :autograde_timeout, display_name: "Timeout",
+                                         help_text: "Timeout for autograding jobs (secs). Must be between 10s and 900s, inclusive.", min: 10, max: 900 %>
   <%= f.check_box :release_score,
                   display_name: "Release Scores?",
                   help_text: "Check to release autograded scores to students immediately after autograding (strongly recommended)." %>

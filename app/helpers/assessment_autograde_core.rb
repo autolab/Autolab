@@ -26,7 +26,7 @@ module AssessmentAutogradeCore
       COURSE_LOGGER.log("Dir: #{ass_dir}")
 
       if assessment.overwrites_method?(:autogradeInputFiles)
-        upload_file_list = assessment.config_module.autogradeInputFiles(ass_dir)
+        upload_file_list = assessment.config_module.autogradeInputFiles(ass_dir, assessment, submission)
       else
         upload_file_list = autogradeInputFiles(ass_dir, assessment, submission)
       end
@@ -446,15 +446,26 @@ module AssessmentAutogradeCore
           end
         end
 
+        missing_problems = []
         scores.keys.each do |key|
           problem = @assessment.problems.find_by(name: key)
-          raise AutogradeError, "Problem \"" + key + "\" not found." unless problem
+          unless problem
+            missing_problems << key
+            next
+          end
+
           score = submission.scores.find_or_initialize_by(problem_id: problem.id)
           score.score = scores[key]
           score.feedback = feedback 
           score.released = @autograde_prop.release_score
           score.grader_id = 0
           score.save!
+        end
+        submission.missing_problems = missing_problems.join(', ')
+        submission.save!
+
+        unless submission.missing_problems.empty?
+          raise AutogradeError, "Problems \"#{submission.missing_problems}\" found in autograder result, but not defined by assessment. Instructor should add missing problems to assessment and regrade submissions."
         end
       end
 
@@ -472,11 +483,12 @@ module AssessmentAutogradeCore
       @assessment.problems.each do |p|
         submissions.each do |submission|
           score = submission.scores.find_or_initialize_by(problem_id: p.id)
-          next unless score.new_record? # don't overwrite scores
-          score.score = 0
           score.feedback = feedback_str
-          score.released = true
-          score.grader_id = -1
+          if score.new_record? # don't overwrite scores
+            score.score = 0
+            score.released = true
+            score.grader_id = -1
+          end
           score.save!
         end
       end

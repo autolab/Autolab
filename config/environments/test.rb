@@ -64,7 +64,7 @@ Rails.application.configure do
   # Annotate rendered view with file names.
   # config.action_view.annotate_rendered_view_with_filenames = true
 
-  config.lti_config_location  = Rails.root.join('spec/fixtures/lti_config_files').to_s
+  config.config_location = Rails.root.join('spec/fixtures/config_files').to_s
 
   # Feature flag for docker image upload
   config.x.docker_image_upload_enabled = true

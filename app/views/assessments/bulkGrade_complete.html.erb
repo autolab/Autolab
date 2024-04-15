@@ -4,6 +4,10 @@
 
 <h2>Bulk Upload Grades for <%= link_to @assessment.display_name, current_assessment_path %></h2>
 
-<p><span class="success">Success</span>! The following entries were saved:</p>
+<%= link_to "Return to bulk import grades", { action: "bulkGrade" } %>
+
+<p><span class="success">Success!</span> These grades may not be visible to students yet. Would you like to <%= link_to "release all grades", { action: "releaseAllGrades" }, { data: { confirm: "Are you sure you want to release all grades for this assessment?", method: "post" } } %> for this assessment now?</p>
+
+<p>The following entries were saved:</p>
 
 <%= render "bulkGrade_entries", entries: @entries, problems: @assessment.problems %>

@@ -1,7 +1,35 @@
-<script type="text/javascript">
-  is_positive_grading = <%= @is_positive_grading %>;
-  has_annotations = <%= @has_annotations %>;
-</script>
+<% content_for :javascripts do %>
+    <script type="text/javascript">
+        const is_positive_grading = <%= @is_positive_grading %>;
+        const has_annotations = <%= @has_annotations %>;
+
+        $(document).ready(function() {
+            const starToggleIcons = document.querySelectorAll('.star-icon');
+            starToggleIcons.forEach(function(icon) {
+                icon.addEventListener('click', function() {
+                    toggleStar(icon);
+                });
+            });
+        });
+
+        function toggleStar(icon) {
+            let starred = icon.getAttribute('data-starred');
+            starred = (starred === 'yes') ? 'no' : 'yes';
+            icon.innerHTML = (starred === 'yes') ? 'star' : 'star_border';
+            icon.setAttribute('data-starred', starred);
+            let starred_bool = (starred === 'yes') ? 'true' : 'false';
+            // Update the corresponding problem.starred attribute
+            const dataUrl = icon.parentNode.parentNode.getAttribute('data-url');
+            $.ajax({
+                url: dataUrl,
+                type: 'PATCH',
+                data: {problem: {starred: starred_bool}}
+            }).fail(function() {
+                alert('Failed to update the starred status. Please try again.');
+            });
+        }
+    </script>
+<% end %>
 
 <div class="switch">
   <label>
@@ -14,7 +42,10 @@
 <label for="switch">
   Negative Grading is where you grade by deducting from the max score. Positive Grading is where you grade by adding to 0.
 </label>
-
+<br>
+<label>
+  Starred status immediately updated upon toggling.
+</label>
 <ul class="collection" hidden id="grading-change-warning">
   <li class="collection-item"> You currently have annotations for this assessment.
   If you change the grading type, future score changes made by annotations might become inconsistent.
@@ -34,7 +65,10 @@
   <tbody>
     <% for problem in @assessment.problems do %>
       <tr>
-        <td><%= problem.name %></td>
+        <td data-url="<%= course_assessment_problem_path(@course, @assessment, problem, ajax: true) %>">
+          <%= link_to "<i class=\"material-icons left star-icon\" data-problem-id=\"#{problem.id}\" data-starred=\"#{problem.starred ? 'yes' : 'no'}\" title=\"Toggle 'starred' status of problem\">#{problem.starred ? 'star' : 'star_border'}</i>".html_safe, "javascript:void(0);", class: "small star-toggle" %>
+          <%= problem.name %>
+        </td>
         <td><%= problem.max_score %></td>
         <td><%= problem.optional ? "yes" : "no" %></td>
         <td>

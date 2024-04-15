@@ -4,7 +4,8 @@ newFile = {
     symbolTree: '<%= j render("submissions/code_symbol_tree", ctag_obj: @ctag_obj) %>',
     url: '<%= url_for(params.permit(:header_position, :action, :controller).to_h) %>',
     versionLinks: '<%= j render("version_links") %>',
-    versionDropdown: '<%= j render("version_dropdown") %>'
+    versionDropdown: '<%= j render("version_dropdown") %>',
+    diffBox: '<%= j render("submissions/diff_viewer") %>',
 };
 
 <% if @is_pdf %>

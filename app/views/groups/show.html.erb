@@ -1,37 +1,42 @@
-<% @title = @group.name %>
-<h2>Group: <%= @group.name %></h2>
+<% @title = "Group: #{@group.name}" %>
+<h4>Group: <%= @group.name %></h4>
 
-<% if @aud.group_id == @group.id or @cud.instructor then %>
-  <% if (@aud.membership_status & AssessmentUserDatum::MEMBER_CONFIRMED) == 0 then %>
+<% if @aud.group_id == @group.id %>
+  <% if (@aud.membership_status & AssessmentUserDatum::MEMBER_CONFIRMED) == 0 %>
     <p>You have not confirmed your group membership yet.</p>
-    <%= link_to "Confirm Membership", join_course_assessment_group_path(@course, @assessment, @group), method: :post %> |
-    <%= link_to "Deny Membership", leave_course_assessment_group_path(@course, @assessment, @group), method: :post %>
-  <% elsif (@aud.membership_status & AssessmentUserDatum::GROUP_CONFIRMED) == 0 then %>
+    <% if @assessment.allow_student_assign_group || @cud.instructor %>
+      <%= link_to "Confirm Membership", join_course_assessment_group_path(@course, @assessment, @group), method: :post %> |
+      <%= link_to "Deny Membership", leave_course_assessment_group_path(@course, @assessment, @group), method: :post %>
+    <% else %>
+      <p>Contact your instructor to confirm your group membership.</p>
+    <% end %>
+  <% elsif (@aud.membership_status & AssessmentUserDatum::GROUP_CONFIRMED) == 0 %>
     <p>Your group has not confirmed your membership yet.</p>
-  <% end %>
-  <% if @aud.group_confirmed then %>
-    <%= render "form" %>
   <% end %>
 <% end %>
 
-<h2>Group Members</h2>
+<% if @aud.group_confirmed || @cud.instructor %>
+  <%= render "form" %>
+<% end %>
+
+<h4>Group Members</h4>
 <ul class="gray-box">
   <% @group.assessment_user_data.each do |aud| %>
     <li>
       <% cud = aud.course_user_datum %>
-      <h3><%= cud.email %></h3>
-      <% if !aud.group_confirmed(AssessmentUserDatum::MEMBER_CONFIRMED) then %>
-        <p>This Member has not Confirmed their Membership yet.</p>
-        <% if @group.is_member(@aud) or @cud.instructor then %>
+      <strong><%= "#{cud.full_name} (#{cud.email})" %></strong>
+      <% if !aud.group_confirmed(AssessmentUserDatum::MEMBER_CONFIRMED) %>
+        <p>This member has not confirmed their membership yet.</p>
+        <% if user_can_edit_group? %>
           <p>
             <%= link_to "Cancel Request",
                         leave_course_assessment_group_path(@course, @assessment, @group, member_id: cud.id),
                         method: :post %>
           </p>
         <% end %>
-      <% elsif !aud.group_confirmed(AssessmentUserDatum::GROUP_CONFIRMED) then %>
-        <p>This Member has not been Confirmed by the Group yet.</p>
-        <% if @group.is_member(@aud) or @cud.instructor then %>
+      <% elsif !aud.group_confirmed(AssessmentUserDatum::GROUP_CONFIRMED) %>
+        <p>This member has not been confirmed by the group yet.</p>
+        <% if user_can_edit_group? %>
           <p>
             <%= link_to "Confirm Membership",
                         add_course_assessment_group_path(@course, @assessment, @group, member_id: cud.id),
@@ -41,42 +46,47 @@
                         method: :post %>
           </p>
         <% end %>
+      <% elsif @cud.instructor %>
+        <p>
+          <%= link_to "Kick Member",
+                      leave_course_assessment_group_path(@course, @assessment, @group, member_id: cud.id),
+                      method: :post %>
+        </p>
       <% end %>
     </li>
   <% end %>
 </ul>
 
-<% if @group.is_member(@aud) or @cud.instructor then %>
-  <% if @group.assessment_user_data.size < @assessment.group_size then %>
-    <h2>Invite Another Student to Join This Group</h2>
+<% if user_can_edit_group? %>
+  <% if @group.assessment_user_data.size < @assessment.group_size %>
+    <h4>Invite Another Student to Join This Group</h4>
     <%= form_tag add_course_assessment_group_path(@course, @assessment, @group) do %>
       <div class="form-group">
         <label class="control-label" for="member_email">Partner Email</label>
         <%= text_field_tag :member_email, nil, class: "form-control", autocomplete: "email" %>
-        <p class="help-block">The email of your desired partner. They will need to confirm their membership.</p>
+        <% if @assessment.allow_student_assign_group %>
+          <p class="help-block">The email of your desired partner. They will need to confirm their membership.</p>
+        <% else %>
+          <%# Instructor adding a student %>
+          <p class="help-block">The email of your desired partner. Their membership will be automatically confirmed.</p>
+        <% end %>
       </div>
 
       <%= submit_tag "Invite to Group", class: "btn btn-primary" %>
     <% end %>
+  <% else %>
+    <p>No more members can be added as the group is already at the maximum size.</p>
   <% end %>
+<% elsif @group.is_member(@aud) && !@assessment.allow_student_assign_group %>
+  <p>
+    You are not allowed to add members to your group for this assessment.
+    Contact your instructor for group assignment.
+  </p>
 <% end %>
-
-<% if false and @grouplessCUDs then # disabled while we wonder if students should be trusted %>
-  <h2>Invite Another Student to Join This Group</h2>
-  <ul class="small gray-box">
-    <% @grouplessCUDs.each do |cud| %>
-      <% if cud.id != @cud.id && cud.student? then %>
-        <li><b><%= cud.email %></b>
-          (<%= link_to "Invite to Group", add_course_assessment_group_path(@course, @assessment, @group, member_id: cud.id),
-                       method: :post %>)
-        </li>
-      <% end %>
-    <% end %>
-  </ul>
-<% end %>
+<%# else: student assignment is allowed, but user is not a member of the group yet. We don't have to display anything %>
 
 <div style="margin-top: 1em">
-  <% if @group.is_member(@aud) then %>
+  <% if @aud.group_id == @group.id && (@assessment.allow_student_assign_group || @cud.instructor) %>
     <%= link_to "Leave Group", leave_course_assessment_group_path(@course, @assessment, @group),
                 { method: :post, data: { confirm: "Are you sure you want to leave your group?" } } %> |
   <% end %>

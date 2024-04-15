@@ -201,7 +201,11 @@ class Assessment < ApplicationRecord
   def construct_folder
     # this should construct the assessment folder and the handin folder
     FileUtils.mkdir_p(handin_directory_path)
-    dump_yaml if construct_default_config_file
+    constructed_default_config_file = construct_default_config_file
+    if constructed_default_config_file
+      dump_yaml
+    end
+    constructed_default_config_file
   end
 
   ##
@@ -218,7 +222,6 @@ class Assessment < ApplicationRecord
 
     # Update with this assessment information
     config_source.gsub!("##NAME_CAMEL##", unique_config_module_name)
-    config_source.gsub!("##NAME_LOWER##", name)
     # Write the new config out to the right file.
     File.open(assessment_config_file_path, "w") { |f| f.write(config_source) }
     true
@@ -235,7 +238,11 @@ class Assessment < ApplicationRecord
     config_source = File.open(unique_source_config_file_path, "r", &:read)
 
     # validate syntax of config
-    RubyVM::InstructionSequence.compile(config_source)
+    begin
+      RubyVM::InstructionSequence.compile(config_source)
+    rescue SyntaxError => e
+      raise StandardError, e
+    end
 
     # ensure source_config_module_name is an actual module in the assessment config rb file
     # otherwise loading the file on subsequent calls to config_module will result in an exception
@@ -251,7 +258,6 @@ class Assessment < ApplicationRecord
         default_config_file_path = Rails.root.join("lib/__defaultAssessment.rb")
         config_source = File.open(default_config_file_path, "r", &:read)
         config_source.gsub!("##NAME_CAMEL##", unique_config_module_name)
-        config_source.gsub!("##NAME_LOWER##", name)
       else
         config_source = config_source.sub(match[0], "module #{unique_config_module_name}")
       end

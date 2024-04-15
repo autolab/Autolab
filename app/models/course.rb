@@ -9,7 +9,7 @@ class Course < ApplicationRecord
   validates :grace_days, numericality: { greater_than_or_equal_to: 0 }
   validates :version_threshold, numericality: { only_integer: true, greater_than_or_equal_to: -1 }
   validate :order_of_dates
-  validates :name, format: { with: /\A(\w|-)+\z/, on: :create }
+  validate :valid_name?, on: :create
   # validates course website format if there exists one
   validate :valid_website?
   validates :access_code, uniqueness: true, allow_nil: true
@@ -139,6 +139,24 @@ class Course < ApplicationRecord
     errors.add(:start_date, "must come before end date") if start_date > end_date
   end
 
+  def valid_name?
+    if /\A(\w|-)+\z/.match?(name)
+      true
+    else
+      suggest_name = name.gsub(/(\s+)/) { '-' }
+      suggest_name = suggest_name.gsub(/([^\w-]+)/) { '' }
+      name_error = if !suggest_name.empty?
+                     "cannot include characters other than alphanumeric characters, hyphens, "\
+                       "and underscores. Suggestion: #{suggest_name}"
+                   else
+                     "cannot include characters other than alphanumeric characters, hyphens, "\
+                       "and underscores."
+                   end
+      errors.add("name", name_error)
+      false
+    end
+  end
+
   def valid_website?
     if website.nil? || website.eql?("")
       true
@@ -154,10 +172,18 @@ class Course < ApplicationRecord
     if now < start_date
       :upcoming
     elsif now > end_date
-      :completed
+      if disable_on_end
+        :disabled
+      else
+        :completed
+      end
     else
       :current
     end
+  end
+
+  def is_disabled?
+    disabled? or (disable_on_end? && DateTime.now > end_date)
   end
 
   def current_assessments(now = DateTime.now)
@@ -409,7 +435,7 @@ private
 
   GENERAL_SERIALIZABLE = Set.new %w[name semester late_slack grace_days display_name start_date
                                     end_date disabled exam_in_progress version_threshold
-                                    gb_message website]
+                                    gb_message website disable_on_end]
   def serialize_general
     Utilities.serializable attributes, GENERAL_SERIALIZABLE
   end

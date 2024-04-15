@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2024_02_19_175942) do
+ActiveRecord::Schema.define(version: 2024_03_16_162826) do
 
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
@@ -115,8 +115,8 @@ ActiveRecord::Schema.define(version: 2024_02_19_175942) do
     t.integer "group_size", default: 1
     t.text "embedded_quiz_form_data"
     t.boolean "embedded_quiz"
-    t.boolean "allow_student_assign_group", default: true
     t.boolean "github_submission_enabled", default: true
+    t.boolean "allow_student_assign_group", default: true
     t.boolean "is_positive_grading", default: false
     t.boolean "disable_network", default: false
   end
@@ -182,6 +182,7 @@ ActiveRecord::Schema.define(version: 2024_02_19_175942) do
     t.text "gb_message"
     t.string "website"
     t.string "access_code"
+    t.boolean "disable_on_end", default: false
   end
 
   create_table "extensions", force: :cascade do |t|
@@ -292,6 +293,7 @@ ActiveRecord::Schema.define(version: 2024_02_19_175942) do
     t.datetime "updated_at"
     t.float "max_score", default: 0.0
     t.boolean "optional", default: false
+    t.boolean "starred", default: false
     t.index ["assessment_id", "name"], name: "problem_uniq", unique: true
   end
 
@@ -362,6 +364,7 @@ ActiveRecord::Schema.define(version: 2024_02_19_175942) do
     t.integer "submitted_by_app_id"
     t.string "group_key", default: ""
     t.integer "jobid"
+    t.text "missing_problems"
     t.index ["assessment_id"], name: "index_submissions_on_assessment_id"
     t.index ["course_user_datum_id"], name: "index_submissions_on_course_user_datum_id"
   end
@@ -389,6 +392,7 @@ ActiveRecord::Schema.define(version: 2024_02_19_175942) do
     t.string "school"
     t.string "major"
     t.string "year"
+    t.boolean "hover_assessment_date", default: false, null: false
     t.index ["confirmation_token"], name: "index_users_on_confirmation_token", unique: true
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true

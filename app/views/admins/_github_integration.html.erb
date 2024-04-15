@@ -1,0 +1,35 @@
+<h3> Github Integration Configuration Settings </h3>
+
+<% GithubIntegration.check_github_authorization %>
+<h4>Github Integration Status</h4>
+<!-- If Github application secrets are not configured correctly, the default unauthenticated
+limit is 60 as of writing, and it is 5000 if configured, so we just check for
+a large enough value -->
+<% if @github_integration && @github_integration.limit > 1000 %>
+  Autolab is connected to Github!
+  <ul>
+    <li><b>Rate limit:</b> <%= "#{@github_integration.remaining}/#{@github_integration.limit}" %></li>
+    <li><b>Resets: </b><%= @github_integration.resets_at %></li>
+    <li><b>Resets in:</b> <%= @github_integration.resets_in %></li>
+  </ul>
+<% else %>
+  <b>Github integration is not configured or misconfigured, or Github is down. </b>
+<% end %>
+
+<%= form_with url: github_config_update_config_url do |form| %>
+
+  <h4> GitHub Client Settings </h4>
+  <div class="input-field">
+    <%= form.text_field :client_id, value: @github_config_hash.nil? ? "" : @github_config_hash[:client_id], required: true %>
+    <%= form.label :client_id, "Client ID" %>
+    <span class="helper-text">Specify Github client ID </span>
+  </div>
+
+  <div class="input-field">
+    <%= form.password_field :client_secret, value: @github_config_hash.nil? ? "" : @github_config_hash[:client_secret], required: true %>
+    <%= form.label :client_secret, "Client Secret" %>
+    <span class="helper-text">Specify Github client secret</span>
+  </div>
+
+  <%= form.submit "Save", { class: 'btn primary' } %>
+<% end %>

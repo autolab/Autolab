@@ -6,7 +6,6 @@
 <h4>New scheduler</h4>
 
 <%= form_for :scheduler, url: course_schedulers_path(@course), builder: FormBuilderWithDateTimeInput do |f| %>
-  <%= f.error_messages %>
   <%= f.text_field :action, help_text: "Path to scheduler file relative to Autolab root",
                             placeholder: "(scheduler action)" %>
   <%= f.datetime_select :next, help_text: "Time of next run" %>
