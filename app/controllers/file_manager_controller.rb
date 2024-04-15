@@ -34,8 +34,8 @@ class FileManagerController < ApplicationController
       if File.size(absolute_path) > 1_000_000 || params[:download]
         send_file absolute_path
       else
-        mime_type = MimeMagic.by_path(absolute_path).type
-        if mime_type.split('/').first == 'text'
+        mime_type = MimeMagic.by_path(absolute_path)
+        if !mime_type.nil? && mime_type.type.split('/').first == 'text'
           @path = path
           @file = absolute_path.read
           render :file, formats: :html
