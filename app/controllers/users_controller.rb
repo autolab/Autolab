@@ -148,6 +148,50 @@ class UsersController < ApplicationController
     @breadcrumbs << (view_context.link_to @user.display_name, user_path(@user))
   end
 
+  action_auth_level :download_all_submissions, :student
+  def download_all_submissions
+    user = User.find(params[:id])
+    submissions = if params[:final]
+                    Submission.latest.where(course_user_datum: CourseUserDatum.where(user_id: user))
+                  else
+                    Submission.where(course_user_datum: CourseUserDatum.where(user_id: user))
+                  end
+    submissions = submissions.select do |s|
+      p = s.handin_file_path
+      is_disabled = s.course_user_datum.course.disabled
+      !p.nil? && File.exist?(p) && File.readable?(p) && !is_disabled
+    end
+    if submissions.empty?
+      flash[:error] = "There are no submissions to download."
+      redirect_to(user_path(user)) && return
+    end
+
+    current_time = Time.current
+    filename = if params[:final]
+                 "autolab_final_submissions_#{current_time.strftime('%Y-%m-%d')}"
+               else
+                 "autolab_all_submissions_#{current_time.strftime('%Y-%m-%d')}"
+               end
+
+    temp_file = Tempfile.new("autolab_submissions.zip")
+    Zip::File.open(temp_file.path, Zip::File::CREATE) do |zipfile|
+      submissions.each do |s|
+        p = s.handin_file_path
+        course_name = s.course_user_datum.course.name
+        assignment_name = s.assessment.name
+        course_directory = "#{filename}/#{course_name}"
+        assignment_directory = "#{course_directory}/#{assignment_name}"
+        entry_name = download_filename(p, assignment_name)
+        zipfile.add(File.join(assignment_directory, entry_name), p)
+      end
+    end
+
+    send_file(temp_file.path,
+              type: "application/zip",
+              disposition: "attachment", # tell browser to download
+              filename: "#{filename}.zip")
+  end
+
   # PATCH users/:id/
   action_auth_level :update, :student
   def update
@@ -388,6 +432,18 @@ class UsersController < ApplicationController
   end
 
 private
+
+  # Given the path to a file, return the filename to use when the user downloads it
+  # path should be of the form .../<ver>_<handin> or .../annotated_<ver>_<handin>
+  # returns <course_name>_<assignment_name>_<ver>_<handin>
+  # or annotated_<course_name>_<assignment_name>_<ver>_<handin>
+  def download_filename(path, assignment_name)
+    basename = File.basename path
+    basename_parts = basename.split("_")
+    basename_parts.insert(-3, assignment_name)
+    download_name = basename_parts[-3..]
+    download_name.join("_")
+  end
 
   def new_user_params
     params.require(:user).permit(:email, :first_name, :last_name)
