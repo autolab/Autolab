@@ -71,9 +71,9 @@ class AssessmentsController < ApplicationController
                                       .or(announcements_tmp.where(system: true)).order(:start_date)
     # Only display course attachments on course landing page
     @course_attachments = if @cud.instructor?
-                            @course.attachments.where(assessment_id: nil)
+                            @course.attachments.where(assessment_id: nil).ordered
                           else
-                            @course.attachments.where(assessment_id: nil).released
+                            @course.attachments.where(assessment_id: nil).released.ordered
                           end
   end
 

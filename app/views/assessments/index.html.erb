@@ -195,7 +195,7 @@
     <div class="row">
       <% attachment_categories = @course_attachments.distinct.pluck(:category_name).sort %>
       <% attachment_categories.each_with_index do |cat| %>
-        <% attachments = @course_attachments.from_category(cat).ordered %>
+        <% attachments = @course_attachments.from_category(cat) %>
         <% if attachments.any? %>
           <div class="col s12 m4 attachments">
             <div class="card hoverable">
