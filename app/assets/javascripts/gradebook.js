@@ -115,7 +115,6 @@ $(function () {
   grid = new Slick.Grid("#gradebook", dataView, columns, slickgrid_options);
   var autoColumnResize = new Slick.Plugins.AutoColumnSize(300);
   grid.registerPlugin(autoColumnResize);
-  // grid.registerPlugin( new Slick.AutoColumnSize());
 
   let hiddenColumns = localStorage.getItem("hiddenColumns") ? localStorage.getItem("hiddenColumns") : [];
   let hiddenNumberColumns = hiddenColumns.length === 0 ? [] : hiddenColumns.split(',').map(Number);
