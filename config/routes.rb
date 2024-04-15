@@ -91,6 +91,7 @@ Rails.application.routes.draw do
 
   resources :users do
     get "admin"
+    get "download_all_submissions", on: :member
     get "github_oauth", on: :member
     get "lti_launch_initialize", on: :member
     post "lti_launch_link_course", on: :member

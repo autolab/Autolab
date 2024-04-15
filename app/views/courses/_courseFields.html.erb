@@ -39,6 +39,9 @@
                 help_text: "If this box is checked, then students won't be able download labs
   or upload submissions." %>
 
+<%= f.check_box :disable_on_end,
+                help_text: "If this box is checked, the course will be disabled after the course ends." %>
+
 <%= f.check_box :exam_in_progress, help_text: "While checked, students are not allowed to view their previous
   submissions for any assessment in this class." %>
 <%= label_tag(:allow_self_enrollment) do %>
