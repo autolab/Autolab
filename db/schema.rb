@@ -119,6 +119,7 @@ ActiveRecord::Schema.define(version: 2024_02_26_194217) do
     t.boolean "allow_student_assign_group", default: true
     t.boolean "is_positive_grading", default: false
     t.boolean "disable_network", default: false
+    t.string "allowed_outgoing_ips"
   end
 
   create_table "attachments", force: :cascade do |t|
