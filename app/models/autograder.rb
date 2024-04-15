@@ -8,7 +8,8 @@ class Autograder < ApplicationRecord
   trim_field :autograde_image
 
   # extremely short timeout values cause the backend to throw system errors
-  validates :autograde_timeout, numericality: { greater_than: 10, less_than: 900 }
+  validates :autograde_timeout,
+            numericality: { greater_than_or_equal_to: 10, less_than_or_equal_to: 900 }
   validates :autograde_image, :autograde_timeout, presence: true
   validates :autograde_image, length: { maximum: 64 }
 

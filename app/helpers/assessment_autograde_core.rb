@@ -26,7 +26,7 @@ module AssessmentAutogradeCore
       COURSE_LOGGER.log("Dir: #{ass_dir}")
 
       if assessment.overwrites_method?(:autogradeInputFiles)
-        upload_file_list = assessment.config_module.autogradeInputFiles(ass_dir)
+        upload_file_list = assessment.config_module.autogradeInputFiles(ass_dir, assessment, submission)
       else
         upload_file_list = autogradeInputFiles(ass_dir, assessment, submission)
       end
