@@ -172,10 +172,18 @@ class Course < ApplicationRecord
     if now < start_date
       :upcoming
     elsif now > end_date
-      :completed
+      if disable_on_end
+        :disabled
+      else
+        :completed
+      end
     else
       :current
     end
+  end
+
+  def is_disabled?
+    disabled? or (disable_on_end? && DateTime.now > end_date)
   end
 
   def current_assessments(now = DateTime.now)
@@ -427,7 +435,7 @@ private
 
   GENERAL_SERIALIZABLE = Set.new %w[name semester late_slack grace_days display_name start_date
                                     end_date disabled exam_in_progress version_threshold
-                                    gb_message website]
+                                    gb_message website disable_on_end]
   def serialize_general
     Utilities.serializable attributes, GENERAL_SERIALIZABLE
   end

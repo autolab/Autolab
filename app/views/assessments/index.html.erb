@@ -1,4 +1,4 @@
-<% @title = if @course.disabled?
+<% @title = if @course.is_disabled?
               "#{@course.full_name} (Course Disabled)"
             else
               @course.full_name
