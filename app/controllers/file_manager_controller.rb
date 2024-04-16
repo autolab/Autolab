@@ -35,7 +35,7 @@ class FileManagerController < ApplicationController
         send_file absolute_path
       else
         mime_type = MimeMagic.by_path(absolute_path)
-        if !mime_type.nil? && mime_type.type.split('/').first == 'text'
+        if mime_type.nil? || mime_type.type.split('/').first == 'text'
           @path = path
           @file = absolute_path.read
           render :file, formats: :html
