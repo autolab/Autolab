@@ -158,7 +158,7 @@ class UsersController < ApplicationController
                   end
     submissions = submissions.select do |s|
       p = s.handin_file_path
-      is_disabled = s.course_user_datum.course.disabled
+      is_disabled = s.course_user_datum.course.is_disabled?
       !p.nil? && File.exist?(p) && File.readable?(p) && !is_disabled
     end
     if submissions.empty?
