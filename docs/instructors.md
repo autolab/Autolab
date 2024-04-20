@@ -198,5 +198,5 @@ Note:
 
 - Download Selected downloads each of the selected files/folders separately.
 
-- Clicking on a binary file downloads it else the file's contents are displayed.
+- When clicking on a file, it will be automatically downloaded if it is larger than 1GB or a binary file. Otherwise, the file contents will be displayed.
 
