@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2024_02_26_194217) do
+ActiveRecord::Schema.define(version: 2024_03_16_162826) do
 
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
@@ -182,6 +182,7 @@ ActiveRecord::Schema.define(version: 2024_02_26_194217) do
     t.text "gb_message"
     t.string "website"
     t.string "access_code"
+    t.boolean "disable_on_end", default: false
   end
 
   create_table "extensions", force: :cascade do |t|

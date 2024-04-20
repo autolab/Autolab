@@ -8,7 +8,11 @@ Rails.application.routes.draw do
     get 'lti_launch/launch', to: "lti_launch#launch"
     post 'lti_nrps/sync_roster', to: "lti_nrps#sync_roster"
   get 'lti_config/index', to: "lti_config#index"
+  post 'github_config/update_config', to: "github_config#update_config"
   post 'lti_config/update_config', to: "lti_config#update_config"
+  post 'smtp_config/update_config', to: "smtp_config#update_config"
+  post 'smtp_config/send_test_email', to: "smtp_config#send_test_email"
+  post 'oauth_config/update_oauth', to: "oauth_config#update_oauth_config"
 
   namespace :oauth, { defaults: { format: :json } } do
     get "device_flow_init", to: "device_flow#init"
@@ -67,14 +71,27 @@ Rails.application.routes.draw do
   get "device_flow_resolve", to: "device_flow_activation#resolve"
   get "device_flow_auth_cb", to: "device_flow_activation#authorization_callback"
 
+  resources :file_manager, param: :path, path: 'file_manager', only: [:index] do
+    collection do
+      post 'upload', to: 'file_manager#upload'
+      post '/', to: 'file_manager#upload'
+      post 'download_tar', to: 'file_manager#download_tar'
+      get ':path', to: 'file_manager#index', constraints: { path: /.+/ }, as: :path_file_manager
+      put ':path', to: 'file_manager#rename', constraints: { path: /.+/ }, as: :rename_file_manager
+      post ':path', to: 'file_manager#upload', constraints: { path: /.+/ }, as: :upload_file_manager
+      delete ':path', to: 'file_manager#delete', constraints: { path: /.+/ }, as: :delete_file_manager
+    end
+  end
+
   resource :admin, :except => [:show] do
     match "email_instructors", via: [:get, :post]
-    match "github_integration", via: [:get]
     post "clear_cache"
+    get "autolab_config"
   end
 
   resources :users do
     get "admin"
+    get "download_all_submissions", on: :member
     get "github_oauth", on: :member
     get "lti_launch_initialize", on: :member
     post "lti_launch_link_course", on: :member

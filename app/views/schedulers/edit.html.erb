@@ -7,7 +7,6 @@
 
 <%= form_for @scheduler, url: course_scheduler_path(@course, @scheduler),
                          method: "patch", builder: FormBuilderWithDateTimeInput do |f| %>
-  <%= f.error_messages %>
   <%= f.text_field :action, help_text: "Path to scheduler file relative to Autolab root",
                             placeholder: "(scheduler action)" %>
   <%= f.datetime_select :next, help_text: "Time of next run" %>

@@ -1,0 +1,25 @@
+<h3>OAuth Configuration Settings</h3>
+<ul class="collapsible">
+  <li class="active">
+    <% google_config = OauthConfigController.get_oauth_credentials :google_oauth2 %>
+    <div class="collapsible-header">Google OAuth
+      <% if @configured_oauth_providers.include? :google_oauth2 %><i class="material-icons">check</i><% end %>
+    </div>
+    <div class="collapsible-body">
+      <%= form_with url: oauth_config_update_oauth_url do |form| %>
+        <%= form.hidden_field :provider, value: :google_oauth2 %>
+        <div class="input-field">
+          <%= form.text_field :client_id, value: google_config.fetch(:client_id, ""), required: true %>
+          <%= form.label :client_id, "Client ID" %>
+          <span class="helper-text">Google OAuth Client ID</span>
+        </div>
+        <div class="input-field">
+          <%= form.password_field :client_secret, value: google_config.fetch(:client_secret, ""), required: true %>
+          <%= form.label :client_secret, "Client Secret" %>
+          <span class="helper-text">Google OAuth Client Secret</span>
+        </div>
+        <%= form.submit "Update Configuration", { class: "btn primary" } %>
+      <% end %>
+    </div>
+  </li>
+</ul>

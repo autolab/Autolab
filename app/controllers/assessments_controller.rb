@@ -29,7 +29,8 @@ class AssessmentsController < ApplicationController
                                             import_assessments course_onboard_install_asmt]
   skip_before_action :set_breadcrumbs, only: %i[index]
   before_action :set_assessment_breadcrumb, except: %i[index show install_assessment]
-  before_action :set_manage_course_breadcrumb, only: %i[install_assessment]
+  before_action :set_manage_course_breadcrumb, only: %i[install_assessment new]
+  before_action :set_install_asmt_breadcrumb, only: %i[new]
   before_action :set_submission, only: [:viewFeedback]
 
   # We have to do this here, because the modules don't inherit ApplicationController.
@@ -59,6 +60,7 @@ class AssessmentsController < ApplicationController
 
   IMPORT_ASMT_FAILURE_STATUS = "FAIL".freeze
   IMPORT_ASMT_SUCCESS_STATUS = "SUCCESS".freeze
+  DISALLOWED_LIST_OPTIONS = %w[edit reload viewGradesheet].freeze
 
   def index
     @is_instructor = @cud.has_auth_level? :instructor
@@ -69,9 +71,9 @@ class AssessmentsController < ApplicationController
                                       .or(announcements_tmp.where(system: true)).order(:start_date)
     # Only display course attachments on course landing page
     @course_attachments = if @cud.instructor?
-                            @course.attachments.where(assessment_id: nil)
+                            @course.attachments.where(assessment_id: nil).ordered
                           else
-                            @course.attachments.where(assessment_id: nil).released
+                            @course.attachments.where(assessment_id: nil).released.ordered
                           end
   end
 
@@ -554,13 +556,23 @@ class AssessmentsController < ApplicationController
 
     @aud = @assessment.aud_for @cud.id
 
-    @list = {}
-    @list_title = {}
+    # These are the default items displayed
+    @list = {
+      "history" => nil,
+      "writeup" => nil,
+      "handout" => nil,
+      "groups" => nil,
+      "scoreboard" => nil
+    }
 
     if @assessment.overwrites_method?(:listOptions)
       list = @list
       @list = @assessment.config_module.listOptions(list)
     end
+
+    # Explicitly disallow certain options that should not be displayed to students
+    # This list is not exhaustive, but students wouldn't be able to view other links anyway
+    @list.except!(*DISALLOWED_LIST_OPTIONS)
 
     # Remember the student ID in case the user wants visit the gradesheet
     session["gradeUser#{@assessment.id}"] = params[:cud_id] if params[:cud_id]
@@ -572,9 +584,9 @@ class AssessmentsController < ApplicationController
                       @cud
                     end
     @attachments = if @cud.instructor?
-                     @assessment.attachments
+                     @assessment.attachments.ordered
                    else
-                     @assessment.attachments.released
+                     @assessment.attachments.released.ordered
                    end
     @submissions = @assessment.submissions.where(course_user_datum_id: @effectiveCud.id)
                               .order("version DESC")
@@ -827,7 +839,9 @@ class AssessmentsController < ApplicationController
                           without grace days are not penalized"
       end
       unless warn_messages.empty?
-        flash.now[:error] = "Late submissions are allowed, but<br>#{warn_messages.join('<br>')}"
+        flash.now[:notice] = "Late submissions are allowed, but<br>"
+        flash.now[:notice] += warn_messages.join('<br>')
+        flash.now[:notice] += "<br>Please make sure that this was intended."
         flash.now[:html_safe] = true
       end
     end
@@ -876,7 +890,8 @@ class AssessmentsController < ApplicationController
 
       redirect_to(tab_index) && return
     rescue ActiveRecord::RecordInvalid
-      flash[:error] = @assessment.errors.full_messages.join("<br>")
+      flash[:error] = "Assessment configuration could not be updated.<br>"
+      flash[:error] += @assessment.errors.full_messages.join("<br>")
       flash[:html_safe] = true
 
       redirect_to(tab_index) && return
@@ -1030,7 +1045,8 @@ private
   def new_assessment_params
     ass = params.require(:assessment)
     ass[:category_name] = params[:new_category] if params[:new_category].present?
-    ass.permit(:name, :display_name, :category_name, :group_size, :github_submission_enabled)
+    ass.permit(:name, :display_name, :category_name, :group_size, :github_submission_enabled,
+               :allow_student_assign_group)
   end
 
   def edit_assessment_params
@@ -1215,5 +1231,12 @@ private
     scores.map { |s|
       [s.problem.name, s.score]
     }.to_h
+  end
+
+  def set_install_asmt_breadcrumb
+    return if @course.nil?
+
+    @breadcrumbs << (view_context.link_to "Install Assessment",
+                                          install_assessment_course_assessments_path(@course))
   end
 end

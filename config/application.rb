@@ -96,7 +96,7 @@ module Autolab3
 
     # Customize form control error state: controls with erroneous input get wrapped with this
     config.action_view.field_error_proc = Proc.new { |html_tag, instance|
-      "<div class=\"field_with_errors has-error\">#{html_tag}</div>".html_safe
+      html_tag.html_safe
     }
 
     # Allow embedding as iFrame on external sites
@@ -131,8 +131,8 @@ module Autolab3
       end
     end
 
-    # lti configuration file path, keep it private
-    config.lti_config_location = Rails.root.join("config").to_s
+    # Configuration file path, keep it private
+    config.config_location = Rails.root.join("config").to_s
 
     # Ensures correct error message if no secret_key_base is defined
     if !ENV['SECRET_KEY_BASE'].nil? && ENV['SECRET_KEY_BASE'].empty?

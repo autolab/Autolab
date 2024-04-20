@@ -1,0 +1,91 @@
+.div-row {
+  display: flex;
+  flex-direction: row;
+  gap: 5rem;
+}
+
+[type="checkbox"]:not(:checked) {
+  opacity: 100;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  pointer-events: auto;
+}
+
+[type="checkbox"]:checked {
+  position: relative;
+  opacity: 1;
+  pointer-events: unset;
+}
+
+.table-col-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding-top: 35%;
+}
+
+.table-scroll {
+  height: 40rem;
+  overflow-y: auto;
+}
+
+.div-row-cols {
+  display: flex;
+  align-items: center;
+}
+
+.button-file {
+  position: relative;
+  overflow: hidden;
+}
+
+.button-file input[type=submit] {
+  left: -10px;
+  right: 0;
+  padding: 0;
+}
+
+.button-file input {
+  position: absolute;
+  top: 0;
+  right: 0;
+  min-width: 100%;
+  min-height: 100%;
+  font-size: 100px;
+  text-align: right;
+  filter: alpha(opacity=0);
+  opacity: 0;
+  outline: none;
+  background: green;
+  display: block;
+}
+
+.button-file a {
+  color: white;
+}
+
+@media screen and (max-width: 1164px) {
+  .div-row {
+    display: grid;
+    grid-template-columns: auto auto;
+    gap: 1rem;
+  }
+  .button-file {
+    width: 200px;
+  }
+  .div-row-cols {
+    margin: 0;
+    padding: 0;
+  }
+}
+
+@media screen and (max-width: 478px) {
+  .div-row {
+    display: grid;
+    grid-template-columns: auto;
+    gap: 1rem;
+  }
+}
+
