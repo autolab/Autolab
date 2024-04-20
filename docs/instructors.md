@@ -199,4 +199,3 @@ Note:
 - Download Selected downloads each of the selected files/folders separately.
 
 - When clicking on a file, it will be automatically downloaded if it is larger than 1GB or a binary file. Otherwise, the file contents will be displayed.
-
