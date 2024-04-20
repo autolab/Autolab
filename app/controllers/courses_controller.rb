@@ -199,7 +199,7 @@ class CoursesController < ApplicationController
       end
 
     else
-      flash.now[:error] = "Course creation failed. Check all fields"
+      flash.now[:error] = "Course creation failed. Please review the fields below."
       render(action: "new") && return
     end
   end
@@ -248,7 +248,7 @@ class CoursesController < ApplicationController
     end
 
     unless @newCourse.save
-      flash[:error] = "Course creation failed. Check all fields"
+      flash[:error] = "Course creation failed. Please review all fields below."
       render(action: "new") && return
     end
 
@@ -749,7 +749,7 @@ private
     att = params.require(:editCourse).permit(:semester, :website, :late_slack,
                                              :grace_days, :display_name, :start_date, :end_date,
                                              :disabled, :exam_in_progress, :allow_self_enrollment,
-                                             :version_threshold, :gb_message,
+                                             :version_threshold, :gb_message, :disable_on_end,
                                              late_penalty_attributes: %i[kind value],
                                              version_penalty_attributes: %i[kind value])
 

@@ -184,6 +184,7 @@ ActiveRecord::Schema.define(version: 2024_04_06_174050) do
     t.text "gb_message"
     t.string "website"
     t.string "access_code"
+    t.boolean "disable_on_end", default: false
   end
 
   create_table "extensions", force: :cascade do |t|

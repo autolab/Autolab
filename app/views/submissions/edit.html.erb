@@ -6,7 +6,6 @@
 <%= form_for @submission, url: [@submission.course_user_datum.course, @assessment, @submission],
                           builder: FormBuilderWithDateTimeInput,
                           method: :patch do |f| %>
-<%= f.error_messages %>
 <table class="verticalTable">
   <tr>
     <th>User:</th>

@@ -104,4 +104,19 @@
     </ul>
     <%= f.submit 'Save', { class: "btn primary" } %>
   <% end %>
+  <h4>Download Submissions</h4>
+  <%= link_to download_all_submissions_user_path(@user, final: true),
+              { title: "Download all your final submissions",
+                class: "" } do %>
+    <span class="btn primary">
+      Download Final
+    </span>
+  <% end %>
+  <%= link_to download_all_submissions_user_path(@user),
+              { title: "Download all your submissions",
+                class: "" } do %>
+    <span class="btn primary">
+      Download All
+    </span>
+  <% end %>
 <% end %>

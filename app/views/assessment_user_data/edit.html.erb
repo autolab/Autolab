@@ -2,8 +2,6 @@
   <h5>Grade type for <%= @aud.course_user_datum.user.email %> on <%= @aud.assessment.display_name %></h5>
 
   <%= form_for @aud, url: { action: :update } do |f| %>
-    <%= f.error_messages %>
-
       <p>
         <%= f.label(:grade_type, value: AssessmentUserDatum::NORMAL) do %>
           <%= f.radio_button :grade_type, AssessmentUserDatum::NORMAL %>
