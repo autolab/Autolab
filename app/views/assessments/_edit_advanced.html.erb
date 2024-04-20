@@ -23,6 +23,8 @@
 <% end %>
 
 <%= f.check_box :disable_network, help_text: "Disable network access for autograding containers." %>
+<%= f.text_field :allowed_outgoing_ips,
+                 help_text: "Specify allowed outgoing IPs for autograding containers (comma separated). If left empty, all outgoing connections are allowed." %>
 <%= f.check_box :allow_unofficial,
                 help_text: "Allow unofficial submission. Unless you know what you're doing, leave this unchecked." %>
 <%= f.check_box :embedded_quiz,

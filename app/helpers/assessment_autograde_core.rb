@@ -166,9 +166,13 @@ module AssessmentAutogradeCore
                        "timeout" => @autograde_prop.autograde_timeout,
                        "callback_url" => callback_url,
                        "jobName" => job_name,
-                       "disable_network" => assessment.disable_network }.to_json
+                       "disable_network" => assessment.disable_network
+    }
+    unless assessment.allowed_outgoing_ips.nil? || assessment.allowed_outgoing_ips.empty?
+      job_properties["allowed_outgoing_ips"] = assessment.allowed_outgoing_ips.split(/\s*,\s*/)
+    end
     begin
-      response = TangoClient.addjob("#{course.name}-#{assessment.name}", job_properties)
+      response = TangoClient.addjob("#{course.name}-#{assessment.name}", job_properties.to_json)
     rescue TangoClient::TangoException => e
       COURSE_LOGGER.log("Error while adding job to the queue: #{e.message}")
       raise AutogradeError.new("Error while adding job to the queue", :tango_add_job, e.message)
