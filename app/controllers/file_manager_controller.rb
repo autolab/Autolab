@@ -193,10 +193,10 @@ private
                end),
         type: (is_file ? :file : :directory),
         date: begin
-                stat.mtime.strftime('%d %b %Y %H:%M')
-              rescue StandardError
-                '-'
-              end,
+          stat.mtime.strftime('%d %b %Y %H:%M')
+        rescue StandardError
+          '-'
+        end,
         relative: CGI.unescape("/file_manager/#{new_url}#{file}"),
         entry: "#{file}#{is_file ? '' : '/'}",
         absolute: abs_path_str,
