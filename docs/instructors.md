@@ -178,4 +178,25 @@ Manually assigned grades are by default not released, and therefore not visible 
 
 Displays files within a course and allows you to rename, delete, and add files automatically via an interface.
 
+You can view all courses that you are an instructor of and all associated files.
+
 You can access the File Manager via the Manage Autolab dropdown.
+
+Note:
+
+- You cannot create folders or upload files in the root Courses directory. To create a course, you should navigate to Create New Course via the Manage Autolab dropdown.
+
+- You cannot rename files in the root Courses directory. To rename a course, you should navigate to the course, click Manage Course, and click Course Settings.
+
+- You cannot upload files that are larger than 1 GB.
+
+- You cannot create a folder or upload a file with a name that already exists.
+
+- Deleting a folder will also delete all of its contents.
+
+- Downloading a folder will create a tar with all of its contents.
+
+- Download Selected downloads each of the selected files/folders separately.
+
+- Clicking on a binary file downloads it else the file's contents are displayed.
+
