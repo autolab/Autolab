@@ -165,6 +165,9 @@
                         <span class="new badge blue darken-4" data-badge-caption="unreleased"></span>
                       <% end %>
                     <% end %>
+                    <% if asmt.has_writeup? %>
+                      <span class="new badge orange darken-4" data-badge-caption="writeup" data-url="<%= writeup_course_assessment_path(@course, asmt) %>"></span>
+                    <% end %>
                     <% hoverable = @cud.user.hover_assessment_date ? 'hover' : '' %>
                     <%= render partial: 'assessment_date', locals: { assessment: asmt, hover: hoverable } %>
                   <% end %>
