@@ -33,17 +33,14 @@ class FileManagerController < ApplicationController
     elsif File.file?(absolute_path) && check_instructor(absolute_path)
       if File.size(absolute_path) > 1_000_000 || params[:download]
         send_file absolute_path
+      elsif !is_binary_file?(absolute_path)
+        @path = path
+        @file = absolute_path.read
+        render :file, formats: :html
       else
-        mime_type = MimeMagic.by_path(absolute_path)
-        if mime_type.nil? || mime_type.type.split('/').first == 'text'
-          @path = path
-          @file = absolute_path.read
-          render :file, formats: :html
-        else
-          send_file(absolute_path,
-                    filename: File.basename(absolute_path),
-                    disposition: 'attachment')
-        end
+        send_file(absolute_path,
+                  filename: File.basename(absolute_path),
+                  disposition: 'attachment')
       end
     end
   end
@@ -166,6 +163,8 @@ class FileManagerController < ApplicationController
     end
   end
 
+private
+
   def populate_directory(current_directory, current_url)
     directory = Dir.entries(current_directory)
     new_url = current_url == '/' ? '' : current_url
@@ -194,10 +193,10 @@ class FileManagerController < ApplicationController
                end),
         type: (is_file ? :file : :directory),
         date: begin
-          stat.mtime.strftime('%d %b %Y %H:%M')
-        rescue StandardError
-          '-'
-        end,
+                stat.mtime.strftime('%d %b %Y %H:%M')
+              rescue StandardError
+                '-'
+              end,
         relative: CGI.unescape("/file_manager/#{new_url}#{file}"),
         entry: "#{file}#{is_file ? '' : '/'}",
         absolute: abs_path_str,
@@ -235,5 +234,10 @@ class FileManagerController < ApplicationController
       end
     end
     false
+  end
+
+  def is_binary_file?(path)
+    mm = MimeMagic.by_path(path)
+    mm.present? && !mm.text?
   end
 end
