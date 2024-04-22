@@ -70,9 +70,8 @@ module Archive
     files.each do |file|
 
       # edge case for removing "./" from pathnames
-      # file[:pathname] = file[:pathname].gsub(/\.\.\//) {'..-'}
       if file[:pathname].include?("./")
-        file[:pathname] = file[:pathname].split("./").last
+        file[:pathname] = File.cleanpath(file[:pathname], rel_root = true).gsub("..", "__PARENT__")
       end
 
       if(file[:directory])
