@@ -7,7 +7,7 @@ require "utilities"
 #
 class Attachment < ApplicationRecord
   include FriendlyId
-  friendly_id :name, use: :slugged
+  friendly_id :slug_candidates, use: :slugged
   validates :name, presence: true
   validates :category_name, presence: true
   validates :filename, presence: true
@@ -49,6 +49,13 @@ class Attachment < ApplicationRecord
   # Regenerate slug whenever the name changes
   def should_generate_new_friendly_id?
     name_changed? && name.present?
+  end
+
+  def slug_candidates
+    [
+      :name,
+      [:name, :id]
+    ]
   end
 
   def after_create
