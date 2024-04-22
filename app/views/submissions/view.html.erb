@@ -69,7 +69,12 @@
 
         document.querySelectorAll('pre code').forEach((block, index) => {
             if (block.textContent !== null && block.textContent !== "" && splitContent.includes(block.textContent.replace(/\n/g, ''))) {
-                block.innerHTML = `<code class='hljs-comment'>${block.textContent}</code>`;
+                let escapedText = document.createTextNode(block.textContent);
+                let codeElement = document.createElement('span');
+                codeElement.className = 'hljs-comment';
+                codeElement.appendChild(escapedText);
+                block.innerHTML = '';
+                block.appendChild(codeElement);
             }
         });
     });
