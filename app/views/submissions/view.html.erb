@@ -60,7 +60,7 @@
 
         let highlightedCode = hljs.highlightAuto(combinedCode).value;
         let commentSpans = highlightedCode.match(/<span class="hljs-comment">([^<]*)<\/span>/g);
-        let commentContents = commentSpans.map(span => span.replace(/<[^>]+>/g, ''));
+        let commentContents = commentSpans.map(span => span.replace(/<[^>]+>/g, '').replace(/</g, '&lt;').replace(/>/g, '&gt;'));
         let splitContent = commentContents.flatMap(str => str.split('\n'));
 
         document.querySelectorAll('pre code').forEach((block, index) => {
