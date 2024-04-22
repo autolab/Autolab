@@ -52,6 +52,23 @@
       var headerPositionStr = null;
     <% end %>
     hljs.initHighlightingOnLoad();
+    document.addEventListener('DOMContentLoaded', (event) => {
+        let combinedCode = '';
+        document.querySelectorAll('pre code').forEach((block) => {
+            combinedCode += block.textContent + '\n';
+        });
+
+        let highlightedCode = hljs.highlightAuto(combinedCode).value;
+        let commentSpans = highlightedCode.match(/<span class="hljs-comment">([^<]*)<\/span>/g);
+        let commentContents = commentSpans.map(span => span.replace(/<[^>]+>/g, ''));
+        let splitContent = commentContents.flatMap(str => str.split('\n'));
+
+        document.querySelectorAll('pre code').forEach((block, index) => {
+            if (block.textContent !== null && block.textContent !== "" && splitContent.includes(block.textContent.replace(/\n/g, ''))) {
+                block.innerHTML = `<code class='hljs-comment'>${block.textContent}</code>`;
+            }
+        });
+    });
     PDFJS.workerSrc = "<%= asset_url 'pdf.worker.js' %>";
   </script>
   <%= render partial: "golden-layout" %>
