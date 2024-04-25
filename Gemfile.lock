@@ -169,6 +169,8 @@ GEM
       sassc (>= 2.2)
       sassc-rails (>= 2.1)
       sprockets-rails (>= 2.1.3)
+    friendly_id (5.5.1)
+      activerecord (>= 4.0.0)
     globalid (1.2.1)
       activesupport (>= 6.1)
     hashdiff (1.1.0)
@@ -491,6 +493,7 @@ DEPENDENCIES
   exception_notification (>= 4.1.0)
   factory_bot_rails
   fomantic-ui-sass (= 2.8.8.1)
+  friendly_id (~> 5.5.0)
   httparty
   jbuilder (>= 2.0)
   jquery-rails
