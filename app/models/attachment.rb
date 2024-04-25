@@ -8,6 +8,7 @@ require "utilities"
 class Attachment < ApplicationRecord
   include FriendlyId
   friendly_id :slug_candidates, use: :slugged
+  after_create :initialize_slug
   validates :name, presence: true
   validates :category_name, presence: true
   validates :filename, presence: true
@@ -48,7 +49,13 @@ class Attachment < ApplicationRecord
 
   # Regenerate slug whenever the name changes
   def should_generate_new_friendly_id?
-    name_changed? && name.present?
+    (name_changed? && name.present?) || slug.nil?
+  end
+
+  # https://github.com/norman/friendly_id/issues/1008
+  def initialize_slug
+    self.slug = nil
+    save!
   end
 
   def slug_candidates
