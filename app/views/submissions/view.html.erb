@@ -24,9 +24,9 @@
   <div style="display: none"><%= render(partial: 'annotation_pane') %></div>
   <script type="text/javascript">
     <% if @cud.instructor || @cud.course_assistant then %>
-        var isInstructor = true;
+      var isInstructor = true;
     <% else %>
-        var isInstructor = false;
+      var isInstructor = false;
     <% end %>
 
     const editableUrl = "<%= url_for([:quickSetScore, @course, @assessment]) %>"
@@ -47,43 +47,43 @@
     var localCache = {};
 
     <% if params[:header_position] %>
-        var headerPositionStr = "<%= params[:header_position] %>";
+      var headerPositionStr = "<%= params[:header_position] %>";
     <% else %>
-        var headerPositionStr = null;
+      var headerPositionStr = null;
     <% end %>
     hljs.initHighlightingOnLoad();
-    hljs.initHighlightingOnLoad();
     function highlightComments () {
-        // Highlights all code as a cohesive block
-        let combinedCode = '';
-        document.querySelectorAll('pre code').forEach((block) => {
-            combinedCode += block.textContent + '\n';
-        });
-        let highlightedCode = hljs.highlightAuto(combinedCode).value;
-        let htmlObject = document.createElement('div');
-        htmlObject.innerHTML = highlightedCode;
-        // Get all spans that are highlighted as comments
-        let content = htmlObject.getElementsByClassName('hljs-comment');
-        let splitContent = [];
-        // Split each span into multiple lines
-        for (let con of content) {
-            let innerSpans = con.innerText.split("\n").filter(line => line.trim() !== "");
-            innerSpans.forEach((span) => {
-                splitContent.push(span);
-            });
-        }
-        // If a line of code has content that is highlighted as a comment above,
-        // we wrap the content with the hljs-comment class to highlight it
-        document.querySelectorAll('pre code').forEach((block) => {
-            if (block.textContent !== null && block.textContent !== "" && splitContent.includes(block.textContent.replace(/\n/g, ''))) {
-                let escapedText = document.createTextNode(block.textContent);
-                let codeElement = document.createElement('span');
-                codeElement.className = 'hljs-comment';
-                codeElement.appendChild(escapedText);
-                block.innerHTML = '';
-                block.appendChild(codeElement);
-            }
-        });
+      // Highlights all code as a cohesive block
+      let combinedCode = '';
+      document.querySelectorAll('pre code').forEach((block) => {
+          combinedCode += block.textContent + '\n';
+      });
+      let highlightedCode = hljs.highlightAuto(combinedCode).value;
+      console.log(combinedCode);
+      let htmlObject = document.createElement('div');
+      htmlObject.innerHTML = highlightedCode;
+      // Get all spans that are highlighted as comments
+      let content = htmlObject.getElementsByClassName('hljs-comment');
+      let splitContent = [];
+      // Split each span into multiple lines
+      for (let con of content) {
+          let innerSpans = con.innerText.split("\n").filter(line => line.trim() !== "");
+          innerSpans.forEach((span) => {
+              splitContent.push(span);
+          });
+      }
+      // If a line of code has content that is highlighted as a comment above,
+      // we wrap the content with the hljs-comment class to highlight it
+      document.querySelectorAll('pre code').forEach((block) => {
+          if (block.textContent !== null && block.textContent !== "" && splitContent.includes(block.textContent.replace(/\n/g, ''))) {
+              let escapedText = document.createTextNode(block.textContent);
+              let codeElement = document.createElement('span');
+              codeElement.className = 'hljs-comment';
+              codeElement.appendChild(escapedText);
+              block.innerHTML = '';
+              block.appendChild(codeElement);
+          }
+      });
     }
     window.addEventListener('DOMContentLoaded', () => {
         highlightComments();
