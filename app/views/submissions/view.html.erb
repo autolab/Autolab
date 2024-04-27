@@ -23,62 +23,71 @@
   <div style="display: none"><%= render(partial: 'grades') %></div>
   <div style="display: none"><%= render(partial: 'annotation_pane') %></div>
   <script type="text/javascript">
-    <% if @cud.instructor || @cud.course_assistant then %>
+      <% if @cud.instructor || @cud.course_assistant then %>
       var isInstructor = true;
-    <% else %>
+      <% else %>
       var isInstructor = false;
-    <% end %>
+      <% end %>
 
-    const editableUrl = "<%= url_for([:quickSetScore, @course, @assessment]) %>"
+      const editableUrl = "<%= url_for([:quickSetScore, @course, @assessment]) %>"
 
-    var currentHeaderPos = <%= params[:header_position] || 0 %>;
-    var annotations = <%= raw @annotations.to_json %>;
-    var annotationsByPositionByLine = {};
-    var fileNameStr = "<%= @filename %>";
-    var cudEmailStr = "<%= @cud.email %>";
+      var currentHeaderPos = <%= params[:header_position] || 0 %>;
+      var annotations = <%= raw @annotations.to_json %>;
+      var annotationsByPositionByLine = {};
+      var fileNameStr = "<%= @filename %>";
+      var cudEmailStr = "<%= @cud.email %>";
 
-    // a json list of problems for this assessment
-    var problems = <%= raw @problems.to_json %>;
+      // a json list of problems for this assessment
+      var problems = <%= raw @problems.to_json %>;
 
-    // a json list of scores for this assessment
-    var scores = <%= raw @scores.to_json %>;
-    var basePath = "<%= course_assessment_submission_annotations_path(@course, @assessment, @submission) %>";
+      // a json list of scores for this assessment
+      var scores = <%= raw @scores.to_json %>;
+      var basePath = "<%= course_assessment_submission_annotations_path(@course, @assessment, @submission) %>";
 
-    var localCache = {};
+      var localCache = {};
 
-    <% if params[:header_position] %>
+      <% if params[:header_position] %>
       var headerPositionStr = "<%= params[:header_position] %>";
-    <% else %>
+      <% else %>
       var headerPositionStr = null;
-    <% end %>
-    hljs.initHighlightingOnLoad();
-    document.addEventListener('DOMContentLoaded', (event) => {
-        let combinedCode = '';
-        document.querySelectorAll('pre code').forEach((block) => {
-            combinedCode += block.textContent + '\n';
-        });
+      <% end %>
+      hljs.initHighlightingOnLoad();
+      function highlightComments () {
+          let combinedCode = '';
+          document.querySelectorAll('pre code').forEach((block) => {
+              combinedCode += block.textContent + '\n';
+          });
+          let highlightedCode = hljs.highlightAuto(combinedCode).value;
+          let htmlObject = document.createElement('div');
+          htmlObject.innerHTML = highlightedCode;
+          let content = htmlObject.getElementsByClassName('hljs-comment');
+          let splitContent = [];
+          for (let con of content) {
+              let innerSpans = con.innerText.split("\n").filter(line => line.trim() !== "");
+              innerSpans.forEach((span) => {
+                  splitContent.push(span);
+              });
+          }
 
-        let highlightedCode = hljs.highlightAuto(combinedCode).value;
-        let commentSpans = highlightedCode.match(/<span class="hljs-comment">([^<]*)<\/span>/g);
-        let commentContents = commentSpans.map(span => {
-            let tempDiv = document.createElement('div');
-            tempDiv.innerHTML = span;
-            return tempDiv.textContent || tempDiv.innerText || '';
-        });
-        let splitContent = commentContents.flatMap(str => str.split('\n'));
+          document.querySelectorAll('pre code').forEach((block) => {
+              if (block.textContent !== null && block.textContent !== "" && splitContent.includes(block.textContent.replace(/\n/g, ''))) {
+                  let escapedText = document.createTextNode(block.textContent);
+                  let codeElement = document.createElement('span');
+                  codeElement.className = 'hljs-comment';
+                  codeElement.appendChild(escapedText);
+                  block.innerHTML = '';
+                  block.appendChild(codeElement);
+              }
+          });
+      }
+      window.addEventListener('DOMContentLoaded', () => {
+          highlightComments();
+      });
+      window.navigation.addEventListener("navigate", () => {
+          highlightComments();
+      })
 
-        document.querySelectorAll('pre code').forEach((block, index) => {
-            if (block.textContent !== null && block.textContent !== "" && splitContent.includes(block.textContent.replace(/\n/g, ''))) {
-                let escapedText = document.createTextNode(block.textContent);
-                let codeElement = document.createElement('span');
-                codeElement.className = 'hljs-comment';
-                codeElement.appendChild(escapedText);
-                block.innerHTML = '';
-                block.appendChild(codeElement);
-            }
-        });
-    });
-    PDFJS.workerSrc = "<%= asset_url 'pdf.worker.js' %>";
+      PDFJS.workerSrc = "<%= asset_url 'pdf.worker.js' %>";
   </script>
   <%= render partial: "golden-layout" %>
 <% end %>
@@ -96,12 +105,12 @@
       <% end %>
     </div>
     <div class="col s8 center-align valign-wrapper submission-controls">
-        <span title="student # / total students">[<%= @curSubmissionIndex + 1 %>/<%= @latestSubmissions.length %>] <%= @submission.course_user_datum.email %>,</span>
-        <%= render "version_dropdown" %>
-        <%= render "version_links" %>
+      <span title="student # / total students">[<%= @curSubmissionIndex + 1 %>/<%= @latestSubmissions.length %>] <%= @submission.course_user_datum.email %>,</span>
+      <%= render "version_dropdown" %>
+      <%= render "version_links" %>
       <a href="<%= download_file_url(@submission) %>" class="btn small" title="Download">Download</a>
       <button class="btn small" onclick="resetLayout()">Reset Layout</button>
-        <%= render "release_grades" %>
+      <%= render "release_grades" %>
     </div>
 
     <div class="col s2 center-align">
@@ -130,4 +139,4 @@
 
 <!-- restart the container -->
 <div>
-<div>
+  <div>
