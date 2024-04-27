@@ -23,71 +23,75 @@
   <div style="display: none"><%= render(partial: 'grades') %></div>
   <div style="display: none"><%= render(partial: 'annotation_pane') %></div>
   <script type="text/javascript">
-      <% if @cud.instructor || @cud.course_assistant then %>
-      var isInstructor = true;
-      <% else %>
-      var isInstructor = false;
-      <% end %>
+    <% if @cud.instructor || @cud.course_assistant then %>
+    var isInstructor = true;
+    <% else %>
+    var isInstructor = false;
+    <% end %>
 
-      const editableUrl = "<%= url_for([:quickSetScore, @course, @assessment]) %>"
+    const editableUrl = "<%= url_for([:quickSetScore, @course, @assessment]) %>"
 
-      var currentHeaderPos = <%= params[:header_position] || 0 %>;
-      var annotations = <%= raw @annotations.to_json %>;
-      var annotationsByPositionByLine = {};
-      var fileNameStr = "<%= @filename %>";
-      var cudEmailStr = "<%= @cud.email %>";
+    var currentHeaderPos = <%= params[:header_position] || 0 %>;
+    var annotations = <%= raw @annotations.to_json %>;
+    var annotationsByPositionByLine = {};
+    var fileNameStr = "<%= @filename %>";
+    var cudEmailStr = "<%= @cud.email %>";
 
-      // a json list of problems for this assessment
-      var problems = <%= raw @problems.to_json %>;
+    // a json list of problems for this assessment
+    var problems = <%= raw @problems.to_json %>;
 
-      // a json list of scores for this assessment
-      var scores = <%= raw @scores.to_json %>;
-      var basePath = "<%= course_assessment_submission_annotations_path(@course, @assessment, @submission) %>";
+    // a json list of scores for this assessment
+    var scores = <%= raw @scores.to_json %>;
+    var basePath = "<%= course_assessment_submission_annotations_path(@course, @assessment, @submission) %>";
 
-      var localCache = {};
+    var localCache = {};
 
-      <% if params[:header_position] %>
-      var headerPositionStr = "<%= params[:header_position] %>";
-      <% else %>
-      var headerPositionStr = null;
-      <% end %>
-      hljs.initHighlightingOnLoad();
-      function highlightComments () {
-          let combinedCode = '';
-          document.querySelectorAll('pre code').forEach((block) => {
-              combinedCode += block.textContent + '\n';
-          });
-          let highlightedCode = hljs.highlightAuto(combinedCode).value;
-          let htmlObject = document.createElement('div');
-          htmlObject.innerHTML = highlightedCode;
-          let content = htmlObject.getElementsByClassName('hljs-comment');
-          let splitContent = [];
-          for (let con of content) {
-              let innerSpans = con.innerText.split("\n").filter(line => line.trim() !== "");
-              innerSpans.forEach((span) => {
-                  splitContent.push(span);
-              });
-          }
-
-          document.querySelectorAll('pre code').forEach((block) => {
-              if (block.textContent !== null && block.textContent !== "" && splitContent.includes(block.textContent.replace(/\n/g, ''))) {
-                  let escapedText = document.createTextNode(block.textContent);
-                  let codeElement = document.createElement('span');
-                  codeElement.className = 'hljs-comment';
-                  codeElement.appendChild(escapedText);
-                  block.innerHTML = '';
-                  block.appendChild(codeElement);
-              }
-          });
-      }
-      window.addEventListener('DOMContentLoaded', () => {
-          highlightComments();
-      });
-      window.navigation.addEventListener("navigate", () => {
-          highlightComments();
-      })
-
-      PDFJS.workerSrc = "<%= asset_url 'pdf.worker.js' %>";
+    <% if params[:header_position] %>
+    var headerPositionStr = "<%= params[:header_position] %>";
+    <% else %>
+    var headerPositionStr = null;
+    <% end %>
+    hljs.initHighlightingOnLoad();
+    hljs.initHighlightingOnLoad();
+    function highlightComments () {
+        // Highlights all code as a cohesive block
+        let combinedCode = '';
+        document.querySelectorAll('pre code').forEach((block) => {
+            combinedCode += block.textContent + '\n';
+        });
+        let highlightedCode = hljs.highlightAuto(combinedCode).value;
+        let htmlObject = document.createElement('div');
+        htmlObject.innerHTML = highlightedCode;
+        // Get all spans that are highlighted as comments
+        let content = htmlObject.getElementsByClassName('hljs-comment');
+        let splitContent = [];
+        // Split each span into multiple lines
+        for (let con of content) {
+            let innerSpans = con.innerText.split("\n").filter(line => line.trim() !== "");
+            innerSpans.forEach((span) => {
+                splitContent.push(span);
+            });
+        }
+        // If a line of code has content that is highlighted as a comment above,
+        // we wrap the content with the hljs-comment class to highlight it
+        document.querySelectorAll('pre code').forEach((block) => {
+            if (block.textContent !== null && block.textContent !== "" && splitContent.includes(block.textContent.replace(/\n/g, ''))) {
+                let escapedText = document.createTextNode(block.textContent);
+                let codeElement = document.createElement('span');
+                codeElement.className = 'hljs-comment';
+                codeElement.appendChild(escapedText);
+                block.innerHTML = '';
+                block.appendChild(codeElement);
+            }
+        });
+    }
+    window.addEventListener('DOMContentLoaded', () => {
+        highlightComments();
+    });
+    window.navigation.addEventListener("navigate", () => {
+        highlightComments();
+    });
+    PDFJS.workerSrc = "<%= asset_url 'pdf.worker.js' %>";
   </script>
   <%= render partial: "golden-layout" %>
 <% end %>
@@ -139,4 +143,4 @@
 
 <!-- restart the container -->
 <div>
-  <div>
+<div>

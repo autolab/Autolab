@@ -940,7 +940,7 @@ span > .material-icons {
 }
 
 .hljs-comment span {
-  color: #008000 !important;
+  color: var($autolab-highlight-comments) !important;
 }
 
 .code-line div {
