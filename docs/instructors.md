@@ -170,7 +170,7 @@ The _gradebook_ comes in two forms. The _student gradebook_ displays the grades 
 
 For the gradebook calculations, submissions are classified as one of three types: "Normal", "No Grade" or "Excused". A "No Grade" submission will show up in the gradebook as NG and a zero will be used when calculating averages. An "Excused" submission will show up in the gradebook as EXC and will not be used when calculating averages.
 
-To auto-expand a column in the _gradebook_, double click the edge of that column header.
+To auto-expand a column in the _gradebook_, double-click the edge of that column header.
 
 ## Releasing Grades
 
