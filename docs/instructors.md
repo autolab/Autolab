@@ -21,7 +21,7 @@ or in the format that is exported by the CMU S3 service:
 ```
 
 !!! warning "Attention CMU Instructors:"
-    S3 lists each student twice: once in a lecture roster, which lists the lecture number (e.g., 1, 2,...) in the section field, and once in a section roster, which lists the section letter (e.g., A, B,...) in the section field. Be careful not to import the lecture roster. Instead, export and upload each section individually. Or you can export everything from S3 with a single action, edit out the roster entries for the lecture(s), and then upload a single file to Autolab with all of the sections.
+S3 lists each student twice: once in a lecture roster, which lists the lecture number (e.g., 1, 2,...) in the section field, and once in a section roster, which lists the section letter (e.g., A, B,...) in the section field. Be careful not to import the lecture roster. Instead, export and upload each section individually. Or you can export everything from S3 with a single action, edit out the roster entries for the lecture(s), and then upload a single file to Autolab with all of the sections.
 
 For the bulk upload, you can choose to either:
 
@@ -33,7 +33,7 @@ For a linked course, you can sync the Autolab roster by clicking the refresh but
 
 The behavior of the linked course syncing can be customized by clicking the 'Linked Course Settings' button on the 'Manage Course Users' page.
 
- * The 'Auto drop students' option when enabled will mark students not enrolled in the linked course as dropped on the Autolab roster.
+* The 'Auto drop students' option when enabled will mark students not enrolled in the linked course as dropped on the Autolab roster.
 
 
 Instructors and course assistants are never marked as dropped. User accounts are never deleted. Students marked as dropped can still see their work, but cannot submit new work and do not appear on the instructor gradebook. Instructors can change the dropped status of a student at any time.
@@ -169,6 +169,8 @@ The _gradesheet_ (not to be confused with the _gradebook_) is the workhorse grad
 The _gradebook_ comes in two forms. The _student gradebook_ displays the grades for a particular student, including total scores for each assessment, category averages, and the course average. The _instructor gradebook_ is a table that displays the grades for the most recent submission of each student, including assessment total scores, category averages and course average.
 
 For the gradebook calculations, submissions are classified as one of three types: "Normal", "No Grade" or "Excused". A "No Grade" submission will show up in the gradebook as NG and a zero will be used when calculating averages. An "Excused" submission will show up in the gradebook as EXC and will not be used when calculating averages.
+
+To auto-expand a column in the _gradebook_, double click the edge of that column header.
 
 ## Releasing Grades
 
