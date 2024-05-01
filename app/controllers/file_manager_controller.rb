@@ -197,7 +197,7 @@ private
         rescue StandardError
           '-'
         end,
-        relative: CGI.unescape("/file_manager/#{new_url}#{file}"),
+        relative: "/file_manager/#{new_url}#{file}",
         entry: "#{file}#{is_file ? '' : '/'}",
         absolute: abs_path_str,
         instructor: inst,
