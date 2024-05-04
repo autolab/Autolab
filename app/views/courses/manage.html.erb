@@ -62,6 +62,9 @@
               <%= link_to "Export course", export_course_path(@course),
                           { title: "Export course configurations and assessments" } %>
             </li>
+            <li>
+              <%= link_to "File Manager", path_file_manager_index_path(@course.name), { title: "File manager" } %>
+            </li>
 
             <li class="collection-item red-text danger-bottom no-hover"><h4>Danger Zone</h4></li>
             <li class="danger-side">

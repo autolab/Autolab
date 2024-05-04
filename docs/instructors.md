@@ -182,7 +182,7 @@ Displays files within a course and allows you to rename, delete, and add files a
 
 You can view all courses that you are an instructor of and all associated files.
 
-You can access the File Manager via the Manage Autolab dropdown.
+You can access the File Manager under Admin Course after clicking Manage Course.
 
 Note:
 

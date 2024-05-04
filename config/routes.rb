@@ -76,10 +76,10 @@ Rails.application.routes.draw do
       post 'upload', to: 'file_manager#upload'
       post '/', to: 'file_manager#upload'
       post 'download_tar', to: 'file_manager#download_tar'
-      get ':path', to: 'file_manager#index', constraints: { path: /.+/ }, as: :path_file_manager
-      put ':path', to: 'file_manager#rename', constraints: { path: /.+/ }, as: :rename_file_manager
-      post ':path', to: 'file_manager#upload', constraints: { path: /.+/ }, as: :upload_file_manager
-      delete ':path', to: 'file_manager#delete', constraints: { path: /.+/ }, as: :delete_file_manager
+      get ':path', to: 'file_manager#index', constraints: { path: /.+/ }, as: :path
+      put ':path', to: 'file_manager#rename', constraints: { path: /.+/ }, as: :rename
+      post ':path', to: 'file_manager#upload', constraints: { path: /.+/ }, as: :upload_path
+      delete ':path', to: 'file_manager#delete', constraints: { path: /.+/ }, as: :delete
     end
   end
 
