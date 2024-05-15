@@ -158,8 +158,10 @@
   });
 
   myLayout.on( 'stateChanged', function(){
-    var state = JSON.stringify( myLayout.toConfig() );
-    localStorage.setItem( 'savedState', state );
+    if (myLayout.isInitialised) {
+      var state = JSON.stringify( myLayout.toConfig() );
+      localStorage.setItem( 'savedState', state );
+    }
     resizeGradeList();
   });
 
