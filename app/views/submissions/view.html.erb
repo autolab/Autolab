@@ -59,7 +59,6 @@
           combinedCode += block.textContent + '\n';
       });
       let highlightedCode = hljs.highlightAuto(combinedCode).value;
-      console.log(combinedCode);
       let htmlObject = document.createElement('div');
       htmlObject.innerHTML = highlightedCode;
       // Get all spans that are highlighted as comments
@@ -69,7 +68,18 @@
       for (let con of content) {
           let innerSpans = con.innerText.split("\n").filter(line => line.trim() !== "");
           innerSpans.forEach((span) => {
-              splitContent.push(span);
+              // Check if span starts with #include, if so we highlight it seperately and check if its a comment
+              // If it is not a comment, do not add it into the comments array
+              if (span.startsWith("#include")) {
+                  let highlightedKeyWord = hljs.highlightAuto(span).value;
+                  let htmlTestDiv = document.createElement('div');
+                  htmlTestDiv.innerHTML = highlightedKeyWord;
+                  if (htmlTestDiv.getElementsByClassName('hljs-comment').length >= 1) {
+                      splitContent.push(span);
+                  }
+              } else {
+                  splitContent.push(span);
+              }
           });
       }
       // If a line of code has content that is highlighted as a comment above,
