@@ -56,7 +56,7 @@ class SchedulersController < ApplicationController
         begin
           require mod_name
           output = Updater.update(action.course)
-          if output
+          if output.respond_to?(:to_str)
             fork_log << "----- Script Output -----\n"
             fork_log << output
             fork_log << "\n----- End Script Output -----"
