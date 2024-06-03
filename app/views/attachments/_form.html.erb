@@ -42,7 +42,11 @@
       <%= f.datetime_select :release_at, help_text: "Release attachment after this time" %>
     </li>
     <li>
-      <%= link_to "Cancel", :back, class: "btn-flat" %>
+      <% if @is_assessment %>
+        <%= link_to "Cancel", course_assessment_path(@course, @assessment), class: "btn-flat" %>
+      <% else %>
+        <%= link_to "Cancel", course_path(@course), class: "btn-flat" %>
+      <% end %>
       <%= f.submit(@attachment.new_record? ? "Create Attachment" : "Save Changes") %>
     </li>
     <li style="margin-top: 20px">

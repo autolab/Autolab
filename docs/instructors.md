@@ -170,6 +170,8 @@ The _gradebook_ comes in two forms. The _student gradebook_ displays the grades 
 
 For the gradebook calculations, submissions are classified as one of three types: "Normal", "No Grade" or "Excused". A "No Grade" submission will show up in the gradebook as NG and a zero will be used when calculating averages. An "Excused" submission will show up in the gradebook as EXC and will not be used when calculating averages.
 
+To auto-expand a column in the _gradebook_, double-click the edge of that column header.
+
 ## Releasing Grades
 
 Manually assigned grades are by default not released, and therefore not visible to students. You can release grades on an individual basis while grading, or release all available grades in bulk by using the "Release all grades" option. You can also reverse this process using the "Withdraw all grades" option. (The word "withdraw" is perhaps unfortunate. No grades are ever deleted. They are simply withdrawn from the student's view.)
@@ -180,7 +182,7 @@ Displays files within a course and allows you to rename, delete, and add files a
 
 You can view all courses that you are an instructor of and all associated files.
 
-You can access the File Manager via the Manage Autolab dropdown.
+You can access the File Manager under Admin Course after clicking Manage Course.
 
 Note:
 

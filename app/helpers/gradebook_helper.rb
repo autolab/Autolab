@@ -15,15 +15,15 @@ module GradebookHelper
         sortable: true, width: 100, cssClass: "last_name",
         headerCssClass: "last_name" },
       { id: "course_number", name: "Course &#8470;", field: "course_number",
-        sortable: true, width: 100 },
+        sortable: true, width: 120 },
       { id: "lecture", name: "Lecture", field: "lecture",
         sortable: true, width: 100 },
       { id: "section", name: "Section", field: "section",
         sortable: true, width: 100 },
       { id: "grace_days", name: "Grace Days", field: "grace_days",
-        sortable: true, width: 100 },
+        sortable: true, width: 150 },
       { id: "late_days", name: "Penalty Late Days", field: "late_days",
-        sortable: true, width: 100 }
+        sortable: true, width: 150 }
     ]
 
     course.assessment_categories.each do |cat|
@@ -150,12 +150,12 @@ module GradebookHelper
 
   def formatted_status(status)
     case status
-      when Float
-        round status
-      when String
-        status
-      else
-        throw "FATAL: AUD status must be Float or String; was #{status.class}"
+    when Float
+      round status
+    when String
+      status
+    else
+      throw "FATAL: AUD status must be Float or String; was #{status.class}"
     end
   end
 

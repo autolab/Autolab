@@ -3,7 +3,7 @@
 <% content_for :stylesheets do %>
   <%= stylesheet_link_tag "instructor_gradebook" %>
   <%= stylesheet_link_tag "SlickGrid/2.02/slick.grid.css" %>
-  <%= stylesheet_link_tag "SlickGrid/2.02/controls/slick.columnpicker.css" %>
+  <%= stylesheet_link_tag "SlickGrid/2.02/plugins/slick.headermenu.css" %>
   <%= stylesheet_link_tag "icons" %>
 
   <!-- Temporary Bootstrap overrides -->
@@ -22,7 +22,8 @@
   <%= javascript_include_tag "SlickGrid/2.02/slick.core.js" %>
   <%= javascript_include_tag "SlickGrid/2.02/slick.grid.js" %>
   <%= javascript_include_tag "SlickGrid/2.02/slick.dataview.js" %>
-  <%= javascript_include_tag "SlickGrid/2.02/controls/slick.columnpicker.js" %>
+  <%= javascript_include_tag "SlickGrid/2.02/plugins/slick.headermenu.js" %>
+  <%= javascript_include_tag "SlickGrid/2.02/plugins/slick.autocolumnsize.js" %>
 
   <script type="text/javascript">
     var columns = <%== gradebook_columns(@matrix, @course).to_json %>
