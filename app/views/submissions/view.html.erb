@@ -61,17 +61,21 @@
       let highlightedCode = hljs.highlightAuto(combinedCode).value;
       let htmlObject = document.createElement('div');
       htmlObject.innerHTML = highlightedCode;
-      // Get all spans that are highlighted as comments
-      let content = htmlObject.getElementsByClassName('hljs-comment');
+      // Get all spans that are highlighted as comments or strings
+      let comments = htmlObject.getElementsByClassName('hljs-comment');
+      let strings = htmlObject.getElementsByClassName('hljs-string');
+      let content = [...comments, ...strings];
       let splitContent = [];
       // Split each span into multiple lines
       for (let con of content) {
           let innerSpans = con.innerText.split("\n").filter(line => line.trim() !== "");
           innerSpans.forEach((span) => {
-              // Check if span starts with #include, if so we highlight it seperately and check if its a comment
+              // Check if span starts with # and language is cpp or c
+              // if so we highlight it seperately and check if its a comment
               // If it is not a comment, do not add it into the comments array
-              if (span.startsWith("#include")) {
-                  let highlightedKeyWord = hljs.highlightAuto(span).value;
+              let highlightedSpan = hljs.highlightAuto(span);
+              if (span.startsWith("#") && (highlightedSpan.language === 'cpp' || highlightedSpan.language === 'c')) {
+                  let highlightedKeyWord = highlightedSpan.value;
                   let htmlTestDiv = document.createElement('div');
                   htmlTestDiv.innerHTML = highlightedKeyWord;
                   if (htmlTestDiv.getElementsByClassName('hljs-comment').length >= 1) {
