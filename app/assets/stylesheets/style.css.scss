@@ -913,9 +913,8 @@ input[type="text"],
 input[type="email"],
 input[type="password"],
 textarea {
-  height: auto;
+  height: 26px;
   margin-top: 0.2rem;
-  margin-bottom: 0.2rem;
   padding: 5px 0 5px 0;
   border-color: $autolab-highlight-gray;
   box-shadow: 0 1px 0 0 $autolab-highlight-gray;
