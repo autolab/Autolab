@@ -934,5 +934,12 @@ span > .material-icons {
   font-size: 14px !important;
   box-shadow: 0.5px 0.5px 0.5px 0.5px grey !important;
   border-color: white !important;
-} 
+}
 
+.hljs-comment span {
+  color: var($autolab-highlight-comments) !important;
+}
+
+.code-line div {
+  background: none !important;
+}
