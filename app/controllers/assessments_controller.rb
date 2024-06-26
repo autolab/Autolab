@@ -455,13 +455,15 @@ class AssessmentsController < ApplicationController
   end
 
   def grade
-    @problem = @assessment.problems.find_by(params[:problem])
+    @problem = @assessment.problems.find_by(id: params[:problem])
     if @problem.nil?
       flash[:error] = "Could not find problem #{params[:problem]}"
+      redirect_to(course_assessment_path(@course, @assessment)) && return
     end
-    @submission = @assessment.submissions.find_by(params[:submission])
+    @submission = @assessment.submissions.find_by(id: params[:submission])
     if @submission.nil?
       flash[:error] = "Could not find submission #{params[:submission]}"
+      redirect_to(course_assessment_path(@course, @assessment)) && return
     end
     # Shows a form which has the submission on top, and feedback on bottom
     begin
