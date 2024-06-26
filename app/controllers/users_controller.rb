@@ -128,7 +128,7 @@ class UsersController < ApplicationController
   # GET users/:id/edit
   action_auth_level :edit, :student
   def edit
-    user = User.find(params[:id])
+    user = User.find_by(id: params[:id])
     if user.nil?
       flash[:error] = "Failed to edit user: user does not exist."
       redirect_to(users_path) && return
@@ -195,7 +195,7 @@ class UsersController < ApplicationController
   # PATCH users/:id/
   action_auth_level :update, :student
   def update
-    user = User.find(params[:id])
+    user = User.find_by(id: params[:id])
     if user.nil?
       flash[:error] = "Failed to update user: user does not exist."
       redirect_to(users_path) && return
@@ -238,7 +238,7 @@ class UsersController < ApplicationController
       redirect_to(users_path) && return
     end
 
-    user = User.find(params[:id])
+    user = User.find_by(id: params[:id])
     if user.nil?
       flash[:error] = "Failed to delete user: user doesn't exist."
       redirect_to(users_path) && return
@@ -405,7 +405,7 @@ class UsersController < ApplicationController
   end
 
   def update_password_for_user
-    @user = User.find(params[:id])
+    @user = User.find_by(id: params[:id])
     return if params[:user].nil? || params[:user].is_a?(String) || @user.nil?
 
     if params[:user][:password] != params[:user][:password_confirmation]
@@ -474,7 +474,7 @@ private
   end
 
   def set_user
-    @user = User.find(params[:id])
+    @user = User.find_by(id: params[:id])
     return unless @user.nil?
 
     flash[:error] = "User doesn't exist."
