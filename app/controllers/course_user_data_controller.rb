@@ -174,28 +174,6 @@ class CourseUserDataController < ApplicationController
     end
   end
 
-  action_auth_level :destroy, :instructor
-  def destroy
-    @destroyCUD = @course.course_user_data.find_by(id: params[:id])
-    if @destroyCUD && @destroyCUD != @cud && params[:yes1] && params[:yes2] && params[:yes3]
-      @destroyCUD.destroy # awwww!!!
-    end
-    flash[:success] = "Success: User #{@editCUD.email} has been deleted from the course"
-    redirect_to([:users, @course]) && return
-  end
-
-  # Non-RESTful paths below
-
-  # this GET page confirms that the instructor wants to destroy the user
-  action_auth_level :destroyConfirm, :instructor
-  def destroyConfirm
-    @destroyCUD = @course.course_user_data.find_by(id: params[:id])
-    return unless @destroyCUD.nil?
-
-    flash[:error] = "The user to be deleted is not in the course"
-    redirect_to(action: :index) && return
-  end
-
   action_auth_level :sudo, :instructor
   def sudo
     unless @cud.can_sudo? || session[:sudo]
