@@ -143,19 +143,18 @@ class SubmissionsController < ApplicationController
   ## THIS MARKS THE END OF RESTful ROUTES
   ##
 
-  # TODONE?  THIS MAY DELETE MOST OF YOUR USERS.  USE WITH CAUTION.
   action_auth_level :missing, :instructor
   def missing
     @submissions = @assessment.submissions
 
-    cuds = @course.students.to_a
+    missing_submission_students = @course.students.to_a
     @missing = []
 
     @submissions.each do |submission|
-      cuds.delete(submission.course_user_datum)
+      missing_submission_students.delete(submission.course_user_datum)
     end
 
-    cuds.each_with_index do |c, i|
+    missing_submission_students.each_with_index do |c, i|
       @missing[i] = {}
       @missing[i][:id] = c.id
       @missing[i][:email] = c.email
