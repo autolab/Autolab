@@ -115,6 +115,14 @@ Please feel free to use Autolab at your school/organization. If you run into any
 
 
 ## Changelog
+
+### [v3.0.0](https://github.com/autolab/Autolab/releases/tag/v3.0.0) (2024/07/24) UI-based deployment configuration, Simple File Manager, Export / Import Course, Tango, Grading Improvements
+- Configuration of authentication, Github, SMTP moved to UI
+- Simple File Manager to manage files in courses through a UI
+- Import / Export Course data in one go, with improved assessment importing
+- Improvements to grading UI/UX such as an improved Gradebook, Code Diff Viewer, Starred Problems
+- Improvements to autograding with direct Docker file uploading and the option to selectively disable network access
+
 ### [v2.12.0](https://github.com/autolab/Autolab/releases/tag/v2.12.0) (2024/01/20) Attachment categories and visual cues
 - Ruby upgraded to 3.2.2
 - Rails upgraded to 6.1.7.6
