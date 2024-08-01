@@ -430,7 +430,7 @@ class Assessment < ApplicationRecord
   end
 
   def date_to_s(date)
-    date.getlocal.strftime("%b %e at %l:%M%P")
+    date.strftime("%b %e at %l:%M%P")
   end
 
   def load_dir_to_tar(dir_path, asmt_dir, tar, filters = [], export_dir = "")
