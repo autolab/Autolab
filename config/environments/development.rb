@@ -111,7 +111,7 @@ Rails.application.configure do
       address: config_hash['address'],
       port: config_hash['port'],
       enable_starttls_auto: config_hash['enable_starttls_auto'],
-      authentication: config_hash['plain'],
+      authentication: config_hash['authentication'],
       user_name: config_hash['user_name'],
       password: config_hash['password']
     }
