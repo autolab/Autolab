@@ -22,6 +22,7 @@ nav:
         - Autolab Frontend:
             - Guide for Instructors: instructors.md
             - Guide for Lab Authors: lab.md
+            - Lab Hooks: lab-hooks.md
             - Features:
                 - Formatted Feedback: features/formatted-feedback.md
                 - Scoreboards: features/scoreboards.md
@@ -51,21 +52,22 @@ theme:
     features:
         - navigation.tabs
         - toc.integrate
+        - content.code.copy
 repo_name: "Autolab"
 repo_url: "https://github.com/Autolab/autolab"
 extra:
     social:
         - icon: fontawesome/brands/github-alt
           link: https://github.com/Autolab
-        - icon: fontawesome/brands/facebook
-          link: "https://facebook.com/autolabproject"
+        - icon: fontawesome/brands/slack
+          link: https://communityinviter.com/apps/autolab/autolab-project
     analytics:
         provider: google
         property: G-PH5EYTKBNQ
 markdown_extensions:
     - admonition
+    - pymdownx.superfences
     - codehilite
-      #linenums: true
 strict: true
 plugins:
   - search

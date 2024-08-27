@@ -47,15 +47,14 @@ In the `hello` lab, students are asked to write a file called `hello.c`. The aut
 **Try submitting to the autograded hello lab**
 
 1. Create and submit a `hello.c` file. 
-       
-        //hello.c
-        #include <stdio.h>
-        int main()
-        {
-                printf("Hello, World!");
-                return 0;
-        }
-
+   ```c
+   #include <stdio.h>
+   int main()
+   {
+          printf("Hello, World!");
+          return 0;
+   }
+   ```
 2. Refresh the submitted entries page to see the autograded score appear
 3. Click on a sub score, in this case the `100.0` under the `Correctness` heading, to see the output from the autograder.
 

@@ -1,0 +1,29 @@
+<% @title = "Configure Autolab" %>
+<% content_for :javascripts do %>
+  <%= javascript_include_tag "autolab_config" %>
+  <%= stylesheet_link_tag "lti_config" %>
+<% end %>
+
+<% active_tab = params.with_defaults(active: 'github')[:active] %>
+<div class="row">
+  <div class="col s12">
+    <ul class="tabs" id="config-tabs">
+      <li class="tab col s3"><a <% if active_tab == 'github' %> class="active" <% end %> href="#github">Github Integration</a></li>
+      <li class="tab col s3"><a <% if active_tab == 'smtp' %> class="active" <% end %> href="#smtp">SMTP Config</a></li>
+      <li class="tab col s3"><a <% if active_tab == 'lti' %> class="active" <% end %> href="#lti">LTI Integration</a></li>
+      <li class="tab col s3"><a <% if active_tab == 'oauth' %> class="active" <% end %> href="#oauth">OAuth Integration</a></li>
+    </ul>
+  </div>
+  <div id="github" class="col s12">
+    <%= render partial: 'github_integration' %>
+  </div>
+  <div id="smtp" class="col s12">
+    <%= render partial: 'smtp_integration' %>
+  </div>
+  <div id="lti" class="col s12">
+    <%= render partial: 'lti_integration' %>
+  </div>
+  <div id="oauth" class="col s12">
+    <%= render partial: 'oauth_integration' %>
+  </div>
+</div>

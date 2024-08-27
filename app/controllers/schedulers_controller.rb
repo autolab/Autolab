@@ -56,7 +56,7 @@ class SchedulersController < ApplicationController
         begin
           require mod_name
           output = Updater.update(action.course)
-          if output
+          if output.respond_to?(:to_str)
             fork_log << "----- Script Output -----\n"
             fork_log << output
             fork_log << "\n----- End Script Output -----"
@@ -86,8 +86,8 @@ class SchedulersController < ApplicationController
 
   action_auth_level :update, :instructor
   def update
-    @scheduler = Scheduler.find(params[:id])
-    if @scheduler.update(scheduler_params)
+    @scheduler = Scheduler.find_by(id: params[:id])
+    if @scheduler&.update(scheduler_params)
       flash[:success] = "Scheduler updated."
       redirect_to(course_schedulers_path(@course))
     else
@@ -98,8 +98,8 @@ class SchedulersController < ApplicationController
 
   action_auth_level :destroy, :instructor
   def destroy
-    @scheduler = Scheduler.find(params[:id])
-    if @scheduler.destroy
+    @scheduler = Scheduler.find_by(id: params[:id])
+    if @scheduler&.destroy
       flash[:success] = "Scheduler destroyed."
       redirect_to(course_schedulers_path(@course))
     else

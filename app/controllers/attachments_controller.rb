@@ -96,13 +96,9 @@ class AttachmentsController < ApplicationController
       flash[:success] = "Attachment updated"
       redirect_to_index
     else
-      error_msg = "Attachment update failed:"
-      if !@attachment.valid?
-        @attachment.errors.full_messages.each do |msg|
-          error_msg += "<br>#{msg}"
-        end
-      else
-        error_msg += "<br>Unknown error"
+      error_msg = "Attachment update failed."
+      @attachment.errors.full_messages.each do |msg|
+        error_msg += "<br>#{msg}"
       end
       flash[:error] = error_msg
       flash[:html_safe] = true
@@ -131,9 +127,11 @@ private
 
   def set_attachment
     @attachment = if @is_assessment
-                    @course.attachments.find_by(assessment_id: @assessment.id, id: params[:id])
+                    @course.attachments.where(assessment_id: @assessment.id).friendly.find(
+                      params[:id], allow_nil: true
+                    )
                   else
-                    @course.attachments.find_by(id: params[:id])
+                    @course.attachments.friendly.find(params[:id], allow_nil: true)
                   end
 
     return unless @attachment.nil?
