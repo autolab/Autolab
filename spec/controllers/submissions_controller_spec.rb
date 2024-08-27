@@ -264,8 +264,7 @@ RSpec.describe SubmissionsController, type: :controller do
         sign_in(user)
         get :downloadAll, params: { course_name: @course.name, assessment_name: @assessment.name }
         expect(response).to be_successful
-        File.binwrite("tmp/test2.zip", response.parsed_body)
-        Zip::File.open("tmp/test2.zip") do |zip_file|
+        Zip::File.open_buffer(response.parsed_body) do |zip_file|
           zip_file.each do |entry|
             if entry.file?
               content = entry.get_input_stream.read
@@ -273,7 +272,6 @@ RSpec.describe SubmissionsController, type: :controller do
             end
           end
         end
-        File.delete("tmp/test2.zip")
       end
     end
   end
@@ -287,11 +285,8 @@ RSpec.describe SubmissionsController, type: :controller do
         get :download, params: { course_name: @course.name, assessment_name: @assessment.name,
                                  id: get_first_submission_by_assessment(@assessment).id }
         expect(response).to be_successful
-        File.binwrite("tmp/test.c", response.parsed_body)
-        File.open("tmp/test.c") do |file|
-          file_data = file.read
-          expect(file_data).to match(/Hello Dave/m)
-        end
+        file_data = response.parsed_body
+        expect(file_data).to match(/Hello Dave/m)
       end
     end
     context "when user is student and downloads own submission" do
@@ -302,11 +297,8 @@ RSpec.describe SubmissionsController, type: :controller do
         get :download, params: { course_name: @course.name, assessment_name: @assessment.name,
                                  id: submission.id }
         expect(response).to be_successful
-        File.binwrite("tmp/test.c", response.parsed_body)
-        File.open("tmp/test.c") do |file|
-          file_data = file.read
-          expect(file_data).to match(/Hello Dave/m)
-        end
+        file_data = response.parsed_body
+        expect(file_data).to match(/Hello Dave/m)
       end
     end
   end
