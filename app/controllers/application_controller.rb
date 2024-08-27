@@ -187,7 +187,7 @@ protected
     end
 
     # check if course was disabled
-    if @course.disabled? && !@cud.has_auth_level?(:instructor)
+    if @course.is_disabled? && !@cud.has_auth_level?(:instructor)
       flash[:error] = "Your course has been disabled by your instructor.
                        Please contact them directly if you have any questions"
       redirect_to(controller: :courses, action: :index) && return
@@ -301,7 +301,7 @@ protected
     @breadcrumbs = []
     return unless @course
 
-    @breadcrumbs << if @course.disabled?
+    @breadcrumbs << if @course.is_disabled?
                       (view_context.link_to "#{@course.full_name} (Course Disabled)",
                                             [@course], id: "courseTitle")
                     else

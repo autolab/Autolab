@@ -4,8 +4,9 @@
 //= link highlightjs-styles/vs.css
 //= link assessments/create_edit.css
 //= link SlickGrid/2.02/slick.grid.css
-//= link SlickGrid/2.02/controls/slick.columnpicker.css
+//= link SlickGrid/2.02/plugins/slick.headermenu.js
+//= link SlickGrid/2.02/plugins/slick.headermenu.css
+//= link SlickGrid/2.02/plugins/slick.autocolumnsize.js
 //= link SlickGrid/2.02/slick.core.js
 //= link SlickGrid/2.02/slick.grid.js
 //= link SlickGrid/2.02/slick.dataview.js
-//= link SlickGrid/2.02/controls/slick.columnpicker.js

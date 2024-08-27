@@ -686,14 +686,6 @@ ul.moss-inner-list > li > input[type="checkbox"]:checked ~ div {
   text-decoration: underline;
 }
 
-div.field_with_errors {
-  display: inline;
-}
-
-div.field_with_errors {
-  display: inline;
-}
-
 .table-info {
   margin-bottom: auto;
   display: flex;
@@ -996,6 +988,13 @@ input[type="search"] {
   label.active {
     font-size: 18px;
   }
+}
+
+#error-block {
+  color: red;
+  font-size: 15px;
+  margin-top: 0;
+  margin-bottom: 10px;
 }
 
 .help-block,
@@ -1483,6 +1482,10 @@ table.sub td, th {
 
 .submission-history-button:hover {
   color: white !important;
+}
+
+.oauth-btn:hover {
+  background-color: $autolab-subtle-gray !important;
 }
 
 .error-header {

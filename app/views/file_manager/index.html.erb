@@ -1,0 +1,85 @@
+<% content_for :javascripts do %>
+  <%= javascript_include_tag "file_manager.js" %>
+<% end %>
+
+<% content_for :stylesheets do %>
+  <%= stylesheet_link_tag "file_manager" %>
+  <%= stylesheet_link_tag "style" %>
+<% end %>
+
+<div class="div-row">
+  <%= form_tag({}, multipart: true) do %>
+    <span class="btn button-file">
+        <i class="material-icons left">cloud_upload</i>
+        Upload Files
+        <input type="file" name="files" id="fileInput" multiple
+               onchange="uploadAllFiles('<%= @directory[1][:relative] %>')">
+      </span>
+  <% end %>
+  <span class="btn button-file">
+    <i class="material-icons left">folder</i>
+    Create Folder
+    <input type="submit" id="create-folder"
+           onclick="createFolder('<%= @directory[1][:relative] %>')" class="btn primary">
+  </span>
+  <span class="btn button-file" id='download-parent'>
+    <i class="material-icons left">download</i>
+    Download Selected
+    <input type="submit" id="download-selected" class="btn primary" onclick="handleDownloadClick()">
+  </span>
+  <span class="btn button-file" id='delete-parent'>
+    <i class="material-icons left">delete</i>
+    Delete Selected
+    <input type="submit" id="delete-selected" class="btn primary" onclick="handleDeleteSelected()">
+  </span>
+</div>
+<div class="table-scroll">
+  <table class="table">
+    <thead>
+    <tr>
+      <th>
+        <%= check_box_tag "check-all", "check-all", false, { class: "check-all" } %>
+      </th>
+      <th>Filename</th>
+      <th>Bytes</th>
+      <th>Date</th>
+      <th>Rename</th>
+      <th>Delete</th>
+    </tr>
+    </thead>
+    <tbody>
+    <% @directory.each do |entry| %>
+      <% if entry[:instructor] && entry[:entry] != './' && entry[:entry] != '../' %>
+        <tr class="table-row-center">
+          <td>
+            <%= check_box_tag 'selected_files[]', entry[:relative], false, { class: "check", html: { data: { path: entry[:relative] } } } %>
+          <td>
+            <%= link_to entry[:relative].to_s do %>
+              <i class='material-icons left middle'><%= entry[:type] == :file ? 'article' : 'folder' %></i>
+              <span><%= entry[:entry] %></span>
+            <% end %>
+          </td>
+          <td>
+            <%= entry[:size] %>
+          </td>
+          <td>
+            <%= entry[:date] %>
+          </td>
+          <td class="table-row-icon">
+            <%= link_to "#", id: "rename-file", onclick: "rename('#{entry[:relative]}')" do %>
+              <i class='material-icons left align-middle'>drive_file_rename_outline</i>
+              Rename
+            <% end %>
+          </td>
+          <td>
+            <%= link_to "#", id: "delete-file", onclick: "selectDeleteSelected('#{entry[:relative]}')" do %>
+              <i class='material-icons left align-middle'>delete</i>
+              Delete
+            <% end %>
+          </td>
+        </tr>
+      <% end %>
+    <% end %>
+    </tbody>
+  </table>
+</div>

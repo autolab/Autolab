@@ -63,8 +63,8 @@ on Autolab's end as well.
     {
       "title": "Autolab Integration",
       "description": "Autolab is an open-source autograding service developed by students, for students",
-      "oidc_initiation_url":"https://<your-autolab-domain>/lti_launch/oidc_login/",
-      "target_link_uri":"https://<your-autolab-domain>/lti_launch/launch/",
+      "oidc_initiation_url":"https://<your-autolab-domain>/lti_launch/oidc_login",
+      "target_link_uri":"https://<your-autolab-domain>/lti_launch/launch",
       "scopes": [
         "https://purl.imsglobal.org/spec/lti-nrps/scope/contextmembership.readonly"
       ],
@@ -83,7 +83,7 @@ on Autolab's end as well.
                 "enabled": true,
                 "placement":"course_navigation",
                 "message_type": "LtiResourceLinkRequest",
-                "target_link_uri": "https://<your-autolab-domain>/lti_launch/launch/",
+                "target_link_uri": "https://<your-autolab-domain>/lti_launch/launch",
                 "icon_url":"<your-icon>",
                 "windowTarget": "_blank"
                }

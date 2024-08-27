@@ -13,12 +13,12 @@ class LtiNrpsController < ApplicationController
   action_auth_level :request_access_token, :instructor
   def request_access_token
     # get private key from JSON file to sign Autolab's client assertion as a JWK
-    unless File.exist?("#{Rails.configuration.lti_config_location}/lti_tool_jwk.json")
+    unless File.size?("#{Rails.configuration.config_location}/lti_tool_jwk.json")
       flash[:error] = "Autolab's JWK JSON file was not found"
       redirect_to([:users, @course]) && return
     end
 
-    jwk_json = File.read("#{Rails.configuration.lti_config_location}/lti_tool_jwk.json")
+    jwk_json = File.read("#{Rails.configuration.config_location}/lti_tool_jwk.json")
     begin
       jwk_hash = JSON.parse(jwk_json)
     rescue JSON::ParserError => e
@@ -28,7 +28,7 @@ class LtiNrpsController < ApplicationController
     end
     # load LTI configuration from file
     lti_config_hash =
-      YAML.safe_load(File.read("#{Rails.configuration.lti_config_location}/lti_config.yml"))
+      YAML.safe_load(File.read("#{Rails.configuration.config_location}/lti_config.yml"))
 
     if jwk_hash['kid'].blank? || jwk_hash['alg'].blank?
       flash[:error] = "Autolab's JWK JSON file does not contain kid or alg"
@@ -89,7 +89,7 @@ class LtiNrpsController < ApplicationController
   # NRPS endpoint for Autolab to send an NRPS request to LTI Advantage Platform
   action_auth_level :sync_roster, :instructor
   def sync_roster
-    lcd = LtiCourseDatum.find(params[:lcd_id])
+    lcd = LtiCourseDatum.find_by(id: params[:lcd_id])
     if lcd.nil? || lcd.membership_url.nil? || lcd.course_id.nil?
       raise LtiLaunchController::LtiError.new("Unable to update roster", :bad_request)
     end
@@ -97,7 +97,7 @@ class LtiNrpsController < ApplicationController
     @lti_context_membership_url = lcd.membership_url
     @course = lcd.course
 
-    unless File.exist?("#{Rails.configuration.lti_config_location}/lti_config.yml")
+    unless File.size?("#{Rails.configuration.config_location}/lti_config.yml")
       flash[:error] = "Could not find LTI Configuration"
       redirect_to([:users, @course]) && return
     end

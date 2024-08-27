@@ -52,7 +52,7 @@ To set Autolab up to use a custom SMTP Server, you will need to make edits to th
                 address:              'smtp.example.com',
                 port:                 25,
                 enable_starttls_auto: true,
-                authentication:       'login',
+                authentication:       'plain', # Other options include: 'login', 'cram_md5'
                 user_name:            'example',
                 password:             'example',
                 domain:               'example.com',

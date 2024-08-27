@@ -52,6 +52,59 @@
       var headerPositionStr = null;
     <% end %>
     hljs.initHighlightingOnLoad();
+    function highlightComments () {
+      // Highlights all code as a cohesive block
+      let combinedCode = '';
+      document.querySelectorAll('pre code').forEach((block) => {
+          combinedCode += block.textContent + '\n';
+      });
+      let highlightedCode = hljs.highlightAuto(combinedCode).value;
+      let htmlObject = document.createElement('div');
+      htmlObject.innerHTML = highlightedCode;
+      // Get all spans that are highlighted as comments or strings
+      let comments = htmlObject.getElementsByClassName('hljs-comment');
+      let strings = htmlObject.getElementsByClassName('hljs-string');
+      let content = [...comments, ...strings];
+      let splitContent = [];
+      // Split each span into multiple lines
+      for (let con of content) {
+          let innerSpans = con.innerText.split("\n").filter(line => line.trim() !== "");
+          innerSpans.forEach((span) => {
+              // Check if span starts with # and language is cpp or c
+              // if so we highlight it seperately and check if its a comment
+              // If it is not a comment, do not add it into the comments array
+              let highlightedSpan = hljs.highlightAuto(span);
+              if (span.startsWith("#") && (highlightedSpan.language === 'cpp' || highlightedSpan.language === 'c')) {
+                  let highlightedKeyWord = highlightedSpan.value;
+                  let htmlTestDiv = document.createElement('div');
+                  htmlTestDiv.innerHTML = highlightedKeyWord;
+                  if (htmlTestDiv.getElementsByClassName('hljs-comment').length >= 1) {
+                      splitContent.push(span);
+                  }
+              } else {
+                  splitContent.push(span);
+              }
+          });
+      }
+      // If a line of code has content that is highlighted as a comment above,
+      // we wrap the content with the hljs-comment class to highlight it
+      document.querySelectorAll('pre code').forEach((block) => {
+          if (block.textContent !== null && block.textContent !== "" && splitContent.includes(block.textContent.replace(/\n/g, ''))) {
+              let escapedText = document.createTextNode(block.textContent);
+              let codeElement = document.createElement('span');
+              codeElement.className = 'hljs-comment';
+              codeElement.appendChild(escapedText);
+              block.innerHTML = '';
+              block.appendChild(codeElement);
+          }
+      });
+    }
+    window.addEventListener('DOMContentLoaded', () => {
+        highlightComments();
+    });
+    window.navigation.addEventListener("navigate", () => {
+        highlightComments();
+    });
     PDFJS.workerSrc = "<%= asset_url 'pdf.worker.js' %>";
   </script>
   <%= render partial: "golden-layout" %>
@@ -70,12 +123,12 @@
       <% end %>
     </div>
     <div class="col s8 center-align valign-wrapper submission-controls">
-        <span title="student # / total students">[<%= @curSubmissionIndex + 1 %>/<%= @latestSubmissions.length %>] <%= @submission.course_user_datum.email %>,</span>
-        <%= render "version_dropdown" %>
-        <%= render "version_links" %>
+      <span title="student # / total students">[<%= @curSubmissionIndex + 1 %>/<%= @latestSubmissions.length %>] <%= @submission.course_user_datum.email %>,</span>
+      <%= render "version_dropdown" %>
+      <%= render "version_links" %>
       <a href="<%= download_file_url(@submission) %>" class="btn small" title="Download">Download</a>
       <button class="btn small" onclick="resetLayout()">Reset Layout</button>
-        <%= render "release_grades" %>
+      <%= render "release_grades" %>
     </div>
 
     <div class="col s2 center-align">

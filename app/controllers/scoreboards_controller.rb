@@ -347,7 +347,7 @@ private
 
       # In this case, we have an autograded lab for which the
       # instructor has created a custom column specification.  By
-      # default, we sort the first three columns from left to right
+      # default, we sort the columns from left to right
       # in descending order. Lab authors can modify the default
       # direction with the "asc" key in the column spec.
     else
