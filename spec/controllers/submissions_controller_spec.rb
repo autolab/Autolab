@@ -111,7 +111,7 @@ RSpec.describe SubmissionsController, type: :controller do
   end
 
   shared_examples "destroyConfirm_failure" do
-    it "renders with success" do
+    it "renders with failure" do
       sign_in(user)
       get :destroyConfirm, params: { course_name: @course.name, assessment_name: @assessment.name,
                                      id: get_first_submission_by_assessment(@assessment).id }
@@ -260,7 +260,7 @@ RSpec.describe SubmissionsController, type: :controller do
     include_context "controllers shared context"
     context "when user is Instructor of class with submissions" do
       let!(:user) { instructor_user }
-      it "downloads all submissions for an assessmetn" do
+      it "downloads all submissions for an assessment" do
         sign_in(user)
         get :downloadAll, params: { course_name: @course.name, assessment_name: @assessment.name }
         expect(response).to be_successful
@@ -315,7 +315,7 @@ RSpec.describe SubmissionsController, type: :controller do
     include_context "controllers shared context"
     context "when user is student" do
       let!(:user) { student_user }
-      it "gets missing submissions" do
+      it "fails to get missing submissions" do
         sign_in(user)
         get :missing, params: { course_name: @course.name, assessment_name: @assessment.name }
         expect(response).not_to be_successful
@@ -324,7 +324,7 @@ RSpec.describe SubmissionsController, type: :controller do
     end
     context "when user is Instructor of class with submissions" do
       let!(:user) { instructor_user }
-      it "fails to render" do
+      it "doesn't show missing submissions" do
         sign_in(user)
         get :missing, params: { course_name: @course.name, assessment_name: @assessment.name }
         expect(response).to be_successful
@@ -338,7 +338,7 @@ RSpec.describe SubmissionsController, type: :controller do
     context "when user is Instructor of asmt no submissions" do
       let!(:hash) { create_course_no_submissions_hash }
       let!(:user) { instructor_user }
-      it "gets missing subs" do
+      it "shows missing submissions" do
         sign_in(user)
         get :missing, params: { course_name: @course.name, assessment_name: @assessment.name }
         expect(response).to be_successful
