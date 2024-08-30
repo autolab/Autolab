@@ -75,7 +75,7 @@
             <% end %>
           <% else %>
             <%# this should be guaranteed to be an array, but for redundancy, check that entry is array %>
-            <% if grade[:entry].is_a?(Array) && grade[:entry].length > i %>
+            <% if grade[:entry].is_a?(Array) %>
               <% grade[:entry].each do |column| %>
                 <td><%= column %></td>
               <% end %>
