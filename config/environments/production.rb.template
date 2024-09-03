@@ -76,7 +76,7 @@ Autolab3::Application.configure do
   # config.active_record.auto_explain_threshold_in_seconds = 0.5
 
   # default from 
-  ActionMailer::Base.default :from => ENV.fetch('SMTP_DEFAULT_FROM','something@example.com') 
+  ActionMailer::Base.default :from => config_hash['from']
 
   # option for using sendmail
   # config.action_mailer.delivery_method = :sendmail
