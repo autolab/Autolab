@@ -4,6 +4,7 @@ Autolab requires mailing to allow users to register accounts and reset passwords
 
 We intend these instructions mainly for production usage.
 
+## Mailing for Autolab version >=3.0.0
 To set up Autolab (>=3.0.0) for a custom SMTP Server, configure settings by clicking `Manage Autolab` > `Configure Autolab` > `SMTP Config`.
 
 ## I don't have a domain name, will mailing work?
