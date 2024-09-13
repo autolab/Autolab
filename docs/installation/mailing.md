@@ -2,9 +2,9 @@
 
 Autolab requires mailing to allow users to register accounts and reset passwords. You will also be able to make announcements through Autolab as well. The recommended approach is to setup Autolab to use a SMTP server, such as [mailgun](https://mailgun.com), [SendGrid](https://sendgrid.com), [Amazon SES](https://aws.amazon.com/ses/) or any other valid SMTP mail servers to send out email.
 
-We intend this instructions mainly for production usage.
+We intend these instructions mainly for production usage.
 
-To set up Autolab for a custom SMTP Server, configure settings by clicking `Manage Autolab` > `Configure Autolab` > `SMTP Config`.
+To set up Autolab (>=3.0.0) for a custom SMTP Server, configure settings by clicking `Manage Autolab` > `Configure Autolab` > `SMTP Config`.
 
 ## I don't have a domain name, will mailing work?
 Mailing has been tested to work with SendGrid without a domain name (using the IP of the server as the domain name for the purposes of the configuration above), although the absence of a domain name will likely result in the email to be flagged as spam. For the purpose of testing, a testing mailbox service like [MailTrap](https://mailtrap.io/) is recommended.
