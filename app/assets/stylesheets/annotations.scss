@@ -249,6 +249,10 @@
   border: 1px solid red;
 }
 
+.code-table .annotation-line .annotation-form .row {
+  margin-bottom: 0;
+}
+
 .code-table .annotation-line .annotation-preview {
   border: 1px solid $autolab-highlight-gray;
   padding: 5px;
