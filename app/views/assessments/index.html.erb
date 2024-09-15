@@ -72,6 +72,10 @@
     .collection-item {
       overflow: auto;
     }
+
+    .card-content.category-card {
+        padding: 15px 24px;
+    }
   </style>
   <%= stylesheet_link_tag "assessments" %>
   <%= stylesheet_link_tag "assessment_date" %>
@@ -144,7 +148,7 @@
         <% if asmts.any? %>
           <div class="col s12 l6 assessments">
             <div class="card hoverable date">
-              <div class="card-content red darken-3">
+              <div class="category-card card-content red darken-3">
                 <span class="card-title white-text"><%= cat %></span>
               </div>
 
