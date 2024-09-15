@@ -169,6 +169,8 @@ GEM
       sassc (>= 2.2)
       sassc-rails (>= 2.1)
       sprockets-rails (>= 2.1.3)
+    friendly_id (5.5.1)
+      activerecord (>= 4.0.0)
     globalid (1.2.1)
       activesupport (>= 6.1)
     hashdiff (1.1.0)
@@ -242,11 +244,11 @@ GEM
     newrelic_rpm (9.6.0)
       base64
     nio4r (2.7.0)
-    nokogiri (1.16.2-arm64-darwin)
+    nokogiri (1.16.5-arm64-darwin)
       racc (~> 1.4)
-    nokogiri (1.16.2-x86_64-darwin)
+    nokogiri (1.16.5-x86_64-darwin)
       racc (~> 1.4)
-    nokogiri (1.16.2-x86_64-linux)
+    nokogiri (1.16.5-x86_64-linux)
       racc (~> 1.4)
     oauth2 (2.0.9)
       faraday (>= 0.17.3, < 3.0)
@@ -304,7 +306,7 @@ GEM
       stringio
     public_suffix (5.0.4)
     racc (1.7.3)
-    rack (2.2.8)
+    rack (2.2.9)
     rack-attack (6.7.0)
       rack (>= 1.0, < 4)
     rack-protection (3.2.0)
@@ -343,13 +345,14 @@ GEM
       thor (~> 1.0)
     rainbow (3.1.1)
     rake (13.1.0)
-    rdoc (6.6.2)
+    rdoc (6.6.3.1)
       psych (>= 4.0.0)
     regexp_parser (2.8.3)
     responders (3.1.1)
       actionpack (>= 5.2)
       railties (>= 5.2)
-    rexml (3.2.6)
+    rexml (3.3.6)
+      strscan
     rouge (4.2.0)
     rspec-core (3.12.2)
       rspec-support (~> 3.12.0)
@@ -430,6 +433,7 @@ GEM
     sqlite3 (1.5.1)
       mini_portile2 (~> 2.8.0)
     stringio (3.1.0)
+    strscan (3.1.0)
     terser (1.1.20)
       execjs (>= 0.3.0, < 3)
     thin (1.8.2)
@@ -460,7 +464,7 @@ GEM
     websocket-extensions (0.1.5)
     xpath (3.2.0)
       nokogiri (~> 1.8)
-    yard (0.9.34)
+    yard (0.9.36)
     zeitwerk (2.6.12)
 
 PLATFORMS
@@ -491,6 +495,7 @@ DEPENDENCIES
   exception_notification (>= 4.1.0)
   factory_bot_rails
   fomantic-ui-sass (= 2.8.8.1)
+  friendly_id (~> 5.5.0)
   httparty
   jbuilder (>= 2.0)
   jquery-rails

@@ -170,6 +170,8 @@ The _gradebook_ comes in two forms. The _student gradebook_ displays the grades 
 
 For the gradebook calculations, submissions are classified as one of three types: "Normal", "No Grade" or "Excused". A "No Grade" submission will show up in the gradebook as NG and a zero will be used when calculating averages. An "Excused" submission will show up in the gradebook as EXC and will not be used when calculating averages.
 
+To auto-expand a column in the _gradebook_, double-click the edge of that column header.
+
 ## Releasing Grades
 
 Manually assigned grades are by default not released, and therefore not visible to students. You can release grades on an individual basis while grading, or release all available grades in bulk by using the "Release all grades" option. You can also reverse this process using the "Withdraw all grades" option. (The word "withdraw" is perhaps unfortunate. No grades are ever deleted. They are simply withdrawn from the student's view.)
@@ -178,4 +180,24 @@ Manually assigned grades are by default not released, and therefore not visible 
 
 Displays files within a course and allows you to rename, delete, and add files automatically via an interface.
 
-You can access the File Manager via the Manage Autolab dropdown.
+You can view all courses that you are an instructor of and all associated files.
+
+You can access the File Manager under Admin Course after clicking Manage Course.
+
+Note:
+
+- You cannot create folders or upload files in the root Courses directory. To create a course, you should navigate to Create New Course via the Manage Autolab dropdown.
+
+- You cannot rename files in the root Courses directory. To rename a course, you should navigate to the course, click Manage Course, and click Course Settings.
+
+- You cannot upload files that are larger than 1 GB.
+
+- You cannot create a folder or upload a file with a name that already exists.
+
+- Deleting a folder will also delete all of its contents.
+
+- Downloading a folder will create a tar with all of its contents.
+
+- Download Selected downloads each of the selected files/folders separately.
+
+- When clicking on a file, it will be automatically downloaded if it is larger than 1GB or a binary file. Otherwise, the file contents will be displayed.

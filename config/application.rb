@@ -112,10 +112,10 @@ module Autolab3
     config.middleware.use Rack::Attack
 
     # site version
-    config.site_version = "2.12.0"
+    config.site_version = "3.0.0"
 
     # Set application host for mailer
-    config.action_mailer.default_url_options = { host: ENV['MAILER_HOST'] || "YOUR_APP_HOST" }
+    config.action_mailer.default_url_options = { host: "YOUR_APP_HOST" }
 
     # Configure the host and port of generated urls
     config.action_controller.default_url_options = {}
