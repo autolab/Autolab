@@ -17,7 +17,7 @@
         <% course_cud = CourseUserDatum.find_cud_for_course(course, current_user.id) %>
         <% not_student = course_cud.has_auth_level? :course_assistant %>
 
-        <div class="col s12 m4">
+        <div class="col s12 l4">
           <div class="card hoverable">
             <%= link_to course_path(course), title: "Go to Course Page" do %>
               <div class="card-content red darken-4">
