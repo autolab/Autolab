@@ -300,6 +300,36 @@ class Assessment < ApplicationRecord
     File.open(asmt_yaml_path, "w") { |f| f.write(YAML.dump(sort_hash(serialize))) }
   end
 
+  # If the name field in a yaml for an assessment differs from the folder name
+  # then the name field for the assessment gets overridden, which then causes
+  # the yaml file to no longer be found, and then for cleanup to fail because
+  # the folder can no longer also be found. For example a folder with
+  # homework01 and a homework01.yml file but with a name field of homework02
+  # would cause assessment.name = homework02 so then it would try to find
+  # homework02/homework02.yml. Instead we rename the name field to match the folder
+  # name.
+  # Similarly for a bunch of other fields in the yaml, if they are not provided,
+  # then we may run into issues loading the assessment
+  def validate_yaml(yaml_map)
+    unless yaml_map["general"]
+      raise "General section missing in yaml"
+    end
+
+    if yaml_map["general"]["name"] != name
+      yaml_map["general"]["name"] = name
+    end
+    # ensure display name is present, otherwise fill in with name
+    if yaml_map["general"]["display_name"].blank?
+      yaml_map["general"]["display_name"] = name
+    end
+    if yaml_map["general"]["handin_directory"].blank?
+      yaml_map["general"]["handin_directory"] = "handin"
+    end
+    return if yaml_map["general"]["handin_filename"].present?
+
+    yaml_map["general"]["handin_filename"] = "handin.c"
+  end
+
   ##
   # reads from the properties of the YAML file and saves them to the assessment.
   # Will only run if the assessment has not been saved.
@@ -308,6 +338,7 @@ class Assessment < ApplicationRecord
     return unless new_record?
 
     props = YAML.safe_load(File.open(asmt_yaml_path, "r", &:read))
+    validate_yaml(props)
     backwards_compatibility(props)
     deserialize(props)
   end
@@ -576,8 +607,11 @@ private
       raise "General section missing in yaml"
     end
 
-    if s["dates"] && s["dates"]["start_at"]
-      if s["dates"]["due_at"] && s["dates"]["end_at"]
+    # ensure that if date fields are provided, they are
+    # valid, fill in dates based on whatever fields are provided
+    # or fill in automatically if no dates provided
+    if s["dates"] && s["dates"]["start_at"].present?
+      if s["dates"]["due_at"].present? && s["dates"]["end_at"].present?
         self.due_at = Time.zone.parse(s["dates"]["due_at"])
         self.start_at = Time.zone.parse(s["dates"]["start_at"])
         self.end_at = Time.zone.parse(s["dates"]["end_at"])
@@ -590,6 +624,7 @@ private
 
     self.quiz = false
     self.quizData = ""
+
     update!(s["general"])
     Problem.deserialize_list(self, s["problems"]) if s["problems"]
 

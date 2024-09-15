@@ -277,59 +277,6 @@ module AssessmentHandin
     ASSESSMENT_LOGGER.setAssessment(@assessment)
     ASSESSMENT_LOGGER.log("#{@user.email},0,#{@result}")
 
-    # Load up the lab.rb file
-    mod_name = @assessment.name + (@course.name).gsub(/[^A-Za-z0-9]/, "")
-    require(Rails.root.join("assessmentConfig", "#{@course.name}-#{@assessment.name}.rb"))
-    eval("extend #{mod_name.camelcase}")
-
-    begin
-      # Call the parseAutoresult function defined in the lab.rb file.  If
-      # the list of scores it returns is empty, then we the lab developer is
-      # asking us not to create an unofficial submission in the
-      # database. Simply return a successful status string to the client and
-      # exit.
-      scores = parseAutoresult(@result, false)
-
-      render(plain: "OK", status: 200) && return if scores.keys.length == 0
-
-      # Try to find an existing submission (always version 0).
-      submission = @assessment.submissions.find_by(version: 0, course_user_datum_id: @cud.id)
-      if !submission
-        submission = @assessment.submissions.new(
-          version: 0,
-          autoresult: @result,
-          user_id: @cud.id,
-          submitted_by_id: 0,
-        )
-        submission.save!
-      else
-        # update this one
-        submission.autoresult = @result
-        submission.created_at = Time.now
-        submission.save!
-      end
-
-      # Update the scores in the db's unofficial submission using the list
-      # returned by the parseAutoresult function
-      scores.keys.each do |key|
-        problem = @assessment.problems.find_by(name: key)
-        score = submission.scores.find_or_initialize_by(problem_id: problem.id)
-        score.score = scores[key]
-        score.released = true
-        score.grader_id = 0
-        score.save!
-      end
-    rescue StandardError => e
-      ExceptionNotifier.notify_exception(e, env: request.env,
-                                            data: {
-                                              user: current_user,
-                                              course: @course,
-                                              assessment: @assessment,
-                                              submission: submission,
-                                            })
-      COURSE_LOGGER.log(e.to_s)
-    end
-
     render(plain: "OK", status: 200) && return
   end
 
