@@ -63,7 +63,7 @@ extra:
           link: https://communityinviter.com/apps/autolab/autolab-project
     analytics:
         provider: google
-        property: G-PH5EYTKBNQ
+        property: G-TN3N2Q9PC2
 markdown_extensions:
     - admonition
     - pymdownx.superfences
