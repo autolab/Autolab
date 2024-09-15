@@ -40,7 +40,7 @@ To set Autolab Docker up for a custom SMTP Server, update the following in `.env
         :::
         SMTP_DEFAULT_FROM=from@example.com
 
-       Here the from address **must** be a address that your SMTP service permits you to send from. Oftentimes it is the same as your user_name in the smtp settings.
+       Here the from address **must** be an address that your SMTP service permits you to send from. Oftentimes it is the same as your user_name in the smtp settings.
 
 After which, doing a `docker-compose down` followed by `docker-compose up -d` will allow you to see the changes.
 
@@ -74,6 +74,6 @@ To set Autolab up to use a custom SMTP Server, you will need to make edits to th
         :::ruby
         ActionMailer::Base.default :from => 'something@example.com'
 
-   Here the from address **must** be a address that your SMTP service permits you to send from. Oftentimes it is the same as your user_name in the smtp settings.
+   Here the from address **must** be an address that your SMTP service permits you to send from. Oftentimes it is the same as your user_name in the smtp settings.
 
 Make sure to restart your Autolab client to see the changes.
