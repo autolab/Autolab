@@ -19,7 +19,7 @@
   <% end %>
   <% if @tar_exists %>
     <%= f.file_field :tar, label_text: "Autograder Tar", action: :upload, help_text: "This file exists, upload a file to override." %>
-  <% else  %>
+  <% else %>
     <%= f.file_field :tar, label_text: "Autograder Tar", action: :upload %>
   <% end %>
   <p class="help-block">
@@ -37,10 +37,10 @@
               data: { confirm: "Are you sure you want to delete the Autograder for this assesssment?" } %>
 
   <% unless @makefile_exists.nil? %>
-    <%= link_to "Download Makefile", download_file_course_assessment_autograder_path(file_path: @makefile_exists) , class: "btn" %>
-  <%  end %>
+    <%= link_to "Download Makefile", download_file_course_assessment_autograder_path(file_path: @makefile_exists), class: "btn" %>
+  <% end %>
 
   <% unless @tar_exists.nil? %>
-    <%= link_to "Download Tar",  download_file_course_assessment_autograder_path(file_path: @tar_exists), class: "btn" %>
+    <%= link_to "Download Tar", download_file_course_assessment_autograder_path(file_path: @tar_exists), class: "btn" %>
   <% end %>
 <% end %>

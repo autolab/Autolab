@@ -38,7 +38,7 @@ class AutogradersController < ApplicationController
 
   action_auth_level :update, :instructor
   def update
-    if @autograder.update(autograder_params) and @assessment.update(assessment_params)
+    if @autograder.update(autograder_params) && @assessment.update(assessment_params)
       flash[:success] = "Autograder saved."
       begin
         upload
@@ -106,6 +106,7 @@ private
   def autograder_params
     params[:autograder].permit(:autograde_timeout, :autograde_image, :release_score)
   end
+
   def assessment_params
     params[:autograder][:assessment].permit(:disable_network)
   end
