@@ -86,10 +86,9 @@ class AutogradersController < ApplicationController
   end
 
   def download_file
-    file_path = Pathname.new(params[:file_path])
+    file_path = Pathname.new(File.cleanpath(params[:file_path]))
     if file_path.exist?
       send_file(file_path, disposition: "attachment")
-      flash[:success] = "File downloaded"
     else
       flash[:error] = "File not found"
       redirect_to(edit_course_assessment_path(@course, @assessment))
