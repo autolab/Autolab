@@ -27,8 +27,8 @@ class SchedulersController < ApplicationController
     # Check if the action file exists and is readable
     action_path = Rails.root.join(action_command).to_path
     unless File.exist?(action_path) && File.readable?(action_path)
-      flash[:error] = "Scheduler create failed. Action file does not exist or is not
-         readable at #{action_path}."
+      flash[:error] = "Scheduler create failed. Action file does not exist or is
+        not readable at #{action_path}."
       redirect_to(new_course_scheduler_path(@course)) and return
     end
 
@@ -100,8 +100,8 @@ class SchedulersController < ApplicationController
     # Check if the action file exists and is readable
     action_path = Rails.root.join(action_command).to_path
     unless File.exist?(action_path) && File.readable?(action_path)
-      flash[:error] = "Scheduler create failed. Action file does not exist or is not
-         readable at #{action_path}."
+      flash[:error] = "Scheduler create failed. Action file does not exist or is
+        not readable at #{action_path}."
       redirect_to(edit_course_scheduler_path(@course)) and return
     end
 
