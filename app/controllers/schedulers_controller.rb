@@ -23,6 +23,15 @@ class SchedulersController < ApplicationController
   action_auth_level :create, :instructor
   def create
     @scheduler = @course.scheduler.new(scheduler_params)
+    action_command = scheduler_params[:action]
+    # Check if the action file exists and is readable
+    action_path = Rails.root.join(action_command).to_path
+    unless File.exist?(action_path) && File.readable?(action_path)
+      flash[:error] = "Scheduler create failed. Action file does not exist or is not
+         readable at #{action_path}."
+      redirect_to(new_course_scheduler_path(@course)) and return
+    end
+
     if @scheduler.save
       flash[:success] = "Scheduler created!"
       redirect_to(course_schedulers_path(@course))
@@ -87,6 +96,15 @@ class SchedulersController < ApplicationController
   action_auth_level :update, :instructor
   def update
     @scheduler = Scheduler.find_by(id: params[:id])
+    action_command = scheduler_params[:action]
+    # Check if the action file exists and is readable
+    action_path = Rails.root.join(action_command).to_path
+    unless File.exist?(action_path) && File.readable?(action_path)
+      flash[:error] = "Scheduler create failed. Action file does not exist or is not
+         readable at #{action_path}."
+      redirect_to(edit_course_scheduler_path(@course)) and return
+    end
+
     if @scheduler&.update(scheduler_params)
       flash[:success] = "Scheduler updated."
       redirect_to(course_schedulers_path(@course))
