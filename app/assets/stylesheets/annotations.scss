@@ -249,11 +249,20 @@
   border: 1px solid red;
 }
 
+.code-table .annotation-line .annotation-form .row {
+  margin-bottom: 0;
+}
+
 .code-table .annotation-line .annotation-preview {
   border: 1px solid $autolab-highlight-gray;
   padding: 5px;
   margin: 0 10px;
   width: 100%;
+}
+
+.code-table .annotation-line .annotation-form .row .input-field {
+  margin-bottom: 0;
+  margin-top: 0.75rem !important;
 }
 
 .code-table .float-left {
