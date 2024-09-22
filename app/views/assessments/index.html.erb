@@ -11,9 +11,7 @@
     function addClearFix() {
       let num_columns;
       const cards = document.querySelectorAll('.assessments');
-      if (window.innerWidth >= 1200) {
-        num_columns = 3;
-      } else if (window.innerWidth >= 992) {
+      if (window.innerWidth >= 992) {
           num_columns = 2;
       } else {
           num_columns = 1;
@@ -73,6 +71,10 @@
   <style>
     .collection-item {
       overflow: auto;
+    }
+
+    .card-content.category-card {
+        padding: 15px 24px;
     }
   </style>
   <%= stylesheet_link_tag "assessments" %>
@@ -144,9 +146,9 @@
       <% @course.assessment_categories.each do |cat| %>
         <% asmts = @course.assessments_with_category(cat, @cud.student?) %>
         <% if asmts.any? %>
-          <div class="col s12 l6 xl4 assessments">
+          <div class="col s12 l6 assessments">
             <div class="card hoverable date">
-              <div class="card-content red darken-3">
+              <div class="category-card card-content red darken-3">
                 <span class="card-title white-text"><%= cat %></span>
               </div>
 
