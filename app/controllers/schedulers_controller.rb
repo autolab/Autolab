@@ -187,6 +187,8 @@ private
     Process.wait2(pid)
 
     # Raise an exception if something goes wrong
-    raise "Scheduler execution failed." unless result.is_a?(String) && result.include?("Error")
+    return unless result.is_a?(String) && result.include?("Error")
+
+    raise "Scheduler execution failed."
   end
 end
