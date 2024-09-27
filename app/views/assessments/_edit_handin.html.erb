@@ -29,6 +29,7 @@
                       style: "margin-top: 0 !important;",
                       help_text: "Last possible time that students can submit (except those granted extensions.)",
                       greater_than: "assessment_start_at assessment_due_at" %>
+
 <% if GithubIntegration.connected %>
   <%= f.check_box :github_submission_enabled,
                   display_name: "Allow Github submissions",
