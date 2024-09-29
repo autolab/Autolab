@@ -120,16 +120,14 @@ class UsersController < ApplicationController
       begin
         @user.send_reset_password_instructions
         flash[:success] = "Successfully created user."
-        redirect_to(users_path)
+      rescue Net::SMTPFatalError
+        flash[:success] = "Successfully created user but reset password instructions were not sent:
+          Net::SMTPFatalError"
       rescue StandardError => e
         error_message = e.message
-        if error_message.include?("The from address does not match a verified Sender Identity")
-          flash[:success] = "Successfully created user but reset password instructions not sent:
-             Net::SMTPFatalError"
-        else
-          flash[:error] = "Failed to create user."
-          @user.destroy
-        end
+        flash[:error] = "Failed to create user: #{error_message}"
+        @user.destroy
+      ensure
         redirect_to(users_path)
       end
     else
