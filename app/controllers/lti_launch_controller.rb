@@ -239,7 +239,7 @@ class LtiLaunchController < ApplicationController
   # return keys as jwk
   def tool_keys
     unless File.size?("#{Rails.configuration.config_location}/lti_tool_jwk.json")
-      raise LtiError("No JWK found on Autolab")
+      raise LtiError, "No JWK found on Autolab"
     end
 
     jwk_json = File.read("#{Rails.configuration.config_location}/lti_tool_jwk.json")
@@ -247,7 +247,7 @@ class LtiLaunchController < ApplicationController
       jwk_hash = JSON.parse(jwk_json)
     rescue JSON::ParserError => e
       Rails.logger.error("Error Parsing JWK JSON: #{e}")
-      raise LtiError("Error parsing Autolab JWK file")
+      raise LtiError, "Error parsing Autolab JWK file"
     end
 
     # import could fail b/c we only support one key, not multiple
@@ -255,7 +255,7 @@ class LtiLaunchController < ApplicationController
       tool_JWK_keypair = JWT::JWK.import(jwk_hash)
     rescue StandardError => e
       Rails.logger.error("Error importing private JWK: #{e}")
-      raise LtiError("Error parsing Autolab JWK file as keypair")
+      raise LtiError, "Error parsing Autolab JWK file as keypair"
     end
 
     render json: JWT::JWK::Set.new(tool_JWK_keypair).export
