@@ -1569,3 +1569,17 @@ function renderPdf() {
     console.log("Error occurred", error);
   });
 }
+
+function hideAnnotations() {
+  document.getElementById("hideAnnotations").style.display = "none";
+  document.getElementById("showAnnotations").style.display = "inline-flex";
+  $(".annotation-line").not(".base-annotation-line").remove();
+  refreshAnnotations();
+}
+
+function showAnnotations() {
+  document.getElementById("showAnnotations").style.display = "none";
+  document.getElementById("hideAnnotations").style.display = "inline-flex";
+  displayAnnotations();
+  refreshAnnotations();
+}
