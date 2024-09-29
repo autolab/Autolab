@@ -188,7 +188,7 @@ class User < ApplicationRecord
 
     User.assign_random_password user
 
-    # user.send_reset_password_instructions
+    user.send_reset_password_instructions
     user
   end
 
