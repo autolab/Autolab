@@ -23,6 +23,15 @@ RSpec.describe FileManagerController, type: :controller do
     end
   end
 
+  shared_examples "unauthorized_access" do |login: true|
+    before(:each) { sign_in(u) if login }
+    it "redirects with error when accessing unauthorized path" do
+      get :index, params: { path: unauthorized_path }
+      expect(response).to redirect_to(file_manager_index_path)
+      expect(flash[:error]).to eq("You are not authorized to view this path")
+    end
+  end
+
   shared_examples "index_empty" do |login: true|
     before(:each) { sign_in(u) if login }
     it "renders empty file manager" do
@@ -102,6 +111,28 @@ RSpec.describe FileManagerController, type: :controller do
       it_behaves_like "index_failure", login: false
       it_behaves_like "rename_failure", login: false
       it_behaves_like "path_failure", login: false
+    end
+
+    context "when user is not an instructor of the course" do
+      let(:unauthorized_path) { "#{@course.name}/secret_folder" }
+      let!(:instructor) { instructor_user }
+
+      before(:each) do
+        sign_in(:instructor)
+        # Set up the BASE_DIRECTORY and create the course directory
+        @base_dir = Dir.mktmpdir
+        stub_const('FileManagerController::BASE_DIRECTORY', Pathname.new(@base_dir))
+        FileUtils.mkdir_p(File.join(@base_dir, unauthorized_path))
+        # Ensure that the controller uses the modified BASE_DIRECTORY
+        allow(FileManagerController).to receive(:const_get).with(:BASE_DIRECTORY).and_return(Pathname.new(@base_dir))
+      end
+
+      let!(:u) { student_user }
+      it_behaves_like "unauthorized_access"
+
+      after(:each) do
+        delete_course_files(course_hash[:course])
+      end
     end
   end
 end
