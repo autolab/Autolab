@@ -1342,8 +1342,10 @@ var submitNewAnnotation = function (comment, shared_comment, global_comment, val
 
       // Logic to render annotation boxes, not applicable to global annotations
       if (!global_comment) {
-        $("#annotation-line-" + lineInd).append(newAnnotationBox(data));
-        refreshAnnotations();
+        if (!commentsVisible()) {
+          $("#annotation-line-" + lineInd).append(newAnnotationBox(data));
+          refreshAnnotations();
+        }
 
         if (!annotationsByPositionByLine[currentHeaderPos]) {
           annotationsByPositionByLine[currentHeaderPos] = {};
@@ -1568,6 +1570,11 @@ function renderPdf() {
     //no error message is logged either
     console.log("Error occurred", error);
   });
+}
+
+function commentsVisible() {
+  let hideButton = document.getElementById("hideAnnotations");
+  return window.getComputedStyle(hideButton).display === "none";
 }
 
 function hideAnnotations() {
