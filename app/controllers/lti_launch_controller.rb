@@ -236,8 +236,8 @@ class LtiLaunchController < ApplicationController
     )
   end
 
-  # return keys as jwk
-  def tool_keys
+  # public endpoint to return our public JWKs for LTI authentication
+  def jwks
     unless File.size?("#{Rails.configuration.config_location}/lti_tool_jwk.json")
       raise LtiError, "No JWK found on Autolab"
     end
