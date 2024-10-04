@@ -553,10 +553,6 @@ class CoursesController < ApplicationController
       begin
         save_uploaded_roster
         flash[:success] = "Successfully updated roster!"
-        unless @roster_warnings.nil?
-          w = @roster_warnings.keys.join('\n')
-          flash[:error] = w
-        end
         redirect_to(action: "users") && return
       rescue StandardError => e
         if e != "Roster validation error"
@@ -955,8 +951,6 @@ private
       end
       rosterErrors[msg].push(cud)
     end
-
-    @roster_warnings = rosterWarnings
 
     return if rosterErrors.empty?
 
