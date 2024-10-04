@@ -4,7 +4,7 @@ class LtiLaunchController < ApplicationController
   skip_before_action :authorize_user_for_course
   skip_before_action :update_persistent_announcements
   skip_before_action :authenticate_for_action
-  skip_before_action :authenticate_user!, only: [:launch, :oidc_login, :tool_keys]
+  skip_before_action :authenticate_user!, only: [:launch, :oidc_login, :jwks]
   # have to do because we are making a POST request from Canvas
   skip_before_action :verify_authenticity_token
 
