@@ -125,7 +125,8 @@ class UsersController < ApplicationController
           Net::SMTPFatalError"
       rescue StandardError => e
         error_message = e.message
-        flash[:error] = "Failed to create user: #{error_message}"
+        flash[:error] = "Failed to create user: Incorrectly configured SMTP config:
+          #{error_message}"
         @user.destroy
       ensure
         redirect_to(users_path)
