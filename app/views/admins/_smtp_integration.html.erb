@@ -54,7 +54,7 @@
     <span class="helper-text">Specify mail server password if necessary</span>
   </div>
   <div class="input-field">
-    <%= form.select :authentication, [:plain, :login, :cram_md5], selected: @smtp_config_hash.nil? ? "plain" : @smtp_config_hash[:authentication], required: true %>
+    <%= form.select :authentication, [:none, :plain, :login, :cram_md5], selected: @smtp_config_hash.nil? ? "plain" : @smtp_config_hash[:authentication], required: true %>
     <%= form.label :authentication, "Mail Server authentication method" %>
     <span class="helper-text">Specify mail Server authentication method</span>
   </div>
