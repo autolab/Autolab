@@ -117,9 +117,20 @@ class UsersController < ApplicationController
       save_worked = false
     end
     if save_worked
-      @user.send_reset_password_instructions
-      flash[:success] = "Successfully created user."
-      redirect_to(users_path) && return
+      begin
+        @user.send_reset_password_instructions
+        flash[:success] = "Successfully created user."
+      rescue Net::SMTPFatalError
+        flash[:success] = "Successfully created user but reset password instructions were not sent:
+          Net::SMTPFatalError"
+      rescue StandardError => e
+        error_message = e.message
+        flash[:error] = "Failed to create user: Incorrectly configured SMTP config:
+          #{error_message}"
+        @user.destroy
+      ensure
+        redirect_to(users_path)
+      end
     else
       render action: "new"
     end
