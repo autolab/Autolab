@@ -122,7 +122,7 @@ class UsersController < ApplicationController
         flash[:success] = "Successfully created user."
       rescue Net::SMTPFatalError => e
         error_message = e.message
-        flash[:success] = "Successfully created user but reset password instructions were not sent.
+        flash[:notice] = "Successfully created user but reset password instructions were not sent.
           Error message: #{error_message}"
       rescue StandardError => e
         error_message = e.message
