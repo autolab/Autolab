@@ -12,6 +12,30 @@ $(document).ready(function() {
     'paging': false,
   });
 
+  // Listen for select-all checkbox click
+  $('#cbox-select-all').on('click', function(e) {
+    var selectAll = $(this).is(':checked');
+    toggleAllRows(selectAll);
+  });
+
+  // Function to toggle all checkboxes
+  function toggleAllRows(selectAll) {
+    $('#submissions tbody .cbox').each(function() {
+      var submissionId = parseInt($(this).attr('id').replace('cbox-', ''), 10);
+      if (selectAll) {
+        if (selectedSubmissions.indexOf(submissionId) === -1) {
+          toggleRow(submissionId, true); // force select
+        }
+      } else {
+        if (selectedSubmissions.indexOf(submissionId) !== -1) {
+          toggleRow(submissionId, false); // force unselect
+        }
+      }
+    });
+    changeButtonStates(!selectedSubmissions.length); // update button states
+  }
+
+
   // SELECTED BUTTONS
 
   // create selected buttons inside datatable wrapper
@@ -22,10 +46,10 @@ $(document).ready(function() {
   $('div.selected-buttons').html(`<div id='selected-buttons'>${regradeHTML}${deleteHTML}${downloadHTML}${excuseHTML}</div>`);
 
   // add ids to each selected button
-  $('#selected-buttons > a').each(function () { 
+  $('#selected-buttons > a').each(function () {
     let idText = this.title.split(' ')[0].toLowerCase() + '-selected';
     this.setAttribute('id', idText);
-   });
+  });
 
   if (!is_autograded) {
     $('#regrade-selected').hide();
@@ -54,7 +78,7 @@ $(document).ready(function() {
       });
     }
   }
-  
+
   changeButtonStates(true); // disable all buttons by default
 
   // SELECTING STUDENT CHECKBOXES
@@ -111,94 +135,94 @@ $(document).ready(function() {
   });
 
   // TODO: adapt below code if necessary for grouping / select all
-  // $.fn.dataTable.ext.search.push(
-  //   function(settings, data, dataIndex) {
-  //     var filterOnlyLatest = $("#only-latest").is(':checked');
-  //     if (!filterOnlyLatest) {
-  //       // if not filtered, return all the rows
-  //       return true;
-  //     } else {
-  //       var isSubmissionLatest = data[8]; // use data for the age column
-  //       return (isSubmissionLatest == "true");
-  //     }
-  //   }
-  // );
+  $.fn.dataTable.ext.search.push(
+      function(settings, data, dataIndex) {
+        var filterOnlyLatest = $("#only-latest").is(':checked');
+        if (!filterOnlyLatest) {
+          // if not filtered, return all the rows
+          return true;
+        } else {
+          var isSubmissionLatest = data[8]; // use data for the age column
+          return (isSubmissionLatest == "true");
+        }
+      }
+  );
 });
 
 
 // POPOVERS [TODO]
 
-// jQuery(function() {
-//   var current_popover = undefined;
+jQuery(function() {
+  var current_popover = undefined;
 
-//   function close_current_popover() {
-//     current_popover.hide();
-//     current_popover = undefined;
-//   }
+  function close_current_popover() {
+    current_popover.hide();
+    current_popover = undefined;
+  }
 
-//   function close_current_popover_on_blur(event) {
-//     if (current_popover && jQuery(current_popover).closest("td").find(event.target).length == 0) {
-//         close_current_popover();
-//     }
-//   }
+  function close_current_popover_on_blur(event) {
+    if (current_popover && jQuery(current_popover).closest("td").find(event.target).length == 0) {
+      close_current_popover();
+    }
+  }
 
-//   jQuery(document).click(function(event) {
-//     event.stopPropagation();
-//     console.log("hi");
-//     close_current_popover_on_blur(event);
-//   });
-  
-//   function show_popover(popover, at, arrow_at) {
-//     if (current_popover) close_current_popover();
+  jQuery(document).click(function(event) {
+    event.stopPropagation();
+    console.log("hi");
+    close_current_popover_on_blur(event);
+  });
 
-//     popover.show();
-//     popover.position(at);
+  function show_popover(popover, at, arrow_at) {
+    if (current_popover) close_current_popover();
 
-//     var arrow = jQuery(".excused-arrow", popover)
-//       if (arrow_at) {
-//         arrow.position(arrow_at);
-//       } else {
-//         arrow.position({
-//           my: "right",
-//           at: "left",
-//           of: popover
-//         });
-//       }
+    popover.show();
+    popover.position(at);
 
-//     current_popover = popover;
-//   }
+    var arrow = jQuery(".excused-arrow", popover)
+    if (arrow_at) {
+      arrow.position(arrow_at);
+    } else {
+      arrow.position({
+        my: "right",
+        at: "left",
+        of: popover
+      });
+    }
 
-//   jQuery('#submissions').on('click', 'td.submissions-td div.submissions-name a.submissions-excused-label',
-//     function() {
-//       if (current_popover) {
-//         close_current_popover();
-//         return;
-//       }
+    current_popover = popover;
+  }
 
-//       var link = jQuery(this);
-//       currentPopover = link.siblings("div.excused-popover");
-//       currentPopover.show();
+  jQuery('#submissions').on('click', 'td.submissions-td div.submissions-name a.submissions-excused-label',
+      function() {
+        if (current_popover) {
+          close_current_popover();
+          return;
+        }
 
-//       // show_popover(popover, {
-//       //         my: "left center",
-//       //         at: "right center",
-//       //         of: link,
-//       //         offset: "10px 0"
-//       //       });
+        var link = jQuery(this);
+        currentPopover = link.siblings("div.excused-popover");
+        currentPopover.show();
 
-//       // jQuery.ajax("submission_popover", {
-//       //   data: { submission_id: link.parent().data("submission-id") },
-//       //   success: function(data, status, jqXHR) {
-//       //     popover.html(data)
-//       //     show_popover(popover, {
-//       //       my: "left center",
-//       //       at: "right center",
-//       //       of: link,
-//       //       offset: "10px 0"
-//       //     });
-//       //   }
-//       // });
+        show_popover(popover, {
+          my: "left center",
+          at: "right center",
+          of: link,
+          offset: "10px 0"
+        });
 
-//     }
-//   );
-// });
+        jQuery.ajax("submission_popover", {
+          data: { submission_id: link.parent().data("submission-id") },
+          success: function(data, status, jqXHR) {
+            popover.html(data)
+            show_popover(popover, {
+              my: "left center",
+              at: "right center",
+              of: link,
+              offset: "10px 0"
+            });
+          }
+        });
+
+      }
+  );
+});

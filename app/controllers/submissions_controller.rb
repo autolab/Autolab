@@ -262,13 +262,16 @@ class SubmissionsController < ApplicationController
       return
     end
 
-    submissions = submission_ids.map { |sid| @assessment.submissions.find_by(sid) }
-    submissions = submissions.select { |s| @cud.can_administer?(s.course_user_datum) }
-    paths = submissions.collect(&:handin_file_path)
-    paths = paths.select { |p| !p.nil? && File.exist?(p) && File.readable?(p) }
+    submissions = submission_ids.map { |sid| @assessment.submissions.find_by(id: sid) }
+    submissions = submissions.select { |s| s && @cud.can_administer?(s.course_user_datum) }
 
-    result = Archive.create_zip paths # result is stringIO to be sent
+    filedata = submissions.collect do |s|
+      p = s.handin_file_path
+      email = s.course_user_datum.user.email
+      [p, download_filename(p, email)] if !p.nil? && File.exist?(p) && File.readable?(p)
+    end.compact
 
+    result = Archive.create_zip filedata # result is stringIO to be sent
     if result.nil?
       flash[:error] = "There are no submissions to download."
       if @cud.course_assistant
