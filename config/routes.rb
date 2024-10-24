@@ -140,7 +140,9 @@ Rails.application.routes.draw do
     resources :attachments
 
     resources :assessments, param: :name, except: :update do
-      resource :autograder, except: [:new, :show]
+      resource :autograder, except: [:new, :show] do
+        get "download_file"
+      end
       resources :assessment_user_data, only: [:edit, :update]
       resources :attachments
       resources :extensions, only: [:index, :create, :destroy]
