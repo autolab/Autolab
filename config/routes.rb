@@ -6,6 +6,7 @@ Rails.application.routes.draw do
     get 'lti_launch/oidc_login', to: "lti_launch#oidc_login"
     post 'lti_launch/launch', to: "lti_launch#launch"
     get 'lti_launch/launch', to: "lti_launch#launch"
+    get 'lti_launch/jwks', to: "lti_launch#jwks"
     post 'lti_nrps/sync_roster', to: "lti_nrps#sync_roster"
   get 'lti_config/index', to: "lti_config#index"
   post 'github_config/update_config', to: "github_config#update_config"

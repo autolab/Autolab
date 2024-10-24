@@ -84,9 +84,9 @@ private
       address: params['address'],
       port: params['port'],
       enable_starttls_auto: params['enable_starttls_auto'] == 'true',
-      authentication: params['authentication'],
-      user_name: params['username'],
-      password: params['password']
+      authentication: params['authentication'] == 'none' ? nil : params['authentication'],
+      user_name: params['username'] == "" ? nil : params['username'],
+      password: params['password'] == "" ? nil : params['password']
     }
 
     if params.key?(:domain) && !params[:domain].empty?

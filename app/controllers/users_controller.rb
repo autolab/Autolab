@@ -1,7 +1,9 @@
 class UsersController < ApplicationController
   skip_before_action :set_course
   skip_before_action :authorize_user_for_course
-  skip_before_action :authenticate_for_action
+  skip_before_action :authenticate_for_action,
+                     except: [:change_password_for_user, :update_password_for_user,
+                              :lti_launch_link_course]
   skip_before_action :update_persistent_announcements
   before_action :set_gh_oauth_client, only: [:github_oauth, :github_oauth_callback]
   before_action :set_user,
@@ -117,9 +119,21 @@ class UsersController < ApplicationController
       save_worked = false
     end
     if save_worked
-      @user.send_reset_password_instructions
-      flash[:success] = "Successfully created user."
-      redirect_to(users_path) && return
+      begin
+        @user.send_reset_password_instructions
+        flash[:success] = "Successfully created user."
+      rescue Net::SMTPFatalError => e
+        error_message = e.message
+        flash[:notice] = "Successfully created user but reset password instructions were not sent.
+          Error message: #{error_message}"
+      rescue StandardError => e
+        error_message = e.message
+        flash[:error] = "Failed to create user: Incorrectly configured SMTP config:
+          #{error_message}"
+        @user.destroy
+      ensure
+        redirect_to(users_path)
+      end
     else
       render action: "new"
     end
@@ -404,6 +418,7 @@ class UsersController < ApplicationController
     redirect_to(user_path)
   end
 
+  action_auth_level :update_password_for_user, :administrator
   def update_password_for_user
     @user = User.find_by(id: params[:id])
     return if params[:user].nil? || params[:user].is_a?(String) || @user.nil?

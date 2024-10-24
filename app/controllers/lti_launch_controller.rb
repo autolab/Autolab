@@ -4,7 +4,7 @@ class LtiLaunchController < ApplicationController
   skip_before_action :authorize_user_for_course
   skip_before_action :update_persistent_announcements
   skip_before_action :authenticate_for_action
-
+  skip_before_action :authenticate_user!, only: [:launch, :oidc_login, :jwks]
   # have to do because we are making a POST request from Canvas
   skip_before_action :verify_authenticity_token
 
@@ -234,6 +234,31 @@ class LtiLaunchController < ApplicationController
       platform: @jwt[:body]["https://purl.imsglobal.org/spec/lti/claim/tool_platform"]["name"],
       context_id: @jwt[:body]["https://purl.imsglobal.org/spec/lti/claim/context"]["id"],
     )
+  end
+
+  # public endpoint to return our public JWKs for LTI authentication
+  def jwks
+    unless File.size?("#{Rails.configuration.config_location}/lti_tool_jwk.json")
+      raise LtiError, "No JWK found on Autolab"
+    end
+
+    jwk_json = File.read("#{Rails.configuration.config_location}/lti_tool_jwk.json")
+    begin
+      jwk_hash = JSON.parse(jwk_json)
+    rescue JSON::ParserError => e
+      Rails.logger.error("Error Parsing JWK JSON: #{e}")
+      raise LtiError, "Error parsing Autolab JWK file"
+    end
+
+    # import could fail b/c we only support one key, not multiple
+    begin
+      tool_JWK_keypair = JWT::JWK.import(jwk_hash)
+    rescue StandardError => e
+      Rails.logger.error("Error importing private JWK: #{e}")
+      raise LtiError, "Error parsing Autolab JWK file as keypair"
+    end
+
+    render json: JWT::JWK::Set.new(tool_JWK_keypair).export
   end
 
   # LTI launch entrypoint to initiate open id connect login
