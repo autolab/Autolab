@@ -1,7 +1,9 @@
 class UsersController < ApplicationController
   skip_before_action :set_course
   skip_before_action :authorize_user_for_course
-  skip_before_action :authenticate_for_action
+  skip_before_action :authenticate_for_action,
+                     except: [:change_password_for_user, :update_password_for_user,
+                              :lti_launch_link_course]
   skip_before_action :update_persistent_announcements
   before_action :set_gh_oauth_client, only: [:github_oauth, :github_oauth_callback]
   before_action :set_user,
@@ -416,6 +418,7 @@ class UsersController < ApplicationController
     redirect_to(user_path)
   end
 
+  action_auth_level :update_password_for_user, :administrator
   def update_password_for_user
     @user = User.find_by(id: params[:id])
     return if params[:user].nil? || params[:user].is_a?(String) || @user.nil?
