@@ -42,6 +42,9 @@ class FileManagerController < ApplicationController
                   filename: File.basename(absolute_path),
                   disposition: 'attachment')
       end
+    else
+      flash[:error] = "You are not authorized to view this path"
+      redirect_to file_manager_index_path
     end
   end
 
@@ -51,12 +54,15 @@ class FileManagerController < ApplicationController
 
   def delete
     absolute_path = check_path_exist(params[:path])
-    return unless check_instructor(absolute_path)
+    if check_instructor(absolute_path)
+      parent = absolute_path.parent
+      raise "Unable to delete courses in the root directory." if parent == BASE_DIRECTORY
 
-    parent = absolute_path.parent
-    raise "Unable to delete courses in the root directory." if parent == BASE_DIRECTORY
-
-    FileUtils.rm_rf(absolute_path)
+      FileUtils.rm_rf(absolute_path)
+    else
+      flash[:error] = "You are not authorized to delete this"
+      redirect_to file_manager_index_path
+    end
   end
 
   def rename
@@ -86,6 +92,9 @@ class FileManagerController < ApplicationController
         FileUtils.mv(absolute_path, new_path)
         flash[:success] = "Successfully renamed file to #{params[:new_name]}"
       end
+    else
+      flash[:error] = "You are not authorized to rename this path"
+      redirect_to file_manager_index_path
     end
   rescue ArgumentError => e
     flash[:error] = e.message
@@ -95,33 +104,36 @@ class FileManagerController < ApplicationController
     path = params[:path]&.split("/")&.drop(2)&.join("/")
     path = CGI.unescape(path)
     absolute_path = check_path_exist(path)
-    return unless check_instructor(absolute_path)
-
-    if File.directory?(absolute_path)
-      tar_stream = StringIO.new("")
-      Gem::Package::TarWriter.new(tar_stream) do |tar|
-        Dir[File.join(absolute_path.to_s, '**', '**')].each do |file|
-          mode = File.stat(file).mode
-          relative_path = file.sub(%r{^#{Regexp.escape(absolute_path.to_s)}/?}, '')
-          if File.directory?(file)
-            tar.mkdir relative_path, mode
-          else
-            tar.add_file relative_path, mode do |tar_file|
-              File.open(file, "rb") { |f| tar_file.write f.read }
+    if check_instructor(absolute_path)
+      if File.directory?(absolute_path)
+        tar_stream = StringIO.new("")
+        Gem::Package::TarWriter.new(tar_stream) do |tar|
+          Dir[File.join(absolute_path.to_s, '**', '**')].each do |file|
+            mode = File.stat(file).mode
+            relative_path = file.sub(%r{^#{Regexp.escape(absolute_path.to_s)}/?}, '')
+            if File.directory?(file)
+              tar.mkdir relative_path, mode
+            else
+              tar.add_file relative_path, mode do |tar_file|
+                File.open(file, "rb") { |f| tar_file.write f.read }
+              end
             end
           end
         end
+        tar_stream.rewind
+        tar_stream.close
+        send_data tar_stream.string.force_encoding("binary"),
+                  filename: "file_manager.tar",
+                  type: "application/x-tar",
+                  disposition: "attachment"
+      else
+        send_file(absolute_path,
+                  filename: File.basename(absolute_path),
+                  disposition: 'attachment')
       end
-      tar_stream.rewind
-      tar_stream.close
-      send_data tar_stream.string.force_encoding("binary"),
-                filename: "file_manager.tar",
-                type: "application/x-tar",
-                disposition: "attachment"
     else
-      send_file(absolute_path,
-                filename: File.basename(absolute_path),
-                disposition: 'attachment')
+      flash[:error] = "You are not authorized to download atttachments at this path"
+      redirect_to file_manager_index_path
     end
   end
 
@@ -159,6 +171,9 @@ class FileManagerController < ApplicationController
             end
           end
         end
+      else
+        flash[:error] = "You are not authorized to upload files at this path"
+        redirect_to file_manager_index_path
       end
     end
   end
