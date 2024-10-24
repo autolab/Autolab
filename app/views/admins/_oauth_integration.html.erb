@@ -23,3 +23,12 @@
     </div>
   </li>
 </ul>
+<ul class="collapsible">
+  <li class="active">
+    <% openid_config = OauthConfigController.get_oauth_credentials :openid_connect %>
+    <div class="collapsible-header">OpenID
+      <% if @configured_oauth_providers.include? :openid_connect %><i class="material-icons">check</i><% end %>
+    </div>
+    Edit configuration on disk
+  </li>
+</ul>

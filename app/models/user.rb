@@ -9,7 +9,7 @@ class User < ApplicationRecord
          :recoverable, :rememberable, :trackable, :validatable,
          :confirmable
 
-  devise :omniauthable, omniauth_providers: [:shibboleth, :google_oauth2]
+  devise :omniauthable, omniauth_providers: [:shibboleth, :google_oauth2, :openid_connect]
 
   has_many :course_user_data, dependent: :destroy
   has_many :courses, through: :course_user_data
@@ -99,6 +99,12 @@ class User < ApplicationRecord
     authentication.user if authentication&.user
   end
 
+  def self.find_for_openid_connect_oauth(auth, _signed_in_resource = nil)
+    authentication = Authentication.find_by(provider: auth.provider,
+                                            uid: auth.uid)
+    authentication.user if authentication&.user
+  end
+
   def self.assign_random_password(user)
     return if user.nil?
 
@@ -127,6 +133,17 @@ class User < ApplicationRecord
         user.email = data["uid"] # email is uid in our case
         User.assign_random_password user
         User.add_oauth_if_user_exists session
+      elsif (data = session["devise.openid_connect_data"])
+        if data["info"]["first_name"].present? && data["info"]["last_name"].present?
+          user.first_name = data["info"]["first_name"]
+          user.last_name = data["info"]["last_name"]
+        else
+          user.first_name = data["info"]["name"]
+          user.last_name = ""
+        end
+        user.email = data["info"]["email"]
+        User.assign_random_password user
+        User.add_oauth_if_user_exists session
       end
     end
   end
@@ -144,6 +161,10 @@ class User < ApplicationRecord
     elsif (data = session["devise.shibboleth_data"])
       email = data["uid"] # email is uid in our case
       provider = "CMU-Shibboleth"
+      uid = data["uid"]
+    elsif (data = session["devise.openid_connect_data"])
+      email = data["info"]["email"]
+      provider = data["provider"]
       uid = data["uid"]
     end
 
