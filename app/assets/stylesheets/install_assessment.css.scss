@@ -19,6 +19,11 @@
   background-color: $autolab-light-red !important;
 }
 
+.assessment-checkbox {
+  display: flex;
+  justify-content: center;
+}
+
 .assessment-import-table {
   overflow: hidden;
   width: 100%;
