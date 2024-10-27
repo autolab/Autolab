@@ -2,7 +2,7 @@
   <div class="error" style="display: none;"></div>
   <form>
     <div class="row">
-      <div class="input-field col s12 annotation-comment">
+      <div class="input-field col s12 annotation-comment no-padding-bottom">
         <textarea class="comment materialize-textarea" id="comment-textarea" placeholder=""></textarea>
         <label for="comment-textarea">Comment</label>
         <p>
@@ -17,21 +17,21 @@
 
     <div class="row annotation-problem-score">
       <% if global %>
-        <div class="input-field col s12">
+        <div class="input-field col s12 no-padding-bottom">
           <input class="score" type="number" value="0" placeholder="0" step="any" id="comment-score" autocomplete="on">
           <label for="comment-score">Score</label>
           <span> Grading style: <b><%= @assessment.is_positive_grading ? "Positive grading" : "Negative grading" %></b>
             <i class="material-icons" title="<%= "#{@assessment.is_positive_grading ? 'Score is added, starting from 0.' : 'Score is deducted from the total points.'} Change this setting in Edit Assessment > Problems" %>">info_outline</i> </span>
         </div>
       <% else %>
-        <div class="input-field col s6">
+        <div class="input-field col s6 no-padding-bottom">
           <input class="score" type="number" value="0" placeholder="0" step="any" id="comment-score" autocomplete="on">
           <label for="comment-score">Score</label>
           <span> Grading style: <b><%= @assessment.is_positive_grading ? "Positive grading" : "Negative grading" %></b>
               <i class="material-icons" title="<%= "#{@assessment.is_positive_grading ? 'Score is added, starting from 0.' : 'Score is deducted from the total points.'} Change this setting in Edit Assessment > Problems" %>">info_outline</i> </span>
         </div>
 
-        <div class="input-field col s6">
+        <div class="input-field col s6 no-padding-bottom">
           <select class="browser-default problem-id">
           </select>
         </div>
@@ -39,7 +39,7 @@
     </div>
 
     <div class="row">
-      <div class="input-field col s12">
+      <div class="input-field col s12 no-padding-bottom">
         <input type="submit" class="btn" value="Add annotation">
         <button class="btn grey annotation-cancel-button">Cancel</button>
       </div>

@@ -45,8 +45,8 @@
               <b class="install-failure-p">
                 Failed to Install
               </b>
-              <label>
-                <%= check_box_tag asmt_file, asmt_file, true, class: 'cbox', id: "#{asmt_file}_checkbox" %>
+              <label class="assessment-checkbox">
+                <%= check_box_tag asmt_file, asmt_file, false, class: 'cbox', id: "#{asmt_file}_checkbox" %>
                 <span />
               </label>
               <%= asmt_file %>
