@@ -27,7 +27,8 @@ class FileManagerController < ApplicationController
       end
     end
     absolute_path = check_path_exist(path)
-    if (File.directory?(absolute_path) && check_instructor(absolute_path)) || path == ""
+    if (File.directory?(absolute_path) && check_instructor(absolute_path)) ||
+       (path == "" && is_instructor_of_any_course)
       populate_directory(absolute_path, new_url)
       render 'file_manager/index'
     elsif File.file?(absolute_path) && check_instructor(absolute_path)
@@ -44,7 +45,7 @@ class FileManagerController < ApplicationController
       end
     else
       flash[:error] = "You are not authorized to view this path"
-      redirect_to file_manager_index_path
+      redirect_to root_path
     end
   end
 
@@ -61,7 +62,7 @@ class FileManagerController < ApplicationController
       FileUtils.rm_rf(absolute_path)
     else
       flash[:error] = "You are not authorized to delete this"
-      redirect_to file_manager_index_path
+      redirect_to root_path
     end
   end
 
@@ -94,7 +95,7 @@ class FileManagerController < ApplicationController
       end
     else
       flash[:error] = "You are not authorized to rename this path"
-      redirect_to file_manager_index_path
+      redirect_to root_path
     end
   rescue ArgumentError => e
     flash[:error] = e.message
@@ -132,8 +133,8 @@ class FileManagerController < ApplicationController
                   disposition: 'attachment')
       end
     else
-      flash[:error] = "You are not authorized to download atttachments at this path"
-      redirect_to file_manager_index_path
+      flash[:error] = "You are not authorized to download attachments at this path"
+      redirect_to root_path
     end
   end
 
@@ -173,7 +174,7 @@ class FileManagerController < ApplicationController
         end
       else
         flash[:error] = "You are not authorized to upload files at this path"
-        redirect_to file_manager_index_path
+        redirect_to root_path
       end
     end
   end
@@ -236,6 +237,13 @@ private
     raise ActionController::RoutingError, 'Not Found' unless File.exist?(@absolute_path)
 
     @absolute_path
+  end
+
+  def is_instructor_of_any_course
+    current_user_id = current_user.id
+    cuds = CourseUserDatum.where(user_id: current_user_id, instructor: true)
+    courses = Course.where(id: cuds.map(&:course_id))
+    !courses.empty?
   end
 
   def check_instructor(path)

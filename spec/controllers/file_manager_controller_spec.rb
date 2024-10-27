@@ -27,7 +27,7 @@ RSpec.describe FileManagerController, type: :controller do
     before(:each) { sign_in(u) if login }
     it "redirects with error when accessing unauthorized path" do
       get :index, params: { path: unauthorized_path }
-      expect(response).to redirect_to(file_manager_index_path)
+      expect(response).to redirect_to(root_path)
       expect(flash[:error]).to eq("You are not authorized to view this path")
     end
   end
@@ -100,10 +100,9 @@ RSpec.describe FileManagerController, type: :controller do
       it_behaves_like "path_success"
     end
 
-    context "when user is Autolab user" do
+    context "when user is Autolab student" do
       let!(:u) { student_user }
-      it_behaves_like "index_success"
-      it_behaves_like "index_empty"
+      it_behaves_like "index_failure"
     end
 
     context "when user is not logged in" do
@@ -189,7 +188,7 @@ RSpec.describe FileManagerController, type: :controller do
       it "does not allow delete and redirects with error" do
         sign_in(student)
         post :delete, params: { path: file_path }
-        expect(response).to redirect_to(file_manager_index_path)
+        expect(response).to redirect_to(root_path)
         expect(flash[:error]).to eq("You are not authorized to delete this")
         expect(File.exist?(File.join(@base_dir, file_path))).to be_truthy
       end
@@ -218,7 +217,7 @@ RSpec.describe FileManagerController, type: :controller do
       end
 
       it "renames the file successfully" do
-        sign_in(:instructor)
+        sign_in(instructor)
         put :rename, params: { relative_path: file_path, new_name:, path: file_path }
         expect(flash[:success]).to eq("Successfully renamed file to #{new_name}")
         expect(File.exist?(File.join(@base_dir, course.name, new_name))).to be_truthy
@@ -247,7 +246,7 @@ RSpec.describe FileManagerController, type: :controller do
       it "does not allow rename and redirects with error" do
         sign_in(student)
         put :rename, params: { relative_path: file_path, new_name:, path: file_path }
-        expect(response).to redirect_to(file_manager_index_path)
+        expect(response).to redirect_to(root_path)
         expect(flash[:error]).to eq("You are not authorized to rename this path")
         expect(File.exist?(File.join(@base_dir, course.name, new_name))).to be_falsey
         expect(File.exist?(File.join(@base_dir, file_path))).to be_truthy
@@ -307,7 +306,7 @@ RSpec.describe FileManagerController, type: :controller do
       it "does not allow folder creation and redirects with error" do
         sign_in(student)
         post :upload, params: { path: file_path, name: 'files' }
-        expect(response).to redirect_to(file_manager_index_path)
+        expect(response).to redirect_to(root_path)
         expect(flash[:error]).to eq("You are not authorized to upload files at this path")
         expect(Dir.exist?(File.join(@base_dir, file_path, 'files'))).to be_falsey
       end
@@ -316,7 +315,7 @@ RSpec.describe FileManagerController, type: :controller do
         sign_in(student)
         file = fixture_file_upload('files/test_file.txt', 'text/plain')
         post :upload, params: { path: file_path, file: }
-        expect(response).to redirect_to(file_manager_index_path)
+        expect(response).to redirect_to(root_path)
         expect(flash[:error]).to eq("You are not authorized to upload files at this path")
         expect(File.exist?(File.join(@base_dir, file_path, 'test_file.txt'))).to be_falsey
       end
@@ -364,8 +363,8 @@ RSpec.describe FileManagerController, type: :controller do
       it "returns error when attempting to download root directory" do
         sign_in(instructor)
         get :download_tar, params: { path: '' }
-        expect(response).to redirect_to(file_manager_index_path)
-        expect(flash[:error]).to eq("You are not authorized to download atttachments at this path")
+        expect(response).to redirect_to(root_path)
+        expect(flash[:error]).to eq("You are not authorized to download attachments at this path")
       end
     end
 
@@ -390,15 +389,15 @@ RSpec.describe FileManagerController, type: :controller do
       it "does not allow directory download and redirects with error" do
         sign_in(student)
         get :download_tar, params: { path: "autopopulated/test/#{dir_path}" }
-        expect(response).to redirect_to(file_manager_index_path)
-        expect(flash[:error]).to eq("You are not authorized to download atttachments at this path")
+        expect(response).to redirect_to(root_path)
+        expect(flash[:error]).to eq("You are not authorized to download attachments at this path")
       end
 
       it "does not allow file download and redirects with error" do
         sign_in(student)
         get :download_tar, params: { path: "autopopulated/test/#{file_path}" }
-        expect(response).to redirect_to(file_manager_index_path)
-        expect(flash[:error]).to eq("You are not authorized to download atttachments at this path")
+        expect(response).to redirect_to(root_path)
+        expect(flash[:error]).to eq("You are not authorized to download attachments at this path")
       end
     end
   end
