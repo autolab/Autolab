@@ -85,13 +85,22 @@ class AutogradersController < ApplicationController
     end
   end
 
+  action_auth_level :download_file, :instructor
   def download_file
-    file_path = Pathname.new(File.cleanpath(params[:file_path]))
-    if file_path.exist?
-      send_file(file_path, disposition: "attachment")
+    allowed_files = {
+      'makefile' => Rails.root.join('courses', @course.name, @assessment.name,
+                                    'autograde-Makefile'),
+      'tar' => Rails.root.join('courses', @course.name, @assessment.name, 'autograde.tar')
+    }
+
+    file_key = params[:file_key]
+    file_path = allowed_files[file_key]
+
+    if file_path && File.exist?(file_path)
+      send_file(file_path, disposition: 'attachment')
     else
-      flash[:error] = "File not found"
-      redirect_to(edit_course_assessment_path(@course, @assessment))
+      flash[:error] = 'File not found'
+      redirect_to(edit_course_assessment_autograder_path(@course, @assessment))
     end
   end
 
@@ -107,6 +116,6 @@ private
   end
 
   def assessment_params
-    params[:autograder][:assessment].permit(:disable_network)
+    params.fetch(:autograder, {}).fetch(:assessment, {}).permit(:disable_network)
   end
 end
