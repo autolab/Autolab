@@ -220,7 +220,7 @@ RSpec.describe FileManagerController, type: :controller do
         sign_in(instructor)
         put :rename, params: { relative_path: file_path, new_name:, path: file_path }
         expect(flash[:success]).to eq("Successfully renamed file to #{new_name}")
-        expect(File.exist?(File.join(@base_dir, course.name, new_name))).to be_truthy
+        expect(File.exist?(File.join(@base_dir, @course.name, new_name))).to be_truthy
         expect(File.exist?(File.join(@base_dir, file_path))).to be_falsey
       end
     end
