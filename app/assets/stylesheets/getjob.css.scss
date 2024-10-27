@@ -7,6 +7,7 @@
   color: black;
   margin: 0;
   padding: 5px;
+  overflow: auto;
 }
 
 .jobs-table {
@@ -15,7 +16,6 @@
 
 .jobs-table td {
   padding: 8px 5px;
-  overflow: scroll;
   font-size: inherit;
 }
 
