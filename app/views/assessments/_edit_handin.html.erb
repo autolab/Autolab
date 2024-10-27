@@ -4,7 +4,7 @@
       function toggleHandinAutolab(disable_button) {
           var handinField = document.querySelector('.handin-filename-field');
           handinField.disabled = disable_button.checked;
-          if (!handinField.disabled) {
+          if (!handinField.disabled && !handinField.value) {
               handinField.value = 'handin.c';
           }
       }
@@ -12,6 +12,9 @@
       document.addEventListener('DOMContentLoaded', function() {
           var disableHandinsCheckbox = document.querySelector('.disable-handins-toggle');
           toggleHandinAutolab(disableHandinsCheckbox);
+          disableHandinsCheckbox.addEventListener('change', function() {
+              toggleHandinAutolab(disableHandinsCheckbox);
+          });
       });
   </script>
 <% end %>
@@ -49,8 +52,7 @@
                 class: "disable-handins-toggle",
                 onchange: "toggleHandinAutolab(this)" %>
 <%= f.text_field :handin_filename,
-                 value: "handin.c",
-                 disabled: true,
+                 value: f.object.handin_filename.presence || "handin.c",
                  help_text: "The suffix that is appended to student submission files. Autolab stores submission files in the handin directory as email/version_fname",
                  placeholder: "E.g. mm.c",
                  class: "handin-filename-field" %>
