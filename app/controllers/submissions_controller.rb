@@ -288,6 +288,33 @@ class SubmissionsController < ApplicationController
               filename: "#{@course.name}_#{@course.semester}_#{@assessment.name}_submissions.zip")
   end
 
+  action_auth_level :excuseBatch, :course_assistant
+  def excuseBatch
+    submission_ids = params[:submission_ids]
+    flash[:error] = "Cannot index submissions for nil assessment" if @assessment.nil?
+
+    unless @assessment.valid?
+      @assessment.errors.full_messages.each do |msg|
+        flash[:error] += "<br>#{msg}"
+      end
+      flash[:html_safe] = true
+    end
+
+    submissions = submission_ids.map { |sid| @assessment.submissions.find_by(id: sid) }
+
+    submissions.each do |submission|
+      aud = AssessmentUserDatum.find_by(
+        assessment_id: @assessment.id,
+        course_user_datum_id: submission.course_user_datum_id
+      )
+      if !aud.nil? && !aud.update(grade_type: AssessmentUserDatum::EXCUSED)
+        flash[:error] = "Could not excuse student."
+      end
+    end
+    flash[:success] = "Selected submissions have been excused."
+    redirect_to course_assessment_submissions_path(@course, @assessment)
+  end
+
   # Action to be taken when the user wants do download a submission but
   # not actually view it. If the :header_position parameter is set, it will
   # try to send the file at that position in the archive.

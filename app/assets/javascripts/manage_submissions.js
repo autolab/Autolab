@@ -42,7 +42,7 @@ $(document).ready(function() {
   var regradeHTML = $('#regrade-batch-html').html();
   var deleteHTML = $('#delete-batch-html').html();
   var downloadHTML = $('#download-batch-html').html();
-  var excuseHTML = $('#gradetype-batch-html').html();
+  var excuseHTML = $('#excuse-batch-html').html();
   $('div.selected-buttons').html(`<div id='selected-buttons'>${regradeHTML}${deleteHTML}${downloadHTML}${excuseHTML}</div>`);
 
   // add ids to each selected button
@@ -56,7 +56,7 @@ $(document).ready(function() {
   }
 
   // base URLs for selected buttons
-  var buttonIDs = ['#regrade-selected', '#delete-selected', '#download-selected', '#gradetype-selected'];
+  var buttonIDs = ['#regrade-selected', '#delete-selected', '#download-selected', '#excuse-selected'];
   var baseURLs = {};
   buttonIDs.forEach(function(id) {
     baseURLs[id] = $(id).prop('href');
