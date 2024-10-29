@@ -60,7 +60,6 @@ gem 'omniauth', '>=1.2.2'
 gem 'omniauth-facebook', '>=2.0.0'
 gem 'omniauth-google-oauth2', '>=0.2.5'
 gem 'omniauth-rails_csrf_protection', '~> 1.0'
-gem 'omniauth-shibboleth', '>=1.1.2'
 gem 'omniauth-shibboleth-redux', '~> 2.0', require: 'omniauth-shibboleth'
 
 # OAuth2 authentication
