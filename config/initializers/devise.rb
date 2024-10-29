@@ -227,6 +227,10 @@ Devise.setup do |config|
   config.omniauth :google_oauth2, "", "", setup: lambda{ |env|
     env['omniauth.strategy'].options.merge!(OauthConfigController.get_oauth_credentials :google_oauth2)
   }
+  # Set up OpenID Connect interceptor
+  config.omniauth :openid_connect, setup: lambda{ |env|
+    env['omniauth.strategy'].options.merge!(OauthConfigController.get_oauth_credentials :openid_connect)
+  }
 
 
   # ==> Warden configuration

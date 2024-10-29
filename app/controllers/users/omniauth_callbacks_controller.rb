@@ -99,4 +99,26 @@ class Users::OmniauthCallbacksController < Devise::OmniauthCallbacksController
       set_flash_message(:notice, :success, kind: "Shibboleth") if is_navigational_format?
     end
   end
+
+  def openid_connect
+    if user_signed_in?
+      if (data = request.env["omniauth.auth"]) && current_user.authentications.where(provider: data["provider"],
+                                                                                     uid: data["uid"]).empty?
+        current_user.authentications.create(provider: data["provider"],
+                                            uid: data["uid"])
+      end
+      redirect_to root_path
+    else
+      @user = User.find_for_openid_connect_oauth(request.env["omniauth.auth"], current_user)
+      unless @user
+        # automatic cleanup of devise.* after sign in
+        session["devise.openid_connect_data"] = request.env["omniauth.auth"].except("extra")
+        @user = User.add_oauth_if_user_exists session
+        @user ||= User.new_with_session(nil, session)
+      end
+
+      sign_in_and_redirect @user, event: :authentication
+      set_flash_message(:notice, :success, kind: "OpenID_Connect") if is_navigational_format?
+    end
+  end
 end

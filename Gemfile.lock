@@ -63,8 +63,10 @@ GEM
       zeitwerk (~> 2.3)
     addressable (2.8.6)
       public_suffix (>= 2.0.2, < 6.0)
+    aes_key_wrap (1.1.0)
     afm (0.2.2)
     ast (2.4.2)
+    attr_required (1.0.2)
     autoprefixer-rails (10.4.16.0)
       execjs (~> 2)
     base64 (0.2.0)
@@ -80,6 +82,7 @@ GEM
       erubi (~> 1.4)
       parser (>= 2.4)
       smart_properties
+    bindata (2.5.0)
     binding_of_caller (1.0.0)
       debug_inspector (>= 0.0.1)
     bootstrap-sass (3.4.1)
@@ -139,6 +142,8 @@ GEM
     dotenv-rails (2.8.1)
       dotenv (= 2.8.1)
       railties (>= 3.2)
+    email_validator (2.2.4)
+      activemodel
     erb_lint (0.5.0)
       activesupport
       better_html (>= 2.0.1)
@@ -161,6 +166,8 @@ GEM
       base64
       faraday-net_http (>= 2.0, < 3.1)
       ruby2_keywords (>= 0.0.4)
+    faraday-follow_redirects (0.3.0)
+      faraday (>= 1, < 3)
     faraday-net_http (3.0.2)
     ffi (1.16.3)
     fomantic-ui-sass (2.8.8.1)
@@ -192,6 +199,13 @@ GEM
     js_cookie_rails (2.2.0)
       railties (>= 3.1)
     json (2.7.1)
+    json-jwt (1.16.6)
+      activesupport (>= 4.2)
+      aes_key_wrap
+      base64
+      bindata
+      faraday (~> 2.0)
+      faraday-follow_redirects
     jstz-rails3-plus (1.0.5)
       railties (>= 3.1)
     jwt (2.7.1)
@@ -279,6 +293,22 @@ GEM
       omniauth (~> 2.0)
     omniauth-shibboleth-redux (2.0.0)
       omniauth (>= 2.0.0)
+    omniauth_openid_connect (0.8.0)
+      omniauth (>= 1.9, < 3)
+      openid_connect (~> 2.2)
+    openid_connect (2.3.0)
+      activemodel
+      attr_required (>= 1.0.0)
+      email_validator
+      faraday (~> 2.0)
+      faraday-follow_redirects
+      json-jwt (>= 1.16)
+      mail
+      rack-oauth2 (~> 2.2)
+      swd (~> 2.0)
+      tzinfo
+      validate_url
+      webfinger (~> 2.0)
     orm_adapter (0.5.0)
     overcommit (0.61.0)
       childprocess (>= 0.6.3, < 5)
@@ -307,6 +337,13 @@ GEM
     rack (2.2.9)
     rack-attack (6.7.0)
       rack (>= 1.0, < 4)
+    rack-oauth2 (2.2.1)
+      activesupport
+      attr_required
+      faraday (~> 2.0)
+      faraday-follow_redirects
+      json-jwt (>= 1.11.0)
+      rack (>= 2.1.0)
     rack-protection (3.2.0)
       base64 (>= 0.1.0)
       rack (~> 2.2, >= 2.2.4)
@@ -432,6 +469,11 @@ GEM
       mini_portile2 (~> 2.8.0)
     stringio (3.1.0)
     strscan (3.1.0)
+    swd (2.0.3)
+      activesupport (>= 3)
+      attr_required (>= 0.0.5)
+      faraday (~> 2.0)
+      faraday-follow_redirects
     terser (1.1.20)
       execjs (>= 0.3.0, < 3)
     thin (1.8.2)
@@ -448,9 +490,16 @@ GEM
       tzinfo (>= 1.0.0)
     unicode-display_width (2.5.0)
     uri (0.10.3)
+    validate_url (1.0.15)
+      activemodel (>= 3.0.0)
+      public_suffix
     version_gem (1.1.3)
     warden (1.2.9)
       rack (>= 2.0.9)
+    webfinger (2.1.3)
+      activesupport
+      faraday (~> 2.0)
+      faraday-follow_redirects
     webmock (3.19.1)
       addressable (>= 2.8.0)
       crack (>= 0.3.2)
@@ -518,6 +567,7 @@ DEPENDENCIES
   omniauth-google-oauth2 (>= 0.2.5)
   omniauth-rails_csrf_protection (~> 1.0)
   omniauth-shibboleth-redux (~> 2.0)
+  omniauth_openid_connect (~> 0.8.0)
   overcommit
   populator (>= 1.0.0)
   prawn (= 0.13.0)
