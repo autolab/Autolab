@@ -9,11 +9,14 @@ This guide will walk you through setting up Autolab with your chosen IdP.
 First, register your Autolab instance with your IdP. While the registration process varies across different OIDC IdP implementations, there are several key parameters to configure:
 
 - `redirect_url`: Must be set to `{scheme}://{your_autolab_instance}/auth/users/auth/openid_connect/callback`
-  - Carefully specify the scheme (`http` or `https`) and `your_autolab_instance` to exactly match your deployment configuration and access URL.
+  - For production environments, always use `https` as the scheme. Only use `http` for local development.
+  - Carefully specify `your_autolab_instance` to exactly match your deployment configuration and access URL.
 - `client_id`:
   - Some IdPs allow you to specify a custom `client_id`, while others generate a unique identifier automatically. Either way, you'll need this ID for the next step.
 - `client_secret`:
-  - Upon registration completion, the IdP typically generates a unique and secure `client_secret`. Save this secret as you'll need it for the next step.
+  - Upon registration completion, the IdP typically generates a unique and secure `client_secret`.
+  - Store this secret securely (e.g., using environment variables or secure credential storage).
+  - Never commit the secret to version control or share it in public forums.
 
 ## Configuring Autolab for OpenID Connect
 
