@@ -149,6 +149,7 @@ Rails.application.routes.draw do
           get "downloadAll"
           post "destroyBatch"
           get "downloadBatch"
+          post "excuseBatch"
           get "missing"
         end
       end
