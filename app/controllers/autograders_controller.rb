@@ -1,6 +1,8 @@
 ##
 # Each Assessment can have an autograder, which is modified with this controller
-#
+
+require 'pathname'
+
 class AutogradersController < ApplicationController
   before_action :set_assessment
   before_action :set_assessment_breadcrumb, only: [:edit]
@@ -27,11 +29,16 @@ class AutogradersController < ApplicationController
   end
 
   action_auth_level :edit, :instructor
-  def edit; end
+  def edit
+    makefile_path = Rails.root.join("courses", @course.name, @assessment.name, "autograde-Makefile")
+    tar_path = Rails.root.join("courses", @course.name, @assessment.name, "autograde.tar")
+    @makefile_exists = File.exist?(makefile_path) ? makefile_path : nil
+    @tar_exists = File.exist?(tar_path) ? tar_path : nil
+  end
 
   action_auth_level :update, :instructor
   def update
-    if @autograder.update(autograder_params)
+    if @autograder.update(autograder_params) && @assessment.update(assessment_params)
       flash[:success] = "Autograder saved."
       begin
         upload
@@ -78,6 +85,25 @@ class AutogradersController < ApplicationController
     end
   end
 
+  action_auth_level :download_file, :instructor
+  def download_file
+    allowed_files = {
+      'makefile' => Rails.root.join('courses', @course.name, @assessment.name,
+                                    'autograde-Makefile'),
+      'tar' => Rails.root.join('courses', @course.name, @assessment.name, 'autograde.tar')
+    }
+
+    file_key = params[:file_key]
+    file_path = allowed_files[file_key]
+
+    if file_path && File.exist?(file_path)
+      send_file(file_path, disposition: 'attachment')
+    else
+      flash[:error] = 'File not found'
+      redirect_to(edit_course_assessment_autograder_path(@course, @assessment))
+    end
+  end
+
 private
 
   def set_autograder
@@ -87,5 +113,9 @@ private
 
   def autograder_params
     params[:autograder].permit(:autograde_timeout, :autograde_image, :release_score)
+  end
+
+  def assessment_params
+    params.fetch(:autograder, {}).fetch(:assessment, {}).permit(:disable_network)
   end
 end
