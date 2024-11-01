@@ -23,29 +23,23 @@ class SchedulersController < ApplicationController
   action_auth_level :create, :instructor
   def create
     @scheduler = @course.scheduler.new(scheduler_params)
-    # Check if the action file exists and is readable
     action_path = Rails.root.join(scheduler_params[:action]).to_path
-    unless File.exist?(action_path) && File.readable?(action_path)
-      flash[:error] = "Scheduler create failed. Action file does not exist or is
-        not readable at #{action_path}."
-      redirect_to(new_course_scheduler_path(@course)) and return
-    end
-
-    if @scheduler.save
-      # Ensure visual run is successful
-      begin
-        test_run_visual_scheduler(@scheduler)
-        flash[:success] = "Scheduler created and executed successfully!"
-        redirect_to(course_schedulers_path(@course))
-      rescue StandardError => e
-        @scheduler.destroy # Destroy the created scheduler if visual run fails
-        flash[:error] = "Scheduler creation failed. Error: #{e.message}"
-        redirect_to(new_course_scheduler_path(@course))
+    # Check if the action file exists, is readable, and compiles
+    if validate_compile_action_file(action_path)
+      if @scheduler.save
+        # Ensure visual run is successful
+        if run_visual_scheduler(@scheduler)
+          flash[:success] = "Scheduler created and executed successfully!"
+          redirect_to(course_schedulers_path(@course)) and return
+        else
+          @scheduler.destroy
+          flash[:error] = "Scheduler creation failed during execution."
+        end
+      else
+        flash[:error] = "Scheduler create failed. Please check all fields."
       end
-    else
-      flash[:error] = "Scheduler create failed. Please check all fields."
-      redirect_to(new_course_scheduler_path(@course))
     end
+    redirect_to(new_course_scheduler_path(@course))
   end
 
   action_auth_level :edit, :instructor
@@ -60,76 +54,32 @@ class SchedulersController < ApplicationController
 
   action_auth_level :visual_run, :instructor
   def visual_run
-    action = Scheduler.find(params[:scheduler_id])
-    # https://stackoverflow.com/a/1076445
-    read, write = IO.pipe
-    @log = "Executing #{Rails.root.join(action.action)}\n"
-    begin
-      pid = fork do
-        read.close
-        mod_name = Rails.root.join(action.action).to_path
-        fork_log = ""
-        begin
-          require mod_name
-          output = Updater.update(action.course)
-          if output.respond_to?(:to_str)
-            fork_log << "----- Script Output -----\n"
-            fork_log << output
-            fork_log << "\n----- End Script Output -----"
-          end
-        rescue ScriptError, StandardError => e
-          fork_log << "----- Script Error Output -----\n"
-          fork_log << "Error in '#{@course.name}' updater: #{e.message}\n"
-          fork_log << e.backtrace.join("\n\t")
-          fork_log << "\n---- End Script Error Output -----"
-        end
-        write.print fork_log
-      end
-
-      write.close
-      result = read.read
-      Process.wait2(pid)
-      @log << result
-    rescue StandardError => e
-      @log << "----- Error Output -----\n"
-      @log << "Error in '#{@course.name}' updater: #{e.message}\n"
-      @log << e.backtrace.join("\n\t")
-      @log << "\n---- End Error Output -----"
-    end
-    @log << "\nCompleted running action."
+    @scheduler = Scheduler.find(params[:scheduler_id])
+    @log = execute_action(@scheduler)
     render partial: "visual_test"
   end
 
   action_auth_level :update, :instructor
   def update
     @scheduler = Scheduler.find_by(id: params[:id])
-    # Check if the action file exists and is readable
     action_path = Rails.root.join(scheduler_params[:action]).to_path
-    unless File.exist?(action_path) && File.readable?(action_path)
-      flash[:error] = "Scheduler update failed. Action file does not exist or is
-        not readable at #{action_path}."
-      redirect_to(edit_course_scheduler_path(@course)) and return
-    end
-
-    # Save the current state of the scheduler in case we need to revert
-    previous_scheduler_state = @scheduler.attributes
-
-    if @scheduler.update(scheduler_params)
-      begin
-        # Run the visual scheduler to ensure the new update works
-        test_run_visual_scheduler(@scheduler)
-        flash[:success] = "Scheduler updated and executed successfully!"
-        redirect_to(course_schedulers_path(@course))
-      rescue StandardError => e
-        @scheduler.update(previous_scheduler_state) # If error, revert to previous state.
-        flash[:error] = "Scheduler update failed. Reverting to previous state.
-          Error: #{e.message}"
-        redirect_to(edit_course_scheduler_path(@course, @scheduler))
+    # Check if the action file exists, is readable, and compiles
+    if validate_compile_action_file(action_path)
+      previous_state = @scheduler.attributes
+      if @scheduler.update(scheduler_params)
+        # Ensure visual run is successful
+        if run_visual_scheduler(@scheduler)
+          flash[:success] = "Scheduler updated and executed successfully!"
+          redirect_to(course_schedulers_path(@course)) and return
+        else
+          @scheduler.update(previous_state) # If error, revert to previous state.
+          flash[:error] = "Scheduler update failed during execution. Reverted to previous state."
+        end
+      else
+        flash[:error] = "Scheduler update failed! Please check your fields."
       end
-    else
-      flash[:error] = "Scheduler update failed! Please check your fields."
-      redirect_to(edit_course_scheduler_path(@course, @scheduler))
     end
+    redirect_to(edit_course_scheduler_path(@course, @scheduler))
   end
 
   action_auth_level :destroy, :instructor
@@ -156,39 +106,75 @@ private
     @breadcrumbs << (view_context.link_to "Manage Schedulers", course_schedulers_path(@course))
   end
 
-  def test_run_visual_scheduler(scheduler)
-    # Do a test visual run to check if created/updated info valid
-    action = scheduler
-    read, write = IO.pipe
-
-    pid = fork do
-      read.close
-      mod_name = Rails.root.join(action.action).to_path
-      fork_log = ""
-      begin
-        require mod_name
-        output = Updater.update(action.course)
-        if output.respond_to?(:to_str)
-          fork_log << "----- Script Output -----\n"
-          fork_log << output
-          fork_log << "\n----- End Script Output -----"
-        end
-      rescue ScriptError, StandardError => e
-        fork_log << "----- Script Error Output -----\n"
-        fork_log << "Error in '#{action.course.name}' updater: #{e.message}\n"
-        fork_log << e.backtrace.join("\n\t")
-        fork_log << "\n---- End Script Error Output -----"
-      end
-      write.print fork_log
+  def validate_compile_action_file(action_path)
+    # Check if the action file exists and is readable
+    unless File.exist?(action_path) && File.readable?(action_path)
+      flash[:error] = "Scheduler update failed. Action file does not exist or is
+        not readable at #{action_path}."
+      return false
     end
 
-    write.close
-    result = read.read
-    Process.wait2(pid)
+    # compile action file to check for syntax errors
+    begin
+      RubyVM::InstructionSequence.compile(File.read(action_path))
+    rescue SyntaxError => e
+      flash[:error] = "Syntax error in action file: #{e.message}"
+      return false
+    end
 
-    # Raise an exception if something goes wrong
-    return unless result.is_a?(String) && result.include?("Error")
+    true
+  end
 
-    raise "Scheduler execution failed."
+  def run_visual_scheduler(scheduler)
+    log = execute_action(scheduler)
+    # Ensure visual run is successful or return error
+    if log.include?("Error")
+      flash[:error] = "Scheduler execution failed."
+      false
+    else
+      flash[:success] = "Scheduler executed successfully!"
+      true
+    end
+  end
+
+  def execute_action(scheduler)
+    action_path = Rails.root.join(scheduler.action).to_path
+    # https://stackoverflow.com/a/1076445
+    read, write = IO.pipe
+    log = "Executing #{action_path}\n"
+    begin
+      pid = fork do
+        read.close
+        mod_name = action_path
+        fork_log = ""
+        begin
+          require mod_name
+          output = Updater.update(scheduler.course)
+          if output.respond_to?(:to_str)
+            fork_log << "----- Script Output -----\n"
+            fork_log << output
+            fork_log << "\n----- End Script Output -----"
+          end
+        rescue ScriptError, StandardError => e
+          fork_log << "----- Script Error Output -----\n"
+          fork_log << "Error in '#{scheduler.course.name}' updater: #{e.message}\n"
+          fork_log << e.backtrace.join("\n\t")
+          fork_log << "\n---- End Script Error Output -----"
+        end
+        write.print fork_log
+      end
+
+      write.close
+      result = read.read
+      Process.wait2(pid)
+      log << result
+    rescue StandardError => e
+      log << "----- Error Output -----\n"
+      log << "Error during execution: #{e.message}\n"
+      log << e.backtrace.join("\n\t")
+      log << "\n---- End Error Output -----"
+    end
+    log << "\nCompleted running action."
+    log
   end
 end
