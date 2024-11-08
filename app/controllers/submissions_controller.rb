@@ -303,6 +303,8 @@ class SubmissionsController < ApplicationController
     submissions = submission_ids.map { |sid| @assessment.submissions.find_by(id: sid) }
 
     submissions.each do |submission|
+      next if submission.nil?
+
       aud = AssessmentUserDatum.find_by(
         assessment_id: @assessment.id,
         course_user_datum_id: submission.course_user_datum_id
@@ -311,7 +313,35 @@ class SubmissionsController < ApplicationController
         flash[:error] = "Could not excuse student."
       end
     end
-    flash[:success] = "Selected submissions have been excused."
+    flash[:success] = "Selected student has been excused."
+    redirect_to course_assessment_submissions_path(@course, @assessment)
+  end
+
+  action_auth_level :unexcuse, :course_assistant
+  def unexcuse
+    submission_id = params[:submission]
+    flash[:error] = "Cannot index submission for nil assessment" if @assessment.nil?
+
+    unless @assessment.valid?
+      @assessment.errors.full_messages.each do |msg|
+        flash[:error] += "<br>#{msg}"
+      end
+      flash[:html_safe] = true
+    end
+
+    submission = @assessment.submissions.find_by(id: submission_id)
+
+    unless submission.nil?
+      aud = AssessmentUserDatum.find_by(
+        assessment_id: @assessment.id,
+        course_user_datum_id: submission.course_user_datum_id
+      )
+      if !aud.nil? && !aud.update(grade_type: AssessmentUserDatum::NORMAL)
+        flash[:error] = "Could not un-excuse student."
+      end
+    end
+
+    flash[:success] = "Selected student has been unexcused."
     redirect_to course_assessment_submissions_path(@course, @assessment)
   end
 

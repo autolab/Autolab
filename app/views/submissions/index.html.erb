@@ -8,6 +8,15 @@
   var is_autograded = <%= @autograded %>;
   var excused_cids = <%= @excused_cids %>;
   var submissions_to_cud = <%= @submissions_to_cud.html_safe %>;
+
+  // additional data for each row
+  additional_data = [
+      <% for s in @submissions do %>
+      {
+          "submission-id": "<%= s.id.to_s %>",
+      },
+      <% end %>
+  ];
 </script>
 
 <% content_for :javascripts do %>

@@ -10,7 +10,19 @@ $(document).ready(function() {
   var table = $('#submissions').DataTable({
     'dom': 'f<"selected-buttons">rt', // show buttons, search, table
     'paging': false,
+    'createdRow': completeRow
   });
+
+  function completeRow(row, data, index) {
+    var submission = additional_data[index];
+
+    // set up name & submission id column
+    // var $td_name = $('td.id', row); // Adjust selector as needed
+    // if ($td_name.length) {
+    //   $td_name.attr('data-submission-id', submission['submission-id']);
+    // }
+    $(row).attr('data-submission-id', submission['submission-id']);
+  }
 
   // Listen for select-all checkbox click
   $('#cbox-select-all').on('click', function(e) {
@@ -149,9 +161,6 @@ $(document).ready(function() {
   );
 });
 
-
-// POPOVERS [TODO]
-
 jQuery(function() {
   var current_popover = undefined;
 
@@ -161,16 +170,20 @@ jQuery(function() {
   }
 
   function close_current_popover_on_blur(event) {
-    if (current_popover && jQuery(current_popover).closest("td").find(event.target).length == 0) {
+    if (current_popover && !jQuery(event.target).closest(current_popover).length) {
       close_current_popover();
     }
   }
 
   jQuery(document).click(function(event) {
     event.stopPropagation();
-    console.log("hi");
     close_current_popover_on_blur(event);
   });
+
+  jQuery(document).on('click', '.excuse-popover-cancel', function(event) {
+    event.stopPropagation();
+    close_current_popover();
+  })
 
   function show_popover(popover, at, arrow_at) {
     if (current_popover) close_current_popover();
@@ -193,28 +206,30 @@ jQuery(function() {
   }
 
   jQuery('#submissions').on('click', 'td.submissions-td div.submissions-name a.submissions-excused-label',
-      function() {
+      function(e) {
+        console.log("hihi");
+
         if (current_popover) {
           close_current_popover();
           return;
         }
 
         var link = jQuery(this);
-        currentPopover = link.siblings("div.excused-popover");
+        let currentPopover = link.siblings("div.excused-popover");
         currentPopover.show();
 
-        show_popover(popover, {
+        show_popover(currentPopover, {
           my: "left center",
           at: "right center",
           of: link,
           offset: "10px 0"
         });
-
-        jQuery.ajax("submission_popover", {
-          data: { submission_id: link.parent().data("submission-id") },
+        console.log(link.closest('tr').data("submission-id"));
+        jQuery.ajax("excuse_popover", {
+          data: { submission_id: link.closest('tr').data("submission-id") },
           success: function(data, status, jqXHR) {
-            popover.html(data)
-            show_popover(popover, {
+            currentPopover.html(data)
+            show_popover(currentPopover, {
               my: "left center",
               at: "right center",
               of: link,

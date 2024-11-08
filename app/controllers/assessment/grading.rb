@@ -288,6 +288,14 @@ end
     render partial: "popover", locals: { s: Submission.find(params[:submission_id].to_i) }
   end
 
+  def excuse_popover
+    submission = Submission.find(params[:submission_id].to_i)
+    cud = CourseUserDatum.find(submission.course_user_datum_id)
+    email = User.find(cud.user_id).email
+    render partial: "excuse_popover",
+           locals: { submission: submission, email: email }
+  end
+
   def score_grader_info
     score = Score.find(params[:score_id])
     grader = (if score then score.grader else nil end)
@@ -316,7 +324,8 @@ end
 
   def statistics
     return unless load_course_config
-    latest_submissions = @assessment.submissions.latest_for_statistics.includes(:scores, :course_user_datum)
+    latest_submissions = @assessment.submissions.latest_for_statistics.includes(:scores, 
+                                                                                :course_user_datum)
     #latest_submissions = @assessment.submissions.latest.includes(:scores, :course_user_datum)
 
     # Each value other than for :all is of the form

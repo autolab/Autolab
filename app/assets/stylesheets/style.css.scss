@@ -1565,6 +1565,52 @@ table.sub td, th {
   align-items: center;
 }
 
+.excused-popover {
+  background-color: #EBEBEA;
+  border-radius: 11px;
+  width: auto;
+  height: auto;
+  z-index: 999;
+  padding: 12px 30px;
+  box-shadow: 0 2px 2px 0 #00000040;
+}
+
+.excuse-popover-content {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+}
+
+.excuse-popover-content-text {
+  padding: 0;
+  margin: 0;
+  font-size: 16px;
+  line-height: 23.88px;
+}
+
+.excuse-popover-content-header {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 25.14px;
+  letter-spacing: -0.01em;
+}
+
+.excuse-popover-buttons {
+  display: flex;
+  gap: 16px;
+  padding-top: 8px;
+}
+
+.btn.excuse-popover-cancel {
+  background-color: #EBEBEA;
+  border: 0.5px solid #3D3E3D;
+  color: #3D3E3D;
+}
+
+.btn.excuse-popover-cancel:hover {
+  background-color: #EBEBEA;
+}
+
 .submissions-center-icons p {
   margin: 0 0 0 10px;
 }

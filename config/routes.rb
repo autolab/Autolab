@@ -149,7 +149,9 @@ Rails.application.routes.draw do
           get "downloadAll"
           post "destroyBatch"
           get "downloadBatch"
+          get "popover"
           post "excuseBatch"
+          post "unexcuse"
           get "missing"
         end
       end
@@ -191,6 +193,9 @@ Rails.application.routes.draw do
         get "quickGetTotal"
         get "score_grader_info"
         get "submission_popover"
+
+        # Manage submissions excuse students
+        get "excuse_popover"
 
         # remote calls
         match "local_submit", via: [:get, :post]
