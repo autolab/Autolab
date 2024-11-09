@@ -74,7 +74,8 @@
                 destroyBatch_course_assessment_submissions_path(@course, @assessment, @submissions),
                 { method: :post,
                   title: "Delete selected submissions",
-                  class: "btn submissions-selected" } %>
+                  class: "btn submissions-selected",
+                  data: {confirm: "Deleting will delete all checked submissions and cannot be undone. Are you sure you want to delete these submissions?"} } %>
   </div>
 
   <div id="download-batch-html">
