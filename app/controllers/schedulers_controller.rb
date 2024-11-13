@@ -120,6 +120,9 @@ private
     rescue SyntaxError => e
       flash[:error] = "Syntax error in action file: #{e.message}"
       return false
+    rescue StandardError => e
+      flash[:error] = "Error validating action file: #{e.message}"
+      return false
     end
 
     true
