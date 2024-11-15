@@ -55,7 +55,9 @@
                  value: f.object.handin_filename.presence || "handin.c",
                  help_text: "The suffix that is appended to student submission files. Autolab stores submission files in the handin directory as email/version_fname",
                  placeholder: "E.g. mm.c",
-                 class: "handin-filename-field" %>
+                 class: "handin-filename-field",
+                 pattern: "^[a-zA-Z0-9._]+$",
+                 title: "Only alphanumeric characters, dots, and underscores are allowed." %>
 <%= f.text_field :max_size, help_text: "The maximum size that a handin file can have in megabytes (MB)." %>
 
 <div class="action_buttons">
