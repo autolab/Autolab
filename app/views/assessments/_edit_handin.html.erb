@@ -2,7 +2,7 @@
   <%= javascript_include_tag "init_handin_datetimepickers" %>
   <script>
       function toggleHandinAutolab(disable_button) {
-          var handinField = document.querySelector('.handin-filename-field');
+          const handinField = document.querySelector('.handin-filename-field');
           handinField.disabled = disable_button.checked;
           if (!handinField.disabled && !handinField.value) {
               handinField.value = 'handin.c';
@@ -10,7 +10,7 @@
       }
 
       document.addEventListener('DOMContentLoaded', function() {
-          var disableHandinsCheckbox = document.querySelector('.disable-handins-toggle');
+          const disableHandinsCheckbox = document.querySelector('.disable-handins-toggle');
           toggleHandinAutolab(disableHandinsCheckbox);
           disableHandinsCheckbox.addEventListener('change', function() {
               toggleHandinAutolab(disableHandinsCheckbox);
