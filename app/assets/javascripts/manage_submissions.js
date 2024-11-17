@@ -51,13 +51,12 @@ $(document).ready(function () {
 
       const problem_headers = data.submissions[0].problems.map((problem) => {
         const max_score = problem.max_score;
-        const autograded = data.autograded ? " (Autograded)" : "";
         return `<th class="submission-th submissions-problem-bg">
                   <div class="sorting-th">
                     ${problem.name}
                     ${sorting_icons}
                   </div>
-                  <span class="score-styling"> ${max_score} ${autograded} </span>
+                  <span class="score-styling"> ${max_score} </span>
                 </th>`;
       }).join('');
 
@@ -115,10 +114,10 @@ $(document).ready(function () {
               </td>
               ${submission.problems.
               map((problem) =>
-                data.scores[submission.id] ?
+                data.scores[submission.id]?.[problem.id] ?
                 `<td class="submissions-td submissions-problem-bg">${data.scores[submission.id][problem.id]?.['score']}</td>`
                 :
-                `<td class="submissions-td submissions-problem-bg">undefined</td>`
+                `<td class="submissions-td submissions-problem-bg">-</td>`
               ).join('')}
               <td class="submissions-td">
                 ${submission.late_penalty}
