@@ -1,4 +1,5 @@
 /* Score Popup */
+@import 'variables';
 
 #modal-close {
     font-size: 2rem;
@@ -38,7 +39,7 @@
 /* Table Styling */
 
 .submissions-problem-bg {
-    background-color: #F2F2F2 !important;
+    background-color: $autolab-submissions-background !important;
 }
 
 table.prettyBorder tr:hover {
