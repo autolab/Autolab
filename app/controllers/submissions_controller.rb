@@ -140,7 +140,15 @@ class SubmissionsController < ApplicationController
     submissions = submission_ids.map { |sid| @assessment.submissions.find_by(id: sid) }
     scount = 0
     fcount = 0
+
+    if submissions.empty? || submissions[0].nil?
+      return
+    end
+
     submissions.each do |s|
+      if s.nil?
+        next
+      end
       if s.destroy
         scount += 1
       else
@@ -212,6 +220,10 @@ class SubmissionsController < ApplicationController
                     @assessment.submissions.includes(:course_user_datum)
                   end
 
+    if submissions.empty?
+      return
+    end
+
     submissions = submissions.select do |s|
       p = s.handin_file_path
       @cud.can_administer?(s.course_user_datum) && !p.nil? && File.exist?(p) && File.readable?(p)
@@ -265,6 +277,10 @@ class SubmissionsController < ApplicationController
     submissions = submission_ids.map { |sid| @assessment.submissions.find_by(id: sid) }
     submissions = submissions.select { |s| s && @cud.can_administer?(s.course_user_datum) }
 
+    if submissions.empty? || submissions[0].nil?
+      return
+    end
+
     filedata = submissions.collect do |s|
       p = s.handin_file_path
       email = s.course_user_datum.user.email
@@ -301,6 +317,10 @@ class SubmissionsController < ApplicationController
     end
 
     submissions = submission_ids.map { |sid| @assessment.submissions.find_by(id: sid) }
+
+    if submissions.empty? || submissions[0].nil?
+      return
+    end
 
     submissions.each do |submission|
       next if submission.nil?

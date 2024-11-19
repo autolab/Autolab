@@ -114,7 +114,8 @@ $(document).ready(function() {
       }
       selectedStudentCids = _.without(selectedStudentCids, selectedCid);
     }
-    changeButtonStates(!selectedSubmissions.length);
+    let disableButtons = !selectedSubmissions.length || (selectedSubmissions.length === 1 && selectedSubmissions[0] === 'select-all')
+    changeButtonStates(disableButtons);
   }
 
   $('#submissions').on('click', '.exclude-click i', function (e) {

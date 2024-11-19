@@ -771,8 +771,8 @@ table.prettyBorder {
     top: 0;
   }
   th {
-    background-color: #ebebeb;
-    color: #000000;
+    background-color: $autolab-grey;
+    color: $autolab-black;
     cursor: pointer;
     font-family: Source Sans Pro, sans-serif;
     font-size: 0.8em;
@@ -1517,7 +1517,6 @@ table.sub td, th {
   margin: 0;
   margin-right: 10px;
   padding: 0px 10px 0px 5px;
-  font-family: Source Sans Pro, sans-serif;
   display: flex;
 }
 
@@ -1566,13 +1565,13 @@ table.sub td, th {
 }
 
 .excused-popover {
-  background-color: #EBEBEA;
+  background-color: $autolab-submissions-background;
   border-radius: 11px;
   width: auto;
   height: auto;
   z-index: 999;
   padding: 12px 30px;
-  box-shadow: 0 2px 2px 0 #00000040;
+  box-shadow: 0 2px 2px 0 $autolab-excused-popover-background;
 }
 
 .excuse-popover-content {
@@ -1602,13 +1601,13 @@ table.sub td, th {
 }
 
 .btn.excuse-popover-cancel {
-  background-color: #EBEBEA;
+  background-color: $autolab-submissions-background;
   border: 0.5px solid #3D3E3D;
   color: #3D3E3D;
 }
 
 .btn.excuse-popover-cancel:hover {
-  background-color: #EBEBEA;
+  background-color: $autolab-submissions-background;
 }
 
 .submissions-center-icons p {
@@ -1649,5 +1648,5 @@ table.sub td, th {
 .submissions-score-icon {
   margin-left: 5px;
   margin-top: 5px;
-  color: #A1A0A3;
+  color: $autolab-darker-grey;
 }
