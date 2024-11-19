@@ -46,12 +46,11 @@ class SubmissionsController < ApplicationController
         submission.global_annotations.empty? ? nil : submission.global_annotations.sum(:value)
     end
 
-    autograded = @assessment.has_autograder?
+    submissions = submissions.as_json(seen_by: @cud)
 
     render json: { submissions: submission_info,
                    scores: submission_id_to_score_data,
-                   tweaks:,
-                   autograded: }, status: :ok
+                   tweaks: tweaks }, status: :ok
   rescue StandardError => e
     render json: { error: e.message }, status: :not_found
     nil

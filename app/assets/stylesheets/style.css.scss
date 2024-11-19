@@ -785,6 +785,7 @@ table.prettyBorder {
 
   .submissions-th {
     padding: 25px 0 25px 0;
+    font-size: 0.9rem;
     div {
       display: flex;
       align-items: center;
@@ -792,7 +793,6 @@ table.prettyBorder {
     p {
       margin: 0;
       float: left;
-      padding-right: 3px;
     }
   }
 
@@ -825,7 +825,7 @@ table.prettyBorder {
   .submissions-td {
     border: none;
     border-bottom: 1px solid #ddd;
-    padding: 5px 0 5px 0;
+    padding: 5px 0 5px 0.6rem;
   }
 
   .submissions-cbox-label {
@@ -1586,12 +1586,20 @@ table.sub td, th {
   align-items: center;
 }
 
+.submissions-center-icons .btn i{
+  margin: 0;
+}
+
 .submissions-center-icons p {
   margin: 0 0 0 10px;
 }
 
 .submissions-icons {
   margin-left: 3px;
+}
+
+i.left {
+  margin-right: 10px;
 }
 
 .submissions-score-align {
