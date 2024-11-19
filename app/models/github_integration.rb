@@ -1,6 +1,6 @@
 class GithubIntegration < ApplicationRecord
   belongs_to :user
-  encrypts :access_token
+  has_encrypted :access_token
 
   # Returns the top 30 most recently pushed repos
   # Reasonably if a user wants to submit code, it should be among
@@ -10,7 +10,7 @@ class GithubIntegration < ApplicationRecord
       return nil
     end
 
-    client = Octokit::Client.new(access_token: access_token)
+    client = Octokit::Client.new(access_token:)
 
     begin
       repos = client.repos({},
@@ -38,7 +38,7 @@ class GithubIntegration < ApplicationRecord
       return nil
     end
 
-    client = Octokit::Client.new(access_token: access_token)
+    client = Octokit::Client.new(access_token:)
     branches = client.branches(repo, query: { per_page: 100 })
     branches.map { |branch|
       { name: branch[:name] }
@@ -52,7 +52,7 @@ class GithubIntegration < ApplicationRecord
       return nil
     end
 
-    client = Octokit::Client.new(access_token: access_token)
+    client = Octokit::Client.new(access_token:)
     commits = client.commits(repo, query: { per_page: 100, sha: branch })
     commits.map { |commit|
       { sha: commit[:sha].truncate(7, omission: ""),
@@ -71,7 +71,7 @@ class GithubIntegration < ApplicationRecord
   # repo_branch should be a valid branch of repo_name
   # max_size is in MB
   def clone_repo(repo_name, repo_branch, commit, max_size)
-    client = Octokit::Client.new(access_token: access_token)
+    client = Octokit::Client.new(access_token:)
     repo_info = client.repo(repo_name)
 
     if !repo_info

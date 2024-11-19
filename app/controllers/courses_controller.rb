@@ -288,7 +288,7 @@ class CoursesController < ApplicationController
         { first_name: Regexp.last_match(1), email: Regexp.last_match(2) }
         # when it's first name last name <email>
       else
-        { email: email }
+        { email: }
       end
     end
 
@@ -446,7 +446,7 @@ class CoursesController < ApplicationController
       # to_csv avoids issues with commas
       output += [@course.semester, cud.user.email, user.last_name, user.first_name,
                  cud.school, cud.major, cud.year, cud.grade_policy,
-                 @course.name, cud.lecture, cud.section].to_csv
+                 cud.course_number, cud.lecture, cud.section].to_csv
     end
     send_data output, filename: "roster.csv", type: "text/csv", disposition: "inline"
   end
@@ -461,7 +461,7 @@ class CoursesController < ApplicationController
 
     # don't email kids who dropped!
     @cuds = if section
-              @course.course_user_data.where(dropped: false, section: section)
+              @course.course_user_data.where(dropped: false, section:)
             else
               @course.course_user_data.where(dropped: false)
             end
@@ -480,7 +480,14 @@ class CoursesController < ApplicationController
   end
 
   action_auth_level :moss, :instructor
-  def moss; end
+  def moss
+    @courses = if @cud.user.administrator?
+                 Course.all
+               else
+                 Course.joins(:course_user_data)
+                       .where(course_user_data: { user_id: @cud.user.id, instructor: true })
+               end
+  end
 
   LANGUAGE_WHITELIST = %w[c cc java ml pascal ada lisp scheme haskell fortran ascii vhdl perl
                           matlab python mips prolog spice vb csharp modula2 a8086 javascript plsql
@@ -571,7 +578,9 @@ class CoursesController < ApplicationController
     system("chmod -R a+r #{tmp_dir}")
     ActiveRecord::Base.clear_active_connections!
     # Remove non text files when making a moss run
-    `~/Autolab/script/cleanMoss #{tmp_dir}`
+    Dir.chdir(Rails.root.join("script")) do
+      system("./cleanMoss #{tmp_dir}")
+    end
     # Now run the Moss command
     @mossCmdString = @mossCmd.join(" ")
     @mossOutput = `#{@mossCmdString} 2>&1`
@@ -638,7 +647,7 @@ private
         major = new_cud[:major]
         year = new_cud[:year]
 
-        if (user = User.where(email: email).first).nil?
+        if (user = User.where(email:).first).nil?
           begin
             # Create a new user
             user = User.roster_create(email, first_name, last_name, school,
@@ -668,7 +677,7 @@ private
           end
         end
 
-        existing = @course.course_user_data.where(user: user).first
+        existing = @course.course_user_data.where(user:).first
         # Make sure this user doesn't have a cud in the course
         if existing
           duplicates.add(new_cud[:email])

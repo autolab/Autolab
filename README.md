@@ -51,7 +51,7 @@ We released new documentation! Check it out [here](https://docs.autolabproject.c
 3. Create necessary directories.
 
 	```
-	mkdir attachments/ tmp/
+	mkdir tmp/
 	```
 
 ### Running Tests

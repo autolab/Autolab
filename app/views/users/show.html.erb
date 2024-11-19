@@ -46,6 +46,13 @@
     </span>
   <% end %>
 <% end %>
+<% if current_user.administrator? %>
+  <%= link_to change_password_for_user_user_path(@user), method: :post do %>
+    <span class="btn">
+      Change User's Password
+    </span>
+  <% end %>
+<% end %>
 <% if @user == current_user %>
   <hr>
   <h4>Private Settings</h4>

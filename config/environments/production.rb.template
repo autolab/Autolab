@@ -55,6 +55,9 @@ Autolab3::Application.configure do
   # Enable serving of images, stylesheets, and JavaScripts from an asset server
   # config.action_controller.asset_host = "http://assets.example.com"
 
+  # Store uploaded files on the local file system (see config/storage.yml for options).
+  config.active_storage.service = :local
+
   # Disable delivery errors, bad email addresses will be ignored
   # config.action_mailer.raise_delivery_errors = false
 
@@ -113,7 +116,7 @@ Autolab3::Application.configure do
   config.x.google_analytics_id = nil
 
   # OAuth2 Application Configuration for Github
-  # See (TODO replace with doc link)
+  # See https://docs.autolabproject.com/installation/github_integration/
   config.x.github.client_id = ENV['GITHUB_CLIENT_ID']
   config.x.github.client_secret = ENV['GITHUB_CLIENT_SECRET']
   # LTI configuration file storage location. Needs to be in a private folder

@@ -32,6 +32,14 @@ table.dataTable {
   clear: both;
 }
 
+a.paginate_button,
+a.paginate_active {
+  display: inline-block;
+  padding: 2px 4px;
+  margin-left: 2px;
+  cursor: pointer;
+  cursor: hand;
+}
 th {
   z-index: 1;
   position: sticky;

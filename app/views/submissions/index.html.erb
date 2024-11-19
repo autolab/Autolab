@@ -3,13 +3,37 @@
 <% content_for :stylesheets do %>
   <%= stylesheet_link_tag "datatable.adapter" %>
   <%= stylesheet_link_tag "manage_submissions" %>
+  <%= stylesheet_link_tag "annotations" %>
+  <%= external_stylesheet_link_tag "jquery-ui" %>
 <% end %>
+
+<script>
+/**
+ * initialization of global variables used across manage_submissions.js,
+ * annotations_helpers.js, annotations.js, and annotations_popup.js
+ */
+let basePath = "";
+
+// a json list of scores for this assessment
+var scores = [];
+
+// a json list of problems for this assessment
+let problems = <%= raw @problems.to_json %>;
+let localCache = {};
+var cudEmailStr = "<%= @cud.email %>";
+var fileNameStr = null;
+var currentHeaderPos = null;
+</script>
 
 <% content_for :javascripts do %>
   <%= external_javascript_include_tag "lodash" %>
   <%= javascript_include_tag "sorttable" %>
+  <%= external_javascript_include_tag "jquery-ui" %>
   <%= external_javascript_include_tag "jquery.dataTables" %>
   <%= external_javascript_include_tag "datatables-buttons" %>
+  <%= javascript_include_tag "autolab_component" %>
+  <%= javascript_include_tag "annotations_helpers" %>
+  <%= javascript_include_tag "annotations_popup" %>
   <%= javascript_include_tag "manage_submissions" %>
   <%= external_javascript_include_tag "datatables-rows" %>
 <% end %>
@@ -18,34 +42,53 @@
 <hr>
 
 <div class="row buttons-row">
-    <div class="buttons-spacing">
+  <div class="buttons-spacing">
     <%= link_to "<i class='material-icons left submissions-icons'>add</i>Create Submission".html_safe,
-        new_course_assessment_submission_path(@course, @assessment),
-        {:title=>"Create a new submission for a student, with an option to submit a handin file on their behalf",
-         :class=>"btn submissions-main"} %>
-    </div>
-
-    <div class="buttons-spacing">
+                new_course_assessment_submission_path(@course, @assessment),
+                { title: "Create a new submission for a student, with an option to submit a handin file on their behalf",
+                  class: "btn submissions-main" } %>
+  </div>
+  <div class="buttons-spacing">
     <%= link_to "<i class='material-icons left submissions-icons'>file_download</i>Download Final Submissions".html_safe,
-        downloadAll_course_assessment_submissions_path(@course, @assessment, final: true),
-        {:title=>"Download final submissions from each student",
-         :class=>"btn submissions-main"} %>
-    </div>
-
-    <div class="buttons-spacing"> <!-- TODO: Change functionality to filter for missing submissions -->
+                downloadAll_course_assessment_submissions_path(@course, @assessment, { final: true }),
+                { title: "Download final submissions from each student",
+                  class: "btn submissions-main" } %>
+  </div>
+  <div class="buttons-spacing">
     <%= link_to "<i class='material-icons left submissions-icons'>people</i>Missing Submissions".html_safe,
-        missing_course_assessment_submissions_path(@course, @assessment),
-        {:title=>"List the students who have not submitted anything",
-         :class=>"btn submissions-main"} %>
-    </div>
-
-    <div class="buttons-spacing">
+                missing_course_assessment_submissions_path(@course, @assessment),
+                { title: "List the students who have not submitted anything. You'll be given the option to create new submissions for the missing students",
+                  class: "btn submissions-main" } %>
+  </div>
+  <div class="buttons-spacing">
     <%= link_to "<i class='material-icons left submissions-icons'>event</i>Manage Extensions".html_safe,
-        [@course, @assessment, :extensions],
-        {:class=>"btn submissions-main"} %>
-    </div>
+                course_assessment_extensions_path(@course, @assessment),
+                { title: "List the students who have not submitted anything. You'll be given the option to create new submissions for the missing students",
+                  class: "btn submissions-main" } %>
+  </div>
 </div>
+<div class="row">
+  <% if @autograded then %>
+    <div class="col s3">
+      <%= link_to "Regrade All",
+                  regradeAll_course_assessment_path(@course, @assessment),
+                  { method: :post,
+                    title: "Regrade the most recent submission from each student",
+                    confirm: "Are you sure you want to do this? It will regrade the most recent submission from each student, which might take a while.",
+                    class: "btn" } %>
+    </div>
+    <div class="col s3 offset-s6">
 
+      <%= link_to "Regrade 0",
+                  regradeBatch_course_assessment_path(@course, @assessment),
+                  { method: :post,
+                    title: "Regrade the most recent submission from each student",
+                    class: "btn float-right",
+                    id: "batch-regrade",
+                    style: "display:none;" } %>
+    </div>
+  <% end %>
+</div>
 
 <table class="prettyBorder" id="submissions">
   <% headers = ["Submitted By",
@@ -54,7 +97,7 @@
                 "Submission Date",
                 "File",
                 "Actions"] %>
-  <thead>
+  <thead class="float">
     <tr>
       <th class="submissions-th"></th>
       <% for header in headers %>
@@ -81,16 +124,18 @@
         <div>
           <label class="submissions-cbox-label">
             <input class="cbox" type="checkbox" id="cbox-<%= submission.id %>">
-            <span><span/>
+            <span />
           </label>
         </div>
       </td>
-      
+
       <%# Submitted By %>
       <td class="submissions-td">
         <%= [submission.course_user_datum.first_name, submission.course_user_datum.last_name].reject(&:blank?).join(' ') %>
-        <br/>
-        <%= submission.course_user_datum.email %>
+        <br>
+        <%= link_to submission.course_user_datum.email,
+                    history_course_assessment_path(@course, @assessment, cud_id: submission.course_user_datum_id, partial: true),
+                    { remote: true, class: :trigger } %>
       </td>
 
       <%# Version %>
@@ -103,12 +148,12 @@
         <div class="submissions-score-align">
           <div class="score-num"><%= computed_score { submission.final_score(@cud) } %></div>
           <div class="score-icon">
-            <a class="modal-trigger score-details" 
+            <a class="modal-trigger score-details"
               data-email="<%= submission.course_user_datum.email %>"
               data-cuid=" <%= submission.course_user_datum.id %>">
               <i class="material-icons submissions-score-icon">zoom_in</i>
             </a>
-            </div>   
+            </div>
         </div>
       </td>
 
@@ -133,10 +178,9 @@
           None
         <% end %>
       </td>
-
       <%# Actions %>
       <td class="submissions-td" class="exclude-click" style="text-align:center;">
-        <% if @autograded then %>
+        <% if @autograded and submission.version > 0 then %>
           <div class="submissions-center-icons">
             <%= button_to [:regrade, @course, @assessment, submission_id: submission.id],
                 :method => :post,
@@ -168,4 +212,12 @@
     <hr>
     <div id="score-details-content"></div>
   </div>
+</div>
+
+<div id="annotation-modal" class="modal">
+  <div class="modal-header">
+    <a href="#!" class="modal-close btn-flat"><i class="material-icons">close</i>
+    </a>
+  </div>
+  <%= render "annotation_popup" %>
 </div>

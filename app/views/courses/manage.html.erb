@@ -4,20 +4,7 @@
   <%= stylesheet_link_tag "student_gradebook" %>
 <% end %>
 <% content_for :javascripts do %>
-  <script>
-    function toggleAria(id) {
-        var expanded = document.getElementById(id).getAttribute("aria-expanded");
-        if (expanded == "true") {
-            expanded = "false"
-        } else {
-            expanded = "true"
-        }
-        document.getElementById(id).setAttribute("aria-expanded", expanded);
-    }
-    $(document).ready(function() {
-      $('.collapsible').collapsible();
-    })
-  </script>
+  <%= javascript_include_tag 'collapsible' %>
 <% end %>
 <div class="row">
   <div class="col s12 m12">
@@ -27,9 +14,9 @@
 </div>
 <div class="row">
   <div class="col s12 m4">
-    <ul class="collapsible" data-collapsible="accordion">
-      <li class="collapsible-menu-link active" id="admin-course" aria-role="button" aria-expanded="true" onclick="toggleAria('admin-course')" onkeydown="toggleAria('admin-course')">
-        <div class="collapsible-header active"><h5>Admin Course</h5></div>
+    <ul class="collapsible">
+      <li class="collapsible-menu-link">
+        <div class="collapsible-header"><h5>Admin Course</h5></div>
         <div class="collapsible-body">
           <ul class="options">
             <li>
@@ -86,21 +73,6 @@
         </div>
       </li>
     </ul>
-    <% if @cud.user.administrator? then %>
-    <ul class="collapsible" data-collapsible="accordion" id="admin-autolab" aria-role="button" aria-expanded="false" onclick="toggleAria('admin-autolab')" onkeydown="toggleAria('admin-autolab')">
-      <li class="collapsible-menu-link">
-        <div class="collapsible-header"><h5>Admin Autolab</h5></div>
-        <div class="collapsible-body">
-          <ul class="options">
-            <li><%= link_to 'Create new course', new_course_path,
-                            { title: "Create a new course" } %></li>
-            <li><%= link_to raw('<span class="button">Manage users</span>'),
-                            users_path %></li>
-          </ul>
-        </div>
-      </li>
-    </ul>
-    <% end %>
   </div>
   <!-- course / assessment statistics -->
   <div class="col s12 m8">
