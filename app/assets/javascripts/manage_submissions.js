@@ -2,6 +2,7 @@ const manage_submissions_endpoints = {
   'regrade-selected': 'regradeBatch',
 };
 
+const buttonIDs = ['#regrade-selected', '#delete-selected', '#download-selected', '#excuse-selected'];
 $(document).ready(function() {
 
   var selectedStudentCids = [];
@@ -62,7 +63,6 @@ $(document).ready(function() {
   }
 
   // base URLs for selected buttons
-  var buttonIDs = ['#regrade-selected', '#delete-selected', '#download-selected', '#excuse-selected'];
   var baseURLs = {};
   buttonIDs.forEach(function(id) {
     baseURLs[id] = $(id).prop('href');

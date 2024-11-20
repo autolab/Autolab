@@ -140,17 +140,17 @@ Rails.application.routes.draw do
         resources :scores, only: [:create, :show, :update]
 
         member do
-          get "destroyConfirm"
+          get "destroy_confirm"
           get "download"
           get "view"
         end
 
         collection do
-          get "downloadAll"
-          post "destroyBatch"
-          get "downloadBatch"
+          get "download_all"
+          post "destroy_batch"
+          get "download_batch"
           get "popover"
-          post "excuseBatch"
+          post "excuse_batch"
           post "unexcuse"
           get "missing"
         end
@@ -179,7 +179,7 @@ Rails.application.routes.draw do
         # autograde actions
         post "autograde_done"
         post "regrade"
-        post "regradeBatch"
+        post "regrade_batch"
         post "regradeAll"
 
         # SVN actions

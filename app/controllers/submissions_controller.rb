@@ -29,9 +29,7 @@ class SubmissionsController < ApplicationController
       assessment_id: @assessment.id,
       grade_type: AssessmentUserDatum::EXCUSED
     )
-    excused_students.each do |aud|
-      @excused_cids.append(aud.course_user_datum_id)
-    end
+    @excused_cids = excused_students.pluck(:course_user_datum_id)
   end
 
   # this works
@@ -135,9 +133,9 @@ class SubmissionsController < ApplicationController
   end
 
   action_auth_level :destroyBatch, :instructor
-  def destroyBatch
+  def destroy_batch
     submission_ids = params[:submission_ids]
-    submissions = submission_ids.map { |sid| @assessment.submissions.find_by(id: sid) }
+    submissions = Submission.where(id: submission_ids)
     scount = 0
     fcount = 0
 
@@ -156,9 +154,9 @@ class SubmissionsController < ApplicationController
       end
     end
     if fcount == 0
-      flash[:success] = "#{scount} submission(s) destroyed. #{fcount} submission(s) failed."
+      flash[:success] = "#{scount} #{"submission".pluralize(scount)} destroyed. #{fcount} #{"submission".pluralize(fcount)} failed."
     else
-      flash[:error] = "#{scount} submission(s) destroyed. #{fcount} submission(s) failed."
+      flash[:error] = "#{scount} #{"submission".pluralize(scount)} destroyed. #{fcount} #{"submission".pluralize(fcount)} failed."
     end
     redirect_to(course_assessment_submissions_path(submissions[0].course_user_datum.course,
                                                    submissions[0].assessment)) && return
@@ -166,7 +164,7 @@ class SubmissionsController < ApplicationController
 
   # this is good
   action_auth_level :destroyConfirm, :instructor
-  def destroyConfirm; end
+  def destroy_confirm; end
 
   ##
   ## THIS MARKS THE END OF RESTful ROUTES
@@ -194,7 +192,7 @@ class SubmissionsController < ApplicationController
 
   # should be okay, but untested
   action_auth_level :downloadAll, :course_assistant
-  def downloadAll
+  def download_all
     flash[:error] = "Cannot index submissions for nil assessment" if @assessment.nil?
 
     unless @assessment.valid?
@@ -206,11 +204,7 @@ class SubmissionsController < ApplicationController
 
     if @assessment.disable_handins
       flash[:error] = "There are no submissions to download."
-      if @cud.course_assistant
-        redirect_to course_assessment_path(@course, @assessment)
-      else
-        redirect_to course_assessment_submissions_path(@course, @assessment)
-      end
+      redirect_to appropriate_redirect_path
       return
     end
 
@@ -238,11 +232,7 @@ class SubmissionsController < ApplicationController
 
     if result.nil?
       flash[:error] = "There are no submissions to download."
-      if @cud.course_assistant
-        redirect_to course_assessment_path(@course, @assessment)
-      else
-        redirect_to course_assessment_submissions_path(@course, @assessment)
-      end
+      redirect_to appropriate_redirect_path
       return
     end
 
@@ -253,7 +243,7 @@ class SubmissionsController < ApplicationController
   end
 
   action_auth_level :downloadBatch, :course_assistant
-  def downloadBatch
+  def download_batch
     submission_ids = params[:submission_ids]
     flash[:error] = "Cannot index submissions for nil assessment" if @assessment.nil?
 
@@ -266,16 +256,13 @@ class SubmissionsController < ApplicationController
 
     if @assessment.disable_handins
       flash[:error] = "There are no submissions to download."
-      if @cud.course_assistant
-        redirect_to([@course, @assessment])
-      else
-        redirect_to([@course, @assessment, :submissions])
-      end
+      redirect_to appropriate_redirect_path
       return
     end
 
-    submissions = submission_ids.map { |sid| @assessment.submissions.find_by(id: sid) }
-    submissions = submissions.select { |s| s && @cud.can_administer?(s.course_user_datum) }
+    submissions = @assessment.submissions.where(id: submission_ids).select do |submission|
+      @cud.can_administer?(submission.course_user_datum)
+    end
 
     if submissions.empty? || submissions[0].nil?
       return
@@ -290,11 +277,7 @@ class SubmissionsController < ApplicationController
     result = Archive.create_zip filedata # result is stringIO to be sent
     if result.nil?
       flash[:error] = "There are no submissions to download."
-      if @cud.course_assistant
-        redirect_to([@course, @assessment])
-      else
-        redirect_to([@course, @assessment, :submissions])
-      end
+      redirect_to appropriate_redirect_path
       return
     end
 
@@ -305,7 +288,7 @@ class SubmissionsController < ApplicationController
   end
 
   action_auth_level :excuseBatch, :course_assistant
-  def excuseBatch
+  def excuse_batch
     submission_ids = params[:submission_ids]
     flash[:error] = "Cannot index submissions for nil assessment" if @assessment.nil?
 
@@ -780,6 +763,14 @@ class SubmissionsController < ApplicationController
   end
 
 private
+
+  def appropriate_redirect_path
+    if @cud.course_assistant
+      course_assessment_path(@course, @assessment)
+    else
+      course_assessment_submissions_path(@course, @assessment)
+    end
+  end
 
   def new_submission_params
     params.require(:submission).permit(:course_used_datum_id, :notes, :file,
