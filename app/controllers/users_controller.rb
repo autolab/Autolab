@@ -189,6 +189,15 @@ class UsersController < ApplicationController
 
     temp_file = Tempfile.new("autolab_submissions.zip")
     Zip::File.open(temp_file.path, Zip::File::CREATE) do |zipfile|
+      # track counts of each file name
+      track_duplicate_counts = Hash.new(0)
+      submissions.each do |s|
+        entry_name = download_filename(s.handin_file_path, s.assessment.name)
+        track_duplicate_counts[entry_name] += 1
+      end
+
+      # track which version is being processed (for naming purposes)
+      filename_counts = Hash.new(0)
       submissions.each do |s|
         p = s.handin_file_path
         course_name = s.course_user_datum.course.name
@@ -196,6 +205,14 @@ class UsersController < ApplicationController
         course_directory = "#{filename}/#{course_name}"
         assignment_directory = "#{course_directory}/#{assignment_name}"
         entry_name = download_filename(p, assignment_name)
+        filename_counts[entry_name] += 1
+        # append version number to submission if more than one of same name
+        if track_duplicate_counts[entry_name] > 1
+          version_suffix = "_ver#{filename_counts[entry_name]}"
+          extname = File.extname(entry_name)
+          basename = File.basename(entry_name, extname)
+          entry_name = "#{basename}#{version_suffix}#{extname}"
+        end
         zipfile.add(File.join(assignment_directory, entry_name), p)
       end
     end
