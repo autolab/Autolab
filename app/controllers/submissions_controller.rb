@@ -163,8 +163,8 @@ class SubmissionsController < ApplicationController
   end
 
   # this is good
-  action_auth_level :destroy_confirm, :instructor
-  def destroy_confirm; end
+  action_auth_level :destroyConfirm, :instructor
+  def destroyConfirm; end
 
   ##
   ## THIS MARKS THE END OF RESTful ROUTES

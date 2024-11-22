@@ -140,7 +140,7 @@ Rails.application.routes.draw do
         resources :scores, only: [:create, :show, :update]
 
         member do
-          get "destroy_confirm"
+          get "destroyConfirm"
           get "download"
           get "view"
         end
