@@ -179,7 +179,7 @@ Rails.application.routes.draw do
         # autograde actions
         post "autograde_done"
         post "regrade"
-        post "regrade_batch"
+        post "regradeBatch"
         post "regradeAll"
 
         # SVN actions

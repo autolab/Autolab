@@ -163,7 +163,7 @@ class SubmissionsController < ApplicationController
   end
 
   # this is good
-  action_auth_level :destroyConfirm, :instructor
+  action_auth_level :destroy_confirm, :instructor
   def destroy_confirm; end
 
   ##
@@ -191,7 +191,7 @@ class SubmissionsController < ApplicationController
   end
 
   # should be okay, but untested
-  action_auth_level :downloadAll, :course_assistant
+  action_auth_level :download_all, :course_assistant
   def download_all
     flash[:error] = "Cannot index submissions for nil assessment" if @assessment.nil?
 
@@ -200,12 +200,6 @@ class SubmissionsController < ApplicationController
         flash[:error] += "<br>#{msg}"
       end
       flash[:html_safe] = true
-    end
-
-    if @assessment.disable_handins
-      flash[:error] = "There are no submissions to download."
-      redirect_to appropriate_redirect_path
-      return
     end
 
     submissions = if params[:final]
@@ -242,7 +236,7 @@ class SubmissionsController < ApplicationController
               filename: "#{@course.name}_#{@course.semester}_#{@assessment.name}_submissions.zip")
   end
 
-  action_auth_level :downloadBatch, :course_assistant
+  action_auth_level :download_batch, :course_assistant
   def download_batch
     submission_ids = params[:submission_ids]
     flash[:error] = "Cannot index submissions for nil assessment" if @assessment.nil?
@@ -252,12 +246,6 @@ class SubmissionsController < ApplicationController
         flash[:error] += "<br>#{msg}"
       end
       flash[:html_safe] = true
-    end
-
-    if @assessment.disable_handins
-      flash[:error] = "There are no submissions to download."
-      redirect_to appropriate_redirect_path
-      return
     end
 
     submissions = @assessment.submissions.where(id: submission_ids).select do |submission|
@@ -287,7 +275,7 @@ class SubmissionsController < ApplicationController
               filename: "#{@course.name}_#{@course.semester}_#{@assessment.name}_submissions.zip")
   end
 
-  action_auth_level :excuseBatch, :course_assistant
+  action_auth_level :excuse_batch, :course_assistant
   def excuse_batch
     submission_ids = params[:submission_ids]
     flash[:error] = "Cannot index submissions for nil assessment" if @assessment.nil?
@@ -302,9 +290,12 @@ class SubmissionsController < ApplicationController
     submissions = submission_ids.map { |sid| @assessment.submissions.find_by(id: sid) }
 
     if submissions.empty? || submissions[0].nil?
+      flash[:error] = "No students selected."
+      redirect_to course_assessment_submissions_path(@course, @assessment)
       return
     end
 
+    auds_to_excuse = []
     submissions.each do |submission|
       next if submission.nil?
 
@@ -312,11 +303,29 @@ class SubmissionsController < ApplicationController
         assessment_id: @assessment.id,
         course_user_datum_id: submission.course_user_datum_id
       )
-      if !aud.nil? && !aud.update(grade_type: AssessmentUserDatum::EXCUSED)
-        flash[:error] = "Could not excuse student."
+
+      if !aud.nil? && aud.grade_type != AssessmentUserDatum::EXCUSED
+        auds_to_excuse << aud
       end
     end
-    flash[:success] = "Selected student has been excused."
+
+    if auds_to_excuse.empty?
+      flash[:error] = "No students to excuse."
+      redirect_to course_assessment_submissions_path(@course, @assessment)
+      return
+    end
+
+    auds_to_excuse.each do |aud|
+      next if aud.update(grade_type: AssessmentUserDatum::EXCUSED)
+
+      student_email = aud.course_user_datum.user.email
+      student_name = aud.course_user_datum.user.name
+      flash[:error] ||= ""
+      flash[:error] += "Could not excuse student #{student_name} (#{student_email}): "\
+        "#{aud.errors.full_messages.join(', ')}"
+    end
+
+    flash[:success] = "#{pluralize(auds_to_excuse.size, 'student')} excused."
     redirect_to course_assessment_submissions_path(@course, @assessment)
   end
 
@@ -344,7 +353,7 @@ class SubmissionsController < ApplicationController
       end
     end
 
-    flash[:success] = "Selected student has been unexcused."
+    flash[:success] = "#{aud.course_user_datum.user.email} has been unexcused."
     redirect_to course_assessment_submissions_path(@course, @assessment)
   end
 
@@ -435,7 +444,7 @@ class SubmissionsController < ApplicationController
         @header_position = params[:header_position].to_i
       rescue StandardError
         flash[:error] = "Could not read archive."
-        redirect_to [@course, @assessment] and return false
+        redirect_to course_assessment_submissions_path(@course, @assessment) and return false
       end
     else
       @files = [{
@@ -471,7 +480,7 @@ class SubmissionsController < ApplicationController
 
       unless file && pathname
         flash[:error] = "Could not read archive."
-        redirect_to [@course, @assessment] and return false
+        redirect_to course_assessment_submissions_path(@course, @assessment) and return false
       end
 
       @displayFilename = pathname
@@ -795,7 +804,7 @@ private
   def get_submission_file
     unless @submission.filename
       flash[:error] = "No file associated with submission."
-      redirect_to [@course, @assessment] and return false
+      redirect_to course_assessment_submissions_path(@course, @assessment) and return false
     end
 
     @filename = @submission.handin_file_path
@@ -809,7 +818,7 @@ private
 
     unless File.exist? @filename
       flash[:error] = "Could not find submission file."
-      redirect_to [@course, @assessment] and return false
+      redirect_to course_assessment_submissions_path(@course, @assessment) and return false
     end
 
     true

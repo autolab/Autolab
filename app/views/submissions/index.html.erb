@@ -37,14 +37,17 @@
                   class: "btn submissions-main" } %>
     </div>
 
-    <div class="buttons-spacing">
+  <div class="buttons-spacing">
     <%= link_to "<i class='material-icons left submissions-icons'>file_download</i>Download Final Submissions".html_safe,
                 download_all_course_assessment_submissions_path(@course, @assessment, final: true),
-                { title: "Download final submissions from each student",
-                  class: "btn submissions-main" } %>
-    </div>
+                {
+                  title: @submissions.any? ? "Download final submissions from each student" : "No submissions available to download",
+                  class: "btn submissions-main #{'disabled' unless @submissions.any?}"
+                } %>
+  </div>
 
-    <div class="buttons-spacing"> <!-- TODO: Change functionality to filter for missing submissions -->
+
+  <div class="buttons-spacing"> <!-- TODO: Change functionality to filter for missing submissions -->
     <%= link_to "<i class='material-icons left submissions-icons'>people</i>Missing Submissions".html_safe,
                 missing_course_assessment_submissions_path(@course, @assessment),
                 { title: "List the students who have not submitted anything",
@@ -63,7 +66,7 @@
 <div class="selected-buttons-placeholder">
   <div id="regrade-batch-html">
     <%= link_to "<i class='material-icons'>cached</i>Regrade Selected".html_safe,
-                regrade_batch_course_assessment_path(@course, @assessment),
+                regradeBatch_course_assessment_path(@course, @assessment),
                 { method: :post,
                   title: "Regrade selected submissions",
                   class: "btn submissions-selected" } %>
@@ -122,6 +125,8 @@
   </thead>
 
   <tbody>
+  <div id="no-data-message" style="display: none;">No submissions available.</div>
+
   <% for submission in @submissions %>
     <tr id="row-<%= submission.id %>" class="submission-row">
 
@@ -174,7 +179,7 @@
         <% if submission.filename then %>
           <div class="submissions-center-icons">
             <%= link_to "<i class='material-icons'>zoom_in</i>".html_safe,
-                        [:view, @course, @assessment, submission],
+                        view_course_assessment_submission_url(@course, @assessment, submission),
                         { title: "View the file for this submission",
                           class: "btn small" } %>
             <p>View File</p>
@@ -185,18 +190,19 @@
       </td>
 
       <%# Actions %>
-      <td class="submissions-td" class="exclude-click" style="text-align:center;">
+      <td class="submissions-td" class="exclude-click">
         <% if @autograded then %>
           <div class="submissions-center-icons">
-            <%= button_to [:regrade, @course, @assessment, { submission_id: submission.id }],
-                          method: :post,
-                          title: "Rerun the autograder on this submission",
-                          class: "btn small" do %>
-                  <i class='material-icons'>autorenew</i>
-            <% end %>
+            <button
+              data-url="<%= regrade_course_assessment_path(@course, @assessment, { submission_id: submission.id }) %>"
+              data-method="post"
+              title="Rerun the autograder on this submission"
+              class="btn small regrade-button">
+              <i class='material-icons'>autorenew</i>
+            </button>
             <p>Regrade</p>
           </div>
-        <% end %>
+      <% end %>
         <div class="submissions-center-icons">
           <%= link_to "<i class='material-icons'>delete_outline</i>".html_safe,
                       destroy_confirm_course_assessment_submission_path(@course, @assessment, submission),

@@ -84,7 +84,7 @@
       <% if @assessment.has_autograder? and submission.version > 0 then %>
         <%= link_to '(Regrade)', [:regrade, @course, @assessment, { submission_id: submission.id }], method: :post %>
       <% end %>
-      <%= link_to '(Destroy)', [:destroyConfirm, @course, @assessment, submission] %>
+      <%= link_to '(Destroy)', [:destroy_confirm, @course, @assessment, submission] %>
       <%= link_to '(Edit)', [:edit, @course, @assessment, submission] %>
     </td>
   <% end %>

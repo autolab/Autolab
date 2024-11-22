@@ -14,15 +14,23 @@ $(document).ready(function() {
     'createdRow': completeRow
   });
 
+  // Check if the table is empty
+  if (table.data().count() === 0) {
+    $('#submissions').closest('.dataTables_wrapper').hide(); // Hide the table and its controls
+    $('#no-data-message').show(); // Optionally show a custom message
+  } else {
+    $('#no-data-message').hide(); // Hide custom message when there is data
+  }
+
   function completeRow(row, data, index) {
     var submission = additional_data[index];
     $(row).attr('data-submission-id', submission['submission-id']);
   }
 
   // Listen for select-all checkbox click
-  $('#cbox-select-all').on('click', function(e) {
+  $('#cbox-select-all').on('click', async function(e) {
     var selectAll = $(this).is(':checked');
-    toggleAllRows(selectAll);
+    await toggleAllRows(selectAll);
   });
 
   // Function to toggle all checkboxes
@@ -115,6 +123,15 @@ $(document).ready(function() {
       selectedStudentCids = _.without(selectedStudentCids, selectedCid);
     }
     let disableButtons = !selectedSubmissions.length || (selectedSubmissions.length === 1 && selectedSubmissions[0] === 'select-all')
+
+    $('#cbox-select-all').prop('checked', selectedSubmissions.length === $('#submissions tbody .cbox').length);
+
+    // Ensure `selectedSubmissions` contains only numbers
+    const numericSelectedSubmissions = selectedSubmissions.filter(submissionId => typeof submissionId === 'number');
+
+    // Update the "Select All" checkbox based on filtered numeric submissions
+    $('#cbox-select-all').prop('checked', numericSelectedSubmissions.length === $('#submissions tbody .cbox').length);
+
     changeButtonStates(disableButtons);
   }
 
@@ -133,6 +150,26 @@ $(document).ready(function() {
       return false;
     }
   });
+
+  $(document).on('click', '.regrade-button', function (e) {
+    e.preventDefault();
+
+    const button = $(this);
+    const url = button.data('url');
+    const method = button.data('method') || 'post';
+
+    $.ajax({
+      url: url,
+      type: method.toUpperCase(),
+      success: function (response) {
+        alert(`Regrade initiated successfully!`);
+      },
+      error: function (error) {
+        alert("An error occurred while regrading. Please try again.");
+      }
+    });
+  });
+
 
   $('#submissions').on('click', '.cbox', function (e) {
     var clickedSubmissionId = e.currentTarget.id.replace('cbox-', '');
