@@ -151,26 +151,6 @@ $(document).ready(function() {
     }
   });
 
-  $(document).on('click', '.regrade-button', function (e) {
-    e.preventDefault();
-
-    const button = $(this);
-    const url = button.data('url');
-    const method = button.data('method') || 'post';
-
-    $.ajax({
-      url: url,
-      type: method.toUpperCase(),
-      success: function (response) {
-        alert(`Regrade initiated successfully!`);
-      },
-      error: function (error) {
-        alert("An error occurred while regrading. Please try again.");
-      }
-    });
-  });
-
-
   $('#submissions').on('click', '.cbox', function (e) {
     var clickedSubmissionId = e.currentTarget.id.replace('cbox-', '');
     var submissionId = clickedSubmissionId == 'select-all' ?  clickedSubmissionId : parseInt(clickedSubmissionId, 10);
