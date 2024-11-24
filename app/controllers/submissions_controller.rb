@@ -132,7 +132,7 @@ class SubmissionsController < ApplicationController
                                                    @submission.assessment)) && return
   end
 
-  action_auth_level :destroyBatch, :instructor
+  action_auth_level :destroy_batch, :instructor
   def destroy_batch
     submission_ids = params[:submission_ids]
     submissions = Submission.where(id: submission_ids)
@@ -146,6 +146,11 @@ class SubmissionsController < ApplicationController
     submissions.each do |s|
       if s.nil?
         next
+      end
+      unless @cud.instructor || @cud.course_assistant || s.course_user_datum_id == @cud.id
+        flash[:error] = "You do not have permission to delete #{s.course_user_datum.user.email}'s submission."
+        redirect_to(course_assessment_submissions_path(submissions[0].course_user_datum.course,
+                                                                   submissions[0].assessment)) && return
       end
       if s.destroy
         scount += 1
@@ -257,6 +262,11 @@ class SubmissionsController < ApplicationController
     end
 
     filedata = submissions.collect do |s|
+      unless @cud.instructor || @cud.course_assistant || s.course_user_datum_id == @cud.id
+        flash[:error] = "You do not have permission to download #{s.course_user_datum.user.email}'s submission."
+        redirect_to(course_assessment_submissions_path(submissions[0].course_user_datum.course,
+                                                       submissions[0].assessment)) && return
+      end
       p = s.handin_file_path
       email = s.course_user_datum.user.email
       [p, download_filename(p, email)] if !p.nil? && File.exist?(p) && File.readable?(p)
