@@ -751,7 +751,7 @@ table.prettyBorder {
   tr {
     background-color: #fff;
     &:hover {
-      background-color: #abcdef;
+      background-color: $autolab-sky-blue;
     }
   }
 
@@ -792,8 +792,7 @@ table.prettyBorder {
   }
 
   .submissions-td {
-    border: none;
-    border-bottom: 1px solid #ddd;
+    border-style: none;
     padding: 5px 0 5px 0;
   }
 
