@@ -165,6 +165,11 @@ class UsersController < ApplicationController
   action_auth_level :download_all_submissions, :student
   def download_all_submissions
     user = User.find(params[:id])
+    # user can only download their own submissions
+    if user != current_user
+      flash[:error] = "Permission denied: You are not allowed to download submissions of this user."
+      redirect_to(user_path(current_user)) && return
+    end
     submissions = if params[:final]
                     Submission.latest.where(course_user_datum: CourseUserDatum.where(user_id: user))
                   else
