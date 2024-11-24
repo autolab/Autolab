@@ -31,3 +31,36 @@ html[xmlns] .dataTables_wrapper {
 table.dataTable {
   clear: both;
 }
+
+a.paginate_button,
+a.paginate_active {
+  display: inline-block;
+  padding: 2px 4px;
+  margin-left: 2px;
+  cursor: pointer;
+  cursor: hand;
+}
+th {
+  z-index: 1;
+  position: sticky;
+  top: 0;
+}
+
+.dt-buttons {
+  height: 75px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+
+.dt-button {
+  margin-right: 10px !important;
+}
+
+.dt-button span {
+  display: flex;
+}
+
+.dt-button i {
+  margin: 0 6px 0 4px;
+}

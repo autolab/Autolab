@@ -2,6 +2,10 @@
 
 <% content_for :stylesheets do %>
   <%= stylesheet_link_tag "datatable.adapter" %>
+  <%= stylesheet_link_tag "datatables-rows" %>
+  <%= stylesheet_link_tag "manage_submissions" %>
+  <%= stylesheet_link_tag "annotations" %>
+  <%= external_stylesheet_link_tag "jquery-ui" %>
 <% end %>
 
 <script>
@@ -17,20 +21,42 @@
       },
       <% end %>
   ];
+
+  /**
+   * initialization of global variables used across manage_submissions.js,
+   * annotations_helpers.js, annotations.js, and annotations_popup.js
+   */
+  let basePath = "";
+
+  // a json list of scores for this assessment
+  var scores = [];
+
+  // a json list of problems for this assessment
+  let problems = <%= raw @problems.to_json %>;
+  let localCache = {};
+  var cudEmailStr = "<%= @cud.email %>";
+  var fileNameStr = null;
+  var currentHeaderPos = null;
 </script>
 
 <% content_for :javascripts do %>
   <%= external_javascript_include_tag "lodash" %>
   <%= javascript_include_tag "sorttable" %>
+  <%= external_javascript_include_tag "jquery-ui" %>
   <%= external_javascript_include_tag "jquery.dataTables" %>
+  <%= external_javascript_include_tag "datatables-buttons" %>
+  <%= javascript_include_tag "autolab_component" %>
+  <%= javascript_include_tag "annotations_helpers" %>
+  <%= javascript_include_tag "annotations_popup" %>
   <%= javascript_include_tag "manage_submissions" %>
+  <%= javascript_include_tag "datatables-rows" %>
 <% end %>
 
 <h3>Manage Submissions</h3>
 <hr>
 
 <div class="row buttons-row">
-    <div class="buttons-spacing">
+  <div class="buttons-spacing">
     <%= link_to "<i class='material-icons left submissions-icons'>add</i>Create Submission".html_safe,
                 new_course_assessment_submission_path(@course, @assessment),
                 { title: "Create a new submission for a student, with an option to submit a handin file on their behalf",
@@ -119,7 +145,16 @@
       </th>
       <%# Table headers %>
       <% for header in headers %>
-        <th class="submissions-th"><%= header %></th>
+        <th class="submissions-th sorting">
+          <div>
+            <p><%= header %></p>
+            <% if header != "File" && header != "Actions" then %>
+              <i class="material-icons tiny sort-icon sort-icon__both" aria-hidden="true">swap_vert</i>
+              <i class="material-icons tiny sort-icon sort-icon__up" aria-hidden="true">arrow_upward</i>
+              <i class="material-icons tiny sort-icon sort-icon__down" aria-hidden="true">arrow_downward</i>
+            <% end %>
+          </div>
+        </th>
       <% end %>
     </tr>
   </thead>
@@ -135,7 +170,7 @@
         <div>
           <label class="submissions-cbox-label">
             <input class="cbox" type="checkbox" id="cbox-<%= submission.id %>">
-            <span><span />
+            <span />
           </label>
         </div>
       </td>
@@ -163,7 +198,13 @@
       <td class="submissions-td">
         <div class="submissions-score-align">
           <div class="score-num"><%= computed_score { submission.final_score(@cud) } %></div>
-          <div class="score-icon"><i class="material-icons submissions-score-icon">zoom_in</i></div>
+          <div class="score-icon">
+            <a class="modal-trigger score-details"
+              data-email="<%= submission.course_user_datum.email %>"
+              data-cuid=" <%= submission.course_user_datum.id %>">
+              <i class="material-icons submissions-score-icon">zoom_in</i>
+            </a>
+            </div>
         </div>
       </td>
 
@@ -202,7 +243,7 @@
             </div>
             <p>Regrade</p>
           </div>
-      <% end %>
+        <% end %>
         <div class="submissions-center-icons">
           <%= link_to "<i class='material-icons'>delete_outline</i>".html_safe,
                       destroyConfirm_course_assessment_submission_path(@course, @assessment, submission),
@@ -215,3 +256,23 @@
   <% end %>
   </tbody>
 </table>
+
+<div id="score-details-modal" class="modal">
+  <div class="modal-header">
+    <a href="#!" class="modal-close btn-flat"><i class="material-icons">close</i>
+    </a>
+  </div>
+  <div class="modal-content">
+    <h3>Score Details for <span id="score-details-email"></span></h3>
+    <hr>
+    <div id="score-details-content"></div>
+  </div>
+</div>
+
+<div id="annotation-modal" class="modal">
+  <div class="modal-header">
+    <a href="#!" class="modal-close btn-flat"><i class="material-icons">close</i>
+    </a>
+  </div>
+  <%= render "annotation_popup" %>
+</div>

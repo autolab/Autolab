@@ -21,6 +21,9 @@ PreCommit:
  RuboCop:
    enabled: true
    on_warn: fail # Treat all warnings as failures
+ ErbLint:
+   enabled: true
+   on_warn: fail
 
 #  TrailingWhitespace:
 #    enabled: true

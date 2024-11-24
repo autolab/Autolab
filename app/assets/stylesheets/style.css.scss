@@ -237,7 +237,7 @@ div.main-header img {
 }
 
 /* Custom Form Styling */
-.input-field,
+.input-field:not(.no-padding-bottom),
 form > div {
   padding-bottom: 1rem !important;
 }
@@ -645,12 +645,13 @@ p.attention {
 }
 ul.moss-list {
   list-style: none;
-  background: $autolab-subtle-gray;
   border-radius: 5px;
 }
 ul.moss-list > li {
   cursor: pointer;
+  background: $autolab-subtle-gray;
   padding: 15px;
+  margin-bottom: 15px;
 }
 ul.moss-list > li > h5 {
   font-weight: bold;
@@ -784,6 +785,36 @@ table.prettyBorder {
 
   .submissions-th {
     padding: 25px 0 25px 0;
+    div {
+      display: flex;
+      align-items: center;
+    }
+    p {
+      margin: 0;
+      float: left;
+      padding-right: 3px;
+    }
+  }
+
+  .sorting_desc {
+    .sort-icon__both, .sort-icon__up {
+      display: none;
+    }
+    .sort-icon__down {
+      display: inline;
+    }
+  }
+  .sorting_asc {
+    .sort-icon__both, .sort-icon__down {
+      display: none;
+    }
+    .sort-icon__up {
+      display: inline;
+    }
+  }
+
+  .sort-icon__up, .sort-icon__down {
+    display: none;
   }
 
   td {
@@ -917,7 +948,12 @@ body.autolab {
   .h3,
   .h4,
   .h5,
-  .h6 {
+  .h6,
+  button,
+  input,
+  optgroup,
+  select,
+  textarea {
     font-family: "Source Sans Pro", sans-serif;
   }
 
@@ -958,7 +994,7 @@ input[type="password"]:focus {
 
 // To remove line for file-field
 .file-field input[type="text"].validate,
-.file-field input[type="text"].validate.valid, {
+.file-field input[type="text"].validate.valid {
   border-bottom: none;
   box-shadow: none;
 }
@@ -1496,6 +1532,11 @@ table.sub td, th {
   color: white !important;
 }
 
+.error-header {
+  color: $autolab-red;
+}
+
+
 /* Manage Submissions */
 
 .btn.submissions-main {
@@ -1533,6 +1574,15 @@ table.sub td, th {
   a {
     overflow-y: hidden;
   }
+}
+
+.submissions-tweak-button {
+  margin-left: 3px;
+  color: $autolab-medium-gray;
+}
+
+.submissions-tweak-points {
+  color: $autolab-blue-text;
 }
 
 .excused-popover {

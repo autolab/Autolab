@@ -22,15 +22,14 @@ Rails.application.routes.draw do
       resources :courses, param: :name, only: [:index, :create] do
         resources :course_user_data, only: [:index, :create, :show, :update, :destroy],
                                      param: :email, :constraints => { :email => /[^\/]+/ }
-        
+
         resources :assessments, param: :name, only: [:index, :show] do
           resources :problems, only: [:index, :create]
           get "writeup"
           get "handout"
           post "submit"
           post "set_group_settings"
-          
-          resources :groups, only: [:index, :create, :destroy]
+          resources :groups, only: [:index, :show, :create, :destroy]
 
           resources :submissions, param: :version, only: [:index] do
             get "feedback"
@@ -81,6 +80,8 @@ Rails.application.routes.draw do
     post "lti_launch_link_course", on: :member
     post "github_revoke", on: :member
     get "github_oauth_callback", on: :collection
+    match "update_password_for_user", on: :member, via: [:get, :put]
+    post "change_password_for_user", on: :member
   end
 
   resources :courses, param: :name do
@@ -138,11 +139,12 @@ Rails.application.routes.draw do
         end
 
         resources :scores, only: [:create, :show, :update]
-
+        
         member do
           get "destroyConfirm"
           get "download"
           get "view"
+          get "tweak_total"
         end
 
         collection do
@@ -153,6 +155,7 @@ Rails.application.routes.draw do
           post "excuse_batch"
           post "unexcuse"
           get "missing"
+          get "score_details"
         end
       end
 

@@ -1,3 +1,4 @@
+<%= javascript_include_tag "annotations_helpers.js" %>
 <%= javascript_include_tag "annotations.js" %>
 <%= javascript_include_tag "submission_view.js" %>
 <script type="text/javascript">
@@ -14,8 +15,8 @@
 
   <% if @is_pdf %>
   newFile.pdf = true;
-  newFile.pdfUrl = "<%= url_for [:download, @course, @assessment, @submission, header_position: @header_position] %>";
-  newFile.annotatedPdfUrl = "<%= url_for [:download, @course, @assessment, @submission, header_position: @header_position, annotated: true] %>";
+  newFile.pdfUrl = "<%= url_for download_course_assessment_submission_path(@course, @assessment, @submission, header_position: @header_position) %>";
+  newFile.annotatedPdfUrl = "<%= url_for download_course_assessment_submission_path(@course, @assessment, @submission, @header_position, annotated: true) %>";
   newFile.previewMode = false;
   <% if @preview_mode %>
       newFile.previewMode = true;
@@ -24,4 +25,3 @@
   newFile.pdf = false;
   <% end %>
 </script>
-

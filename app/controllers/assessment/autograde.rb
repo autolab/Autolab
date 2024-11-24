@@ -28,7 +28,11 @@ module AssessmentAutograde
 
     extend_config_module(@assessment, submissions[0], @cud)
 
-    require_relative(Rails.root.join("assessmentConfig", "#{@course.name}-#{@assessment.name}.rb"))
+    if (@assessment.use_unique_module_name)
+      require_relative(@assessment.unique_config_file_path)
+    else
+      require_relative(Rails.root.join("assessmentConfig", "#{@course.name}-#{@assessment.name}.rb"))
+    end
 
     if @assessment.overwrites_method?(:autogradeDone)
       @assessment.config_module.autogradeDone(submissions, feedback_str)

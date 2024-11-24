@@ -10,6 +10,7 @@ div#pageBody {
   margin: 0 auto;
   padding: 15px;
   box-sizing: border-box;
+  max-width: 100%;
 }
 
 h1#courseTitle {
@@ -169,16 +170,6 @@ div#footer {
 #gradebook .slick-cell.course_average {
   background: #f3f3f3;
   font-weight: bold;
-}
-
-#gradebook .slick-cell.assessment_final_score {
-  background: white;
-}
-
-#gradebook .slick-header-column.assessment_final_score {
-  background: #f3f3f3;
-  border-right: 1px solid #eaeaea;
-  color: #999;
 }
 
 #gradebook .slick-cell.computed {

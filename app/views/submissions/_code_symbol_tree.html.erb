@@ -3,7 +3,7 @@
     <div id="symbol-tree-box">
         <ul>
         <% @ctag_obj.each do |fdef| %>
-            <li onclick="scrollToLine(<%=fdef['line']%>)">
+            <li onclick="scrollToLine(<%= fdef['line'] %>)">
                 <%= image_tag "function_icon.svg" %>
                 <%= fdef["name"] %>
             </li>

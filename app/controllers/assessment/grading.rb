@@ -143,7 +143,7 @@ private
       end # User.transaction
 
       true
-    rescue => e
+    rescue ActiveRecord::ActiveRecordError => e
       flash[:error] = "An error occurred: #{e}"
 
       false
@@ -285,7 +285,12 @@ rescue ActiveRecord::StatementInvalid, ActiveRecord::RecordInvalid => error
 end
 
   def submission_popover
-    render partial: "popover", locals: { s: Submission.find(params[:submission_id].to_i) }
+    submission = Submission.find_by(id: params[:submission_id].to_i)
+    if submission
+      render partial: "popover", locals: { s: submission }
+    else
+      render plain: "Submission not found", status: :not_found
+    end
   end
 
   def excuse_popover
@@ -323,9 +328,8 @@ end
   end
 
   def statistics
-    return unless load_course_config
-    latest_submissions = @assessment.submissions.latest_for_statistics.includes(:scores, 
-                                                                                :course_user_datum)
+    load_course_config
+    latest_submissions = @assessment.submissions.latest_for_statistics.includes(:scores, :course_user_datum)
     #latest_submissions = @assessment.submissions.latest.includes(:scores, :course_user_datum)
 
     # Each value other than for :all is of the form
@@ -380,13 +384,9 @@ private
       load(File.join(Rails.root, "courseConfig",
                      "#{course}.rb"))
       eval("extend(Course#{course.camelize})")
-    rescue Exception
-      render(text: "Error loading your course's grading " \
-        "configuration file.  Please go <a href='/#{@course.name}/"\
-        "admin/reload'>here</a> to reload the file, and try again") and
-        return false
+    rescue LoadError, SyntaxError, NameError, NoMethodError => e
+      @error = e
     end
-    true
   end
 
 # Scores for grouping
@@ -481,9 +481,10 @@ private
         def autograder.method_missing(m)
           self[m.to_s]
         end
-        return autograder
+
+        autograder
       else
-        return @course.course_user_data.find(i)
+        @course.course_user_data.find(i)
       end
     end
     grader_ids.filter! { |i| i != -1 }
@@ -518,9 +519,9 @@ private
     @start = Time.now
     id = @assessment.id
 
-    # section filter
+    # lecture/section filter
     o = params[:section] ? {
-      conditions: { assessment_id: id, course_user_data: { section: @cud.section } }
+      conditions: { assessment_id: id, course_user_data: { lecture: @cud.lecture, section: @cud.section } }
     } : {
       conditions: { assessment_id: id }
     }
@@ -537,5 +538,6 @@ private
 
     @assessment = cache.assessments[@assessment.id]
     @submissions = cache.latest_submissions.values
+    @section_filter = params[:section]
   end
 end

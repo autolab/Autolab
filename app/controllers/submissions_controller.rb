@@ -7,7 +7,8 @@ require "tempfile"
 class SubmissionsController < ApplicationController
   # inherited from ApplicationController
   before_action :set_assessment
-  before_action :set_submission, only: %i[destroy destroyConfirm download edit update view]
+  before_action :set_submission,
+                only: %i[destroy destroyConfirm download edit update view tweak_total]
   before_action :get_submission_file, only: %i[download view]
 
   # this page loads.  links/functionality may be/are off
@@ -30,6 +31,44 @@ class SubmissionsController < ApplicationController
       grade_type: AssessmentUserDatum::EXCUSED
     )
     @excused_cids = excused_students.pluck(:course_user_datum_id)
+    @problems = @assessment.problems.to_a
+  end
+
+  action_auth_level :score_details, :instructor
+  def score_details
+    cuid = params[:cuid]
+    submissions = @assessment.submissions.where(course_user_datum_id: cuid).order("created_at DESC")
+    scores = submissions.map(&:scores).flatten
+
+    # make a dictionary that makes submission id to score data
+    submission_id_to_score_data = {}
+    scores.each do |score|
+      if submission_id_to_score_data[score.submission_id].nil?
+        submission_id_to_score_data[score.submission_id] = {}
+      end
+      submission_id_to_score_data[score.submission_id][score.problem_id] = score
+    end
+
+    tweaks = {}
+    submission_info = submissions.as_json
+    submissions.each_with_index do |submission, index|
+      tweaks[submission.id] = submission.tweak
+      submission_info[index]["base_path"] =
+        course_assessment_submission_annotations_path(@course, @assessment, submission)
+      submission_info[index]["scores"] = Score.where(submission_id: submission.id)
+      submission_info[index]["tweak_total"] =
+        submission.global_annotations.empty? ? nil : submission.global_annotations.sum(:value)
+    end
+
+    autograded = @assessment.has_autograder?
+
+    render json: { submissions: submission_info,
+                   scores: submission_id_to_score_data,
+                   tweaks:,
+                   autograded: }, status: :ok
+  rescue StandardError => e
+    render json: { error: e.message }, status: :not_found
+    nil
   end
 
   # this works
@@ -200,11 +239,22 @@ class SubmissionsController < ApplicationController
   def download_all
     flash[:error] = "Cannot index submissions for nil assessment" if @assessment.nil?
 
+
     unless @assessment.valid?
       @assessment.errors.full_messages.each do |msg|
         flash[:error] += "<br>#{msg}"
       end
       flash[:html_safe] = true
+    end
+
+    if @assessment.disable_handins
+      flash[:error] = "There are no submissions to download."
+      if @cud.course_assistant
+        redirect_to course_assessment_path(@course, @assessment)
+      else
+        redirect_to course_assessment_submissions_path(@course, @assessment)
+      end
+      return
     end
 
     submissions = if params[:final]
@@ -283,6 +333,13 @@ class SubmissionsController < ApplicationController
               type: "application/zip",
               disposition: "attachment", # tell browser to download
               filename: "#{@course.name}_#{@course.semester}_#{@assessment.name}_submissions.zip")
+  end
+
+  action_auth_level :submission_info, :instructor
+  def tweak_total
+    tweak =
+      @submission.global_annotations.empty? ? nil : @submission.global_annotations.sum(:value)
+    render json: tweak
   end
 
   action_auth_level :excuse_batch, :course_assistant
@@ -389,7 +446,7 @@ class SubmissionsController < ApplicationController
 
       # Only show annotations if grades have been released or the user is an instructor
       @annotations = []
-      if !@assessment.before_grading_deadline? || @cud.instructor || @cud.course_assistant
+      if @submission.grades_released?(@cud) || @cud.instructor || @cud.course_assistant
         @annotations = @submission.annotations.to_a
       end
 
@@ -600,9 +657,6 @@ class SubmissionsController < ApplicationController
       end
     end
 
-    @problemReleased = @submission.scores.pluck(:released).all? &&
-                       !@assessment.before_grading_deadline?
-
     @annotations = @submission.annotations.to_a
     unless @submission.group_key.empty?
       group_submissions = @submission.group_associated_submissions
@@ -613,7 +667,7 @@ class SubmissionsController < ApplicationController
     @annotations.sort! { |a, b| a.line.to_i <=> b.line.to_i }
 
     # Only show annotations if grades have been released or the user is an instructor
-    unless !@assessment.before_grading_deadline? || @cud.instructor || @cud.course_assistant
+    unless @submission.grades_released?(@cud) || @cud.instructor || @cud.course_assistant
       @annotations = []
     end
 

@@ -99,7 +99,7 @@
                   <% when AssessmentUserDatum::NORMAL %>
                     <% case aud.submission_status
                        when :submitted %>
-                      <% if Time.now <= aud.assessment.grading_deadline || !aud.latest_submission.all_scores_released? %>
+                      <% if !aud.latest_submission.all_scores_released? %>
                         <a href="<%= history_url(@_cud, asmt) %>">
                           <i
                             class="material-icons tooltipped"
@@ -112,30 +112,13 @@
                       <% end %>
 
                     <% when :not_submitted %>
-                      <% if Time.now <= aud.assessment.grading_deadline %>
-                        <i
-                          class="material-icons tooltipped"
-                          data-tooltip="No submission was made.">
-                          priority_high
-                        </i>
-                      <% else %>
-                        <span class="not-submitted tooltipped" data-tooltip="No submission was made.">
-                          <%= render_final_score aud %>
-                        </span>
-                      <% end %>
-
+                      <span class="not-submitted tooltipped" data-tooltip="No submission was made.">
+                        <%= render_final_score aud %>
+                      </span>
                     <% when :not_yet_submitted %>
-                      <% if Time.now <= aud.assessment.grading_deadline %>
-                        <i
-                          class="material-icons tooltipped"
-                          data-tooltip="No submission has been made yet.">
-                          priority_high
-                        </i>
-                      <% else %>
-                        <span class="not-yet-submitted tooltipped" data-tooltip="No submission has been made yet.">
-                          <%= render_final_score aud %>
-                        </span>
-                      <% end %>
+                      <span class="not-yet-submitted tooltipped" data-tooltip="No submission has been made yet.">
+                        <%= render_final_score aud %>
+                      </span>
                     <% end %>
                   <% end %>
                 </td>

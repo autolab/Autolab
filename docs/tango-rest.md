@@ -100,7 +100,7 @@ Here are the requests that administrators use to manage the Tango service, typic
 
 This is the "hello, world" request for the service. It returns a JSON object with some basic stats about the service, such as uptime, number of jobs, etc.
 
-Request header: `GET /info/<KEY>/<COURSE_LAB>/`  
+Request header: `GET /info/<KEY>/`  
 Request body:
 
 ```json
