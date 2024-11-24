@@ -771,7 +771,7 @@ table.prettyBorder {
     top: 0;
   }
   th {
-    background-color: $autolab-grey;
+    background-color: $autolab-light-grey;
     color: $autolab-black;
     cursor: pointer;
     font-family: Source Sans Pro, sans-serif;
@@ -1602,8 +1602,8 @@ table.sub td, th {
 
 .btn.excuse-popover-cancel {
   background-color: $autolab-submissions-background;
-  border: 0.5px solid #3D3E3D;
-  color: #3D3E3D;
+  border: 0.5px solid $autolab-dark-grey;
+  color: $autolab-dark-grey;
 }
 
 .btn.excuse-popover-cancel:hover {
@@ -1616,9 +1616,8 @@ table.sub td, th {
 }
 
 .submissions-excused-label {
-  color:rgba(140, 0, 0, 0.95);
-  margin: 0;
-  margin-left: 5px;
+  color: $autolab-label;
+  margin: 0 0 0 5px;
   font-size: 12px;
   font-weight: bold;
   cursor: pointer;
@@ -1649,5 +1648,5 @@ table.sub td, th {
 .submissions-score-icon {
   margin-left: 5px;
   margin-top: 5px;
-  color: $autolab-darker-grey;
+  color: $autolab-grey;
 }
