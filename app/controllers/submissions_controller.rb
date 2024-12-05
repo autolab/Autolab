@@ -118,7 +118,7 @@ class SubmissionsController < ApplicationController
         @submission.save_file(params[:submission])
       end
     end
-    flash[:success] = "#{pluralize(cud_ids.size, 'Submission')} Created"
+    flash[:success] = "#{pluralize(cud_ids.size.to_s, 'Submission')} Created"
     redirect_to course_assessment_submissions_path(@course, @assessment)
   end
 
@@ -392,7 +392,7 @@ class SubmissionsController < ApplicationController
         "#{aud.errors.full_messages.join(', ')}"
     end
 
-    flash[:success] = "#{pluralize(auds_to_excuse.size, 'student')} excused."
+    flash[:success] = "#{pluralize(auds_to_excuse.size.to_s, 'student')} excused."
     redirect_to course_assessment_submissions_path(@course, @assessment)
   end
 

@@ -111,7 +111,7 @@
                               title: "View and enter grades for all sections" %></li>
 
               <% unless @assessment.disable_handins %>
-                <li><%= link_to "Download section #{@cud.section} submissions", downloadAll_course_assessment_submissions_path(@course, @assessment, { final: true }), title: "Download section #{@cud.section} submissions" %></li>
+                <li><%= link_to "Download section #{@cud.section} submissions", download_all_course_assessment_submissions_path(@course, @assessment, { final: true }), title: "Download section #{@cud.section} submissions" %></li>
               <% end %>
               <li class="collection-item red-text danger-bottom no-hover"><h4>Danger Zone</h4></li>
               <li class="danger-side"><%= link_to "Reload config file", reload_course_assessment_path(@course, @assessment), { title: "Reload the assessment config file (provided for backward compatibility with legacy assessments)", data: { confirm: "Are you sure you want to reload the config file?", method: "post" } } %></li>

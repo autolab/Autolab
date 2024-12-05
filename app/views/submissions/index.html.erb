@@ -139,7 +139,7 @@
         <div>
           <label class="submissions-cbox-label">
             <input class="cbox" type="checkbox" id="cbox-select-all">
-            <span><span />
+            <span></span>
           </label>
         </div>
       </th>
@@ -159,7 +159,7 @@
     </tr>
   </thead>
 
-  <tbody>
+  <tbody id="submissions_table">
   <div id="no-data-message" style="display: none;">No submissions available.</div>
 
   <% for submission in @submissions %>
@@ -170,7 +170,7 @@
         <div>
           <label class="submissions-cbox-label">
             <input class="cbox" type="checkbox" id="cbox-<%= submission.id %>">
-            <span />
+            <span></span>
           </label>
         </div>
       </td>
