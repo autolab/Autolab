@@ -40,6 +40,9 @@ class AssessmentsController < ApplicationController
   action_auth_level :quickGetTotal, :course_assistant
   action_auth_level :statistics, :instructor
 
+  # Manage submissions
+  action_auth_level :excuse_popover, :course_assistant
+
   # Handin
   action_auth_level :handin, :student
 

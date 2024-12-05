@@ -752,7 +752,7 @@ table.prettyBorder {
   tr {
     background-color: #fff;
     &:hover {
-      background-color: #abcdef;
+      background-color: $autolab-sky-blue;
     }
   }
 
@@ -772,8 +772,8 @@ table.prettyBorder {
     top: 0;
   }
   th {
-    background-color: #ebebeb;
-    color: #000000;
+    background-color: $autolab-light-grey;
+    color: $autolab-black;
     cursor: pointer;
     font-family: Source Sans Pro, sans-serif;
     font-size: 0.8em;
@@ -793,6 +793,7 @@ table.prettyBorder {
     p {
       margin: 0;
       float: left;
+      padding-right: 3px;
     }
   }
 
@@ -823,9 +824,8 @@ table.prettyBorder {
   }
 
   .submissions-td {
-    border: none;
-    border-bottom: 1px solid #ddd;
-    padding: 5px 0 5px 0.6rem;
+    border-style: none;
+    padding: 5px 0 5px 0;
   }
 
   .submissions-cbox-label {
@@ -1539,7 +1539,6 @@ table.sub td, th {
 
 
 /* Manage Submissions */
-
 .btn.submissions-main {
   margin: 0;
   padding: 5px 10px 5px 5px;
@@ -1550,10 +1549,19 @@ table.sub td, th {
   align-items: center;
 }
 
+.btn.submissions-main i.left {
+  margin-right: 6px;
+}
+
 .btn.submissions-selected {
   margin: 0;
+  margin-right: 10px;
   padding: 0px 10px 0px 5px;
-  font-family: Source Sans Pro, sans-serif;
+  display: flex;
+}
+
+.btn.submissions-selected i {
+  margin: 0 6px 0 4px;
 }
 
 .buttons-row {
@@ -1577,6 +1585,25 @@ table.sub td, th {
   color: $autolab-blue-text;
 }
 
+.excused-popover {
+  display: none;
+  position: absolute;
+  width: 100px;
+  height: 100px;
+  background-color: gray;
+}
+
+#selected-buttons {
+  height: 75px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+
+.selected-buttons-placeholder {
+  display: none;
+}
+
 .submissions-checkbox {
   margin-left: 35px;
 }
@@ -1584,6 +1611,53 @@ table.sub td, th {
 .submissions-center-icons {
   display: flex;
   align-items: center;
+}
+
+.excused-popover {
+  background-color: $autolab-submissions-background;
+  border-radius: 11px;
+  width: auto;
+  height: auto;
+  z-index: 999;
+  padding: 12px 30px;
+  box-shadow: 0 2px 2px 0 $autolab-excused-popover-background;
+}
+
+.excuse-popover-content {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+}
+
+.excuse-popover-content-text {
+  padding: 0;
+  margin: 0;
+  font-size: 16px;
+  line-height: 23.88px;
+}
+
+.excuse-popover-content-header {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 25.14px;
+  letter-spacing: -0.01em;
+}
+
+.excuse-popover-buttons {
+  display: flex;
+  gap: 16px;
+  padding-top: 8px;
+}
+
+.btn.excuse-popover-cancel {
+  background-color: $autolab-submissions-background;
+  border: 0.5px solid $autolab-dark-grey;
+  color: $autolab-dark-grey;
+}
+
+.btn.excuse-popover-cancel:hover {
+  background-color: $autolab-submissions-background;
+  color: white;
 }
 
 .submissions-center-icons .btn i{
@@ -1594,12 +1668,22 @@ table.sub td, th {
   margin: 0 0 0 10px;
 }
 
+.submissions-excused-label {
+  color: $autolab-label;
+  margin: 0 0 0 5px;
+  font-size: 12px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
 .submissions-icons {
   margin-left: 3px;
 }
 
-i.left {
-  margin-right: 10px;
+.submissions-name {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
 }
 
 .submissions-score-align {
@@ -1617,5 +1701,5 @@ i.left {
 .submissions-score-icon {
   margin-left: 5px;
   margin-top: 5px;
-  color: #A1A0A3;
+  color: $autolab-grey;
 }

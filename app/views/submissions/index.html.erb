@@ -2,27 +2,41 @@
 
 <% content_for :stylesheets do %>
   <%= stylesheet_link_tag "datatable.adapter" %>
+  <%= stylesheet_link_tag "datatables-rows" %>
   <%= stylesheet_link_tag "manage_submissions" %>
   <%= stylesheet_link_tag "annotations" %>
   <%= external_stylesheet_link_tag "jquery-ui" %>
 <% end %>
 
 <script>
-/**
- * initialization of global variables used across manage_submissions.js,
- * annotations_helpers.js, annotations.js, and annotations_popup.js
- */
-let basePath = "";
+  var is_autograded = <%= @autograded %>;
+  var excused_cids = <%= @excused_cids %>;
+  var submissions_to_cud = <%= @submissions_to_cud.html_safe %>;
 
-// a json list of scores for this assessment
-var scores = [];
+  // additional data for each row
+  additional_data = [
+      <% for s in @submissions do %>
+      {
+          "submission-id": "<%= s.id.to_s %>",
+      },
+      <% end %>
+  ];
 
-// a json list of problems for this assessment
-let problems = <%= raw @problems.to_json %>;
-let localCache = {};
-var cudEmailStr = "<%= @cud.email %>";
-var fileNameStr = null;
-var currentHeaderPos = null;
+  /**
+   * initialization of global variables used across manage_submissions.js,
+   * annotations_helpers.js, annotations.js, and annotations_popup.js
+   */
+  let basePath = "";
+
+  // a json list of scores for this assessment
+  var scores = [];
+
+  // a json list of problems for this assessment
+  let problems = <%= raw @problems.to_json %>;
+  let localCache = {};
+  var cudEmailStr = "<%= @cud.email %>";
+  var fileNameStr = null;
+  var currentHeaderPos = null;
 </script>
 
 <% content_for :javascripts do %>
@@ -47,47 +61,68 @@ var currentHeaderPos = null;
                 new_course_assessment_submission_path(@course, @assessment),
                 { title: "Create a new submission for a student, with an option to submit a handin file on their behalf",
                   class: "btn submissions-main" } %>
-  </div>
+    </div>
+
   <div class="buttons-spacing">
     <%= link_to "<i class='material-icons left submissions-icons'>file_download</i>Download Final Submissions".html_safe,
-                downloadAll_course_assessment_submissions_path(@course, @assessment, { final: true }),
-                { title: "Download final submissions from each student",
-                  class: "btn submissions-main" } %>
+                download_all_course_assessment_submissions_path(@course, @assessment, final: true),
+                {
+                  title: @submissions.any? ? "Download final submissions from each student" : "No submissions available to download",
+                  class: "btn submissions-main #{'disabled' unless @submissions.any?}"
+                } %>
   </div>
-  <div class="buttons-spacing">
+
+
+  <div class="buttons-spacing"> <!-- TODO: Change functionality to filter for missing submissions -->
     <%= link_to "<i class='material-icons left submissions-icons'>people</i>Missing Submissions".html_safe,
                 missing_course_assessment_submissions_path(@course, @assessment),
-                { title: "List the students who have not submitted anything. You'll be given the option to create new submissions for the missing students",
+                { title: "List the students who have not submitted anything",
                   class: "btn submissions-main" } %>
-  </div>
-  <div class="buttons-spacing">
-    <%= link_to "<i class='material-icons left submissions-icons'>event</i>Manage Extensions".html_safe,
-                course_assessment_extensions_path(@course, @assessment),
-                { title: "List the students who have not submitted anything. You'll be given the option to create new submissions for the missing students",
-                  class: "btn submissions-main" } %>
-  </div>
-</div>
-<div class="row">
-  <% if @autograded then %>
-    <div class="col s3">
-      <%= link_to "Regrade All",
-                  regradeAll_course_assessment_path(@course, @assessment),
-                  { method: :post,
-                    title: "Regrade the most recent submission from each student",
-                    confirm: "Are you sure you want to do this? It will regrade the most recent submission from each student, which might take a while.",
-                    class: "btn" } %>
     </div>
-    <div class="col s3 offset-s6">
 
-      <%= link_to "Regrade 0",
-                  regradeBatch_course_assessment_path(@course, @assessment),
-                  { method: :post,
-                    title: "Regrade the most recent submission from each student",
-                    class: "btn float-right",
-                    id: "batch-regrade",
-                    style: "display:none;" } %>
+    <div class="buttons-spacing">
+    <%= link_to "<i class='material-icons left submissions-icons'>event</i>Manage Extensions".html_safe,
+                [@course, @assessment, :extensions],
+                { title: "Manage extensions for this assignment",
+                  class: "btn submissions-main" } %>
     </div>
-  <% end %>
+</div>
+
+<%# Selected buttons, hidden so HTML can be accessed in DataTables %>
+<div class="selected-buttons-placeholder">
+  <div id="regrade-batch-html">
+    <%= link_to "<i class='material-icons'>cached</i>Regrade Selected".html_safe,
+                regradeBatch_course_assessment_path(@course, @assessment),
+                { method: :post,
+                  title: "Regrade selected submissions",
+                  class: "btn submissions-selected" } %>
+  </div>
+
+  <div id="delete-batch-html">
+    <%= link_to "<i class='material-icons'>delete_outline</i>Delete Selected".html_safe,
+                destroy_batch_course_assessment_submissions_path(@course, @assessment, @submissions),
+                { method: :post,
+                  title: "Delete selected submissions",
+                  class: "btn submissions-selected",
+                  data: {confirm: "Deleting will delete all checked submissions and cannot be undone. Are you sure you want to delete these submissions?"} } %>
+  </div>
+
+  <div id="download-batch-html">
+    <%= link_to "<i class='material-icons'>download</i>Download Selected".html_safe,
+                download_batch_course_assessment_submissions_path(@course, @assessment, @submissions),
+                { method: :get,
+                  title: "Download selected submissions",
+                  class: "btn submissions-selected" } %>
+  </div>
+
+  <div id="excuse-batch-html">
+    <%= link_to "<i class='material-icons'>done</i>Excuse Selected".html_safe,
+                excuse_batch_course_assessment_submissions_path(@course, @assessment, @submissions),
+                { method: :post,
+                  title: "Excuse selected submissions",
+                  class: "btn submissions-selected" } %>
+  </div>
+
 </div>
 
 <table class="prettyBorder" id="submissions">
@@ -99,7 +134,16 @@ var currentHeaderPos = null;
                 "Actions"] %>
   <thead class="float">
     <tr>
-      <th class="submissions-th"></th>
+      <%# Select all checkbox in header row %>
+      <th class="submissions-td submissions-checkbox">
+        <div>
+          <label class="submissions-cbox-label">
+            <input class="cbox" type="checkbox" id="cbox-select-all">
+            <span></span>
+          </label>
+        </div>
+      </th>
+      <%# Table headers %>
       <% for header in headers %>
         <th class="submissions-th sorting">
           <div>
@@ -115,7 +159,9 @@ var currentHeaderPos = null;
     </tr>
   </thead>
 
-  <tbody>
+  <tbody id="submissions_table">
+  <div id="no-data-message" style="display: none;">No submissions available.</div>
+
   <% for submission in @submissions %>
     <tr id="row-<%= submission.id %>" class="submission-row">
 
@@ -124,18 +170,23 @@ var currentHeaderPos = null;
         <div>
           <label class="submissions-cbox-label">
             <input class="cbox" type="checkbox" id="cbox-<%= submission.id %>">
-            <span />
+            <span></span>
           </label>
         </div>
       </td>
 
       <%# Submitted By %>
       <td class="submissions-td">
-        <%= [submission.course_user_datum.first_name, submission.course_user_datum.last_name].reject(&:blank?).join(' ') %>
-        <br>
-        <%= link_to submission.course_user_datum.email,
-                    history_course_assessment_path(@course, @assessment, cud_id: submission.course_user_datum_id, partial: true),
-                    { remote: true, class: :trigger } %>
+        <div class="submissions-name">
+          <%= [submission.course_user_datum.first_name, submission.course_user_datum.last_name].reject(&:blank?).join(' ') %>
+          <% if @excused_cids.include? submission.course_user_datum_id %>
+            <a class="submissions-excused-label">EXCUSED</a>
+            <div class="excused-popover">
+              <div class="excused-arrow"></div>
+            </div>
+          <% end %>
+        </div>
+        <%= submission.course_user_datum.email %>
       </td>
 
       <%# Version %>
@@ -168,26 +219,28 @@ var currentHeaderPos = null;
       <td class="submissions-td" style="<%= ignored_submission_style submission %>">
         <% if submission.filename then %>
           <div class="submissions-center-icons">
-            <%= link_to "<i class='material-icons i-no-margin'>zoom_in</i>".html_safe,
-                [:view, @course, @assessment, submission],
-                {:title=>"View the file for this submission",
-                :class=>"btn small"} %>
+            <%= link_to "<i class='material-icons'>zoom_in</i>".html_safe,
+                        view_course_assessment_submission_url(@course, @assessment, submission),
+                        { title: "View the file for this submission",
+                          class: "btn small" } %>
             <p>View File</p>
           </div>
         <% else %>
           None
         <% end %>
       </td>
+
       <%# Actions %>
-      <td class="submissions-td" class="exclude-click" style="text-align:center;">
-        <% if @autograded and submission.version > 0 then %>
+      <td class="submissions-td" class="exclude-click">
+        <% if @autograded then %>
           <div class="submissions-center-icons">
-            <%= button_to [:regrade, @course, @assessment, submission_id: submission.id],
-                :method => :post,
-                :title=>"Rerun the autograder on this submission",
-                :class=>"btn small" do %>
-                  <i class='material-icons i-no-margin'>autorenew</i>
-            <% end %>
+            <div id="regrade-batch-html">
+              <%= link_to "<i class='material-icons'>autorenew</i>".html_safe,
+                          regradeBatch_course_assessment_path(@course, @assessment, {submission_ids: [submission.id]}),
+                          { method: :post,
+                            title: "Regrade selected submissions",
+                            class: "btn small" } %>
+            </div>
             <p>Regrade</p>
           </div>
         <% end %>
@@ -200,7 +253,7 @@ var currentHeaderPos = null;
         </div>
       </td>
     </tr>
-  <% end %> <%# End loop over submissions %>
+  <% end %>
   </tbody>
 </table>
 

@@ -293,6 +293,14 @@ end
     end
   end
 
+  def excuse_popover
+    submission = Submission.find(params[:submission_id].to_i)
+    cud = CourseUserDatum.find(submission.course_user_datum_id)
+    email = User.find(cud.user_id).email
+    render partial: "excuse_popover",
+           locals: { submission: submission, email: email }
+  end
+
   def score_grader_info
     score = Score.find(params[:score_id])
     grader = (if score then score.grader else nil end)
