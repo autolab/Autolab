@@ -785,6 +785,7 @@ table.prettyBorder {
 
   .submissions-th {
     padding: 25px 0 25px 0;
+    font-size: 0.9rem;
     div {
       display: flex;
       align-items: center;
@@ -1657,6 +1658,10 @@ table.sub td, th {
 .btn.excuse-popover-cancel:hover {
   background-color: $autolab-submissions-background;
   color: white;
+}
+
+.submissions-center-icons .btn i{
+  margin: 0;
 }
 
 .submissions-center-icons p {

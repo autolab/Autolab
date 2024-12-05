@@ -49,7 +49,7 @@
   <%= javascript_include_tag "annotations_helpers" %>
   <%= javascript_include_tag "annotations_popup" %>
   <%= javascript_include_tag "manage_submissions" %>
-  <%= javascript_include_tag "datatables-rows" %>
+  <%= external_javascript_include_tag "datatables-rows" %>
 <% end %>
 
 <h3>Manage Submissions</h3>
@@ -245,10 +245,10 @@
           </div>
         <% end %>
         <div class="submissions-center-icons">
-          <%= link_to "<i class='material-icons'>delete_outline</i>".html_safe,
-                      destroyConfirm_course_assessment_submission_path(@course, @assessment, submission),
-                      { title: "Destroy this submission forever",
-                        class: "btn small" } %>
+          <%= link_to "<i class='material-icons i-no-margin'>delete_outline</i>".html_safe,
+                destroyConfirm_course_assessment_submission_path(@course, @assessment, submission),
+                {:title=>"Destroy this submission forever",
+                :class=>"btn small"} %>
           <p>Delete</p>
         </div>
       </td>
@@ -258,12 +258,10 @@
 </table>
 
 <div id="score-details-modal" class="modal">
-  <div class="modal-header">
-    <a href="#!" class="modal-close btn-flat"><i class="material-icons">close</i>
-    </a>
-  </div>
   <div class="modal-content">
-    <h3>Score Details for <span id="score-details-email"></span></h3>
+    <h3 id="score-details-header">Score Details for <span id="score-details-email"></span>
+      <a href="#!" class="modal-close btn-flat" id="modal-close"><i class="material-icons">close</i></a>
+    </h3>
     <hr>
     <div id="score-details-content"></div>
   </div>
