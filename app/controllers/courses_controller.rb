@@ -288,10 +288,12 @@ class CoursesController < ApplicationController
 
     begin
       # Unix group was already created in before_create callback
-      # Staff membership and directory permissions are handled by after_create callback in CourseUserDatum
-      # But ensure permissions are correct after all setup
-      FilesystemEnforcer.fix_tree(@newCourse.directory_path.to_s)
+      # IMPORTANT: Reload course config BEFORE fixing directory permissions
+      # because reload_course_config needs to read course.rb, and fix_tree
+      # sets directory to drwxrws--- which would block access
       @newCourse.reload_course_config
+      # Now that config is loaded, lock down directory permissions
+      FilesystemEnforcer.fix_tree(@newCourse.directory_path.to_s)
     rescue StandardError, SyntaxError
       # roll back course creation and instruction creation
       new_cud.destroy
