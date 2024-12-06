@@ -170,6 +170,12 @@ module AssessmentAutogradeCore
     if Rails.configuration.x.ec2_ssh.present?
       job_properties["accessKey"] = @autograde_prop.access_key
       job_properties["accessKeyId"] = @autograde_prop.access_key_id
+      if job_properties["accessKeyId"] == ""
+        job_properties["accessKeyId"] = "PLACEHOLDER"
+      end
+      if job_properties["accessKey"] == ""
+        job_properties["accessKey"] = "PLACEHOLDER"
+      end
       job_properties["instanceType"] = @autograde_prop.instance_type
     end
 

@@ -14,8 +14,8 @@ class AutogradersController < ApplicationController
       a.autograde_timeout = 180
       a.autograde_image = "autograding_image"
       a.release_score = true
-      a.accessKeyId = ""
-      a.accessKey = ""
+      a.access_key_id = ""
+      a.access_key = ""
       a.instance_type = ""
     end
     if @autograder.save
