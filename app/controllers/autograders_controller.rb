@@ -14,6 +14,9 @@ class AutogradersController < ApplicationController
       a.autograde_timeout = 180
       a.autograde_image = "autograding_image"
       a.release_score = true
+      a.accessKeyId = ""
+      a.accessKey = ""
+      a.instance_type = ""
     end
     if @autograder.save
       flash[:success] = "Autograder created."
@@ -86,6 +89,7 @@ private
   end
 
   def autograder_params
-    params[:autograder].permit(:autograde_timeout, :autograde_image, :release_score)
+    params[:autograder].permit(:autograde_timeout, :autograde_image, :release_score, :access_key,
+                               :access_key_id, :instance_type)
   end
 end

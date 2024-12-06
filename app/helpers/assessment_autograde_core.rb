@@ -166,9 +166,16 @@ module AssessmentAutogradeCore
                        "timeout" => @autograde_prop.autograde_timeout,
                        "callback_url" => callback_url,
                        "jobName" => job_name,
-                       "disable_network" => assessment.disable_network,
-                       "accessKey" => "TEST",
-                       "accessKeyId" => "TEST"}.to_json
+                       "disable_network" => assessment.disable_network}
+    if Rails.configuration.x.ec2_ssh.present?
+      job_properties["accessKey"] = @autograde_prop.access_key
+      job_properties["accessKeyId"] = @autograde_prop.access_key_id
+      job_properties["instanceType"] = @autograde_prop.instance_type
+    end
+
+    job_properties = job_properties.to_json
+    puts(job_properties)
+
     begin
       response = TangoClient.addjob("#{course.name}-#{assessment.name}", job_properties)
     rescue TangoClient::TangoException => e
