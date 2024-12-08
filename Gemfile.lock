@@ -115,6 +115,9 @@ GEM
     crack (0.4.5)
       rexml
     crass (1.0.6)
+    csv (3.3.0)
+    csv-safe (3.3.1)
+      csv (~> 3.0)
     daemons (1.4.1)
     database_cleaner (2.0.2)
       database_cleaner-active_record (>= 2, < 3)
@@ -482,6 +485,7 @@ DEPENDENCIES
   capybara
   codeclimate-test-reporter
   coffee-rails (>= 4.0.0)
+  csv-safe
   database_cleaner
   devise (>= 4.5.0)
   diffy
