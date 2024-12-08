@@ -464,6 +464,33 @@ class Assessment < ApplicationRecord
     date.strftime("%a, %b %e at %l:%M%P")
   end
 
+  # Public method to access the PLD data
+  def calculate_pld
+    submissions.includes(:scores).map do |submission|
+      late_days = [(submission.created_at.to_date - due_at.to_date).to_i, 0].max
+      { submission_id: submission.id, late_days: late_days }
+    end
+  end
+
+  # Public method to access the GDU data
+  def calculate_gdu
+    # Define grade boundaries
+    grade_boundaries = { 'A': 90, 'B': 80, 'C': 70, 'D': 60, 'F': 0 }
+    # Initialize distribution
+    distribution = Hash.new(0)
+
+    total_submissions = submissions.joins(:scores).count
+    submissions.includes(:scores).each do |submission|
+      # Assuming 'score' is a method that sums up scores for a submission
+      score = submission.scores.sum(&:points)
+      grade = grade_boundaries.keys.reverse.detect { |grade| score >= grade_boundaries[grade] }
+      distribution[grade] += 1
+    end
+
+    # Convert counts to percentages
+    distribution.transform_values { |count| (count.to_f / total_submissions * 100).round(2) }
+  end
+
   def load_dir_to_tar(dir_path, asmt_dir, tar, filters = [], export_dir = "")
     Dir[File.join(dir_path, asmt_dir, "**")].each do |file|
       mode = File.stat(file).mode
