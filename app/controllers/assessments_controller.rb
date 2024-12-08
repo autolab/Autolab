@@ -489,6 +489,10 @@ class AssessmentsController < ApplicationController
   def export
     dir_path = @course.directory_path.to_s
     asmt_dir = @assessment.name
+
+    pld_data = @assessment.calculate_pld.to_yaml
+    gdu_data = @assessment.calculate_gdu.to_yaml
+
     begin
       # Update the assessment config YAML file.
       @assessment.dump_yaml
@@ -500,6 +504,16 @@ class AssessmentsController < ApplicationController
         tar.mkdir asmt_dir, File.stat(File.join(dir_path, asmt_dir)).mode
         filter = [@assessment.handin_directory_path]
         @assessment.load_dir_to_tar(dir_path, asmt_dir, tar, filter)
+
+        # Add PLD and GDU data to the tarball as separate files
+        tar.add_file_simple("PLD.yml", 0644, pld_data.bytesize) do |io|
+          io.write pld_data
+        end
+
+        tar.add_file_simple("GDU.yml", 0644, gdu_data.bytesize) do |io|
+          io.write gdu_data
+        end
+        
       end
       tarStream.rewind
       tarStream.close
