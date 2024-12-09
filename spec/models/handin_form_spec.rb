@@ -13,7 +13,7 @@ RSpec.describe "handin_form", type: :view do
 
   it "renders the Submit Late button with a confirmation prompt" do
     expect(rendered).to have_selector("input[type='submit'][id='fake-submit']")
-    expect(rendered).to have_selector("input[data-confirm='You are #{grace_late_info}. Are you sure you want to continue?']")
+    expect(rendered).to have_selector("input[data-confirm='Autolab Notification: You are #{grace_late_info}. Click to confirm!']")
   end
 end
 
