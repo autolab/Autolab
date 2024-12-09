@@ -506,13 +506,14 @@ class AssessmentsController < ApplicationController
         @assessment.load_dir_to_tar(dir_path, asmt_dir, tar, filter)
 
         # Add PLD and GDU data to the tarball as separate files
-        tar.add_file_simple("PLD.yml", 0644, pld_data.bytesize) do |io|
+        tar.add_file_simple("PLD.yml", 0o644, pld_data.bytesize) do |io|
           io.write pld_data
         end
 
-        tar.add_file_simple("GDU.yml", 0644, gdu_data.bytesize) do |io|
+        tar.add_file_simple("GDU.yml", 0o644, gdu_data.bytesize) do |io|
           io.write gdu_data
         end
+
         
       end
       tarStream.rewind
