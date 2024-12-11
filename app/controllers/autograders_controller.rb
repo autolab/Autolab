@@ -16,7 +16,7 @@ class AutogradersController < ApplicationController
       a.release_score = true
       a.access_key_id = ""
       a.access_key = ""
-      a.instance_type = ""
+      a.instance_type = "t2.micro"
     end
     if @autograder.save
       flash[:success] = "Autograder created."

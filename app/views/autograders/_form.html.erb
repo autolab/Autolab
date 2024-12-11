@@ -1,7 +1,11 @@
 <div class="row">
   <div class="col s12">
     <ul id="tabs" class="tabs tabs-fixed-width">
-      <% ["basic", "ec2"].each do |tab_name| %>
+      <% list = ["basic"] %>
+      <% if Rails.configuration.x.ec2_ssh.presence %>
+        <% list.append("ec2") %>
+      <% end %>
+      <% list.each do |tab_name| %>
         <%= if tab_name == params[:active_tab]
               tag.li(link_to(tab_name.titleize, "#tab_#{tab_name}"), class: "active tab")
             else
@@ -20,9 +24,11 @@
         <div id="tab_basic">
           <%= render "basic_settings", f: %>
         </div>
-        <div id="tab_ec2">
-          <%= render "ec2_settings", f: %>
-        </div>
+        <% if Rails.configuration.x.ec2_ssh.presence %>
+          <div id="tab_ec2">
+            <%= render "ec2_settings", f: %>
+          </div>
+        <% end %>
       <% end %>
   </div>
 </div>

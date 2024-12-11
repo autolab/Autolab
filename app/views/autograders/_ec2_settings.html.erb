@@ -1,9 +1,15 @@
-<h4>EC2 Settings</h4>
-<% if Rails.configuration.x.ec2_ssh.presence %>
-  <%= f.text_field :access_key, display_name: "Access Key (Currently unused)" %>
-  <%= f.text_field :access_key_id, display_name: "Access Key ID (Currently unused)" %>
-  <%= f.text_field :instance_type, display_name: "EC2 Instance Type" %>
+<% content_for :javascripts do %>
+  <%= javascript_include_tag "autograder" %>
 <% end %>
+
+<h4>EC2 Settings</h4>
+<%= f.check_box :use_access_key,
+                display_name: "Enable Access Key",
+                help_text: "(Optional) Use your own provided access key to authenticate to different EC2 instances than the default one on Tango" %>
+<%= f.text_field :access_key, display_name: "Access Key" %>
+<%= f.text_field :access_key_id, display_name: "Access Key ID" %>
+<%= f.text_field :instance_type, display_name: "EC2 Instance Type",
+                                 help_text: "Type of EC2 instance to be used to run the autograding job. See <a href='https://aws.amazon.com/ec2/instance-types/'> here </a> for more details".html_safe %>
 <%= f.submit "Save Settings" %>
 
 <%= link_to "Delete Autograder", course_assessment_autograder_path(@course, @assessment),
