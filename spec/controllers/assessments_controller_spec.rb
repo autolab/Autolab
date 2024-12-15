@@ -220,13 +220,14 @@ RSpec.describe AssessmentsController, type: :controller do
         assessment_path = Rails.root.join("courses/#{course_hash[:course].name}/assessment_valid")
         FileUtils.mkdir_p(assessment_path)
         FileUtils.mkdir_p("#{assessment_path}/handin")
-        assessment = FactoryBot.create(:assessment,
-                                        name: "assessment_valid",
-                                        course: course_hash[:course],
-                                        start_at: 2.days.ago,
-                                        due_at: 1.day.from_now,
-                                        end_at: 2.days.from_now,
-                                        allow_unofficial: true)
+        assessment = FactoryBot.create(
+          :assessment,
+          name: "assessment_valid",
+          course: course_hash[:course],
+          start_at: 2.days.ago,
+          due_at: 1.day.from_now,
+          end_at: 2.days.from_now,
+          allow_unofficial: true)
         assessment.save!
         assessment
       end
@@ -239,7 +240,7 @@ RSpec.describe AssessmentsController, type: :controller do
           user: user.email,
           result: "test result"
         }
-        post :log_submit, params
+        post :log_submit, params: params
         expect(response).to have_http_status(:ok)
         expect(response.body).to eq("OK")
       end
@@ -250,16 +251,17 @@ RSpec.describe AssessmentsController, type: :controller do
       let!(:invalid_assessment) do
         assessment_path = Rails.root.join(
           "courses/#{course_hash[:course].name}/assessment_invalid_date"
-          )
+        )
         FileUtils.mkdir_p(assessment_path)
         FileUtils.mkdir_p("#{assessment_path}/handin")
-        assessment = FactoryBot.create(:assessment,
-                                        name: "assessment_invalid_date",
-                                        course: course_hash[:course],
-                                        start_at: 1.day.from_now,
-                                        due_at: 2.days.from_now,
-                                        end_at: 3.days.from_now,
-                                        allow_unofficial: true)
+        assessment = FactoryBot.create(
+          :assessment,
+          name: "assessment_invalid_date",
+          course: course_hash[:course],
+          start_at: 1.day.from_now,
+          due_at: 2.days.from_now,
+          end_at: 3.days.from_now,
+          allow_unofficial: true)
         assessment.save!
         assessment
       end
@@ -272,11 +274,11 @@ RSpec.describe AssessmentsController, type: :controller do
           user: user.email,
           result: "test result"
         }
-        post :log_submit, params
+        post :log_submit, params: params
         expect(response).to have_http_status(:bad_request)
         expect(response.body).to eq(
           "ERROR: Submissions are not allowed outside the assessment period"
-          )
+        )
       end
     end
 
@@ -287,13 +289,14 @@ RSpec.describe AssessmentsController, type: :controller do
         /assessment_expired")
         FileUtils.mkdir_p(assessment_path)
         FileUtils.mkdir_p("#{assessment_path}/handin")
-        assessment = FactoryBot.create(:assessment,
-                                        name: "assessment_expired",
-                                        course: course_hash[:course],
-                                        start_at: 3.days.ago,
-                                        due_at: 2.days.ago,
-                                        end_at: 1.day.ago,
-                                        allow_unofficial: true)
+        assessment = FactoryBot.create(
+          :assessment,
+          name: "assessment_expired",
+          course: course_hash[:course],
+          start_at: 3.days.ago,
+          due_at: 2.days.ago,
+          end_at: 1.day.ago,
+          allow_unofficial: true)
         assessment.save!
         assessment
       end
@@ -306,7 +309,7 @@ RSpec.describe AssessmentsController, type: :controller do
           user: user.email,
           result: "test result"
         }
-        post :log_submit, params
+        post :log_submit, params: params
         expect(response).to have_http_status(:bad_request)
         expect(response.body).to eq(
           "ERROR: Submissions are not allowed outside the assessment period"
