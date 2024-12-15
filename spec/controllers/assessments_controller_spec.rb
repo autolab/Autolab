@@ -285,8 +285,9 @@ RSpec.describe AssessmentsController, type: :controller do
     context "when the submission is after the end date" do
       let!(:course_hash) { create_course_with_users_as_hash }
       let!(:expired_assessment) do
-        assessment_path = Rails.root.join("courses/#{course_hash[:course].name}
-        /assessment_expired")
+        assessment_path = Rails.root.join(
+          "courses/#{course_hash[:course].name}/assessment_expired"
+        )
         FileUtils.mkdir_p(assessment_path)
         FileUtils.mkdir_p("#{assessment_path}/handin")
         assessment = FactoryBot.create(
