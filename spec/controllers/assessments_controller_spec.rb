@@ -227,7 +227,8 @@ RSpec.describe AssessmentsController, type: :controller do
           start_at: 2.days.ago,
           due_at: 1.day.from_now,
           end_at: 2.days.from_now,
-          allow_unofficial: true)
+          allow_unofficial: true
+        )
         assessment.save!
         assessment
       end
@@ -240,7 +241,7 @@ RSpec.describe AssessmentsController, type: :controller do
           user: user.email,
           result: "test result"
         }
-        post :log_submit, params: params
+        post(:log_submit, params:)
         expect(response).to have_http_status(:ok)
         expect(response.body).to eq("OK")
       end
@@ -261,7 +262,8 @@ RSpec.describe AssessmentsController, type: :controller do
           start_at: 1.day.from_now,
           due_at: 2.days.from_now,
           end_at: 3.days.from_now,
-          allow_unofficial: true)
+          allow_unofficial: true
+        )
         assessment.save!
         assessment
       end
@@ -274,7 +276,7 @@ RSpec.describe AssessmentsController, type: :controller do
           user: user.email,
           result: "test result"
         }
-        post :log_submit, params: params
+        post(:log_submit, params:)
         expect(response).to have_http_status(:bad_request)
         expect(response.body).to eq(
           "ERROR: Submissions are not allowed outside the assessment period"
@@ -297,7 +299,8 @@ RSpec.describe AssessmentsController, type: :controller do
           start_at: 3.days.ago,
           due_at: 2.days.ago,
           end_at: 1.day.ago,
-          allow_unofficial: true)
+          allow_unofficial: true
+        )
         assessment.save!
         assessment
       end
@@ -310,7 +313,7 @@ RSpec.describe AssessmentsController, type: :controller do
           user: user.email,
           result: "test result"
         }
-        post :log_submit, params: params
+        post(:log_submit, params:)
         expect(response).to have_http_status(:bad_request)
         expect(response.body).to eq(
           "ERROR: Submissions are not allowed outside the assessment period"
