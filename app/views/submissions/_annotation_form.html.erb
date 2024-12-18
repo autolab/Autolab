@@ -23,6 +23,12 @@
           <span> Grading style: <b><%= @assessment.is_positive_grading ? "Positive grading" : "Negative grading" %></b>
             <i class="material-icons" title="<%= "#{@assessment.is_positive_grading ? 'Score is added, starting from 0.' : 'Score is deducted from the total points.'} Change this setting in Edit Assessment > Problems" %>">info_outline</i> </span>
         </div>
+        <% if popup %>
+          <div class="input-field col s6">
+            <select class="browser-default problem-id">
+            </select>
+          </div>
+        <% end %>
       <% else %>
         <div class="input-field col s6 no-padding-bottom">
           <input class="score" type="number" value="0" placeholder="0" step="any" id="comment-score" autocomplete="on">

@@ -102,7 +102,7 @@ td.focus {
 }
 
 #grades th {
-  background-color: #ebebeb;
+  background-color: $autolab-light-grey;
   padding: 8px;
   border-right: none;
   border-left: none;
@@ -181,7 +181,7 @@ td.id {
   border-radius: 5px;
   z-index: 100000;
   padding: 3px;
-  background-color: #ebebeb;
+  background-color: $autolab-light-grey;
   display: none;
 }
 

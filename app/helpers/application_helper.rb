@@ -5,6 +5,10 @@ module ApplicationHelper
     course_assessment_path(@course, @assessment)
   end
 
+  def current_assessment_link
+    link_to @assessment.display_name, course_assessment_path(@course, @assessment)
+  end
+
   # Older Helpers
   def sort_td_class_helper(param)
     result = 'class="sortup"' if params[:sort] == param
@@ -182,8 +186,8 @@ module ApplicationHelper
       version = "3.10.1" # latest is "4.17.21"
       javascript_include_tag "#{cloudflare}/lodash.js/#{version}/lodash.min.js"
     when "jquery.dataTables"
-      version = "1.10.21"
-      javascript_include_tag "#{cloudflare}/datatables/#{version}/js/jquery.dataTables.min.js"
+      version = "1.13.4"
+      javascript_include_tag "https://cdn.datatables.net/#{version}/js/jquery.dataTables.min.js"
     when "flatpickr"
       version = "4.6.13"
       javascript_include_tag "#{cloudflare}/flatpickr/#{version}/flatpickr.min.js"

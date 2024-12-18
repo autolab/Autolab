@@ -526,7 +526,7 @@ private
     # force load config file (see http://www.ruby-doc.org/core-2.0.0/Kernel.html#method-i-load)
     load unique_config_file_path
 
-    # updated last loaded time
+    # updated last lozaaded time
     @@CONFIG_FILE_LAST_LOADED[unique_config_file_path] = Time.current
 
     logger.info "Reloaded #{unique_config_file_path}"

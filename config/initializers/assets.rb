@@ -38,6 +38,8 @@ Rails.application.config.assets.precompile += %w( metricsgraphics.scss )
 Rails.application.config.assets.precompile += %w( users.css.scss )
 
 Rails.application.config.assets.precompile += %w( *.js )
+Rails.application.config.assets.precompile += %w( annotations_helpers.js )
+Rails.application.config.assets.precompile += %w( annotations_popup.js )
 Rails.application.config.assets.precompile += %w( annotations.js )
 Rails.application.config.assets.precompile += %w( chroma.min.js )
 Rails.application.config.assets.precompile += %w( gradesheet.js.erb )
