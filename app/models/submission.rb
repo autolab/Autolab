@@ -40,6 +40,7 @@ class Submission < ApplicationRecord
   end
 
   after_create :update_latest_submission
+  after_destroy :delete_version_number
   after_destroy :update_latest_submission
 
   # allow stuff to get updated by mass assign
@@ -76,6 +77,7 @@ class Submission < ApplicationRecord
   # update_latest_submission which will atomically compute the latest submission
   # and cache it in the AUD (assessment_user_data).
   delegate :update_latest_submission, to: :aud
+  delegate :delete_version_number, to: :aud
 
   def save_file(upload)
     self.filename = handin_file_filename
@@ -405,10 +407,13 @@ class Submission < ApplicationRecord
     json
   end
 
+  def problems_released?
+    scores.pluck(:released).all?
+  end
+
   def grades_released?(as_seen_by)
     include_unreleased = as_seen_by.course_assistant? || as_seen_by.instructor?
-    released = scores.pluck(:released).all?
-    released || include_unreleased
+    problems_released? || include_unreleased
   end
 
   # easy access to AUD

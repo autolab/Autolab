@@ -8,7 +8,12 @@
   <div class="form-group">
     <label class="control-label" for="member_email">Partner Email</label>
     <%= text_field_tag :member_email, nil, class: "form-control", autocomplete: "email" %>
-    <p class="help-block">The email of your desired partner. They will need to confirm their membership.</p>
+    <% if @assessment.allow_student_assign_group %>
+      <p class="help-block">The email of your desired partner. They will need to confirm their membership.</p>
+    <% else %>
+      <%# Instructor adding a student %>
+      <p class="help-block">The email of your desired partner. Their membership will be automatically confirmed.</p>
+    <% end %>
   </div>
 
   <%= submit_tag "Create Group", class: "btn btn-primary" %>

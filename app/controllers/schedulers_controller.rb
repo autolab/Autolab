@@ -4,6 +4,9 @@
 # hasn't ran in more than its period's time, it's function is run.  This is awful.
 #
 class SchedulersController < ApplicationController
+  before_action :set_manage_course_breadcrumb
+  before_action :set_manage_scheduler_breadcrumb, except: %i[index]
+
   action_auth_level :index, :instructor
   def index
     @schedulers = Scheduler.where(course_id: @course.id)
@@ -53,7 +56,7 @@ class SchedulersController < ApplicationController
         begin
           require mod_name
           output = Updater.update(action.course)
-          if output
+          if output.respond_to?(:to_str)
             fork_log << "----- Script Output -----\n"
             fork_log << output
             fork_log << "\n----- End Script Output -----"
@@ -83,8 +86,8 @@ class SchedulersController < ApplicationController
 
   action_auth_level :update, :instructor
   def update
-    @scheduler = Scheduler.find(params[:id])
-    if @scheduler.update(scheduler_params)
+    @scheduler = Scheduler.find_by(id: params[:id])
+    if @scheduler&.update(scheduler_params)
       flash[:success] = "Scheduler updated."
       redirect_to(course_schedulers_path(@course))
     else
@@ -95,8 +98,8 @@ class SchedulersController < ApplicationController
 
   action_auth_level :destroy, :instructor
   def destroy
-    @scheduler = Scheduler.find(params[:id])
-    if @scheduler.destroy
+    @scheduler = Scheduler.find_by(id: params[:id])
+    if @scheduler&.destroy
       flash[:success] = "Scheduler destroyed."
       redirect_to(course_schedulers_path(@course))
     else
@@ -109,5 +112,11 @@ private
 
   def scheduler_params
     params.require(:scheduler).permit(:action, :next, :until, :interval, :disabled)
+  end
+
+  def set_manage_scheduler_breadcrumb
+    return if @course.nil?
+
+    @breadcrumbs << (view_context.link_to "Manage Schedulers", course_schedulers_path(@course))
   end
 end

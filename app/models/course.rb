@@ -9,9 +9,10 @@ class Course < ApplicationRecord
   validates :grace_days, numericality: { greater_than_or_equal_to: 0 }
   validates :version_threshold, numericality: { only_integer: true, greater_than_or_equal_to: -1 }
   validate :order_of_dates
-  validates :name, format: { with: /\A(\w|-)+\z/, on: :create }
+  validate :valid_name?, on: :create
   # validates course website format if there exists one
   validate :valid_website?
+  validates :access_code, uniqueness: true, allow_nil: true
 
   has_many :course_user_data, dependent: :destroy
   has_many :assessments, dependent: :destroy
@@ -28,11 +29,17 @@ class Course < ApplicationRecord
   has_one :watchlist_configuration, dependent: :destroy
   has_one :lti_course_datum, dependent: :destroy
 
-  accepts_nested_attributes_for :late_penalty, :version_penalty
-
+  # Callbacks
   before_save :cgdub_dependencies_updated, if: :grace_days_or_late_slack_changed?
   before_create :cgdub_dependencies_updated
   after_create :init_course_folder
+
+  # Constants
+  VALID_CODE_REGEX = /\A[A-Z0-9]{6}\z/ # String is transformed to uppercase
+  VALID_CODE_REGEX_HTML = "[a-zA-Z0-9]{6}".freeze # For use in HTML
+
+  # Misc.
+  accepts_nested_attributes_for :late_penalty, :version_penalty
 
   def config_file_path
     Rails.root.join("courseConfig", "#{sanitized_name}.rb")
@@ -102,7 +109,6 @@ class Course < ApplicationRecord
       # roll back course and CUD creation
       newCUD.destroy
       newCourse.destroy
-      raise "Failed to load course config for new course #{newCourse.name}"
     end
 
     newCourse
@@ -125,13 +131,30 @@ class Course < ApplicationRecord
 
     FileUtils.mkdir_p Rails.root.join("assessmentConfig")
     FileUtils.mkdir_p Rails.root.join("courseConfig")
-    FileUtils.mkdir_p Rails.root.join("gradebooks")
   end
 
   def order_of_dates
     return if start_date.nil? || end_date.nil?
 
     errors.add(:start_date, "must come before end date") if start_date > end_date
+  end
+
+  def valid_name?
+    if /\A(\w|-)+\z/.match?(name)
+      true
+    else
+      suggest_name = name.gsub(/(\s+)/) { '-' }
+      suggest_name = suggest_name.gsub(/([^\w-]+)/) { '' }
+      name_error = if !suggest_name.empty?
+                     "cannot include characters other than alphanumeric characters, hyphens, "\
+                       "and underscores. Suggestion: #{suggest_name}"
+                   else
+                     "cannot include characters other than alphanumeric characters, hyphens, "\
+                       "and underscores."
+                   end
+      errors.add("name", name_error)
+      false
+    end
   end
 
   def valid_website?
@@ -149,10 +172,18 @@ class Course < ApplicationRecord
     if now < start_date
       :upcoming
     elsif now > end_date
-      :completed
+      if disable_on_end
+        :disabled
+      else
+        :completed
+      end
     else
       :current
     end
+  end
+
+  def is_disabled?
+    disabled? or (disable_on_end? && DateTime.now > end_date)
   end
 
   def current_assessments(now = DateTime.now)
@@ -302,6 +333,50 @@ class Course < ApplicationRecord
     watchlist_configuration.allow_ca
   end
 
+  def dump_yaml(include_metrics)
+    YAML.dump(serialize(include_metrics))
+  end
+
+  def generate_tar(export_configs)
+    base_path = Rails.root.join("courses", name).to_s
+    course_dir = name
+    rb_path = "course.rb"
+    config_path = "#{name}.yml"
+    mode = 0o755
+
+    begin
+      tarStream = StringIO.new("")
+      Gem::Package::TarWriter.new(tarStream) do |tar|
+        tar.mkdir course_dir, File.stat(base_path).mode
+
+        # save course.rb
+        source_file = File.open(File.join(base_path, rb_path), 'rb')
+        tar.add_file File.join(course_dir, rb_path), File.stat(source_file).mode do |tar_file|
+          tar_file.write(source_file.read)
+        end
+        source_file.close
+
+        # save course and metrics config
+        tar.add_file File.join(course_dir, config_path), mode do |tar_file|
+          tar_file.write(dump_yaml(export_configs&.include?('metrics_config')))
+        end
+
+        # save assessments
+        if export_configs&.include?('assessments')
+          assessments.each do |assessment|
+            asmt_dir = assessment.name
+            assessment.dump_yaml
+            filter = [assessment.handin_directory_path]
+            assessment.load_dir_to_tar(base_path, asmt_dir, tar, filter, course_dir)
+          end
+        end
+      end
+      tarStream.rewind
+      tarStream.close
+      tarStream
+    end
+  end
+
 private
 
   def saved_change_to_grade_related_fields?
@@ -334,6 +409,35 @@ private
 
   def config_module_name
     "Course#{sanitized_name.camelize}"
+  end
+
+  def serialize(include_metrics)
+    s = {}
+    s["general"] = serialize_general
+    s["general"]["late_penalty"] = late_penalty.serialize unless late_penalty.nil?
+    s["general"]["version_penalty"] = version_penalty.serialize unless version_penalty.nil?
+    s["attachments"] = attachments.map(&:serialize) if attachments.exists?
+
+    if include_metrics
+      if risk_conditions.exists?
+        s["risk_conditions"] = risk_conditions.map(&:serialize)
+        latest_version = risk_conditions.order(version: :desc).first.version
+        s["risk_conditions"] = risk_conditions.where(version: latest_version).map(&:serialize)
+      end
+
+      if watchlist_configuration.present?
+        s["watchlist_configuration"] =
+          watchlist_configuration.serialize
+      end
+    end
+    s
+  end
+
+  GENERAL_SERIALIZABLE = Set.new %w[name semester late_slack grace_days display_name start_date
+                                    end_date disabled exam_in_progress version_threshold
+                                    gb_message website disable_on_end]
+  def serialize_general
+    Utilities.serializable attributes, GENERAL_SERIALIZABLE
   end
 
   include CourseAssociationCache

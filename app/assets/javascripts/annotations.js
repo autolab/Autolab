@@ -24,11 +24,57 @@ $(window).on('resize', function () {
   resizeGradeList();
 });
 
+function getSharedCommentsForProblem(problem_id) {
+  return localCache['shared_comments'][problem_id]?.map(
+    (annotation) => {
+      return {label: annotation.comment ?? annotation, value: annotation}
+    }
+  )
+}
+
+const selectAnnotation = box => (e, ui) => {
+  const {label, value} = ui.item;
+
+  const score = value.value ?? 0;
+  box.find('#comment-score').val(score);
+
+  const $textarea = box.find("#comment-textarea");
+  M.textareaAutoResize($textarea);
+
+  return false;
+}
+
+function focusAnnotation( event, ui ) {
+  $(this).val(ui.item.label);
+  return false;
+}
+
+// retrieve shared comments
+// also retrieves annotation id to allow easy deletion in the future
+function retrieveSharedComments() {
+  $.getJSON(sharedCommentsPath, function (data) {
+    localCache['shared_comments'] = {};
+    data.forEach(e => {
+      if (!e.problem_id)
+        return;
+      localCache['shared_comments'][e.problem_id] ||= [];
+      localCache['shared_comments'][e.problem_id].push(e);
+    });
+  });
+}
+
 function resizeCodeTable() {
   // Resize code table if announcements are shown
-  if ($(".announcement.gray-box")) {
-    $('.code-table').css("max-height", $(window).height() - $(".announcement.gray-box").height() - 250);
-    $('#annotationPane').css("max-height", $(window).height() - $(".announcement.gray-box").height() - 200);
+  if ($(".announcement.gray-box").length > 0) {
+    // Value determined empirically, so that the values below match those in annotations.scss
+    const baseHeight = $(window).height() - $(".announcement.gray-box").height() - 17;
+    const CODE_TABLE_OFFSET = 260;
+    const DIFF_VIEWER_OFFSET = 235;
+    const SPEEDGRADER_OFFSET = 178;
+    $('.code-table').css("max-height", baseHeight - CODE_TABLE_OFFSET);
+    $('#diff-viewer .d2h-file-side-diff').css("max-height", baseHeight - DIFF_VIEWER_OFFSET);
+    $('#speedgrader').css("max-height", baseHeight - SPEEDGRADER_OFFSET);
+    myLayout.updateSize();
   }
 }
 
@@ -65,8 +111,12 @@ function loadFile(newFile) {
   // Update version buttons
   $('#version-links').replaceWith(newFile.versionLinks);
 
+  // Update diff viewer
+  $('#diff-box').replaceWith(newFile.diffBox);
+
   displayAnnotations();
   attachEvents();
+  drawDiffViewer();
 }
 
 // Returns true if the file was cached, false otherwise
@@ -81,6 +131,18 @@ function changeFile(headerPos) {
     return true;
   }
   return false;
+}
+
+function purgeCurrentPageCache() {
+  localCache[currentHeaderPos] = {
+    codeBox: `<div id="code-box">${$('#code-box').html()}</div>`,
+    pdf: false,
+    symbolTree: `<div id="symbol-tree-container">${$('#symbol-tree-container').html()}</div>`,
+    versionLinks: `<span id="version-links">${$('#version-links').html()}</span>`,
+    versionDropdown: `<span id="version-dropdown">${$('#version-dropdown').html()}</span>`,
+    diffBox: `<div id="diff-box">${$('#diff-box').html()}</div>`,
+    url: window.location.href
+  };
 }
 
 // Updates active tags to set the specified file
@@ -114,6 +176,17 @@ function scrollToLine(n) {
   $('.code-table').scrollTo($('#line-' + (n - 1)), { duration: "fast" })
 }
 
+function plusFix(n) {
+  n = parseFloat(n)
+  if (isNaN(n)) n = 0;
+
+  if (n > 0) {
+    return "+" + n.toFixed(2);
+  }
+
+  return n.toFixed(2);
+}
+
 // function called after create, update & delete of annotations
 function fillAnnotationBox() {
   retrieveSharedComments();
@@ -123,6 +196,7 @@ function fillAnnotationBox() {
     $('.problemGrades').html($page.find('.problemGrades'));
     $('#annotationPane').html($page.find(' #annotationPane'));
     $('.collapsible').collapsible({ accordion: false });
+    $('#release-grades').html($page.find('#release-grades'));
     $('#loadScreen').hide();
     attachChangeFileEvents();
     attachAnnotationPaneEvents();
@@ -255,7 +329,7 @@ function make_editable($editable) {
 }
 
 
-/* Highlights lines longer than 80 characters autolab red color */
+/* Highlights lines longer than 80 characters Autolab red color */
 var highlightLines = function (highlight) {
   var highlightColor = "rgba(255, 255, 0, 0.3)"
   $("#code-box > .code-table > .code-line > .code").each(function () {
@@ -418,6 +492,46 @@ var initializeAnnotationsForCode = function () {
   displayAnnotations();
 }
 
+
+function getProblemNameWithId(problem_id) {
+  var problem_id = parseInt(problem_id, 10);
+  var problem = _.findWhere(problems, { "id": problem_id });
+  if (problem == undefined) return "Deleted Problem(s)";
+  return problem.name;
+}
+
+
+// create an HTML element real nice and easy like
+function elt(t, a) {
+  var el = document.createElement(t);
+  if (a) {
+    for (var attr in a)
+      if (a.hasOwnProperty(attr))
+        el.setAttribute(attr, a[attr]);
+  }
+  for (var i = 2; i < arguments.length; ++i) {
+    var arg = arguments[i];
+    if (typeof arg === "string")
+      arg = document.createTextNode(arg);
+    el.appendChild(arg);
+  }
+  return el;
+}
+
+
+// this creates a JSON representation of what the actual Rails Annotation model looks like
+function createAnnotation() {
+  var annObj = {
+    filename: fileNameStr,
+  };
+
+  if (currentHeaderPos || currentHeaderPos === 0) {
+    annObj.position = currentHeaderPos
+  }
+
+  return annObj;
+}
+
 function newAnnotationFormCode() {
   var box = $(".base-annotation-line").clone();
   box.removeClass("base-annotation-line");
@@ -431,8 +545,21 @@ function newAnnotationFormCode() {
     problemGraderId[score.problem_id] = score.grader_id;
   });
 
+  var processStarred = false;
   _.each(problems, function (problem) {
     if (problemGraderId[problem.id] !== 0) { // Because grader == 0 is autograder
+      if(problem.starred && !processStarred){
+        box.find('select').append(
+            $('<option disabled></option>').text('Starred Problems')
+        );
+        processStarred=true;
+      }
+      if(!problem.starred && processStarred){
+        box.find('select').append(
+            $('<option disabled></option>').text('-------------------')
+        );
+        processStarred=false;
+      }
       box.find("select").append(
           $("<option />").val(problem.id).text(problem.name)
       );
@@ -527,6 +654,7 @@ function globalAnnotationFormCode(newAnnotation, config) {
     e.preventDefault();
     $(this).parents(".annotation-form").parent().remove();
   })
+
   box.find('#comment-textarea').autocomplete({
     appendTo: box.find('#comment-textarea').parent(),
     minLength: 0,
@@ -573,6 +701,13 @@ function globalAnnotationFormCode(newAnnotation, config) {
   return box;
 }
 
+function getAnnotationObject(annotationId) {
+  for (var i = 0; i < annotations.length; i++) {
+    if (annotations[i].id == annotationId) {
+      return annotations[i];
+    }
+  }
+}
 
 function initializeBoxForm(box, annotation) {
   var problemStr = annotation.problem_id;
@@ -585,8 +720,21 @@ function initializeBoxForm(box, annotation) {
     problemGraderId[score.problem_id] = score.grader_id;
   });
 
+  var processStarred = false;
   _.each(problems, function (problem) {
     if (problemGraderId[problem.id] !== 0) { // Because grader == 0 is autograder
+      if(problem.starred && !processStarred){
+        box.find('select').append(
+            $('<option disabled></option>').text('Starred Problems')
+        );
+        processStarred=true;
+      }
+      if(!problem.starred && processStarred){
+        box.find('select').append(
+            $('<option disabled></option>').text('-------------------')
+        );
+        processStarred=false;
+      }
       box.find("select").append(
           $("<option />").val(problem.id).text(problem.name)
       );
@@ -1105,6 +1253,14 @@ var newEditAnnotationForm = function (pageInd, annObj) {
   return newForm;
 }
 
+/* following paths/functions for annotations */
+var sharedCommentsPath = basePath + "/shared_comments";
+var createPath = basePath + ".json";
+var updatePath = function (ann) {
+  return [basePath, "/", ann.id, ".json"].join("");
+};
+var deletePath = updatePath;
+
 // start annotating the coordinate with the given x and y
 var showAnnotationFormAtCoord = function (pageInd, x, y) {
   var $page = $("#page-canvas-wrapper-" + pageInd);
@@ -1186,8 +1342,10 @@ var submitNewAnnotation = function (comment, shared_comment, global_comment, val
 
       // Logic to render annotation boxes, not applicable to global annotations
       if (!global_comment) {
-        $("#annotation-line-" + lineInd).append(newAnnotationBox(data));
-        refreshAnnotations();
+        if (!commentsVisible()) {
+          $("#annotation-line-" + lineInd).append(newAnnotationBox(data));
+          refreshAnnotations();
+        }
 
         if (!annotationsByPositionByLine[currentHeaderPos]) {
           annotationsByPositionByLine[currentHeaderPos] = {};
@@ -1412,4 +1570,23 @@ function renderPdf() {
     //no error message is logged either
     console.log("Error occurred", error);
   });
+}
+
+function commentsVisible() {
+  let hideButton = document.getElementById("hideAnnotations");
+  return window.getComputedStyle(hideButton).display === "none";
+}
+
+function hideAnnotations() {
+  document.getElementById("hideAnnotations").style.display = "none";
+  document.getElementById("showAnnotations").style.display = "inline-flex";
+  $(".annotation-line").not(".base-annotation-line").remove();
+  refreshAnnotations();
+}
+
+function showAnnotations() {
+  document.getElementById("showAnnotations").style.display = "none";
+  document.getElementById("hideAnnotations").style.display = "inline-flex";
+  displayAnnotations();
+  refreshAnnotations();
 }

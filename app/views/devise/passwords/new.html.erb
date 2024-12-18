@@ -1,4 +1,6 @@
-<h2>Forgot your password?</h2>
+<% @title = "Forgot Password" %>
+
+<h4>Forgot your password?</h4>
 
 <%= form_for(resource, as: resource_name, url: password_path(resource_name), html: { method: :post }) do |f| %>
   <%= render "devise/shared/error_messages", resource: %>

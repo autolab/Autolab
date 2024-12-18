@@ -1,5 +1,7 @@
 class CourseUserDataController < ApplicationController
-  before_action :add_users_breadcrumb
+  before_action :set_manage_course_breadcrumb
+  before_action :set_manage_course_users_breadcrumb, except: %i[sudo]
+  # :set_course_user_breadcrumb called from within edit
 
   action_auth_level :index, :student
   def index
@@ -86,23 +88,25 @@ class CourseUserDataController < ApplicationController
 
   action_auth_level :show, :student
   def show
-    @requestedUser = @cud.course.course_user_data.find(params[:id])
+    @requestedUser = @cud.course.course_user_data.find_by(id: params[:id])
+    if @requestedUser.nil?
+      flash[:error] = "Could not find user #{params[:id]}"
+      redirect_to([:users, @course]) && return
+    end
     respond_to do |format|
       if @requestedUser
         format.html
         format.json { render json: @requestedUser.to_json }
-      else
-        format.json { head :bad_request }
       end
     end
   end
 
   action_auth_level :edit, :student
   def edit
-    @editCUD = @course.course_user_data.find(params[:id])
+    @editCUD = @course.course_user_data.find_by(id: params[:id])
     if @editCUD.nil?
       flash[:error] = "Can't find user in the course"
-      redirect_to(action: "index") && return
+      redirect_to(action: "show") && return
     end
 
     if (@editCUD.id != @cud.id) && !@cud.instructor? &&
@@ -110,6 +114,9 @@ class CourseUserDataController < ApplicationController
       flash[:error] = "Permission denied"
       redirect_to(action: "index") && return
     end
+
+    # This can't be a before_action callback since @editCUD is only defined here
+    set_course_user_breadcrumb
 
     @editCUD.tweak ||= Tweak.new
   end
@@ -119,7 +126,7 @@ class CourseUserDataController < ApplicationController
     # ensure presence of nickname
     # isn't a User model validation since users can start off without nicknames
     # application_controller's authenticate_user redirects here if nickname isn't set
-    @editCUD = @course.course_user_data.find(params[:id])
+    @editCUD = @course.course_user_data.find_by(id: params[:id])
     redirect_to(action: "index") && return if @editCUD.nil?
 
     if @cud.student?
@@ -161,32 +168,10 @@ class CourseUserDataController < ApplicationController
       # error details are shown separately in the view
       flash[:error] = "Update failed.<br>"
       flash[:error] += @editCUD.errors.full_messages.join("<br>")
-      flash[:notice] = ""
+      flash.delete(:notice)
       flash[:html_safe] = true
       redirect_to(action: :edit) && return
     end
-  end
-
-  action_auth_level :destroy, :instructor
-  def destroy
-    @destroyCUD = @course.course_user_data.find(params[:id])
-    if @destroyCUD && @destroyCUD != @cud && params[:yes1] && params[:yes2] && params[:yes3]
-      @destroyCUD.destroy # awwww!!!
-    end
-    flash[:success] = "Success: User #{@editCUD.email} has been deleted from the course"
-    redirect_to([:users, @course]) && return
-  end
-
-  # Non-RESTful paths below
-
-  # this GET page confirms that the instructor wants to destroy the user
-  action_auth_level :destroyConfirm, :instructor
-  def destroyConfirm
-    @destroyCUD = @course.course_user_data.find(params[:id])
-    return unless @destroyCUD.nil?
-
-    flash[:error] = "The user to be deleted is not in the course"
-    redirect_to(action: :index) && return
   end
 
   action_auth_level :sudo, :instructor
@@ -239,10 +224,6 @@ class CourseUserDataController < ApplicationController
 
 private
 
-  def add_users_breadcrumb
-    @breadcrumbs << (view_context.link_to "Users", [:users, @course]) if @cud.instructor
-  end
-
   def cud_params
     if @cud.administrator? || @cud.instructor?
       params.require(:course_user_datum).permit(:school, :major, :year, :course_number,
@@ -267,5 +248,12 @@ private
       params.require(:course_user_datum).permit(:nickname)
       # user_attributes: [:first_name, :last_name])
     end
+  end
+
+  def set_course_user_breadcrumb
+    return if @course.nil? || @editCUD.nil?
+
+    @breadcrumbs << (view_context.link_to @editCUD.user.full_name,
+                                          course_course_user_datum_path(@course, @editCUD))
   end
 end

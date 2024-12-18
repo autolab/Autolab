@@ -10,9 +10,7 @@ RSpec.describe CoursesController, type: :controller do
     context "when user is Autolab user" do
       it "renders successfully" do
         sign_in(student_user)
-        cid = get_first_cid_by_uid(student_user.id)
-        cname = Course.find(cid).name
-        get :report_bug, params: { name: cname }
+        get :report_bug, params: { name: @course.name }
         expect(response).to be_successful
         expect(response.body).to match(/Stuck on a bug/m)
       end
@@ -20,9 +18,7 @@ RSpec.describe CoursesController, type: :controller do
 
     context "when user is not logged in" do
       it "renders with failure" do
-        cid = get_first_cid_by_uid(student_user.id)
-        cname = Course.find(cid).name
-        get :report_bug, params: { name: cname }
+        get :report_bug, params: { name: @course.name }
         expect(response).not_to be_successful
         expect(response.body).not_to match(/Stuck on a bug/m)
       end
@@ -34,9 +30,7 @@ RSpec.describe CoursesController, type: :controller do
       sign_in(user)
     end
     it "renders successfully" do
-      cid = get_first_cid_by_uid(user.id)
-      cname = Course.find(cid).name
-      get :user_lookup, params: { name: cname, email: user.email }
+      get :user_lookup, params: { name: @course.name, email: user.email }
       expect(response).to be_successful
       expect(response.body).to match(/first_name/m)
     end
@@ -47,9 +41,7 @@ RSpec.describe CoursesController, type: :controller do
       sign_in(user) if login
     end
     it "renders with failure" do
-      cid = get_first_cid_by_uid(user.id)
-      cname = Course.find(cid).name
-      get :user_lookup, params: { name: cname, email: user.email }
+      get :user_lookup, params: { name: @course.name, email: user.email }
       expect(response).not_to be_successful
       expect(response.body).not_to match(/first_name/m)
     end
@@ -84,10 +76,9 @@ RSpec.describe CoursesController, type: :controller do
 
   describe "#update_lti_settings" do
     include_context "controllers shared context"
-    context "when user is autolab instructor" do
+    context "when user is Autolab instructor" do
       before(:each) do
-        instructor = get_instructor_by_cid(course.id)
-        sign_in(instructor)
+        sign_in(@instructor_user)
       end
       it "updates lti settings" do
         patch :update_lti_settings,
@@ -101,11 +92,10 @@ RSpec.describe CoursesController, type: :controller do
   end
 
   describe "#unlink_course" do
-    context "when user is autolab instructor" do
+    context "when user is Autolab instructor" do
       include_context "controllers shared context"
       before(:each) do
-        instructor = get_instructor_by_cid(course.id)
-        sign_in(instructor)
+        sign_in(@instructor_user)
       end
       it "unlinks LTI from course" do
         expect {
@@ -128,6 +118,9 @@ RSpec.describe CoursesController, type: :controller do
         instructor = get_instructor_by_cid(course.id)
         sign_in(instructor)
       end
+      after(:each) do
+        delete_course_files(course)
+      end
       it "fails on unlink" do
         expect {
           post :unlink_course, params: { name: course.name }
@@ -139,11 +132,10 @@ RSpec.describe CoursesController, type: :controller do
   end
 
   describe "#download_roster" do
-    context "when user is autolab instructor" do
+    context "when user is Autolab instructor" do
       include_context "controllers shared context"
       it "downloads roster" do
-        instructor = get_instructor_by_cid(course.id)
-        sign_in(instructor)
+        sign_in(@instructor_user)
         get :download_roster, params: { name: course.name }, format: CSV
         expect(response).to have_http_status(200)
         expect(response.body).to match(/Auto-populated/m) # lecture
@@ -174,8 +166,7 @@ RSpec.describe CoursesController, type: :controller do
         Array.new(10) { |elem| "unused#{elem}@example.org" }
       end
       before(:each) do
-        instructor = get_instructor_by_cid(course.id)
-        sign_in(instructor)
+        sign_in(@instructor_user)
       end
 
       it "adds users as course assistants successfully" do
@@ -305,6 +296,229 @@ RSpec.describe CoursesController, type: :controller do
         expect(response).to have_http_status(302)
         expect(flash[:error]).to be_present
         expect(flash[:error]).to match(/Error: Users could not be added to course./m)
+      end
+    end
+  end
+
+  describe "#import_course" do
+    include_context "controllers shared context"
+    context "when user is administrator" do
+      before(:each) do
+        user = get_admin
+        sign_in(user)
+        @instructor_email = "instructor@gmail.com"
+        @course_name = "course"
+      end
+      it "successfully creates course from valid tar" do
+        file = fixture_file_upload("courses/course-valid.tar")
+        post :create_from_tar, params: { instructor_email: @instructor_email,
+                                         tarFile: file }
+        expect(response).to have_http_status(302)
+        expect(flash[:success]).to be_present
+        expect(Course.find_by(name: @course_name)).to be_an_instance_of(Course)
+      end
+      it "handles nil tarfile" do
+        post :create_from_tar, params: { instructor_email: @instructor_email }
+        expect(response).to have_http_status(200)
+        expect(flash[:error]).to be_present
+        expect(flash[:error]).to match(/Please select a course tarball for uploading/m)
+      end
+      it "handles invalid course tarball" do
+        file = fixture_file_upload("courses/course-invalid.tar")
+        post :create_from_tar, params: { instructor_email: @instructor_email,
+                                         tarFile: file }
+        expect(response).to have_http_status(200)
+        expect(flash[:error]).to be_present
+        expect(flash[:error]).to match(/Error while reading the tarball/m)
+      end
+      it "handles missing course yml" do
+        file = fixture_file_upload("courses/course-missing-yml.tar")
+        post :create_from_tar, params: { instructor_email: @instructor_email,
+                                         tarFile: file }
+        expect(response).to have_http_status(200)
+        expect(flash[:error]).to be_present
+        expect(flash[:error]).to match(/\.yml was not found/m)
+      end
+      it "handles wrong course yml name" do
+        file = fixture_file_upload("courses/course-mismatch-yml.tar")
+        post :create_from_tar, params: { instructor_email: @instructor_email,
+                                         tarFile: file }
+        expect(response).to have_http_status(200)
+        expect(flash[:error]).to be_present
+        expect(flash[:error]).to match(/\.yml was not found/m)
+      end
+      it "handles bad config file syntax" do
+        file = fixture_file_upload("courses/course-bad-config-syntax.tar")
+        post :create_from_tar, params: { instructor_email: @instructor_email,
+                                         tarFile: file }
+        expect(response).to have_http_status(200)
+        expect(flash[:error]).to be_present
+        expect(flash[:error]).to match(/syntax error/m)
+      end
+      it "handles tar with invalid directory structure" do
+        file = fixture_file_upload("courses/course-no-root.tar")
+        post :create_from_tar, params: { instructor_email: @instructor_email,
+                                         tarFile: file }
+        expect(response).to have_http_status(200)
+        expect(flash[:error]).to be_present
+        expect(flash[:error]).to match(/there is only one root directory in the tarball/m)
+      end
+    end
+  end
+
+  shared_examples "export_success" do
+    before(:each) do
+      sign_in(user)
+    end
+    it "renders successfully" do
+      get :export, params: { name: @course.name }
+      expect(response).to be_successful
+      expect(response.body).to match(/Export Course/m)
+    end
+  end
+
+  shared_examples "export_failure" do |login: false|
+    before(:each) do
+      sign_in(user) if login
+    end
+    it "renders with failure" do
+      get :export, params: { name: @course.name }
+      expect(response).not_to be_successful
+      expect(response.body).not_to match(/Export Course/m)
+    end
+  end
+
+  describe "#export" do
+    include_context "controllers shared context"
+    context "when user is Autolab admin" do
+      it_behaves_like "export_success" do
+        let!(:user) { admin_user }
+      end
+    end
+
+    context "when user is Autolab instructor" do
+      it_behaves_like "export_success" do
+        let!(:user) { instructor_user }
+      end
+    end
+
+    context "when user is Autolab user" do
+      it_behaves_like "export_failure", login: true do
+        let!(:user) { student_user }
+      end
+    end
+
+    context "when user is not logged in" do
+      it_behaves_like "export_failure", login: false do
+        let!(:user) { student_user }
+      end
+    end
+  end
+
+  shared_examples "export_selected_success" do
+    before(:each) do
+      sign_in(user)
+    end
+
+    it "exports default course configs and attachments" do
+      default_tar = (@course.generate_tar []).string.force_encoding("binary")
+      post :export_selected, params: { name: @course.name }
+      expect(response).to be_successful
+      expect(response.body).to eq(default_tar)
+    end
+
+    it "exports metric configs" do
+      metrics_tar = (@course.generate_tar ["metrics_config"]).string.force_encoding("binary")
+      post :export_selected, params: { name: @course.name, export_configs: ["metrics_config"] }
+      expect(response).to be_successful
+      expect(response.body).to eq(metrics_tar)
+    end
+
+    it "exports assessments" do
+      assessments_tar = (@course.generate_tar ["assessments"]).string.force_encoding("binary")
+      post :export_selected, params: { name: @course.name, export_configs: ["assessments"] }
+      expect(response).to be_successful
+      expect(response.body).to eq(assessments_tar)
+    end
+
+    it "handles StandardError during export" do
+      allow_any_instance_of(Course).to receive(:generate_tar).and_raise(StandardError)
+      post :export_selected, params: { name: @course.name }
+      expect(response).to have_http_status(302)
+      expect(flash[:error]).to be_present
+      expect(flash[:error]).to match(/StandardError/m)
+    end
+  end
+
+  shared_examples "export_selected_failure" do
+    before(:each) do
+      sign_in(user)
+    end
+
+    it "does not export a course" do
+      default_tar = (@course.generate_tar []).string.force_encoding("binary")
+      post :export_selected, params: { name: @course.name }
+      expect(response).not_to be_successful
+      expect(response.body).not_to eq(default_tar)
+    end
+  end
+
+  describe "#export_selected" do
+    context "when user is instructor with no attachment" do
+      include_context "controllers shared context"
+
+      it_behaves_like "export_selected_success" do
+        let!(:user) { instructor_user }
+      end
+    end
+
+    context "when user is instructor with attachment" do
+      let!(:course_hash) do
+        create_course_with_attachment_as_hash
+      end
+
+      it_behaves_like "export_selected_success" do
+        let!(:user) { course_hash[:instructor_user] }
+      end
+    end
+
+    context "when user is Autolab user" do
+      include_context "controllers shared context"
+
+      it_behaves_like "export_selected_failure" do
+        let!(:user) { student_user }
+      end
+    end
+  end
+
+  describe "#join_course" do
+    include_context "controllers shared context"
+    context "when user is Autolab user" do
+      let!(:u) { student_user }
+      before(:each) { sign_in(u) }
+
+      it "renders successfully" do
+        get :join_course
+        expect(response.body).to match(/Join Course/m)
+      end
+
+      it "rejects invalid access code format" do
+        post :join_course, params: { access_code: "invalid" }
+        expect(flash[:error]).to be_present
+        expect(flash[:error]).to match(/Invalid access code format/m)
+      end
+
+      it "rejects invalid access code" do
+        post :join_course, params: { access_code: "AAAAAA" }
+        expect(flash[:error]).to be_present
+        expect(flash[:error]).to match(/Invalid access code/m)
+      end
+    end
+
+    context "when user is not logged in" do
+      it "renders with failure" do
+        get :join_course
+        expect(response.body).not_to match(/Join Course/m)
       end
     end
   end

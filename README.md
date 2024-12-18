@@ -89,13 +89,13 @@ pip install --user mkdocs-material
 To run and preview this locally, run:
 
 ```bash
-mkdocs serve
+python3 -m mkdocs serve
 ```
 
 Once your updated documentation is in `master`, Jenkins will automatically run a job to update the docs. You can trigger a manual update with
 
 ```bash
-mkdocs gh-deploy
+python3 -m mkdocs gh-deploy
 ```
 
 This will build the site using the branch you are currently in (hopefully `master`), place the built HTML files into the `gh-pages` branch, and push them to GitHub. GitHub will then automatically deploy the new content in `gh-pages`.
@@ -115,28 +115,28 @@ Please feel free to use Autolab at your school/organization. If you run into any
 
 
 ## Changelog
+
+### [v3.0.0](https://github.com/autolab/Autolab/releases/tag/v3.0.0) (2024/07/24) UI-based deployment configuration, Simple File Manager, Export / Import Course, Tango, Grading Improvements
+- Configuration of authentication, Github, SMTP moved to UI
+- Simple File Manager to manage files in courses through a UI
+- Import / Export Course data in one go, with improved assessment importing
+- Improvements to grading UI/UX such as an improved Gradebook, Code Diff Viewer, Starred Problems
+- Improvements to autograding with direct Docker file uploading and the option to selectively disable network access
+
+### [v2.12.0](https://github.com/autolab/Autolab/releases/tag/v2.12.0) (2024/01/20) Attachment categories and visual cues
+- Ruby upgraded to 3.2.2
+- Rails upgraded to 6.1.7.6
+- Instructors can now specify a category and "release at" date for attachments
+- Assessment start / end dates are now shown on course homepages
+
 ### [v2.11.0](https://github.com/autolab/Autolab/releases/tag/v2.11.0) (2023/05/21) LTI Settings UI, extensions metrics, and simultaneous extension creation
 - Introduced UI to manage LTI integration settings
 - Added extension metrics for instructors to monitor students by number of extensions granted
 - Instructors can now create extensions for multiple students at once
-- Numerous UI updates
-- Numerous bug fixes and improvements
 
 ### [v2.10.0](https://github.com/autolab/Autolab/releases/tag/v2.10.0) (2023/01/13) LTI Integration, Generalized Feedback, and Streaming Output
 - Autolab now supports roster syncing with courses on Canvas and other LTI (Learning Tools Interoperability) services. For full instructions on setup, see the documentation.
 - Streaming partial output and new feedback interface
 - Generalized annotations
-- Numerous UI updates
-- Numerous bug fixes and improvements
-
-### [v2.9.0](https://github.com/autolab/Autolab/releases/tag/v2.9.0) (2022/08/08) Metrics Excluded Categories and New Speedgrader Interface
-- Instructors can now exclude selected categories of assessments from metrics watchlist calculations
-- Introduced new speedgrader interface which utilizes the Golden Layout library, amongst other new features
-- Numerous bug fixes and improvements
-
-### [v2.8.0](https://github.com/autolab/Autolab/releases/tag/v2.8.0) (2021/12/20) GitHub Integration and Roster Upload Improvement
-- Students can now submit code via GitHub
-- Improved Roster Upload with better error reporting
-- Numerous bug fixes and improvements
 
 **For older releases, please check out the [releases page](https://github.com/autolab/Autolab/releases).**

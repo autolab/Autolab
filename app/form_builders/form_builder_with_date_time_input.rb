@@ -17,7 +17,6 @@ class FormBuilderWithDateTimeInput < ActionView::Helpers::FormBuilder
       unless options.include?(:placeholder)
         options[:placeholder] = ""
       end
-
       field = super name, *(args + [options])
 
       wrap_field name, field, options
@@ -28,7 +27,8 @@ class FormBuilderWithDateTimeInput < ActionView::Helpers::FormBuilder
     options = args.extract_options!
 
     fields = fields_for name do |f|
-      (f.vanilla_text_field :value, class: "score-box", placeholder: options[:placeholder] || "", disabled: options[:disabled]) +
+      (f.vanilla_text_field :value, class: "score-box", placeholder: options[:placeholder] || "",
+                                    disabled: options[:disabled]) +
         (@template.content_tag :div do
           f.select(:kind, { "points" => "points", "%" => "percent" }, {},
                    class: "carrot", disabled: options[:disabled])
@@ -76,15 +76,22 @@ class FormBuilderWithDateTimeInput < ActionView::Helpers::FormBuilder
       (@template.content_tag :h6 do
         options[:label_text] || ""
       end) +
-      (@template.content_tag :div, class: "btn" do
-        (@template.content_tag :span do
-          options[:button_text] || "Choose File"
+        (@template.content_tag :div, class: "btn" do
+          (@template.content_tag :span do
+            options[:button_text] || "Choose File"
+          end) +
+            vanilla_file_field(name, options)
         end) +
-          vanilla_file_field(name, options)
-      end) +
         (@template.content_tag :div, class: "file-path-wrapper" do
-          (@template.content_tag :input, nil, class: "file-path validate", type: "text", value: "No file selected") +
-            help_text(name, options[:help_text])
+          if options.include?(:file_exists) && options.include?(:file_exists_text) && options[:file_exists]
+            (@template.content_tag :input, nil, class: "file-path validate", type: "text",
+                                                value: options[:file_exists_text]) +
+              help_text(name, options[:help_text])
+          else
+            (@template.content_tag :input, nil, class: "file-path validate", type: "text",
+                                                value: "No file selected") +
+              help_text(name, options[:help_text])
+          end
         end)
     end
   end
@@ -105,7 +112,7 @@ class FormBuilderWithDateTimeInput < ActionView::Helpers::FormBuilder
     date_helper name, options, strftime, date_format, alt_format
   end
 
-private
+  private
 
   # Pass space-delimited list of IDs of datepickers on the :less_than and
   # :greater_than properties to initialize relationships between datepicker
@@ -138,7 +145,8 @@ private
   def wrap_field(name, field, options = {})
     @template.content_tag :div, class: options[:wrap_class] || "input-field" do
       label(name, options[:display_name], class: "control-label") +
-        field + help_text(name, options[:help_text])
+        field + help_text(name, options[:help_text]) +
+        error_text(name, options[:error_text])
     end
   end
 
@@ -147,6 +155,14 @@ private
       ""
     else
       @template.content_tag :p, help_text, class: "help-block"
+    end
+  end
+
+  def error_text(_name, error_text)
+    if error_text.nil?
+      ""
+    else
+      @template.content_tag :p, error_text, id: "error-block"
     end
   end
 

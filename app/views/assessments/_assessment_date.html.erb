@@ -1,0 +1,5 @@
+<% hoverable = hover %>
+<p class="date <%= hoverable %>">
+  <b>Start:</b>&ensp;<%= assessment.date_to_s(assessment.start_at) %>&ensp;|
+  &ensp;<b>Due:</b>&ensp;<%= assessment.date_to_s(assessment.due_at) %>
+</p>

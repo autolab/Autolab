@@ -1,7 +1,7 @@
 <%= f.text_field :name, disabled: true, class: "",
                         help_text: "The unique (for this course) name of the assessment. Must be
-  lowercase alphanumeric (no punctuation). E.g.,
-  <kbd>malloclab</kbd>".html_safe %>
+  a valid Ruby Identifier. See
+  <a href='https://docs.autolabproject.com/lab/#assessment-naming-rules'>documentation</a> for details".html_safe %>
 
 <%= f.text_field :display_name, placeholder: "Homework0",
                                 help_text: "Name that will be displayed on the course home page. E.g.,

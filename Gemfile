@@ -22,7 +22,7 @@ gem 'terser', '>= 1.1.7'
 gem 'coffee-rails', '>= 4.0.0'
 
 # See https://github.com/sstephenson/execjs#readme for more supported runtimes
-gem 'mini_racer', '~> 0.6.3' , platforms: :ruby
+gem 'mini_racer', '~> 0.6.3', platforms: :ruby
 
 # Use jquery as the JavaScript library
 gem 'jquery-rails'
@@ -45,8 +45,8 @@ gem 'slack-notifier'
 gem 'exception_notification', ">= 4.1.0"
 
 # Used by lib/tasks/autolab.rake to populate DB with dummy seed data
-gem 'populator', '>=1.0.0'
 gem 'rake', '>=10.3.2'
+gem 'populator', '>=1.0.0'
 
 # To communicate with MySQL database
 gem 'mysql2', '~>0.5'
@@ -59,6 +59,7 @@ gem 'devise', '>=4.5.0'
 gem 'omniauth', '>=1.2.2'
 gem 'omniauth-facebook', '>=2.0.0'
 gem 'omniauth-google-oauth2', '>=0.2.5'
+gem 'omniauth-rails_csrf_protection', '~> 1.0'
 gem 'omniauth-shibboleth-redux', '~> 2.0', require: 'omniauth-shibboleth'
 
 # OAuth2 authentication
@@ -72,9 +73,6 @@ gem 'doorkeeper'
 
 # For block and throttling abusive requests
 gem 'rack-attack'
-
-# Adds It also adds f.error_messages and f.error_message_on to form builders
-gem 'dynamic_form'
 
 # Supports zip file generation.
 gem 'rubyzip'
@@ -154,6 +152,9 @@ gem 'byebug', '>=3.5.1'
 # and it is crucial for us
 gem 'prawn', '0.13.0'
 
+# for submission diffs
+gem 'diffy'
+
 # LDAP Lookup
 gem 'net-ldap'
 
@@ -173,3 +174,9 @@ gem "jwt"
 # Avoid "already initialized constant" errors (https://github.com/ruby/net-imap/issues/16)
 gem "net-http"
 gem 'uri', '0.10.3'
+
+# To generate slugged urls
+gem 'friendly_id', '~> 5.5.0'
+
+# to sanitize CSV files
+gem 'csv-safe'

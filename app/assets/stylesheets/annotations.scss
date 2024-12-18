@@ -6,8 +6,8 @@
   height: 100vh;
 }
 
-.row {
-  max-height: calc(100vh - 173px);
+#speedgrader {
+  max-height: calc(100vh - 178px);
 }
 
 .submission-controls select {
@@ -34,7 +34,7 @@
 .code-table {
   background: #fcfcfc;
   border: 1px solid $autolab-highlight-gray;
-  max-height: calc(100vh - 230px);
+  max-height: calc(100vh - 260px);
   overflow: auto;
 }
 
@@ -248,11 +248,20 @@
   border: 1px solid red;
 }
 
+.code-table .annotation-line .annotation-form .row {
+  margin-bottom: 0;
+}
+
 .code-table .annotation-line .annotation-preview {
   border: 1px solid $autolab-highlight-gray;
   padding: 5px;
   margin: 0 10px;
   width: 100%;
+}
+
+.code-table .annotation-line .annotation-form .row .input-field {
+  margin-bottom: 0;
+  margin-top: 0.75rem !important;
 }
 
 .code-table .float-left {
@@ -497,6 +506,31 @@
 
 .collapse_expand{
   margin-bottom:10px;
+}
+
+/* Diff Viewer Styling CSS */
+#diff-viewer tr {
+  border-bottom: none;
+}
+#diff-viewer td {
+  padding: 0;
+}
+#diff-viewer .hljs {
+  overflow-x: visible;
+}
+
+// Hide the "changed" box
+#diff-viewer .d2h-changed {
+  display: none;
+}
+
+// Make the diff viewer scrollable
+#diff-viewer .d2h-file-side-diff {
+  overflow-y: scroll;
+  max-height: calc(100vh - 235px);
+}
+#diff-viewer .d2h-code-side-linenumber {
+  position: static;
 }
 
 /* Annotation Pane Styling CSS */
@@ -860,9 +894,6 @@
 .ui-menu .ui-menu-item {
   font-family: "Source Sans Pro", sans-serif;
   font-size: 16px;
-  padding-top: 0.5rem !important;
-  padding-bottom: 0.5rem !important;
-
 }
 .ui-menu-item.ui-state-focus{
   background: rgba(211, 211, 211, 0.526) !important;
@@ -911,5 +942,8 @@ span > .material-icons {
   font-size: 14px !important;
   box-shadow: 0.5px 0.5px 0.5px 0.5px grey !important;
   border-color: white !important;
-} 
+}
 
+.hljs-comment span {
+  color: var($autolab-highlight-comments) !important;
+}

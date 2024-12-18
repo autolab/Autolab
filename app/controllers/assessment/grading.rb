@@ -237,6 +237,7 @@ public
     # find existing score for this problem, if there's one
     # otherwise, create it
     score = Score.find_or_initialize_by_submission_id_and_problem_id(sub_id, prob_id)
+    return head :forbidden unless submission_belongs_to_current_course(score.submission)
 
     score.grader_id = @cud.id
     score.score = params[:score].to_f
@@ -266,6 +267,7 @@ public
     # find existing score for this problem, if there's one
     # otherwise, create it
     score = Score.find_or_initialize_by_submission_id_and_problem_id(sub_id, prob_id)
+    return head :forbidden unless submission_belongs_to_current_course(score.submission)
 
     score.grader_id = @cud.id
     score.feedback = params[:feedback]
@@ -286,6 +288,7 @@ end
 
   def submission_popover
     submission = Submission.find_by(id: params[:submission_id].to_i)
+    return head :forbidden unless submission_belongs_to_current_course(submission)
     if submission
       render partial: "popover", locals: { s: submission }
     else
@@ -293,16 +296,15 @@ end
     end
   end
 
-  def excuse_popover
-    submission = Submission.find(params[:submission_id].to_i)
-    cud = CourseUserDatum.find(submission.course_user_datum_id)
-    email = User.find(cud.user_id).email
-    render partial: "excuse_popover",
-           locals: { submission: submission, email: email }
-  end
-
   def score_grader_info
-    score = Score.find(params[:score_id])
+    score = Score.find_by(id: params[:score_id])
+    if score.nil?
+      flash[:error] = "Could not find score #{params[:score_id]}."
+      redirect_to action: :show
+      return
+    end
+    return head :forbidden unless submission_belongs_to_current_course(score.submission)
+
     grader = (if score then score.grader else nil end)
     grader_info = ""
     if grader
@@ -323,8 +325,10 @@ end
 
     # get submission and problem IDs
     sub_id = params[:submission_id].to_i
+    submission = Submission.find(sub_id)
+    return head :forbidden unless submission_belongs_to_current_course(submission)
 
-    render plain: Submission.find(sub_id).final_score(@cud)
+    render plain: submission.final_score(@cud)
   end
 
   def statistics
@@ -539,5 +543,14 @@ private
     @assessment = cache.assessments[@assessment.id]
     @submissions = cache.latest_submissions.values
     @section_filter = params[:section]
+  end
+
+  def submission_belongs_to_current_course(submission)
+    # Returns true if the provided submission belongs to the current @course, false otherwise.
+    # This is used to ensure a user can only view or modify scores in courses where they have
+    # permission, since the  `action_auth_level ***, :course_assistant` only verifies that they're
+    # a CA for the course in the URL. It doesn't verify that the score they're trying to modify
+    # is in a course they're a CA in.
+    submission.course_user_datum.course == @course
   end
 end

@@ -1,10 +1,14 @@
 require "fileutils"
+require "utilities"
 
 ##
 # Attachments are Course or Assessment specific, and allow instructors to
 # handout files to students through Autolab.
 #
 class Attachment < ApplicationRecord
+  include FriendlyId
+  friendly_id :slug_candidates, use: :slugged
+  after_create :initialize_slug
   validates :name, presence: true
   validates :category_name, presence: true
   validates :filename, presence: true
@@ -43,7 +47,30 @@ class Attachment < ApplicationRecord
     self.mime_type = upload.content_type
   end
 
+  # Regenerate slug whenever the name changes
+  def should_generate_new_friendly_id?
+    (name_changed? && name.present?) || slug.nil?
+  end
+
+  # https://github.com/norman/friendly_id/issues/1008
+  def initialize_slug
+    self.slug = nil
+    save!
+  end
+
+  def slug_candidates
+    [
+      :name,
+      [:name, :id]
+    ]
+  end
+
   def after_create
     COURSE_LOGGER.log("Created Attachment #{id}:#{filename} (#{mime_type}) as \"#{name}\")")
+  end
+
+  SERIALIZABLE = Set.new %w[filename mime_type released name assessment_id]
+  def serialize
+    Utilities.serializable attributes, SERIALIZABLE
   end
 end

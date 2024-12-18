@@ -6,9 +6,14 @@ Rails.application.routes.draw do
     get 'lti_launch/oidc_login', to: "lti_launch#oidc_login"
     post 'lti_launch/launch', to: "lti_launch#launch"
     get 'lti_launch/launch', to: "lti_launch#launch"
+    get 'lti_launch/jwks', to: "lti_launch#jwks"
     post 'lti_nrps/sync_roster', to: "lti_nrps#sync_roster"
   get 'lti_config/index', to: "lti_config#index"
+  post 'github_config/update_config', to: "github_config#update_config"
   post 'lti_config/update_config', to: "lti_config#update_config"
+  post 'smtp_config/update_config', to: "smtp_config#update_config"
+  post 'smtp_config/send_test_email', to: "smtp_config#send_test_email"
+  post 'oauth_config/update_oauth', to: "oauth_config#update_oauth_config"
 
   namespace :oauth, { defaults: { format: :json } } do
     get "device_flow_init", to: "device_flow#init"
@@ -52,13 +57,13 @@ Rails.application.routes.draw do
                                     registrations: "registrations" },
                      path_prefix: "auth"
 
-  get "contact", to: "home#contact"
   get "courses", to: "courses#index"
 
   namespace :home do
     if Rails.env == "development" || Rails.env == "test"
       match "developer_login", via: [:get, :post]
     end
+    get "contact"
     get "no_user"
   end
 
@@ -67,14 +72,27 @@ Rails.application.routes.draw do
   get "device_flow_resolve", to: "device_flow_activation#resolve"
   get "device_flow_auth_cb", to: "device_flow_activation#authorization_callback"
 
+  resources :file_manager, param: :path, path: 'file_manager', only: [:index] do
+    collection do
+      post 'upload', to: 'file_manager#upload'
+      post '/', to: 'file_manager#upload'
+      post 'download_tar', to: 'file_manager#download_tar'
+      get ':path', to: 'file_manager#index', constraints: { path: /.+/ }, as: :path
+      put ':path', to: 'file_manager#rename', constraints: { path: /.+/ }, as: :rename
+      post ':path', to: 'file_manager#upload', constraints: { path: /.+/ }, as: :upload_path
+      delete ':path', to: 'file_manager#delete', constraints: { path: /.+/ }, as: :delete
+    end
+  end
+
   resource :admin, :except => [:show] do
     match "email_instructors", via: [:get, :post]
-    match "github_integration", via: [:get]
     post "clear_cache"
+    get "autolab_config"
   end
 
   resources :users do
     get "admin"
+    get "download_all_submissions", on: :member
     get "github_oauth", on: :member
     get "lti_launch_initialize", on: :member
     post "lti_launch_link_course", on: :member
@@ -82,9 +100,12 @@ Rails.application.routes.draw do
     get "github_oauth_callback", on: :collection
     match "update_password_for_user", on: :member, via: [:get, :put]
     post "change_password_for_user", on: :member
+    patch "update_display_settings", on: :member
   end
 
   resources :courses, param: :name do
+    match "join_course", via: [:get, :post], on: :collection
+
     resources :schedulers do
       post "visualRun", action: :visual_run
       post "run"
@@ -102,6 +123,11 @@ Rails.application.routes.draw do
       post "update_watchlist_configuration"
     end
 
+    resource :dockers, only: :index do
+      get "index"
+      post "uploadDockerImage"
+    end
+
     resources :jobs, only: :index do
       get "getjob", on: :member
 
@@ -114,7 +140,9 @@ Rails.application.routes.draw do
     resources :attachments
 
     resources :assessments, param: :name, except: :update do
-      resource :autograder, except: [:new, :show]
+      resource :autograder, except: [:new, :show] do
+        get "download_file"
+      end
       resources :assessment_user_data, only: [:edit, :update]
       resources :attachments
       resources :extensions, only: [:index, :create, :destroy]
@@ -128,10 +156,8 @@ Rails.application.routes.draw do
         post "import", on: :collection
       end
       resources :problems, except: [:index, :show]
-      resource :scoreboard, except: [:new] do
-        get "help", on: :member
-      end
-      resources :submissions do
+      resource :scoreboard, except: [:new]
+      resources :submissions, except: [:show] do
         resources :annotations, only: [:create, :update, :destroy] do
           collection do
             get "shared_comments"
@@ -139,11 +165,13 @@ Rails.application.routes.draw do
         end
 
         resources :scores, only: [:create, :show, :update]
-        
+
         member do
           get "destroyConfirm"
           get "download"
           get "view"
+          post "release_student_grade"
+          post "unrelease_student_grade"
           get "tweak_total"
         end
 
@@ -185,11 +213,6 @@ Rails.application.routes.draw do
         post "regradeBatch"
         post "regradeAll"
 
-        # SVN actions
-        get "admin_svn"
-        post "import_svn"
-        post "set_repo"
-
         # gradesheet ajax actions
         post "quickSetScore"
         post "quickSetScoreDetails"
@@ -207,8 +230,10 @@ Rails.application.routes.draw do
 
       collection do
         get "install_assessment"
-        post "importAssessment"
-        post "importAsmtFromTar"
+        get "course_onboard_install_asmt"
+        post "import_assessment"
+        post "import_assessments"
+        post "import_asmt_from_tar"
       end
     end
 
@@ -235,6 +260,8 @@ Rails.application.routes.draw do
       post "unlink_course"
       patch "update_lti_settings"
       match "email", via: [:get, :post]
+      get "export"
+      post "export_selected"
       get "manage"
       get "moss"
       post "reload"
@@ -245,6 +272,10 @@ Rails.application.routes.draw do
       post "add_users_from_emails"
       get "user_lookup"
       get "users"
+    end
+
+    collection do
+      post "create_from_tar"
     end
   end
 

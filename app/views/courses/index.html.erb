@@ -1,3 +1,7 @@
+<% content_for :stylesheets do %>
+  <%= stylesheet_link_tag "assessment_date" %>
+<% end %>
+
 <h2>Courses</h2>
 
 <% @listing.each do |category, list| %>
@@ -13,7 +17,7 @@
         <% course_cud = CourseUserDatum.find_cud_for_course(course, current_user.id) %>
         <% not_student = course_cud.has_auth_level? :course_assistant %>
 
-        <div class="col s12 m4">
+        <div class="col s12 l4">
           <div class="card hoverable">
             <%= link_to course_path(course), title: "Go to Course Page" do %>
               <div class="card-content red darken-4">
@@ -26,9 +30,12 @@
             <% end %>
 
             <% if category != :completed %>
-              <div class="collection red darken-3">
+              <div class="collection red darken-3 date">
                 <% course.current_assessments.ordered.each do |asmt| %>
-                  <%= link_to asmt.display_name, course_assessment_path(course, asmt), class: "collection-item grey-text text-darken-4" %>
+                  <%= link_to course_assessment_path(course, asmt), class: "collection-item grey-text text-darken-4 date" do %>
+                  <%= asmt.display_name %>
+                  <%= render partial: 'assessments/assessment_date', locals: { assessment: asmt, hover: '' } %>
+                  <% end %>
                 <% end %>
               </div>
             <% end %>

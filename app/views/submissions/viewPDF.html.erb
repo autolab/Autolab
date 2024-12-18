@@ -1,4 +1,4 @@
-<% @title = @cud.instructor || @cud.course_assistant ? "Annotate Submission" : "View Submission" %>
+<% @title = "View Submission" %>
 
 <% content_for :stylesheets do %>
   <%= stylesheet_link_tag "annotations" %>
@@ -114,7 +114,6 @@
   </script>
 
   <% if not @preview_mode then %>
-    <%= javascript_include_tag "annotations_helpers.js" %>
     <%= javascript_include_tag "annotations.js" %>
   <% end %>
 

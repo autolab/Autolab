@@ -5,15 +5,20 @@
   <%= javascript_include_tag "sorttable" %>
 <% end %>
 
+<% unless @errorMessage.nil? %>
+  <h4 class="error-header">Error Rendering Scoreboard:</h4>
+  <div>
+    <pre style="white-space: pre-wrap"><%= @errorMessage %></pre>
+  </div>
+<% end %>
+
 <h4>Scoreboard</h4>
 
 <% if @grades.values.empty? %>
   <strong>There are currently no submissions.</strong>
 <% else %>
   <strong>
-    <% if @scoreboard.banner.blank? %>
-      Here are the most recent scores for the class.
-    <% else %>
+    <% unless @scoreboard.banner.blank? %>
       <%= sanitize @scoreboard.banner %>
     <% end %>
   </strong>
@@ -61,7 +66,7 @@
               <% if c["img"] %>
                 <td><img src="data:image/png;base64,<%= grade[:entry][i] %>"></td>
               <% else %>
-                <% if grade[:entry].is_a?(Array) && grade[:entry][i] != "-" %>
+                <% if grade[:entry].is_a?(Array) && grade[:entry].length > i %>
                   <td><%= grade[:entry][i] %></td>
                 <% else %>
                   <%= render 'error_icon' %>
@@ -70,10 +75,10 @@
             <% end %>
           <% else %>
             <%# this should be guaranteed to be an array, but for redundancy, check that entry is array %>
-            <% if grade[:entry].is_a?(Array) && grade[:entry][i] != "-" %>
+            <% if grade[:entry].is_a?(Array) %>
               <% grade[:entry].each do |column| %>
                 <td><%= column %></td>
-              <% end %>q
+              <% end %>
             <% else %>
               <%= render 'error_icon' %>
             <% end %>
@@ -91,7 +96,7 @@
       <%= f.text_field :nickname, help_text: "Anonymous nickname to display on the public scoreboards (max length: 32)", maxlength: 32 %>
     </div>
     <div class="col s6">
-      <input id="user_submit" name="commit" type="submit" class="btn" value="Update" onclick="formvalidation(this.closest('form')); return false;">
+      <input id="user_submit" name="commit" type="submit" class="btn" value="Update">
     </div>
   </div>
 <% end %>

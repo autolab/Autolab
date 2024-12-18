@@ -6,8 +6,8 @@ What this means for users is that you can now use third-party programs to access
 
 ### Terminology
 
--   user: a user of autolab (student/instructor)
--   client: a program that uses the autolab api
+-   user: a user of Autolab (student/instructor)
+-   client: a program that uses the Autolab api
 -   developer: a person that develops clients
 
 ## Granting access

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2024_01_01_084757) do
+ActiveRecord::Schema.define(version: 2024_04_06_174050) do
 
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
@@ -76,7 +76,6 @@ ActiveRecord::Schema.define(version: 2024_01_01_084757) do
     t.datetime "created_at"
     t.datetime "updated_at"
     t.integer "grade_type", default: 0, null: false
-    t.string "repository"
     t.integer "group_id"
     t.integer "membership_status", limit: 1, default: 0
     t.integer "version_number"
@@ -117,9 +116,10 @@ ActiveRecord::Schema.define(version: 2024_01_01_084757) do
     t.integer "group_size", default: 1
     t.text "embedded_quiz_form_data"
     t.boolean "embedded_quiz"
-    t.boolean "allow_student_assign_group", default: true
     t.boolean "github_submission_enabled", default: true
+    t.boolean "allow_student_assign_group", default: true
     t.boolean "is_positive_grading", default: false
+    t.boolean "disable_network", default: false
   end
 
   create_table "attachments", force: :cascade do |t|
@@ -132,7 +132,9 @@ ActiveRecord::Schema.define(version: 2024_01_01_084757) do
     t.integer "assessment_id"
     t.string "category_name", default: "General"
     t.datetime "release_at", default: -> { "CURRENT_TIMESTAMP" }
+    t.string "slug"
     t.index ["assessment_id"], name: "index_attachments_on_assessment_id"
+    t.index ["slug"], name: "index_attachments_on_slug", unique: true
   end
 
   create_table "authentications", force: :cascade do |t|
@@ -182,6 +184,8 @@ ActiveRecord::Schema.define(version: 2024_01_01_084757) do
     t.datetime "cgdub_dependencies_updated_at"
     t.text "gb_message"
     t.string "website"
+    t.string "access_code"
+    t.boolean "disable_on_end", default: false
   end
 
   create_table "extensions", force: :cascade do |t|
@@ -189,6 +193,17 @@ ActiveRecord::Schema.define(version: 2024_01_01_084757) do
     t.integer "assessment_id"
     t.integer "days"
     t.boolean "infinite", default: false, null: false
+  end
+
+  create_table "friendly_id_slugs", charset: "utf8mb3", force: :cascade do |t|
+    t.string "slug", null: false
+    t.integer "sluggable_id", null: false
+    t.string "sluggable_type", limit: 50
+    t.string "scope"
+    t.datetime "created_at"
+    t.index ["slug", "sluggable_type", "scope"], name: "index_friendly_id_slugs_on_slug_and_sluggable_type_and_scope", unique: true, length: { slug: 70, scope: 70 }
+    t.index ["slug", "sluggable_type"], name: "index_friendly_id_slugs_on_slug_and_sluggable_type", length: { slug: 140 }
+    t.index ["sluggable_type", "sluggable_id"], name: "index_friendly_id_slugs_on_sluggable_type_and_sluggable_id"
   end
 
   create_table "github_integrations", force: :cascade do |t|
@@ -292,6 +307,7 @@ ActiveRecord::Schema.define(version: 2024_01_01_084757) do
     t.datetime "updated_at"
     t.float "max_score", default: 0.0
     t.boolean "optional", default: false
+    t.boolean "starred", default: false
     t.index ["assessment_id", "name"], name: "problem_uniq", unique: true
   end
 
@@ -325,6 +341,7 @@ ActiveRecord::Schema.define(version: 2024_01_01_084757) do
     t.integer "assessment_id"
     t.text "banner"
     t.text "colspec"
+    t.boolean "include_instructors", default: false
   end
 
   create_table "scores", force: :cascade do |t|
@@ -361,6 +378,7 @@ ActiveRecord::Schema.define(version: 2024_01_01_084757) do
     t.integer "submitted_by_app_id"
     t.string "group_key", default: ""
     t.integer "jobid"
+    t.text "missing_problems"
     t.index ["assessment_id"], name: "index_submissions_on_assessment_id"
     t.index ["course_user_datum_id"], name: "index_submissions_on_course_user_datum_id"
   end
@@ -388,6 +406,7 @@ ActiveRecord::Schema.define(version: 2024_01_01_084757) do
     t.string "school"
     t.string "major"
     t.string "year"
+    t.boolean "hover_assessment_date", default: false, null: false
     t.index ["confirmation_token"], name: "index_users_on_confirmation_token", unique: true
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
@@ -417,4 +436,6 @@ ActiveRecord::Schema.define(version: 2024_01_01_084757) do
     t.index ["risk_condition_id"], name: "index_watchlist_instances_on_risk_condition_id"
   end
 
+  add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
 end

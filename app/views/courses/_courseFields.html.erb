@@ -39,8 +39,18 @@
                 help_text: "If this box is checked, then students won't be able download labs
   or upload submissions." %>
 
+<%= f.check_box :disable_on_end,
+                help_text: "If this box is checked, the course will be disabled after the course ends." %>
+
 <%= f.check_box :exam_in_progress, help_text: "While checked, students are not allowed to view their previous
   submissions for any assessment in this class." %>
+<%= label_tag(:allow_self_enrollment) do %>
+  <%= check_box_tag :allow_self_enrollment, "1", @course.access_code.present? %>
+  <%= content_tag("span", "Allow self-enrollment") %>
+<% end %>
+<p class="help-block">
+  Generate an access code for students to self-enroll in the course.
+</p>
 
 <%= f.text_area :gb_message, class: "materialize-textarea",
                              help_text: "An optional message that is displayed to students at the top of

@@ -1,29 +1,5 @@
 <% @title = "Install Assessment" %>
 
-<% content_for :javascripts do %>
-  <script>
-    $(function() {
-      $("#importAll").click(function(e) {
-        const msg = "Are you sure you want to import all assessments?";
-        if (!window.confirm(msg))
-          return false;
-
-        const $btn = $(e.target);
-        $btn.text("Importing...");
-        $btn.addClass("disabled");
-
-        Promise.all(
-            $(".import").map((i, e) => $.post(e.href))
-          )
-          .then(() => {
-            alert("Finished import of all assessments.\nIf any assessments remain, errors occurred while importing them.");
-            location.reload();
-          });
-      });
-    });
-  </script>
-<% end %>
-
 Choose one of the following methods to install an assessment
 <div class="section">
   <h4>1. Create from scratch</h4>
@@ -58,19 +34,18 @@ Choose one of the following methods to install an assessment
         </em>
       </li>
     <% else %>
-      <div class="collection">
-        <% @unused_config_files.each do |ass_file| %>
-          <%= link_to ass_file, { action: :importAssessment, assessment_name: ass_file }, method: :post, class: "collection-item import" %>
-        <% end %>
-      </div>
-      <a id="importAll" class="btn">Import all</a>
+      <%= render "install_assessment_table", asmt_names: @unused_config_files, course: @course %>
     <% end %>
   </ul>
 </div>
 
 <div class="section">
   <h4>3. Import from tarball</h4>
-  <%= form_with url: { action: :importAsmtFromTar }, builder: FormBuilderWithDateTimeInput do |f| %>
+  <p>
+    Import an Autolab assessment from a tarball. Uploading an assessment tarball with the same name as an
+    existing assessment will overwrite course files except for the YAML, config file, log file, and handin directory.
+  </p>
+  <%= form_with url: { action: :import_asmt_from_tar }, builder: FormBuilderWithDateTimeInput do |f| %>
     <%= f.file_field :tarFile, name: "tarFile", button_text: "Choose Tarball" %>
     <%= f.submit "Import Tarball" %>
   <% end %>

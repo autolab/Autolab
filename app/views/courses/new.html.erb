@@ -1,21 +1,16 @@
-<h2>Create New Course</h2>
+<% @title = "Create New Course" %>
 
-<%= form_for :newCourse, url: courses_path, builder: FormBuilderWithDateTimeInput do |f| %>
-  <%= f.error_messages %>
-
-  <%= f.text_field :name, required: true,
-                          help_text: "The course ID used in URLs and DB keys. This field must be unique
-  and URL-able. Typically includes the course number and semester. Examples:
-  15213-f12, 15110-s11" %>
-
-  <%= f.text_field :semester, size: 3,
-                              help_text: "The current semester. Examples: f12, s13, m13" %>
-
-  <div class="input-field">
-    <label class="control-label" for="instructor_email">Instructor Email</label>
-    <%= email_field_tag :instructor_email, nil, class: "validate", placeholder: "", required: true, autocomplete: "off" %>
-  <p class="help-block">Email of an Instructor, they will set up the course from here!</p>
+<div class="row">
+  <div class="col s12">
+    <ul class="tabs">
+      <li class="tab col s6"><a href="#new-course">Create New Course</a></li>
+      <li class="tab col s6"><a href="#import-course">Import Course</a></li>
+    </ul>
   </div>
-
-  <%= f.submit "Create", { class: "btn primary" } %>
-<% end %>
+  <div id="new-course" class="col s12">
+    <%= render partial: 'create_new_course' %>
+  </div>
+  <div id="import-course" class="col s12">
+    <%= render partial: 'import_new_course' %>
+  </div>
+</div>

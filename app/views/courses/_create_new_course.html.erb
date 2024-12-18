@@ -1,0 +1,27 @@
+<h3>Create New Course</h3>
+
+<%= form_for :newCourse, url: courses_path, builder: FormBuilderWithDateTimeInput do |f| %>
+  <%= f.text_field :name, required: true,
+                          help_text: "The course ID used in URLs and DB keys. This field must be unique
+      and URL-able. Typically includes the course number and semester. Examples:
+      15213-f12, 15110-s11",
+                          error_text: if @newCourse.nil? || @newCourse.errors.full_messages_for(:name).empty?
+                                        ""
+                                      else
+                                        @newCourse.errors.full_messages_for(:name)[0]
+                                      end %>
+
+  <%= f.text_field :semester, required: true,
+                              help_text: "The current semester. Examples: f12, s13, m13" %>
+
+  <div class="input-field">
+    <label class="control-label" for="instructor_email">Instructor Email</label>
+    <%= email_field_tag :instructor_email, nil, required: true, class: "validate", placeholder: "", autocomplete: "off" %>
+    <div class="help-block">Email of an Instructor, they will set up the course from here!</div>
+    <%= unless @newCourse.nil? || @newCourse.errors.full_messages_for(:instructor_email).empty?
+          content_tag(:div, @newCourse.errors.full_messages_for(:instructor_email)[0], class: "error-block")
+        end %>
+  </div>
+
+  <%= f.submit "Create Course", { class: "btn primary" } %>
+<% end %>

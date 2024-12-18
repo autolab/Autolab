@@ -47,15 +47,14 @@ In the `hello` lab, students are asked to write a file called `hello.c`. The aut
 **Try submitting to the autograded hello lab**
 
 1. Create and submit a `hello.c` file. 
-       
-        //hello.c
-        #include <stdio.h>
-        int main()
-        {
-                printf("Hello, World!");
-                return 0;
-        }
-
+   ```c
+   #include <stdio.h>
+   int main()
+   {
+          printf("Hello, World!");
+          return 0;
+   }
+   ```
 2. Refresh the submitted entries page to see the autograded score appear
 3. Click on a sub score, in this case the `100.0` under the `Correctness` heading, to see the output from the autograder.
 
@@ -74,4 +73,4 @@ Because it defaults to accepting `.c` files, we would like to change it to `*.pd
 2. Look at your submission using the magnifying glass icon
 
 ### 4. Grading submissions
-Click on `Grade Submissions`, and then the arrow button to open up student submissions. For details on the relevant features for an Instructor, go to [Guide for Instructors](/instructors).
+Click on `View Gradesheet`, and then the arrow button to open up student submissions. For details on the relevant features for an Instructor, go to [Guide for Instructors](/instructors).

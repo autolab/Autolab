@@ -1,5 +1,3 @@
-<%= f.error_messages %>
-
 <%= f.text_field :name, help_text: "Each problem has a name that is unique to the assessment.",
                         placeholder: "problem1", required: true %>
 
@@ -19,6 +17,9 @@ required problems have a released score. Marking a problem as optional will
 allow a student to see their total score without having a score for that
 problem. Use this option carefully. In most cases, you should leave it
 unchecked." %>
+
+<%= f.check_box :starred, help_text: "By default, all problems are
+\"not starred\". Starred problems are displayed first in the problems dropdown when creating annotations." %>
 
 <div class="action_buttons">
   <%= f.submit "Save Problem", { class: "btn primary" } %>

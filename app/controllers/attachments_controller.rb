@@ -6,9 +6,10 @@ class AttachmentsController < ApplicationController
   # inherited from ApplicationController
   # this will also set an @is_assessment variable based on the result of is_assessment?
   before_action :set_assessment, if: :assessment?
+  before_action :set_assessment_breadcrumb
   before_action :set_attachment, except: %i[index new create]
-  before_action :add_attachments_breadcrumb
 
+  # This page shouldn't really be used
   action_auth_level :index, :instructor
   def index
     @attachments = if @is_assessment
@@ -95,13 +96,9 @@ class AttachmentsController < ApplicationController
       flash[:success] = "Attachment updated"
       redirect_to_index
     else
-      error_msg = "Attachment update failed:"
-      if !@attachment.valid?
-        @attachment.errors.full_messages.each do |msg|
-          error_msg += "<br>#{msg}"
-        end
-      else
-        error_msg += "<br>Unknown error"
+      error_msg = "Attachment update failed."
+      @attachment.errors.full_messages.each do |msg|
+        error_msg += "<br>#{msg}"
       end
       flash[:error] = error_msg
       flash[:html_safe] = true
@@ -130,9 +127,11 @@ private
 
   def set_attachment
     @attachment = if @is_assessment
-                    @course.attachments.find_by(assessment_id: @assessment.id, id: params[:id])
+                    @course.attachments.where(assessment_id: @assessment.id).friendly.find(
+                      params[:id], allow_nil: true
+                    )
                   else
-                    @course.attachments.find_by(id: params[:id])
+                    @course.attachments.friendly.find(params[:id], allow_nil: true)
                   end
 
     return unless @attachment.nil?
@@ -148,15 +147,6 @@ private
     else
       redirect_to course_path(@course)
     end
-  end
-
-  def add_attachments_breadcrumb
-    @breadcrumbs << if @is_assessment
-                      view_context.link_to "Assessment Attachments",
-                                           course_assessment_attachments_path(@course, @assessment)
-                    else
-                      view_context.link_to "Course Attachments", course_attachments_path(@course)
-                    end
   end
 
   def attachment_params
