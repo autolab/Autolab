@@ -1,0 +1,1620 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://docs.autolabproject.com/installation/docker-compose/">
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.3.1, mkdocs-material-8.5.3">
+    
+    
+      
+        <title>Docker Compose Install - Autolab Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.7a952b86.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.cbb835fc.min.css">
+        
+      
+      
+
+    
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+  
+
+
+  
+  
+
+
+  <script id="__analytics">function __md_analytics(){function n(){dataLayer.push(arguments)}window.dataLayer=window.dataLayer||[],n("js",new Date),n("config","G-TN3N2Q9PC2"),document.addEventListener("DOMContentLoaded",function(){document.forms.search&&document.forms.search.query.addEventListener("blur",function(){this.value&&n("event","search",{search_term:this.value})}),document$.subscribe(function(){var a=document.forms.feedback;if(void 0!==a)for(var e of a.querySelectorAll("[type=submit]"))e.addEventListener("click",function(e){e.preventDefault();var t=document.location.pathname,e=this.getAttribute("data-md-value");n("event","feedback",{page:t,data:e}),a.firstElementChild.disabled=!0;e=a.querySelector(".md-feedback__note [data-md-value='"+e+"']");e&&(e.hidden=!1)}),a.hidden=!1}),location$.subscribe(function(e){n("config","G-TN3N2Q9PC2",{page_path:e.pathname})})});var e=document.createElement("script");e.async=!0,e.src="https://www.googletagmanager.com/gtag/js?id=G-TN3N2Q9PC2",document.getElementById("__analytics").insertAdjacentElement("afterEnd",e)}</script>
+
+  
+    <script>"undefined"!=typeof __md_analytics&&__md_analytics()</script>
+  
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="autolab" data-md-color-primary="" data-md-color-accent="">
+  
+    
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#autolab-tango-docker-compose-installation" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Autolab Documentation" class="md-header__button md-logo" aria-label="Autolab Documentation" data-md-component="logo">
+      
+  <img src="../../images/logo.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Autolab Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Docker Compose Install
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/Autolab/autolab" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Autolab
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-tabs__inner md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+
+
+  <li class="md-tabs__item">
+    <a href="../.." class="md-tabs__link">
+      Overview
+    </a>
+  </li>
+
+      
+        
+  
+  
+    
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../overview/" class="md-tabs__link md-tabs__link--active">
+        Installation
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../instructors/" class="md-tabs__link">
+        Getting Started
+      </a>
+    </li>
+  
+
+  
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../reference/" class="md-tabs__link">
+        Reference
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+  
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Autolab Documentation" class="md-nav__button md-logo" aria-label="Autolab Documentation" data-md-component="logo">
+      
+  <img src="../../images/logo.svg" alt="logo">
+
+    </a>
+    Autolab Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/Autolab/autolab" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Autolab
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        Overview
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" checked>
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_2">
+          Installation
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Installation" data-md-level="1">
+        <label class="md-nav__title" for="__nav_2">
+          <span class="md-nav__icon md-icon"></span>
+          Installation
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../overview/" class="md-nav__link">
+        Installation Overview
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Docker Compose Install
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        Docker Compose Install
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#installation" class="md-nav__link">
+    Installation
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configuring-tlsssl" class="md-nav__link">
+    Configuring TLS/SSL
+  </a>
+  
+    <nav class="md-nav" aria-label="Configuring TLS/SSL">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#option-1-lets-encrypt" class="md-nav__link">
+    Option 1: Let's Encrypt
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#option-2-using-your-own-tls-certificate" class="md-nav__link">
+    Option 2: Using your own TLS certificate
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#option-3-no-tls-not-recommended-only-for-local-developmenttesting" class="md-nav__link">
+    Option 3: No TLS (not recommended, only for local development/testing)
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#updating-your-docker-compose-deployment" class="md-nav__link">
+    Updating Your Docker Compose Deployment
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#debugging-your-deployment" class="md-nav__link">
+    Debugging your Deployment
+  </a>
+  
+    <nav class="md-nav" aria-label="Debugging your Deployment">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#better-logging-output-for-docker-compose" class="md-nav__link">
+    Better logging output for Docker Compose
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#checking-autolab-logs" class="md-nav__link">
+    Checking Autolab logs
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#accessing-the-rails-console" class="md-nav__link">
+    Accessing the Rails console
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#checking-tango-logs" class="md-nav__link">
+    Checking Tango Logs
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#troubleshooting-autolabtango-connection" class="md-nav__link">
+    Troubleshooting Autolab/Tango Connection
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#permission-issues-in-autolab" class="md-nav__link">
+    Permission issues in Autolab
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#restarting-autolab-passenger-server" class="md-nav__link">
+    Restarting Autolab Passenger Server
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#troubleshooting" class="md-nav__link">
+    Troubleshooting
+  </a>
+  
+    <nav class="md-nav" aria-label="Troubleshooting">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#error-unable-to-unlink-old-dbschemarb-permission-denied" class="md-nav__link">
+    error: unable to unlink old 'db/schema.rb': Permission denied
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#autograder-logs-not-appearing" class="md-nav__link">
+    Autograder logs not appearing
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_3" type="checkbox" id="__nav_2_3" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_2_3">
+          Autolab
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Autolab" data-md-level="2">
+        <label class="md-nav__title" for="__nav_2_3">
+          <span class="md-nav__icon md-icon"></span>
+          Autolab
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ubuntu/" class="md-nav__link">
+        Ubuntu 22.04
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../osx/" class="md-nav__link">
+        Mac OSX 10.11+
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../troubleshoot/" class="md-nav__link">
+        Troubleshooting
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mailing/" class="md-nav__link">
+        Mailing Setup
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../github_integration/" class="md-nav__link">
+        Github Integration Setup
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../lti_integration/" class="md-nav__link">
+        LTI Advantage Integration Setup
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_4" type="checkbox" id="__nav_2_4" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_2_4">
+          Tango
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Tango" data-md-level="2">
+        <label class="md-nav__title" for="__nav_2_4">
+          <span class="md-nav__icon md-icon"></span>
+          Tango
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tango/" class="md-nav__link">
+        Installation
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tango-troubleshoot/" class="md-nav__link">
+        Troubleshooting
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3">
+          Getting Started
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Getting Started" data-md-level="1">
+        <label class="md-nav__title" for="__nav_3">
+          <span class="md-nav__icon md-icon"></span>
+          Getting Started
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3_1" type="checkbox" id="__nav_3_1" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3_1">
+          Autolab Frontend
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Autolab Frontend" data-md-level="2">
+        <label class="md-nav__title" for="__nav_3_1">
+          <span class="md-nav__icon md-icon"></span>
+          Autolab Frontend
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../instructors/" class="md-nav__link">
+        Guide for Instructors
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../lab/" class="md-nav__link">
+        Guide for Lab Authors
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../lab-hooks/" class="md-nav__link">
+        Lab Hooks
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3_1_4" type="checkbox" id="__nav_3_1_4" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3_1_4">
+          Features
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Features" data-md-level="3">
+        <label class="md-nav__title" for="__nav_3_1_4">
+          <span class="md-nav__icon md-icon"></span>
+          Features
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../features/formatted-feedback/" class="md-nav__link">
+        Formatted Feedback
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../features/scoreboards/" class="md-nav__link">
+        Scoreboards
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../features/embedded-forms/" class="md-nav__link">
+        Embedded Forms
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../features/schedulers/" class="md-nav__link">
+        Schedulers
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../features/annotations/" class="md-nav__link">
+        Annotations
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../features/moss/" class="md-nav__link">
+        MOSS Plagiarism Detection
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../features/metrics/" class="md-nav__link">
+        Metrics
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../features/git-submission/" class="md-nav__link">
+        Git Submission
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../features/lti-course-integration/" class="md-nav__link">
+        LTI Course Linking
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../features/admin-features/" class="md-nav__link">
+        Admin Features
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../command-line-interface/" class="md-nav__link">
+        Autolab Frontend CLI
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tango-cli/" class="md-nav__link">
+        Tango CLI
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4" type="checkbox" id="__nav_4" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_4">
+          Reference
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Reference" data-md-level="1">
+        <label class="md-nav__title" for="__nav_4">
+          <span class="md-nav__icon md-icon"></span>
+          Reference
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/" class="md-nav__link">
+        Reference Overview
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4_2" type="checkbox" id="__nav_4_2" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_4_2">
+          Autolab Frontend API
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Autolab Frontend API" data-md-level="2">
+        <label class="md-nav__title" for="__nav_4_2">
+          <span class="md-nav__icon md-icon"></span>
+          Autolab Frontend API
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api-overview/" class="md-nav__link">
+        Overview
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api-interface/" class="md-nav__link">
+        Endpoints
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api-managing-authorized-apps/" class="md-nav__link">
+        Managing Authorized Apps
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tango-rest/" class="md-nav__link">
+        Tango API
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tango-vmms/" class="md-nav__link">
+        Tango VMMS API
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  <a href="https://github.com/Autolab/autolab/edit/master/docs/installation/docker-compose.md" title="Edit this page" class="md-content__button md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25Z"/></svg>
+  </a>
+
+
+<h1 id="autolab-tango-docker-compose-installation">Autolab + Tango Docker Compose Installation</h1>
+<p>The Autolab Docker Compose installation is a fast and easy production-ready installation and deployment method. It uses a MySQL database for the Autolab deployment, and comes with TLS/SSL support. This is now the preferred way of installing Autolab due to its ease of use.</p>
+<p>If you are stuck or find issues with the installation process you can either file an issue on our Github repository, or join our Slack <a href="https://communityinviter.com/apps/autolab/autolab-project">here</a> and let us know and we will try our best to help. Also see the <a href="#debugging-your-deployment">debugging</a> section for tips on how to diagnose problems and check out the <a href="#troubleshooting">troubleshooting</a> section if you run into any issues.</p>
+<h2 id="installation">Installation</h2>
+<p>First ensure that you have Docker and Docker Compose installed on your machine. See the official <a href="https://docs.docker.com/install/" target="_blank">Docker docs</a> for the installation steps.</p>
+<ol>
+<li>
+<p>Clone this repository and its Autolab and Tango submodules: </p>
+<div class="codehilite"><pre><span></span><code>git clone --recurse-submodules -j8 https://github.com/autolab/docker.git autolab-docker
+</code></pre></div>
+
+</li>
+<li>
+<p>Enter the project directory:</p>
+<div class="codehilite"><pre><span></span><code><span class="nb">cd</span> autolab-docker
+</code></pre></div>
+
+</li>
+<li>
+<p>Update our Autolab and Tango submodules to ensure that you are getting the latest versions:</p>
+<div class="codehilite"><pre><span></span><code>make update
+</code></pre></div>
+
+<p>You may need to install <code>make</code> using the appropriate command for your system, such as <code>apt install make</code>.</p>
+</li>
+<li>
+<p>Create initial default configs:</p>
+<div class="codehilite"><pre><span></span><code>make
+</code></pre></div>
+
+</li>
+<li>
+<p>Build the Dockerfiles for both Autolab and Tango:</p>
+<div class="codehilite"><pre><span></span><code>docker compose build
+</code></pre></div>
+
+</li>
+<li>
+<p>Run the Docker containers:</p>
+<div class="codehilite"><pre><span></span><code>docker compose up -d
+</code></pre></div>
+
+<p>Note at this point Nginx will still be crash-looping in the Autolab container because TLS/SSL has not been configured/disabled yet.</p>
+</li>
+<li>
+<p>Ensure that the newly created config files have the right permissions, as it may have been modified during the building process:</p>
+<div class="codehilite"><pre><span></span><code>make set-perms
+</code></pre></div>
+
+</li>
+<li>
+<p>Perform database migrations for Autolab, which will initialize your database schema:</p>
+<div class="codehilite"><pre><span></span><code>make db-migrate
+</code></pre></div>
+
+</li>
+<li>
+<p>Create administrative user for Autolab:</p>
+<div class="codehilite"><pre><span></span><code>make create-user
+</code></pre></div>
+
+<p>This user has full permissions on Autolab and will be able to create other users and designate other admins.</p>
+</li>
+<li>
+<p>Change <code>DOCKER_TANGO_HOST_VOLUME_PATH</code> in <code>.env</code> to be the absolute path to the Tango <code>volumes</code> directory, i.e <code>/&lt;path-to-docker-compose-installation&gt;/Tango/volumes</code>. This is so that Tango knows where to put the output files of its autograded jobs.</p>
+<div class="codehilite"><pre><span></span><code><span class="c1"># in .env</span>
+
+<span class="c1"># Modify the below to be the path to volumes on your host machine</span>
+<span class="nv">DOCKER_TANGO_HOST_VOLUME_PATH</span><span class="o">=</span>/home/your-user/autolab-docker/Tango/volumes
+</code></pre></div>
+
+</li>
+<li>
+<p>Stop all containers, as we are going to setup/disable TLS:</p>
+<div class="codehilite"><pre><span></span><code>docker compose stop
+</code></pre></div>
+
+</li>
+<li>
+<p>Update the Nginx config. Update all occurrences of <code>REPLACE_WITH_YOUR_DOMAIN</code> in <code>nginx/app.conf</code> and <code>nginx/no-ssl-app.conf</code> to your real domain name. The configs are used when TLS is enabled and disabled respectively. Double-check that ALL occurrences are replaced as otherwise you will have trouble accessing your deployment.</p>
+</li>
+<li>
+<p>Continue with TLS setup as outlined in the <a href="#configuring-tlsssl">next section</a></p>
+</li>
+<li>
+<p>Build the autograding image(s) that you want to use in Tango (see <a href="/installation/tango/#docker-vmms-setup">the docs</a> for more information). For this setup we will stick to the default Ubuntu 18.04 autograding image: </p>
+<div class="codehilite"><pre><span></span><code>docker build -t autograding_image Tango/vmms/
+</code></pre></div>
+
+<p>Note that we can just run this directly on the host because we are mapping the Docker socket to the Tango container (i.e they are using the same Docker server).</p>
+</li>
+<li>
+<p>Start up everything: </p>
+<div class="codehilite"><pre><span></span><code>docker compose up -d
+</code></pre></div>
+
+<p>Autolab should now be accessible on port 80 (and 443 if you configured TLS)! You can now go on to configure mailing, <a href="/installation/mailing/">follow the instructions for setting up mailing</a> with the only difference being that the paths mentioned are relative to the directory <code>Autolab/</code>.</p>
+</li>
+<li>
+<p>Now you are all set to start using Autolab! Please fill out <a href="https://docs.google.com/forms/d/e/1FAIpQLSctfi3kwa03yuCuLgGF7qS_PItfk__1s80twhVDiKGQHvqUJg/viewform?usp=sf_link">this form</a> to join our registry so that we can provide you with news about the latest features, bug-fixes, and security updates. For more info, visit the <a href="/instructors">Guide for Instructors</a> and <a href="/lab">Guide for Lab Authors</a>. </p>
+</li>
+</ol>
+<h2 id="configuring-tlsssl">Configuring TLS/SSL</h2>
+<p>Having TLS/SSL configured is important as it helps to ensure that sensitive information like user credentials and submission information are encrypted instead of being sent over in plaintext across the network when users are using Autolab. We have made setting up TLS as easy and pain-free as possible. Using TLS is strongly recommended if you are using Autolab in a production environment with real students and instructors.</p>
+<p>There are three options for TLS: using Let's Encrypt (for free TLS certificates), using your own certificate, and not using TLS (suitable for local testing/development, but not recommended for production deployment).</p>
+<h3 id="option-1-lets-encrypt">Option 1: Let's Encrypt</h3>
+<ol>
+<li>Ensure that your DNS record points towards the IP address of your server</li>
+<li>Ensure that port 443 is exposed on your server (i.e checking your firewall, AWS security group settings, etc)</li>
+<li>In <code>ssl/init-letsencrypt.sh</code>, change <code>domains=(example.com)</code> to the list of domains that your host is associated with, and change <code>email</code> to be your email address so that Let's Encrypt will be able to email you when your certificate is about to expire</li>
+<li>If necessary, change <code>staging=0</code> to <code>staging=1</code> to avoid being rate-limited by Let's Encrypt since there is a limit of 20 certificates/week. Setting this is helpful if you have an experimental setup.</li>
+<li>Run your modified script: <code>sudo ./ssl/init-letsencrypt.sh</code></li>
+</ol>
+<h3 id="option-2-using-your-own-tls-certificate">Option 2: Using your own TLS certificate</h3>
+<ol>
+<li>Copy your private key to <code>ssl/privkey.pem</code></li>
+<li>Copy your certificate to <code>ssl/fullchain.pem</code></li>
+<li>
+<p>Generate your dhparams:</p>
+<div class="codehilite"><pre><span></span><code>openssl dhparam -out ssl/ssl-dhparams.pem <span class="m">4096</span>
+</code></pre></div>
+
+</li>
+<li>
+<p>Uncomment the following lines in <code>docker-compose.yml</code>:</p>
+<div class="codehilite"><pre><span></span><code><span class="c1"># - ./ssl/fullchain.pem:/etc/letsencrypt/live/test.autolab.io/fullchain.pem;</span>
+<span class="c1"># - ./ssl/privkey.pem:/etc/letsencrypt/live/test.autolab.io/privkey.pem;</span>
+<span class="c1"># - ./ssl/ssl-dhparams.pem:/etc/letsencrypt/ssl-dhparams.pem</span>
+</code></pre></div>
+
+</li>
+</ol>
+<h3 id="option-3-no-tls-not-recommended-only-for-local-developmenttesting">Option 3: No TLS (not recommended, only for local development/testing)</h3>
+<ol>
+<li>
+<p>In <code>docker-compose.yml</code>, comment out the following:</p>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Comment the below out to disable SSL (not recommended)</span>
+- ./nginx/app.conf:/etc/nginx/sites-enabled/webapp.conf
+</code></pre></div>
+
+</li>
+<li>
+<p>In <code>docker-compose.yml</code>, also uncomment the following:</p>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Uncomment the below to disable SSL (not recommended)</span>
+<span class="c1"># - ./nginx/no-ssl-app.conf:/etc/nginx/sites-enabled/webapp.conf</span>
+</code></pre></div>
+
+</li>
+<li>
+<p>Lastly, in <code>.env</code> file, set <code>DOCKER_SSL=false</code>:</p>
+<div class="codehilite"><pre><span></span><code><span class="c1"># set to false for no SSL (not recommended)</span>
+<span class="nv">DOCKER_SSL</span><span class="o">=</span><span class="nb">false</span>
+</code></pre></div>
+
+</li>
+</ol>
+<h2 id="updating-your-docker-compose-deployment">Updating Your Docker Compose Deployment</h2>
+<ol>
+<li>
+<p>Stop your running instances:</p>
+<div class="codehilite"><pre><span></span><code>docker compose stop
+</code></pre></div>
+
+</li>
+<li>
+<p>Update your Autolab and Tango repositories:</p>
+<div class="codehilite"><pre><span></span><code>make update
+</code></pre></div>
+
+</li>
+<li>
+<p>Rebuild the images with the latest code:</p>
+<div class="codehilite"><pre><span></span><code>docker compose build
+</code></pre></div>
+
+</li>
+<li>
+<p>Re-deploy your containers:</p>
+<div class="codehilite"><pre><span></span><code>docker compose up
+</code></pre></div>
+
+</li>
+</ol>
+<h2 id="debugging-your-deployment">Debugging your Deployment</h2>
+<p>In the (very likely) event that you run into problems during setup, hopefully these steps will help you to help identify and diagnose the issue. If you continue to face difficulties or believe you discovered issues with the setup process please join our Slack <a href="https://communityinviter.com/apps/autolab/autolab-project">here</a> and let us know and we will try our best to help.</p>
+<h3 id="better-logging-output-for-docker-compose">Better logging output for Docker Compose</h3>
+<p>By default, <code>docker compose up -d</code> runs in detached state and it is not easy to immediately see errors:</p>
+<div class="codehilite"><pre><span></span><code>$ docker compose up -d
+Starting certbot ... <span class="k">done</span>
+Starting redis   ... <span class="k">done</span>
+Starting mysql   ... <span class="k">done</span>
+Starting tango     ... <span class="k">done</span>
+Recreating autolab ... <span class="k">done</span>
+</code></pre></div>
+
+<p>Use <code>docker compose up</code> instead to get output from all the containers in real time:</p>
+<div class="codehilite"><pre><span></span><code>$ docker compose up
+Starting certbot ... <span class="k">done</span>
+Starting mysql   ... <span class="k">done</span>
+Starting redis   ... <span class="k">done</span>
+Starting tango   ... <span class="k">done</span>
+Starting autolab ... <span class="k">done</span>
+Attaching to redis, mysql, certbot, tango, autolab
+mysql      <span class="p">|</span> <span class="o">[</span>Entrypoint<span class="o">]</span> MySQL Docker Image <span class="m">8</span>.0.22-1.1.18
+tango      <span class="p">|</span> <span class="m">2020</span>-11-11 <span class="m">04</span>:33:19,533 CRIT Supervisor running as root <span class="o">(</span>no user <span class="k">in</span> config file<span class="o">)</span>
+redis      <span class="p">|</span> <span class="m">1</span>:C <span class="m">11</span> Nov <span class="m">2020</span> <span class="m">04</span>:33:19.032 <span class="c1"># oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo</span>
+redis      <span class="p">|</span> <span class="m">1</span>:C <span class="m">11</span> Nov <span class="m">2020</span> <span class="m">04</span>:33:19.032 <span class="c1"># Redis version=6.0.9, bits=64, commit=00000000, modified=0, pid=1, just started</span>
+redis      <span class="p">|</span> <span class="m">1</span>:C <span class="m">11</span> Nov <span class="m">2020</span> <span class="m">04</span>:33:19.032 <span class="c1"># Warning: no config file specified, using the default config. In order to specify a config file use redis-server /path/to/redis.conf</span>
+mysql      <span class="p">|</span> <span class="o">[</span>Entrypoint<span class="o">]</span> Starting MySQL <span class="m">8</span>.0.22-1.1.18
+redis      <span class="p">|</span> <span class="m">1</span>:M <span class="m">11</span> Nov <span class="m">2020</span> <span class="m">04</span>:33:19.033 * Running <span class="nv">mode</span><span class="o">=</span>standalone, <span class="nv">port</span><span class="o">=</span><span class="m">6379</span>.
+redis      <span class="p">|</span> <span class="m">1</span>:M <span class="m">11</span> Nov <span class="m">2020</span> <span class="m">04</span>:33:19.033 <span class="c1"># Server initialized</span>
+tango      <span class="p">|</span> <span class="m">2020</span>-11-11 <span class="m">04</span>:33:19,539 INFO RPC interface <span class="s1">&#39;supervisor&#39;</span> initialized
+tango      <span class="p">|</span> <span class="m">2020</span>-11-11 <span class="m">04</span>:33:19,539 CRIT Server <span class="s1">&#39;unix_http_server&#39;</span> running without any HTTP authentication checking
+mysql      <span class="p">|</span> <span class="m">2020</span>-11-11T04:33:19.476749Z <span class="m">0</span> <span class="o">[</span>System<span class="o">]</span> <span class="o">[</span>MY-010116<span class="o">]</span> <span class="o">[</span>Server<span class="o">]</span> /usr/sbin/mysqld <span class="o">(</span>mysqld <span class="m">8</span>.0.22<span class="o">)</span> starting as process <span class="m">22</span>
+--- output truncated ---
+</code></pre></div>
+
+<h3 id="checking-autolab-logs">Checking Autolab logs</h3>
+<p>If the Autolab instance is not working properly, taking a look at both the application logs as well as the Nginx logs in the container will be helpful.</p>
+<p>First, find the name of the container. This should be just <code>autolab</code> by default:</p>
+<div class="codehilite"><pre><span></span><code>$ docker ps
+CONTAINER ID        IMAGE                       COMMAND                  CREATED             STATUS                    PORTS                                      NAMES
+765d35962f52        autolab-docker_autolab      <span class="s2">&quot;/sbin/my_init&quot;</span>          <span class="m">31</span> minutes ago      Up <span class="m">22</span> minutes             <span class="m">0</span>.0.0.0:80-&gt;80/tcp, <span class="m">0</span>.0.0.0:443-&gt;443/tcp   autolab
+a5b77b5267b1        autolab-docker_tango        <span class="s2">&quot;/usr/bin/supervisor…&quot;</span>   <span class="m">7</span> days ago          Up <span class="m">22</span> minutes             <span class="m">0</span>.0.0.0:3000-&gt;3000/tcp                     tango
+438d8e9f73e2        redis:latest                <span class="s2">&quot;docker-entrypoint.s…&quot;</span>   <span class="m">7</span> days ago          Up <span class="m">22</span> minutes             <span class="m">6379</span>/tcp                                   redis
+da86acc5a4c3        mysql/mysql-server:latest   <span class="s2">&quot;/entrypoint.sh mysq…&quot;</span>   <span class="m">7</span> days ago          Up <span class="m">22</span> minutes <span class="o">(</span>healthy<span class="o">)</span>   <span class="m">3306</span>/tcp, <span class="m">33060</span>-33061/tcp                  mysql
+88032e85d669        a2eb12050715                <span class="s2">&quot;/bin/bash&quot;</span>              <span class="m">9</span> days ago          Up <span class="m">2</span> days                                                            compiler
+</code></pre></div>
+
+<p>Next get a shell inside the container:</p>
+<div class="codehilite"><pre><span></span><code>$ docker <span class="nb">exec</span> -it autolab bash
+root@be56be775428:/home/app/webapp#
+</code></pre></div>
+
+<p>By default we are in the project directory. Navigate to the <code>logs</code> directory and <code>cat</code> or <code>tail</code> <code>production.log</code>. This contains logs from the Autolab application itself.</p>
+<div class="codehilite"><pre><span></span><code>root@be56be775428:/home/app/webapp# <span class="nb">cd</span> log
+root@be56be775428:/home/app/webapp/log# tail -f -n +1 production.log
+</code></pre></div>
+
+<p>We can also check out our Nginx logs in <code>/var/log/nginx/</code>:</p>
+<div class="codehilite"><pre><span></span><code>root@be56be775428:/home/app/webapp/log# <span class="nb">cd</span> /var/log/nginx/
+root@be56be775428:/var/log/nginx# ls
+access.log  error.log
+</code></pre></div>
+
+<h3 id="accessing-the-rails-console">Accessing the Rails console</h3>
+<p>Obtain a shell in the <code>autolab</code> container as described <a href="#checking-autolab-logs">previously</a>, and do <code>RAILS_ENV=production bundle exec rails c</code>:</p>
+<div class="codehilite"><pre><span></span><code>root@be56be775428:/home/app/webapp# <span class="nv">RAILS_ENV</span><span class="o">=</span>production bundle <span class="nb">exec</span> rails c
+Loading production environment <span class="o">(</span>Rails <span class="m">5</span>.2.0<span class="o">)</span>
+<span class="m">2</span>.6.6 :001 &gt; User.all.count
+<span class="o">=</span>&gt; <span class="m">1</span>
+</code></pre></div>
+
+<p>In the example above, if you performed <code>make create-user</code> you should have at least one user in your database. If there are errors connecting to a database here it is likely that the database was misconfigured.</p>
+<h3 id="checking-tango-logs">Checking Tango Logs</h3>
+<p>Get a shell in the Tango instance, similar to the instructions mentioned <a href="#checking-autolab-logs">previously</a>. The logs are stored in the parent folder (<code>/opt/TangoService</code>) of the project directory:</p>
+<div class="codehilite"><pre><span></span><code>$ docker <span class="nb">exec</span> -it tango bash
+root@a5b77b5267b1:/opt/TangoService/Tango# <span class="nb">cd</span> ..
+root@a5b77b5267b1:/opt/TangoService# ls
+Tango  tango_job_manager_log.log  tango_log.log
+root@a5b77b5267b1:/opt/TangoService# tail -f -n +1 tango_job_manager_log.log tango_log.log
+</code></pre></div>
+
+<h3 id="troubleshooting-autolabtango-connection">Troubleshooting Autolab/Tango Connection</h3>
+<p>In the Autolab container, try to curl Tango:</p>
+<div class="codehilite"><pre><span></span><code>root@be56be775428:/home/app/webapp# curl tango:3000
+Hello, world! RESTful Tango here!
+</code></pre></div>
+
+<p>In the Tango container, try to curl Autolab:</p>
+<div class="codehilite"><pre><span></span><code>root@a5b77b5267b1:/opt/TangoService/Tango# curl autolab
+&lt;html&gt;
+&lt;head&gt;&lt;title&gt;301 Moved Permanently&lt;/title&gt;&lt;/head&gt;
+&lt;body <span class="nv">bgcolor</span><span class="o">=</span><span class="s2">&quot;white&quot;</span>&gt;
+&lt;center&gt;&lt;h1&gt;301 Moved Permanently&lt;/h1&gt;&lt;/center&gt;
+&lt;hr&gt;&lt;center&gt;nginx/1.14.0 <span class="o">(</span>Ubuntu<span class="o">)</span>&lt;/center&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre></div>
+
+<h3 id="permission-issues-in-autolab">Permission issues in Autolab</h3>
+<p>Run the following again:</p>
+<div class="codehilite"><pre><span></span><code>make set-perms
+</code></pre></div>
+
+<h3 id="restarting-autolab-passenger-server">Restarting Autolab Passenger Server</h3>
+<p>This is useful when you might want to test out some code change within the Autolab container without having to rebuild everything again. These changes can be applied by just restarting the Passenger service that is serving Autolab.</p>
+<p>Run <code>passenger-config restart-app</code>:</p>
+<div class="codehilite"><pre><span></span><code>root@8b56488b3fb6:/home/app/webapp# passenger-config restart-app
+Please <span class="k">select</span> the application to restart.
+Tip: re-run this <span class="nb">command</span> with --help to learn how to automate it.
+If the menu doesn<span class="s1">&#39;t display correctly, press &#39;</span>!<span class="err">&#39;</span>
+
+‣   /home/app/webapp <span class="o">(</span>production<span class="o">)</span>
+Cancel
+
+Restarting /home/app/webapp <span class="o">(</span>production<span class="o">)</span>
+</code></pre></div>
+
+<h2 id="troubleshooting">Troubleshooting</h2>
+<h3 id="error-unable-to-unlink-old-dbschemarb-permission-denied">error: unable to unlink old 'db/schema.rb': Permission denied</h3>
+<p>If you obtain the following error when attempting to perform <code>make update</code>:</p>
+<div class="codehilite"><pre><span></span><code>error: unable to unlink old <span class="s1">&#39;db/schema.rb&#39;</span>: Permission denied
+fatal: Could not reset index file to revision <span class="s1">&#39;HEAD&#39;</span>.
+</code></pre></div>
+
+<p>This is due to the fact that <code>db/schema.rb</code> is updated whenever migrations are performed. <code>db/schema.rb</code> documents the database schema, which depends on the database that you are using, its version, and when the migrations were run. It is likely that your <code>db/schema.rb</code> will diverge from the one generated by the devs.</p>
+<p>You can resolve this by changing the owner of the files to be your current user, and then running <code>make set-perms</code> afterwards when you start the containers again.</p>
+<h3 id="autograder-logs-not-appearing">Autograder logs not appearing</h3>
+<p>This happens when you are accessing Autolab via localhost, as Tango will attempt to send the autograder logs to its own localhost instead.</p>
+<p>To remedy this, add <code>127.0.0.1 autolab</code> to <code>/etc/hosts</code> and access Autolab via <code>http://autolab</code> instead of <code>http://localhost</code>.</p>
+
+
+  
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+    <nav class="md-footer__inner md-grid" aria-label="Footer" >
+      
+        
+        <a href="../overview/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Installation Overview" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              Installation Overview
+            </div>
+          </div>
+        </a>
+      
+      
+        
+        <a href="../ubuntu/" class="md-footer__link md-footer__link--next" aria-label="Next: Ubuntu 22.04" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              Ubuntu 22.04
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4Z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        <div class="md-social">
+  
+    
+    
+      
+      
+    
+    <a href="https://github.com/Autolab" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M186.1 328.7c0 20.9-10.9 55.1-36.7 55.1s-36.7-34.2-36.7-55.1 10.9-55.1 36.7-55.1 36.7 34.2 36.7 55.1zM480 278.2c0 31.9-3.2 65.7-17.5 95-37.9 76.6-142.1 74.8-216.7 74.8-75.8 0-186.2 2.7-225.6-74.8-14.6-29-20.2-63.1-20.2-95 0-41.9 13.9-81.5 41.5-113.6-5.2-15.8-7.7-32.4-7.7-48.8 0-21.5 4.9-32.3 14.6-51.8 45.3 0 74.3 9 108.8 36 29-6.9 58.8-10 88.7-10 27 0 54.2 2.9 80.4 9.2 34-26.7 63-35.2 107.8-35.2 9.8 19.5 14.6 30.3 14.6 51.8 0 16.4-2.6 32.7-7.7 48.2 27.5 32.4 39 72.3 39 114.2zm-64.3 50.5c0-43.9-26.7-82.6-73.5-82.6-18.9 0-37 3.4-56 6-14.9 2.3-29.8 3.2-45.1 3.2-15.2 0-30.1-.9-45.1-3.2-18.7-2.6-37-6-56-6-46.8 0-73.5 38.7-73.5 82.6 0 87.8 80.4 101.3 150.4 101.3h48.2c70.3 0 150.6-13.4 150.6-101.3zm-82.6-55.1c-25.8 0-36.7 34.2-36.7 55.1s10.9 55.1 36.7 55.1 36.7-34.2 36.7-55.1-10.9-55.1-36.7-55.1z"/></svg>
+    </a>
+  
+    
+    
+      
+      
+    
+    <a href="https://communityinviter.com/apps/autolab/autolab-project" target="_blank" rel="noopener" title="communityinviter.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M94.12 315.1c0 25.9-21.16 47.06-47.06 47.06S0 341 0 315.1c0-25.9 21.16-47.06 47.06-47.06h47.06v47.06zm23.72 0c0-25.9 21.16-47.06 47.06-47.06s47.06 21.16 47.06 47.06v117.84c0 25.9-21.16 47.06-47.06 47.06s-47.06-21.16-47.06-47.06V315.1zm47.06-188.98c-25.9 0-47.06-21.16-47.06-47.06S139 32 164.9 32s47.06 21.16 47.06 47.06v47.06H164.9zm0 23.72c25.9 0 47.06 21.16 47.06 47.06s-21.16 47.06-47.06 47.06H47.06C21.16 243.96 0 222.8 0 196.9s21.16-47.06 47.06-47.06H164.9zm188.98 47.06c0-25.9 21.16-47.06 47.06-47.06 25.9 0 47.06 21.16 47.06 47.06s-21.16 47.06-47.06 47.06h-47.06V196.9zm-23.72 0c0 25.9-21.16 47.06-47.06 47.06-25.9 0-47.06-21.16-47.06-47.06V79.06c0-25.9 21.16-47.06 47.06-47.06 25.9 0 47.06 21.16 47.06 47.06V196.9zM283.1 385.88c25.9 0 47.06 21.16 47.06 47.06 0 25.9-21.16 47.06-47.06 47.06-25.9 0-47.06-21.16-47.06-47.06v-47.06h47.06zm0-23.72c-25.9 0-47.06-21.16-47.06-47.06 0-25.9 21.16-47.06 47.06-47.06h117.84c25.9 0 47.06 21.16 47.06 47.06 0 25.9-21.16 47.06-47.06 47.06H283.1z"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "toc.integrate", "content.code.copy"], "search": "../../assets/javascripts/workers/search.5bf1dace.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.37e9125f.min.js"></script>
+      
+    
+  </body>
+</html>
