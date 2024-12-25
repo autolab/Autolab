@@ -570,15 +570,16 @@ class CoursesController < ApplicationController
     @cuds = @course.course_user_data.where(instructor: false,
                                            course_assistant: false,
                                            dropped: false)
-    output = ""
-    @cuds.each do |cud|
-      user = cud.user
-      # to_csv avoids issues with commas
-      output += [@course.semester, cud.user.email, user.last_name, user.first_name,
-                 cud.school, cud.major, cud.year, cud.grade_policy,
-                 cud.course_number, cud.lecture, cud.section].to_csv
+    csv_content = CSVSafe.generate do |csv|
+      @cuds.each do |cud|
+        user = cud.user
+        # to_csv avoids issues with commas
+        csv << [@course.semester, cud.user.email, user.last_name, user.first_name,
+                cud.school, cud.major, cud.year, cud.grade_policy,
+                cud.course_number, cud.lecture, cud.section]
+      end
     end
-    send_data output, filename: "roster.csv", type: "text/csv", disposition: "inline"
+    send_data csv_content, filename: "roster.csv", type: "text/csv", disposition: "inline"
   end
 
   # email - The email action allows instructors to email the entire course, or

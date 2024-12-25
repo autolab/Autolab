@@ -129,6 +129,8 @@
       <a href="<%= download_file_url(@submission) %>" class="btn small" title="Download">Download</a>
       <button class="btn small" onclick="resetLayout()">Reset Layout</button>
       <%= render "release_grades" %>
+      <button id="hideAnnotations" class="btn small" onclick="hideAnnotations()">Hide Comments</button>
+      <button id="showAnnotations" style="display: none;" class="btn small" onclick="showAnnotations()">Show Comments</button>
     </div>
 
     <div class="col s2 center-align">
@@ -144,6 +146,8 @@
   <div class="row">
     <div class="col s12 center-align valign-wrapper">
       <button class="btn small" onclick="resetLayout()">Reset Layout</button>
+      <button id="hideAnnotations" class="btn small" onclick="hideAnnotations()">Hide Comments</button>
+      <button id="showAnnotations" style="display: none;" class="btn small" onclick="showAnnotations()">Show Comments</button>
     </div>
   </div>
 

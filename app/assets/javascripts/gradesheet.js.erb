@@ -586,7 +586,7 @@ jQuery(function() {
       var cache_feedback = cache_get_item(sub_id, prob_id, 'feedback');
       if (cache_feedback != null) {
         // cache hit
-        $feedback_textarea.html(cache_feedback);
+        $feedback_textarea.text(cache_feedback);
       } else {
         // cache miss
         // lazy load grader and feedback
@@ -621,7 +621,7 @@ jQuery(function() {
               if (grader != " ") {
                 $score_details_tbody.prepend("<div class='grader-name'>Grader: " + grader + "</div>")
               }
-              $feedback_textarea.html(feedback);
+              $feedback_textarea.text(feedback);
               $feedback_textarea.prop('disabled', false);
             }
           });

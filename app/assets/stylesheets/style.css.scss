@@ -959,6 +959,11 @@ input[type="search"] {
   margin-bottom: 2px;
 }
 
+div.file-field.input-field {
+  padding-top: 0;
+  margin-top: -0.5rem !important;
+}
+
 .flatpickr-input.form-control.input {
   color: black;
 }
