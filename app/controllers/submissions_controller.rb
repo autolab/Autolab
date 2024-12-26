@@ -176,7 +176,7 @@ class SubmissionsController < ApplicationController
 
   action_auth_level :destroy, :instructor
   def destroy
-    if params[:yes]
+    if params["destroy-confirm-check"]
       if @submission.destroy
         flash[:success] = "Submission successfully destroyed."
       else
@@ -218,9 +218,9 @@ class SubmissionsController < ApplicationController
       end
     end
     if fcount == 0
-      flash[:success] = "#{scount} #{"submission".pluralize(scount)} destroyed. #{fcount} #{"submission".pluralize(fcount)} failed."
+      flash[:success] = "#{ActionController::Base.helpers.pluralize(scount, 'submission')} destroyed. #{ActionController::Base.helpers.pluralize(fcount, 'submission')} failed."
     else
-      flash[:error] = "#{scount} #{"submission".pluralize(scount)} destroyed. #{fcount} #{"submission".pluralize(fcount)} failed."
+      flash[:error] = "#{ActionController::Base.helpers.pluralize(scount, 'submission')} destroyed. #{ActionController::Base.helpers.pluralize(fcount, 'submission')} failed."
     end
     redirect_to(course_assessment_submissions_path(submissions[0].course_user_datum.course,
                                                    submissions[0].assessment)) && return
@@ -413,7 +413,7 @@ class SubmissionsController < ApplicationController
         "#{aud.errors.full_messages.join(', ')}"
     end
 
-    flash[:success] = "#{pluralize(auds_to_excuse.size.to_s, 'student')} excused."
+    flash[:success] = "#{ActionController::Base.helpers.pluralize(auds_to_excuse.size, 'student')} excused."
     redirect_to course_assessment_submissions_path(@course, @assessment)
   end
 
