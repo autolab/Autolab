@@ -10,7 +10,8 @@ class SubmissionsController < ApplicationController
   before_action :set_assessment_breadcrumb
   before_action :set_manage_submissions_breadcrumb, except: %i[index]
   before_action :set_submission, only: %i[destroy destroyConfirm download edit update
-                                          view release_student_grade unrelease_student_grade tweak_total]
+                                          view release_student_grade unrelease_student_grade
+                                          tweak_total]
   before_action :get_submission_file, only: %i[download view]
 
   action_auth_level :index, :instructor
@@ -61,11 +62,11 @@ class SubmissionsController < ApplicationController
         submission.global_annotations.empty? ? nil : submission.global_annotations.sum(:value)
     end
 
-    submissions = submissions.as_json(seen_by: @cud)
+    submissions.as_json(seen_by: @cud)
 
     render json: { submissions: submission_info,
                    scores: submission_id_to_score_data,
-                   tweaks: tweaks }, status: :ok
+                   tweaks: }, status: :ok
   rescue StandardError => e
     render json: { error: e.message }, status: :not_found
     nil
@@ -206,10 +207,12 @@ class SubmissionsController < ApplicationController
       if s.nil?
         next
       end
+
       unless @cud.instructor || @cud.course_assistant || s.course_user_datum_id == @cud.id
-        flash[:error] = "You do not have permission to delete #{s.course_user_datum.user.email}'s submission."
+        flash[:error] =
+          "You do not have permission to delete #{s.course_user_datum.user.email}'s submission."
         redirect_to(course_assessment_submissions_path(submissions[0].course_user_datum.course,
-                                                                   submissions[0].assessment)) && return
+                                                       submissions[0].assessment)) && return
       end
       if s.destroy
         scount += 1
@@ -218,9 +221,19 @@ class SubmissionsController < ApplicationController
       end
     end
     if fcount == 0
-      flash[:success] = "#{ActionController::Base.helpers.pluralize(scount, 'submission')} destroyed. #{ActionController::Base.helpers.pluralize(fcount, 'submission')} failed."
+      flash[:success] =
+        "#{ActionController::Base.helpers.pluralize(scount,
+                                                    'submission')} destroyed.
+                                                    #{ActionController::Base.helpers.pluralize(
+                                                      fcount, 'submission'
+                                                    )} failed."
     else
-      flash[:error] = "#{ActionController::Base.helpers.pluralize(scount, 'submission')} destroyed. #{ActionController::Base.helpers.pluralize(fcount, 'submission')} failed."
+      flash[:error] =
+        "#{ActionController::Base.helpers.pluralize(scount,
+                                                    'submission')} destroyed.
+                                                    #{ActionController::Base.helpers.pluralize(
+                                                      fcount, 'submission'
+                                                    )} failed."
     end
     redirect_to(course_assessment_submissions_path(submissions[0].course_user_datum.course,
                                                    submissions[0].assessment)) && return
@@ -257,7 +270,6 @@ class SubmissionsController < ApplicationController
   action_auth_level :download_all, :course_assistant
   def download_all
     flash[:error] = "Cannot index submissions for nil assessment" if @assessment.nil?
-
 
     unless @assessment.valid?
       flash[:error] = "The assessment has errors which must be rectified."
@@ -334,7 +346,8 @@ class SubmissionsController < ApplicationController
 
     filedata = submissions.collect do |s|
       unless @cud.instructor || @cud.course_assistant || s.course_user_datum_id == @cud.id
-        flash[:error] = "You do not have permission to download #{s.course_user_datum.user.email}'s submission."
+        flash[:error] =
+          "You do not have permission to download #{s.course_user_datum.user.email}'s submission."
         redirect_to(course_assessment_submissions_path(submissions[0].course_user_datum.course,
                                                        submissions[0].assessment)) && return
       end
@@ -413,7 +426,8 @@ class SubmissionsController < ApplicationController
         "#{aud.errors.full_messages.join(', ')}"
     end
 
-    flash[:success] = "#{ActionController::Base.helpers.pluralize(auds_to_excuse.size, 'student')} excused."
+    flash[:success] =
+      "#{ActionController::Base.helpers.pluralize(auds_to_excuse.size, 'student')} excused."
     redirect_to course_assessment_submissions_path(@course, @assessment)
   end
 

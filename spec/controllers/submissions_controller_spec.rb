@@ -10,9 +10,9 @@ RSpec.describe SubmissionsController, type: :controller do
       sign_in(user)
       cud = get_first_cud_by_uid(user)
       cid = get_first_cid_by_uid(user)
-      course_name = Course.find(cid).name
+      Course.find(cid).name
       assessment_id = get_first_aid_by_cud(cud)
-      assessment_name = Assessment.find(assessment_id).name
+      Assessment.find(assessment_id).name
       get :index, params: { course_name: @course.name, assessment_name: @assessment.name }
       expect(response).to be_successful
       expect(response.body).to match(/Manage Submissions/m)
