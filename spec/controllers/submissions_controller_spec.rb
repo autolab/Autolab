@@ -147,7 +147,7 @@ RSpec.describe SubmissionsController, type: :controller do
       submission = get_first_submission_by_assessment(@assessment)
       expect do
         post :destroy, params: { course_name: @course.name, assessment_name: @assessment.name,
-                                 id: submission.id }
+                                 id: submission.id, "destroy-confirm-check": "filled-in" }
       end.to change(Submission, :count).by(-1)
       expect(response).to have_http_status(302)
       expect(flash[:success])
@@ -160,7 +160,7 @@ RSpec.describe SubmissionsController, type: :controller do
       submission = Submission.where(course_user_datum_id: get_first_cud_by_uid(user.id)).first
       expect do
         post :destroy, params: { course_name: @course.name, assessment_name: @assessment.name,
-                                 id: submission.id }
+                                 id: submission.id, "destroy-confirm-check": "filled-in" }
       end.to change(Submission, :count).by(0)
       expect(response).to have_http_status(302)
       expect(flash[:error])
