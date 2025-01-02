@@ -53,7 +53,7 @@
               <div id="submission_error" style="color:red" class="col s6 m8 center-align"></div>
               <% if @aud.past_due_at? then %>
                 <div class="col s6 m4 center-align">
-                  <%= f.submit("Submit Late", id: "fake-submit", class: "btn primary handin-btn disabled") %>
+                  <%= f.submit("Submit Late", id: "fake-submit", class: "btn primary handin-btn disabled", data: { confirm: "You are #{grace_late_info}. Are you sure you want to continue?" }) %>
                 </div>
               <% else %>
                 <div class="col s6 m4 center-align">
