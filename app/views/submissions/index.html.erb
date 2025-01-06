@@ -66,21 +66,13 @@
                     id: "batch-regrade",
                     style: "display:none;" } %>
     </div>
-
   <% end %>
 </div>
 <table class="prettyBorder" id="submissions">
   <% headers = ["Submitted By", "Version", "Score", "Submission Date (YYYY-MM-DD)", "File", "IP Address", "Actions", "isLatest"] %>
   <thead class="float">
     <tr>
-      <th class="submissions-td submissions-checkbox">
-        <div>
-          <label class="submissions-cbox-label">
-            <input class="cbox" type="checkbox" id="cbox-select-all">
-            <span></span>
-          </label>
-        </div>
-      </th>
+      <th></th>
     <% for header in headers %>
       <th><%= header %></th>
     <% end %>

@@ -31,7 +31,7 @@ $(document).ready(function() {
 
   var table = $('#submissions').DataTable({
     'sPaginationType': 'full_numbers',
-    'iDisplayLength': 500,
+    'iDisplayLength': 100,
     'oLanguage': {
       'sLengthMenu':'<label><input type="checkbox" id="only-latest">' +
         '<span>Show only latest</span></label>'
@@ -90,26 +90,10 @@ $(document).ready(function() {
     updateBatchRegradeButton();
   }
 
-  function toggleAllRows(selectAll) {
-    $('#submissions tbody .cbox').each(function() {
-      var submissionId = parseInt($(this).attr('id').replace('cbox-', ''), 10);
-      console.log($(this).attr('id'))
-      if (selectAll) {
-        if (selectedSubmissions.indexOf(submissionId) === -1) {
-          toggleRow(submissionId, true); // force select
-        }
-      } else {
-        if (selectedSubmissions.indexOf(submissionId) !== -1) {
-          toggleRow(submissionId, false); // force unselect
-        }
-      }
-    });}
-
   $("#submissions").on("click", ".exclude-click i", function (e) {
     e.stopPropagation();
     return;
   });
-
 
   $('#submissions').on("click", ".submission-row", function(e) {
     // Don't toggle row if we originally clicked on an anchor and input tag
@@ -122,16 +106,10 @@ $(document).ready(function() {
     }
   });
 
-  // $('#submissions').on("click", ".cbox", function(e) {
-  //   console.log("TEST")
-  //   var submissionId = parseInt(e.currentTarget.id.replace("cbox-", ""), 10);
-  //   toggleRow(submissionId);
-  //   e.stopPropagation();
-  // });
-
-  $('#cbox-select-all').on('click', async function(e) {
-    var selectAll = $(this).is(':checked');
-    console.log("BRUH")
-    await toggleAllRows(selectAll);
+  $('#submissions').on("click", ".cbox", function(e) {
+    var submissionId = parseInt(e.currentTarget.id.replace("cbox-", ""), 10);
+    toggleRow(submissionId);
+    e.stopPropagation();
   });
+
 });

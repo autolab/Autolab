@@ -134,10 +134,11 @@ module AssessmentAutograde
   # action_auth_level :regradeAll, :instructor
   def regradeAll
     # Grab all of the submissions for this assessment
-    @submissions = @assessment.submissions.order("version DESC")
+    @submissions = @assessment.submissions.where(special_type: Submission::NORMAL)
+                   .order("version DESC")
 
     last_submissions = @submissions.latest
-    puts(last_submissions)
+
     begin
       failed_list = sendJob_batch(@course, @assessment, last_submissions, @cud)
     rescue AssessmentAutogradeCore::AutogradeError => e
