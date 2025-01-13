@@ -219,6 +219,10 @@ class AssessmentsController < ApplicationController
   def excuse_popover
     submission_id = params[:submission_id]
     @submission = Submission.find(submission_id)
+    if @submission.course_user_datum.course != @course
+      render plain: "Unauthorized", status: :forbidden
+      return
+    end
     @assessment = @submission.assessment
     @student_email = @submission.course_user_datum.user.email
 
