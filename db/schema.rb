@@ -108,7 +108,6 @@ ActiveRecord::Schema.define(version: 2024_04_06_174050) do
     t.integer "version_threshold"
     t.integer "late_penalty_id"
     t.integer "version_penalty_id"
-    t.boolean "has_svn"
     t.boolean "quiz", default: false
     t.text "quizData"
     t.string "remote_handin_path"
