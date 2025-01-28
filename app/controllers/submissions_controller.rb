@@ -5,6 +5,7 @@ require "json"
 require "tempfile"
 
 class SubmissionsController < ApplicationController
+  include ApplicationHelper
   # inherited from ApplicationController
   before_action :set_assessment
   before_action :set_assessment_breadcrumb
@@ -39,6 +40,7 @@ class SubmissionsController < ApplicationController
   action_auth_level :score_details, :instructor
   def score_details
     cuid = params[:cuid]
+    cud = CourseUserDatum.find(cuid)
     submissions = @assessment.submissions.where(course_user_datum_id: cuid).order("created_at DESC")
     scores = submissions.map(&:scores).flatten
 
@@ -60,6 +62,10 @@ class SubmissionsController < ApplicationController
       submission_info[index]["scores"] = Score.where(submission_id: submission.id)
       submission_info[index]["tweak_total"] =
         submission.global_annotations.empty? ? nil : submission.global_annotations.sum(:value)
+      total = computed_score { submission.final_score(cud) }
+      submission_info[index]["total"] =
+        submission.global_annotations.empty? ? total : total + submission_info[index]["tweak_total"]
+      submission_info[index]["late_penalty"] = computed_score { submission.late_penalty(cud) }
     end
 
     submissions.as_json(seen_by: @cud)

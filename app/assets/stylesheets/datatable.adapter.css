@@ -2,6 +2,7 @@ div.dataTables_filter {
   float: left;
 }
 
+div.dataTables_paginate,
 div.dataTables_filter {
   padding: 6px 0px;
   margin-right: 20px;
@@ -63,4 +64,10 @@ th {
 
 .dt-button i {
   margin: 0 6px 0 4px;
+}
+
+div.dataTables_paginate {
+  float: right;
+  padding: 6px 0;
+  margin-right: 20px;
 }
