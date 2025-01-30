@@ -6,6 +6,7 @@ const manage_submissions_endpoints = {
 const buttonIDs = ['#regrade-selected', '#delete-selected', '#download-selected', '#excuse-selected'];
 
 let tweaks = [];
+let currentPage = 0;
 $(document).ready(function() {
   var submission_info = {}
   const EditTweakButton = (totalSum) => {
@@ -245,6 +246,16 @@ $(document).ready(function() {
       $(row).attr('data-submission-id', submission['submission-id']);
     }
 
+    $('thead').on('click', function(e) {
+      if (currentPage < 0) {
+        currentPage = 0
+      }
+      if (currentPage > table.page.info().pages) {
+        currentPage = table.page.info().pages - 1
+      }
+      table.page(currentPage).draw(false);
+    })
+
     // Listen for select-all checkbox click
     $('#cbox-select-all').on('click', async function(e) {
       var selectAll = $(this).is(':checked');
@@ -254,6 +265,7 @@ $(document).ready(function() {
     // Function to toggle all checkboxes
     function toggleAllRows(selectAll) {
       $('#submissions tbody .cbox').each(function() {
+        $('#cbox-select-all').prop('checked', selectAll);
         var submissionId = parseInt($(this).attr('id').replace('cbox-', ''), 10);
         if (selectAll) {
           if (selectedSubmissions.indexOf(submissionId) === -1) {
@@ -363,6 +375,12 @@ $(document).ready(function() {
         return false;
       }
     });
+
+    $('#submissions_paginate').on('click', function(e) {
+      currentPage = table.page();
+      // Toggle previously selected submissions to be unselected
+      selectedSubmissions.map(selectedSubmission => toggleRow(selectedSubmission, false));
+    })
 
     $('#submissions').on('click', '.cbox', function (e) {
       var clickedSubmissionId = e.currentTarget.id.replace('cbox-', '');
