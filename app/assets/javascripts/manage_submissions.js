@@ -223,12 +223,13 @@ $(document).ready(function() {
     var selectedSubmissions = [];
 
     var table = $('#submissions').DataTable({
-      'dom': 'f<"selected-buttons"p>Brt', // show buttons, search, table
+      'dom': 'f<"selected-buttons">rtip', // show buttons, search, table
       'paging': true,
       'createdRow': completeRow,
       'sPaginationType': 'full_numbers',
-      'iDisplayLength': 10,
-      "lengthMenu": [10, 25, 50, 75, 100],
+      'pageLength': 100,
+      'info': true,
+      'deferRender': true,
     });
 
     // Check if the table is empty
