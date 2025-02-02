@@ -177,7 +177,7 @@
         <div class="submissions-name">
           <%= [submission.course_user_datum.first_name, submission.course_user_datum.last_name].reject(&:blank?).join(' ') %>
           <% if @excused_cids.include? submission.course_user_datum_id %>
-            <a class="submissions-excused-label">EXCUSED</a>
+            <a class="submissions-excused-label" title="Click to unexcuse this student">EXCUSED</a>
             <div class="excused-popover">
               <div class="excused-arrow"></div>
             </div>
