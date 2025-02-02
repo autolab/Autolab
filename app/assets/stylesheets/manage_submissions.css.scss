@@ -1,0 +1,76 @@
+@import 'variables';
+
+#modal-close {
+  font-size: 2rem;
+  position: absolute;
+  top: -35%;
+  right: 0;
+  padding: 0;
+}
+
+.modal-header {
+    float: right;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.score-details {
+    cursor: pointer;
+}
+
+#score-details-modal{
+    width: 90%;
+    height: auto;
+}
+
+/* Table Header */
+
+#score-details-header {
+  position: relative;
+  margin-top: 0;
+}
+
+.score-styling {
+  font-weight: normal;
+  font-style: italic;
+  text-transform: none;
+}
+
+.sorting-th {
+  display: flex;
+  align-items: center;
+}
+
+/* Table Styling */
+
+.submissions-problem-bg {
+  background-color: $autolab-submissions-background !important;
+}
+
+table.prettyBorder tr:hover {
+  background-color: white;
+}
+
+.submissions-td {
+    padding-left: 0.6rem !important;
+}
+
+.tweak-button:hover {
+  cursor: pointer;
+}
+
+.tweak-button {
+  display: flex;
+  align-content: center;
+}
+
+
+/* Icons */
+
+.material-icons {
+  margin-left: 3px;
+}
+
+.i-no-margin {
+  margin-left: 0;
+}

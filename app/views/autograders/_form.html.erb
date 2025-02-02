@@ -18,17 +18,17 @@
 
 <div class="row">
   <div class="col s12">
-      <%= form_for @autograder, url: course_assessment_autograder_path(@course, @assessment, @autograder),
-                                builder: FormBuilderWithDateTimeInput,
-                                html: { multipart: true } do |f| %>
-        <div id="tab_basic">
-          <%= render "basic_settings", f: %>
+    <%= form_for @autograder, url: course_assessment_autograder_path(@course, @assessment, @autograder),
+                              builder: FormBuilderWithDateTimeInput,
+                              html: { multipart: true } do |f| %>
+      <div id="tab_basic">
+        <%= render "basic_settings", f: %>
+      </div>
+      <% if Rails.configuration.x.ec2_ssh.presence %>
+        <div id="tab_ec2">
+          <%= render "ec2_settings", f: %>
         </div>
-        <% if Rails.configuration.x.ec2_ssh.presence %>
-          <div id="tab_ec2">
-            <%= render "ec2_settings", f: %>
-          </div>
-        <% end %>
       <% end %>
+    <% end %>
   </div>
 </div>

@@ -177,3 +177,6 @@ gem 'uri', '0.10.3'
 
 # To generate slugged urls
 gem 'friendly_id', '~> 5.5.0'
+
+# to sanitize CSV files
+gem 'csv-safe'
