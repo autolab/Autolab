@@ -1,5 +1,11 @@
 @import 'variables';
 
+.badge {
+  &.blue {
+    margin-left: 0 !important;
+  }
+}
+
 .card-title {
   margin-bottom: 0 !important;
 }

@@ -100,7 +100,8 @@ RSpec.describe "Instructor can create new assessment", type: :feature do
         click_on "View Gradesheet"
 
         # click on student's submission
-        td = page.find(:css, 'td.id', text: student.email)
+        a = page.find('#grades td.id > a.email', text: student.email)
+        td = a.find(:xpath, './parent::td')
         tr = td.find(:xpath, './parent::tr')
         within tr do
           click_on "View Source"

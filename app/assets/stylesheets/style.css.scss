@@ -686,6 +686,10 @@ ul.moss-inner-list > li > input[type="checkbox"]:checked ~ div {
   text-decoration: underline;
 }
 
+div.field_with_errors {
+  display: inline;
+}
+
 .table-info {
   margin-bottom: auto;
   display: flex;
@@ -725,7 +729,6 @@ ul.moss-inner-list > li > input[type="checkbox"]:checked ~ div {
 }
 
 /* TABLE STYLES.  Styles for the multiple tables that we have for some reason */
-/* Pretty Border Tables. I vote we make this the generic table style. */
 table.prettyBorder,
 table.prettyBorder tr,
 table.prettyBorder th,
@@ -744,7 +747,7 @@ table.prettyBorder {
     background-color: #fff;
     border: 1px solid #d0d0d0;
     &:hover {
-      background-color: #abcdef;
+      background-color: $autolab-sky-blue;
     }
   }
 
@@ -764,8 +767,8 @@ table.prettyBorder {
     top: 0;
   }
   th {
-    background-color: #ebebeb;
-    color: #909090;
+    background-color: $autolab-light-grey;
+    color: $autolab-black;
     cursor: pointer;
     font-family: Source Sans Pro, sans-serif;
     font-size: 0.8em;
@@ -775,9 +778,60 @@ table.prettyBorder {
     text-transform: uppercase;
   }
 
+  .submissions-th {
+    padding: 25px 0 25px 0;
+    font-size: 0.9rem;
+    div {
+      display: flex;
+      align-items: center;
+    }
+    p {
+      margin: 0;
+      float: left;
+      padding-right: 3px;
+    }
+  }
+
+  .sorting_desc {
+    .sort-icon__both, .sort-icon__up {
+      display: none;
+    }
+    .sort-icon__down {
+      display: inline;
+    }
+  }
+  .sorting_asc {
+    .sort-icon__both, .sort-icon__down {
+      display: none;
+    }
+    .sort-icon__up {
+      display: inline;
+    }
+  }
+
+  .sort-icon__up, .sort-icon__down {
+    display: none;
+  }
+
   td {
     border: 1px solid #ddd;
     padding: 0 5px;
+  }
+
+  .submissions-td {
+    border-style: none;
+    padding: 5px 0 5px 0;
+  }
+
+  .submissions-cbox-label {
+    display: flex;
+    justify-content: center;
+    span::before {
+      left: 6px;
+    };
+    [type="checkbox"]:checked + span:not(.lever):before {
+      left: 3px;
+    };
   }
 
   tr.selected {
@@ -936,7 +990,7 @@ input[type="password"]:focus {
 
 // To remove line for file-field
 .file-field input[type="text"].validate,
-.file-field input[type="text"].validate.valid, {
+.file-field input[type="text"].validate.valid {
   border-bottom: none;
   box-shadow: none;
 }
@@ -1068,14 +1122,14 @@ form p:last-child {
 */
 
 .switch > label > b {
-  font-size: 1.1rem; 
+  font-size: 1.1rem;
   color: black
 }
 
 label[for="switch"] {
-  font-size: 1rem; 
+  font-size: 1rem;
   color: darkslategrey;
-} 
+}
 
 
 /**
@@ -1141,6 +1195,7 @@ label[for="switch"] {
 
 .checkbox input[type="checkbox"]:checked + label::before {
   border: 1px solid #bbb;
+
 }
 
 .new_submission {
@@ -1438,10 +1493,10 @@ table.sub td, th {
 
 @keyframes spin {
   from {
-      transform:rotate(0deg);
+    transform:rotate(0deg);
   }
   to {
-      transform:rotate(360deg);
+    transform:rotate(360deg);
   }
 }
 .refresh-feedback.loading {
@@ -1479,8 +1534,8 @@ table.sub td, th {
   border-radius: 5px;
   color: $autolab-blue-text;
   box-shadow: 0px -0.5px 0.5px 0px rgba(0, 0, 0, 0.15),
-              0px 0.5px 0.5px 0.5px rgba(0, 0, 0, 0.15),
-              0px 0.5px 0.5px -0.5px rgba(0, 0, 0, 0.15);
+  0px 0.5px 0.5px 0.5px rgba(0, 0, 0, 0.15),
+  0px 0.5px 0.5px -0.5px rgba(0, 0, 0, 0.15);
   display: flex;
   justify-content: center;
 }
@@ -1495,4 +1550,171 @@ table.sub td, th {
 
 .error-header {
   color: $autolab-red;
+}
+
+
+/* Manage Submissions */
+.btn.submissions-main {
+  margin: 0;
+  padding: 5px 10px 5px 5px;
+  min-height: 36px;
+  height: auto;
+  line-height: 1.3;
+  display: flex;
+  align-items: center;
+}
+
+.btn.submissions-main i.left {
+  margin-right: 6px;
+}
+
+.btn.submissions-selected {
+  margin: 0;
+  margin-right: 10px;
+  padding: 0px 10px 0px 5px;
+  display: flex;
+}
+
+.btn.submissions-selected i {
+  margin: 0 6px 0 4px;
+}
+
+.buttons-row {
+  display: flex;
+  flex-direction: row;
+}
+
+.buttons-spacing {
+  margin-right: 10px;
+  a {
+    overflow-y: hidden;
+  }
+}
+
+.submissions-tweak-button {
+  margin-left: 3px;
+  color: $autolab-medium-gray;
+}
+
+.submissions-tweak-points {
+  color: $autolab-blue-text;
+}
+
+.excused-popover {
+  display: none;
+  position: absolute;
+  width: 100px;
+  height: 100px;
+  background-color: gray;
+}
+
+#selected-buttons {
+  height: 75px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+
+.selected-buttons-placeholder {
+  display: none;
+}
+
+.submissions-checkbox {
+  margin-left: 35px;
+}
+
+.submissions-center-icons {
+  display: flex;
+  align-items: center;
+}
+
+.excused-popover {
+  background-color: $autolab-submissions-background;
+  border-radius: 11px;
+  width: auto;
+  height: auto;
+  z-index: 999;
+  padding: 12px 30px;
+  box-shadow: 0 2px 2px 0 $autolab-excused-popover-background;
+}
+
+.excuse-popover-content {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+}
+
+.excuse-popover-content-text {
+  padding: 0;
+  margin: 0;
+  font-size: 16px;
+  line-height: 23.88px;
+}
+
+.excuse-popover-content-header {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 25.14px;
+  letter-spacing: -0.01em;
+}
+
+.excuse-popover-buttons {
+  display: flex;
+  gap: 16px;
+  padding-top: 8px;
+}
+
+.btn.excuse-popover-cancel {
+  background-color: $autolab-submissions-background;
+  border: 0.5px solid $autolab-dark-grey;
+  color: $autolab-dark-grey;
+}
+
+.btn.excuse-popover-cancel:hover {
+  background-color: $autolab-submissions-background;
+  color: white;
+}
+
+.submissions-center-icons .btn i{
+  margin: 0;
+}
+
+.submissions-center-icons p {
+  margin: 0 0 0 10px;
+}
+
+.submissions-excused-label {
+  color: $autolab-label;
+  margin: 0 0 0 5px;
+  font-size: 12px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.submissions-icons {
+  margin-left: 3px;
+}
+
+.submissions-name {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.submissions-score-align {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  .score-num {
+    width: 40%;
+  }
+  .score-icon {
+    width: 20%;
+  }
+}
+
+.submissions-score-icon {
+  margin-left: 5px;
+  margin-top: 5px;
+  color: $autolab-grey;
 }

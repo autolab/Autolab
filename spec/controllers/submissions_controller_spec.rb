@@ -8,6 +8,11 @@ RSpec.describe SubmissionsController, type: :controller do
   shared_examples "index_success" do
     it "renders successfully" do
       sign_in(user)
+      cud = get_first_cud_by_uid(user)
+      cid = get_first_cid_by_uid(user)
+      Course.find(cid).name
+      assessment_id = get_first_aid_by_cud(cud)
+      Assessment.find(assessment_id).name
       get :index, params: { course_name: @course.name, assessment_name: @assessment.name }
       expect(response).to be_successful
       expect(response.body).to match(/Manage Submissions/m)
@@ -17,6 +22,12 @@ RSpec.describe SubmissionsController, type: :controller do
   shared_examples "index_failure" do
     it "renders with failure" do
       sign_in(user)
+      cud = get_first_cud_by_uid(user)
+      cid = get_first_cid_by_uid(user)
+      course_name = Course.find(cid).name
+      assessment_id = get_first_aid_by_cud(cud)
+      assessment_name = Assessment.find(assessment_id).name
+      get :index, params: { course_name:, assessment_name: }
       get :index, params: { course_name: @course.name, assessment_name: @assessment.name }
       expect(response).not_to be_successful
       expect(response.body).not_to match(/Manage Submissions/m)
@@ -136,7 +147,7 @@ RSpec.describe SubmissionsController, type: :controller do
       submission = get_first_submission_by_assessment(@assessment)
       expect do
         post :destroy, params: { course_name: @course.name, assessment_name: @assessment.name,
-                                 id: submission.id }
+                                 id: submission.id, "destroy-confirm-check": "filled-in" }
       end.to change(Submission, :count).by(-1)
       expect(response).to have_http_status(302)
       expect(flash[:success])
@@ -149,7 +160,7 @@ RSpec.describe SubmissionsController, type: :controller do
       submission = Submission.where(course_user_datum_id: get_first_cud_by_uid(user.id)).first
       expect do
         post :destroy, params: { course_name: @course.name, assessment_name: @assessment.name,
-                                 id: submission.id }
+                                 id: submission.id, "destroy-confirm-check": "filled-in" }
       end.to change(Submission, :count).by(0)
       expect(response).to have_http_status(302)
       expect(flash[:error])
@@ -262,7 +273,7 @@ RSpec.describe SubmissionsController, type: :controller do
       let!(:user) { instructor_user }
       it "downloads all submissions for an assessment" do
         sign_in(user)
-        get :downloadAll, params: { course_name: @course.name, assessment_name: @assessment.name }
+        get :download_all, params: { course_name: @course.name, assessment_name: @assessment.name }
         expect(response).to be_successful
         Zip::File.open_buffer(response.parsed_body) do |zip_file|
           zip_file.each do |entry|
