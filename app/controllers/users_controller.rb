@@ -192,8 +192,14 @@ class UsersController < ApplicationController
       # track counts of each file name
       track_duplicate_counts = Hash.new(0)
       submissions.each do |s|
-        entry_name = download_filename(s.handin_file_path, s.assessment.name)
-        track_duplicate_counts[entry_name] += 1
+        p = s.handin_file_path
+        course_name = s.course_user_datum.course.name
+        assignment_name = s.assessment.name
+        course_directory = "#{filename}/#{course_name}"
+        assignment_directory = "#{course_directory}/#{assignment_name}"
+        entry_name = download_filename(p, assignment_name)
+        final_path = "#{assignment_directory}/#{entry_name}"
+        track_duplicate_counts[final_path] += 1
       end
 
       # track which version is being processed (for naming purposes)
@@ -205,10 +211,11 @@ class UsersController < ApplicationController
         course_directory = "#{filename}/#{course_name}"
         assignment_directory = "#{course_directory}/#{assignment_name}"
         entry_name = download_filename(p, assignment_name)
-        filename_counts[entry_name] += 1
+        final_path = "#{assignment_directory}/#{entry_name}"
+        filename_counts[final_path] += 1
         # append version number to submission if more than one of same name
-        if track_duplicate_counts[entry_name] > 1
-          version_suffix = "_ver#{filename_counts[entry_name]}"
+        if track_duplicate_counts[final_path] > 1
+          version_suffix = "_ver#{filename_counts[final_path]}"
           extname = File.extname(entry_name)
           basename = File.basename(entry_name, extname)
           entry_name = "#{basename}#{version_suffix}#{extname}"
