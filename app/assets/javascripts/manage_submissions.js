@@ -158,9 +158,15 @@ $(document).ready(function() {
                   ${submission.total}
                 </td>
                 ${submission.problems.
-                map((problem) =>
-                  `<td class="submissions-td">${data.scores[submission.id]?.[problem.id]?.['score'] ?? "-"}</td>`
-                ).join('')}
+                    map((problem) =>
+                        `<td class="submissions-td">
+                        ${data.scores[submission.id]?.[problem.id]?.['score'] !== undefined
+                          ? `<a href="viewFeedback?submission_id=${submission.id}&feedback=${problem.id}">
+                        ${data.scores[submission.id][problem.id]['score'].toFixed(1)}
+                     </a>`
+                        : "-"}
+                    </td>`
+                    ).join('')}
                 <td class="submissions-td">
                   ${submission.late_penalty}
                 </td>
@@ -279,7 +285,6 @@ $(document).ready(function() {
       });
       changeButtonStates(!selectedSubmissions.length); // update button states
     }
-
 
     // SELECTED BUTTONS
 
