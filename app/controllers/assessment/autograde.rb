@@ -86,7 +86,11 @@ module AssessmentAutograde
   #
   # action_auth_level :regradeBatch, :instructor
   def regradeBatch
-    submission_ids = params[:submission_ids]
+    request_body = request.body.read
+    submission_ids = JSON.parse(request_body)['submission_ids']
+
+    # Ensure submission_ids is an array
+    submission_ids = Array(submission_ids)
 
     # Now regrade only the most recent submissions. Keep track of
     # any handins that fail.
@@ -123,7 +127,10 @@ module AssessmentAutograde
     # For both :success and :error
     flash[:html_safe] = true
 
-    redirect_to([@course, @assessment, :submissions]) && return
+    respond_to do |format|
+      format.html { redirect_to [@course, @assessment, :submissions] }
+      format.json { render json: { redirect: url_for([@course, @assessment, :submissions]) } }
+    end
   end
 
   #
