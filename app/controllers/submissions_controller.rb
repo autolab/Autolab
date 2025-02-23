@@ -200,7 +200,9 @@ class SubmissionsController < ApplicationController
   # remove a given submission for a student
   action_auth_level :destroy_batch, :instructor
   def destroy_batch
-    submission_ids = params[:submission_ids]
+    request_body = request.body.read
+    submission_ids = JSON.parse(request_body)['submission_ids']
+    submission_ids = Array(submission_ids)
     submissions = Submission.where(id: submission_ids)
     scount = 0
     fcount = 0
@@ -241,8 +243,10 @@ class SubmissionsController < ApplicationController
                                                       fcount, 'submission'
                                                     )} failed."
     end
-    redirect_to(course_assessment_submissions_path(submissions[0].course_user_datum.course,
-                                                   submissions[0].assessment)) && return
+    respond_to do |format|
+      format.html { redirect_to [@course, @assessment, :submissions] }
+      format.json { render json: { redirect: url_for([@course, @assessment, :submissions]) } }
+    end
   end
 
   # this is good
@@ -384,7 +388,9 @@ class SubmissionsController < ApplicationController
 
   action_auth_level :excuse_batch, :course_assistant
   def excuse_batch
-    submission_ids = params[:submission_ids]
+    request_body = request.body.read
+    submission_ids = JSON.parse(request_body)['submission_ids']
+    submission_ids = Array(submission_ids)
     flash[:error] = "Cannot index submissions for nil assessment" if @assessment.nil?
 
     unless @assessment.valid?
@@ -434,7 +440,10 @@ class SubmissionsController < ApplicationController
 
     flash[:success] =
       "#{ActionController::Base.helpers.pluralize(auds_to_excuse.size, 'student')} excused."
-    redirect_to course_assessment_submissions_path(@course, @assessment)
+    respond_to do |format|
+      format.html { redirect_to [@course, @assessment, :submissions] }
+      format.json { render json: { redirect: url_for([@course, @assessment, :submissions]) } }
+    end
   end
 
   action_auth_level :unexcuse, :course_assistant
