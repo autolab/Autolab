@@ -17,9 +17,12 @@ class SubmissionsController < ApplicationController
 
   action_auth_level :index, :instructor
   def index
-    @submissions = @assessment.submissions.includes({ course_user_datum: :user })
-                              .order("created_at DESC")
-    # puts @submissions
+    # cache ids instead of entire entries
+    submission_ids = Rails.cache.fetch(["submission_ids", @assessment.id], expires_in: 1.hour) do
+      # puts "RELOADING DATA"
+      @assessment.submissions.order("created_at DESC").pluck(:id)
+    end
+    @submissions = Submission.where(id: submission_ids).includes({ course_user_datum: :user })
 
     # @autograded = @assessment.has_autograder? unused line?
 
