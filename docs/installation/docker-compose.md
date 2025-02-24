@@ -308,3 +308,5 @@ You can resolve this by changing the owner of the files to be your current user,
 This happens when you are accessing Autolab via localhost, as Tango will attempt to send the autograder logs to its own localhost instead.
 
 To remedy this, add `127.0.0.1 autolab` to `/etc/hosts` and access Autolab via `http://autolab` instead of `http://localhost`.
+
+If you are accessing Autolab on a different host, add `<your public_ip> <your fqdn> autolab` to your `/etc/hosts` file and access Autolab via `http://autolab`.    
