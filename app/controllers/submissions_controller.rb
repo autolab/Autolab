@@ -19,22 +19,30 @@ class SubmissionsController < ApplicationController
   def index
     @submissions = @assessment.submissions.includes({ course_user_datum: :user })
                               .order("created_at DESC")
-    @autograded = @assessment.has_autograder?
+    # puts @submissions
 
-    @submissions_to_cud = {}
-    @submissions.each do |submission|
-      currSubId = submission.id
-      currCud = submission.course_user_datum_id
-      @submissions_to_cud[currSubId] = currCud
+    # @autograded = @assessment.has_autograder? unused line?
+
+    @submissions_to_cud =
+      Rails.cache.fetch(["submissions_to_cud", @assessment.id], expires_in: 1.hour) do
+        submissions_to_cud = {}
+        @submissions.each do |submission|
+          submissions_to_cud[submission.id] = submission.course_user_datum_id
+        end
+        submissions_to_cud.to_json
+      end
+    # puts @submissions_to_cud
+
+    @excused_cids = Rails.cache.fetch(["excused_cids", @assessment.id], expires_in: 1.hour) do
+      AssessmentUserDatum.where(
+        assessment_id: @assessment.id,
+        grade_type: AssessmentUserDatum::EXCUSED
+      ).pluck(:course_user_datum_id)
     end
-    @submissions_to_cud = @submissions_to_cud.to_json
-    @excused_cids = []
-    excused_students = AssessmentUserDatum.where(
-      assessment_id: @assessment.id,
-      grade_type: AssessmentUserDatum::EXCUSED
-    )
-    @excused_cids = excused_students.pluck(:course_user_datum_id)
-    @problems = @assessment.problems.to_a
+    # puts @excused_cids
+
+    # add in html
+    # @problems = @assessment.problems.to_a unused line?
   end
 
   action_auth_level :score_details, :instructor
