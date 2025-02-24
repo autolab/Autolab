@@ -554,7 +554,7 @@ class CoursesController < ApplicationController
         save_uploaded_roster
         flash[:success] = "Successfully updated roster!"
         unless @roster_warnings.nil?
-          w = "Warning: " + @roster_warnings.keys.join(', ')
+          w = "Warning: #{@roster_warnings.keys.join(', ')}"
           flash[:error] = w
         end
         redirect_to(action: "users") && return
