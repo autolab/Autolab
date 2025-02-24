@@ -17,17 +17,18 @@ class SubmissionsController < ApplicationController
 
   action_auth_level :index, :instructor
   def index
+    # puts "HELLO WORLD"
     # cache ids instead of entire entries
-    submission_ids = Rails.cache.fetch(["submission_ids", @assessment.id], expires_in: 1.hour) do
+    submission_ids = Rails.cache.fetch(["submission_ids", @assessment.id], expires_in: 1.day) do
       # puts "RELOADING DATA"
       @assessment.submissions.order("created_at DESC").pluck(:id)
     end
     @submissions = Submission.where(id: submission_ids).includes({ course_user_datum: :user })
-
+    # puts "Submissions count: #{@submissions.size}"
     # @autograded = @assessment.has_autograder? unused line?
 
     @submissions_to_cud =
-      Rails.cache.fetch(["submissions_to_cud", @assessment.id], expires_in: 1.hour) do
+      Rails.cache.fetch(["submissions_to_cud", @assessment.id], expires_in: 1.day) do
         submissions_to_cud = {}
         @submissions.each do |submission|
           submissions_to_cud[submission.id] = submission.course_user_datum_id
@@ -36,7 +37,7 @@ class SubmissionsController < ApplicationController
       end
     # puts @submissions_to_cud
 
-    @excused_cids = Rails.cache.fetch(["excused_cids", @assessment.id], expires_in: 1.hour) do
+    @excused_cids = Rails.cache.fetch(["excused_cids", @assessment.id], expires_in: 1.day) do
       AssessmentUserDatum.where(
         assessment_id: @assessment.id,
         grade_type: AssessmentUserDatum::EXCUSED
@@ -152,6 +153,11 @@ class SubmissionsController < ApplicationController
         @submission.save_file(params[:submission])
       end
     end
+
+    # Clear cache since new submission exists, need to update
+    Rails.cache.delete(["submission_ids", @assessment.id])
+    Rails.cache.delete(["submissions_to_cud", @assessment.id])
+
     flash[:success] =
       "#{ActionController::Base.helpers.pluralize(cud_ids.size, 'Submission')} Created"
     redirect_to course_assessment_submissions_path(@course, @assessment)
