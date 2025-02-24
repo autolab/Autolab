@@ -554,7 +554,7 @@ class CoursesController < ApplicationController
         save_uploaded_roster
         flash[:success] = "Successfully updated roster!"
         unless @roster_warnings.nil?
-          w = @roster_warnings.keys.join('\n')
+          w = "Warning: " + @roster_warnings.keys.join(', ')
           flash[:error] = w
         end
         redirect_to(action: "users") && return
@@ -947,10 +947,10 @@ private
       rowNum += 1
     end
 
-    rowCUDs.each do |cud|
+    rowCUDs.each_with_index do |cud, line|
       next unless duplicates.include?(cud[:email])
 
-      msg = "Warning : Duplicate email #{cud[:email]}"
+      msg = "#{cud[:email]} is a duplicate email at line #{line}"
       if !rosterWarnings.key?(msg)
         rosterWarnings[msg] = []
       end
