@@ -553,6 +553,10 @@ class CoursesController < ApplicationController
       begin
         save_uploaded_roster
         flash[:success] = "Successfully updated roster!"
+        unless @roster_warnings.nil?
+          w = "Warning: #{@roster_warnings.keys.join(', ')}"
+          flash[:error] = w
+        end
         redirect_to(action: "users") && return
       rescue StandardError => e
         if e != "Roster validation error"
@@ -799,6 +803,7 @@ private
   def write_cuds(cuds)
     rowNum = 0
     rosterErrors = {}
+    rosterWarnings = {}
     rowCUDs = []
     duplicates = Set.new
 
@@ -864,7 +869,7 @@ private
         new_cud.delete(:year)
 
         # Build cud
-        if !user.nil?
+        if !user.nil? && !existing
           cud = @course.course_user_data.new
           cud.user = user
           params = ActionController::Parameters.new(
@@ -943,15 +948,17 @@ private
       rowNum += 1
     end
 
-    rowCUDs.each do |cud|
+    rowCUDs.each_with_index do |cud, line|
       next unless duplicates.include?(cud[:email])
 
-      msg = "Validation failed: Duplicate email #{cud[:email]}"
-      if !rosterErrors.key?(msg)
-        rosterErrors[msg] = []
+      msg = "#{cud[:email]} is a duplicate email at line #{line}"
+      if !rosterWarnings.key?(msg)
+        rosterWarnings[msg] = []
       end
-      rosterErrors[msg].push(cud)
+      rosterWarnings[msg].push(cud)
     end
+
+    @roster_warnings = rosterWarnings
 
     return if rosterErrors.empty?
 
