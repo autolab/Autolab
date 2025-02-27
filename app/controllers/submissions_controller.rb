@@ -25,7 +25,7 @@ class SubmissionsController < ApplicationController
     end
     @submissions = Submission.where(id: submission_ids).includes({ course_user_datum: :user })
     # puts "Submissions count: #{@submissions.size}"
-    # @autograded = @assessment.has_autograder? unused line?
+    @autograded = @assessment.has_autograder?
 
     @submissions_to_cud =
       Rails.cache.fetch(["submissions_to_cud", @assessment.id], expires_in: 1.day) do
@@ -46,7 +46,7 @@ class SubmissionsController < ApplicationController
     # puts @excused_cids
 
     # add in html
-    # @problems = @assessment.problems.to_a unused line?
+    @problems = @assessment.problems.to_a
   end
 
   action_auth_level :score_details, :instructor
