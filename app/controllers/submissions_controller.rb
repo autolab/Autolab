@@ -17,7 +17,6 @@ class SubmissionsController < ApplicationController
 
   action_auth_level :index, :instructor
   def index
-    # puts "HELLO WORLD"
     # cache ids instead of entire entries
     submission_ids = Rails.cache.fetch(["submission_ids", @assessment.id], expires_in: 1.day) do
       @assessment.submissions.order("created_at DESC").pluck(:id)

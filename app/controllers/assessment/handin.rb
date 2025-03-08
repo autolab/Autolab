@@ -103,6 +103,7 @@ module AssessmentHandin
           additional error data: #{e.additional_data}")
       end
     end
+
     redirect_to([:history, @course, @assessment]) && return
   end
 
