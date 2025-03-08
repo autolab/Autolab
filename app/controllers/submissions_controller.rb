@@ -20,11 +20,9 @@ class SubmissionsController < ApplicationController
     # puts "HELLO WORLD"
     # cache ids instead of entire entries
     submission_ids = Rails.cache.fetch(["submission_ids", @assessment.id], expires_in: 1.day) do
-      # puts "RELOADING DATA"
       @assessment.submissions.order("created_at DESC").pluck(:id)
     end
     @submissions = Submission.where(id: submission_ids).includes({ course_user_datum: :user })
-    # puts "Submissions count: #{@submissions.size}"
     @autograded = @assessment.has_autograder?
 
     @submissions_to_cud =
@@ -35,17 +33,13 @@ class SubmissionsController < ApplicationController
         end
         submissions_to_cud.to_json
       end
-    # puts @submissions_to_cud
 
-    @excused_cids = Rails.cache.fetch(["excused_cids", @assessment.id], expires_in: 1.day) do
-      AssessmentUserDatum.where(
-        assessment_id: @assessment.id,
-        grade_type: AssessmentUserDatum::EXCUSED
-      ).pluck(:course_user_datum_id)
-    end
-    # puts @excused_cids
-
-    # add in html
+    @excused_cids = []
+    excused_students = AssessmentUserDatum.where(
+      assessment_id: @assessment.id,
+      grade_type: AssessmentUserDatum::EXCUSED
+    )
+    @excused_cids = excused_students.pluck(:course_user_datum_id)
     @problems = @assessment.problems.to_a
   end
 
@@ -92,6 +86,10 @@ class SubmissionsController < ApplicationController
 
   action_auth_level :new, :instructor
   def new
+    # Clear cache since new submission exists, need to remake
+    Rails.cache.delete(["submission_ids", @assessment.id])
+    Rails.cache.delete(["submissions_to_cud", @assessment.id])
+
     @submission = @assessment.submissions.new(tweak: Tweak.new)
 
     if !params["course_user_datum_id"].nil?
@@ -153,10 +151,6 @@ class SubmissionsController < ApplicationController
         @submission.save_file(params[:submission])
       end
     end
-
-    # Clear cache since new submission exists, need to update
-    Rails.cache.delete(["submission_ids", @assessment.id])
-    Rails.cache.delete(["submissions_to_cud", @assessment.id])
 
     flash[:success] =
       "#{ActionController::Base.helpers.pluralize(cud_ids.size, 'Submission')} Created"
