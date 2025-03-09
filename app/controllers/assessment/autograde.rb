@@ -28,7 +28,7 @@ module AssessmentAutograde
 
     extend_config_module(@assessment, submissions[0], @cud)
 
-    if (@assessment.use_unique_module_name)
+    if @assessment.use_unique_module_name
       require_relative(@assessment.unique_config_file_path)
     else
       require_relative(Rails.root.join("assessmentConfig", "#{@course.name}-#{@assessment.name}.rb"))
@@ -119,7 +119,7 @@ module AssessmentAutograde
     success_jobs = submissions.size - failure_jobs
     if success_jobs > 0
       link = "<a href=\"#{url_for(controller: 'jobs')}\">#{ActionController::Base.helpers.pluralize(success_jobs, "submission")}</a>"
-      flash[:success] = ("Regrading #{link}")
+      flash[:success] = "Regrading #{link}"
     end
 
     # For both :success and :error
@@ -136,7 +136,7 @@ module AssessmentAutograde
   # action_auth_level :regradeAll, :instructor
   def regradeAll
     # Grab all of the submissions for this assessment
-    @submissions = @assessment.submissions.where(special_type: Submission::NORMAL)
+    @submissions = @assessment.submissions.where(special_type: [Submission::NORMAL, nil])
                    .order("version DESC")
 
     last_submissions = @submissions.latest
@@ -166,7 +166,7 @@ module AssessmentAutograde
     success_jobs = last_submissions.size - failure_jobs
     if success_jobs > 0
       link = "<a href=\"#{url_for(controller: 'jobs')}\">#{ActionController::Base.helpers.pluralize(success_jobs, "student")}</a>"
-      flash[:success] = ("Regrading the most recent submissions from #{link}")
+      flash[:success] = `Regrading the #{success_jobs.count} recent submissions`
     end
 
     # For both :success and :error
@@ -226,8 +226,8 @@ module AssessmentAutograde
 
     link = "<a href=\"#{url_for(controller: 'jobs', action: 'getjob', id: job)}\">Job ID = #{job}</a>"
     viewFeedbackLink = "<a href=\"#{url_for(controller: 'assessments', action: 'viewFeedback', submission_id: submissions[0].id, feedback: assessment.problems[0].id)}\">View autograding progress.</a>"
-    flash[:success] = ("Submitted file #{submissions[0].filename} (#{link}) for autograding." \
-      " #{viewFeedbackLink}")
+    flash[:success] = "Submitted file #{submissions[0].filename} (#{link}) for autograding." \
+      " #{viewFeedbackLink}"
     flash[:html_safe] = true
     job
   end
