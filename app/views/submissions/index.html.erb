@@ -55,7 +55,7 @@
     Currently regrading <%= ActionController::Base.helpers.pluralize(@regrading_submissions.count, "submission") %>.
     View detailed progress
     <%= link_to "here", url_for(controller: 'jobs') %>. To update scores,
-    <%= link_to "refresh", url_for([@course, @assessment, :submissions, regrading: 'true']) %>.
+    <%= link_to "refresh", url_for([@course, @assessment, :submissions, { regrading: 'true' }]) %>.
   </div>
 <% end %>
 
