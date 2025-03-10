@@ -4,17 +4,11 @@
       function toggleHandinAutolab(disable_button) {
           const handinField = document.querySelector('.handin-filename-field');
           handinField.disabled = disable_button.checked;
-          if (!handinField.disabled && !handinField.value) {
-              handinField.value = 'handin.c';
-          }
       }
 
       document.addEventListener('DOMContentLoaded', function() {
           const disableHandinsCheckbox = document.querySelector('.disable-handins-toggle');
           toggleHandinAutolab(disableHandinsCheckbox);
-          disableHandinsCheckbox.addEventListener('change', function() {
-              toggleHandinAutolab(disableHandinsCheckbox);
-          });
       });
   </script>
 <% end %>
