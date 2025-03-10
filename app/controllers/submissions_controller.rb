@@ -22,7 +22,10 @@ class SubmissionsController < ApplicationController
     @autograded = @assessment.has_autograder?
 
     @regrading = if params[:regrading].nil?
-                   false else params[:regrading] end
+                   false
+                 else
+                   params[:regrading]
+                 end
     regrading_jobs = []
     @regrading_submissions = []
 
