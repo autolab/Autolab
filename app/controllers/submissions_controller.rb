@@ -21,12 +21,38 @@ class SubmissionsController < ApplicationController
                               .order("created_at DESC")
     @autograded = @assessment.has_autograder?
 
+    @regrading = if params[:regrading].nil?
+                   false else params[:regrading] end
+    regrading_jobs = []
+    @regrading_submissions = []
+
+    if @regrading
+      raw_live_jobs = []
+      begin
+        raw_live_jobs = TangoClient.jobs
+      rescue TangoClient::TangoException => e
+        flash.now[:error] = "Error while getting job list: #{e.message}"
+      end
+
+      raw_live_jobs.each do |job|
+        regrading_jobs.push(job["id"])
+      end
+    end
+
     @submissions_to_cud = {}
     @submissions.each do |submission|
       currSubId = submission.id
       currCud = submission.course_user_datum_id
       @submissions_to_cud[currSubId] = currCud
+      if regrading_jobs.include?(submission.jobid)
+        @regrading_submissions.push(submission.id)
+      end
     end
+
+    if @regrading_submissions.empty?
+      @regrading = false
+    end
+
     @submissions_to_cud = @submissions_to_cud.to_json
     @excused_cids = []
     excused_students = AssessmentUserDatum.where(
