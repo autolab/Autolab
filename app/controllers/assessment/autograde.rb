@@ -166,7 +166,7 @@ module AssessmentAutograde
     success_jobs = last_submissions.size - failure_jobs
     if success_jobs > 0
       link = "<a href=\"#{url_for(controller: 'jobs')}\">#{ActionController::Base.helpers.pluralize(success_jobs, "student")}</a>"
-      flash[:success] = `Regrading the #{success_jobs.count} recent submissions`
+      flash[:success] = `Regrading the #{success_jobs} recent submissions`
     end
 
     # For both :success and :error
