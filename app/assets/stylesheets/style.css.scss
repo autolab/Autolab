@@ -1718,3 +1718,13 @@ table.sub td, th {
   margin-top: 5px;
   color: $autolab-grey;
 }
+
+.regrade-refresh {
+  color: $autolab-gray-text;
+  background-color: rgba($autolab-yellow, 0.3);
+  border: 1px solid $autolab-yellow;
+  border-left: 5px solid $autolab-yellow;
+  padding: 10px;
+  border-radius: 3px;
+  font-weight: 500;
+}
