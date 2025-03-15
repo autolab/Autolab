@@ -71,7 +71,7 @@ module Archive
 
       # edge case for removing "./" from pathnames
       if file[:pathname].include?("./")
-        file[:pathname] = File.cleanpath(file[:pathname], rel_root = true).gsub("..", "__PARENT__")
+        file[:pathname] = Pathname.new(file[:pathname]).cleanpath.to_s.gsub("..", "__PARENT__")
       end
 
       if(file[:directory])
