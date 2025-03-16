@@ -90,7 +90,9 @@ module AssessmentAutograde
 
     # Now regrade only the most recent submissions. Keep track of
     # any handins that fail.
-    submissions = submission_ids.map {|sid| @assessment.submissions.find_by_id(sid)}
+    submissions = submission_ids.filter_map do |sid|
+      _is_i?(sid) ? @assessment.submissions.find_by_id(sid) : nil
+    end
 
     begin
       failed_list = sendJob_batch(@course, @assessment, submissions, @cud)
@@ -114,7 +116,7 @@ module AssessmentAutograde
       end
     end
 
-    success_jobs = submission_ids.size - failure_jobs
+    success_jobs = submissions.size - failure_jobs
     if success_jobs > 0
       link = "<a href=\"#{url_for(controller: 'jobs')}\">#{ActionController::Base.helpers.pluralize(success_jobs, "submission")}</a>"
       flash[:success] = ("Regrading #{link}")
@@ -230,4 +232,7 @@ module AssessmentAutograde
     job
   end
 
+  def _is_i?(string)
+    !!(string =~ /\A[-+]?[0-9]+\z/)
+  end
 end
