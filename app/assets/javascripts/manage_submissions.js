@@ -160,7 +160,8 @@ $(document).ready(function() {
                 ${submission.problems.
                     map((problem) =>
                         `<td class="submissions-td">
-                        ${data.scores[submission.id]?.[problem.id]?.['score'] !== undefined
+                        ${data.scores[submission.id]?.[problem.id]?.['score'] !== undefined &&
+                          data.scores[submission.id]?.[problem.id]?.['score'] !== null
                           ? `<a href="viewFeedback?submission_id=${submission.id}&feedback=${problem.id}">
                         ${data.scores[submission.id][problem.id]['score'].toFixed(1)}
                      </a>`
