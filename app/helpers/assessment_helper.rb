@@ -47,9 +47,9 @@ module AssessmentHelper
   def gradesheet_csv(asmt, as_seen_by)
     CSV.generate do |csv|
       # title row with the column names:
-      title = ["Submission Time","Email","Total"]
+      title = ["Submission Time", "Email", "Total"]
       asmt.problems.each { |problem| title << problem.name }
-      title += ["First name", "Last name", "Section", "Lecture"]
+      title += ["Late Penalty", "Tweak", "First name", "Last name", "Section", "Lecture"]
       csv << title
 
       asmt.course.course_user_data.each do |cud|
@@ -86,7 +86,7 @@ private
                     # produce ordered list of scores
                     asmt.problems.map do |p|
                       score = problem_scores_map[p.id]
-                      score && score.score ? score.score : nil
+                      score&.score ? score.score : nil
                     end
                   else
                     Array.new asmt.problems.count
@@ -94,10 +94,24 @@ private
 
     # add AUD status (see AUD.status method)
     final = aud.status as_seen_by
-    row << final
+    row << final.to_s
 
     # add scores to csv row (for scores columns)
     row.concat score_cells
+
+    late_penalty = if submission.nil?
+                     nil
+                   else
+                     submission.late_penalty(cud).round(1).to_s
+                   end
+    row << late_penalty
+    tweak = if submission.nil?
+              nil
+            else
+              submission.tweak.value.round(1).to_s
+            end
+    row << tweak
+
     row += [cud.user.first_name, cud.user.last_name, cud.section, cud.lecture]
     row
   end
