@@ -37,6 +37,10 @@ module GradebookHelper
                      sortable: true, cssClass: "computed assessment_final_score",
                      headerCssClass: "assessment_final_score", width: 150 }
 
+        columns << { id: "#{asmt.name}_tweaks", name: "Tweaks", field: "#{asmt.name}_tweaks",
+                     sortable: true, cssClass: "computed assessment_final_score",
+                     headerCssClass: "assessment_final_score", width: 150 }
+
         columns << { id: "#{asmt.name}_version", name: "Version",
                      field: "#{asmt.name}_version",
                      sortable: true, cssClass: "computed assessment_version",
@@ -96,6 +100,7 @@ module GradebookHelper
         cell = matrix.cell(a.id, cud.id)
         aud = a.assessment_user_data.find_by(course_user_datum_id: cud.id)
         row["#{a.name}_version"] = aud&.latest_submission&.version
+        row["#{a.name}_tweaks"] = aud&.latest_submission&.tweak&.value
         row["#{a.name}_history_url"] = history_url(cud, a)
         row[a.name] = round cell["final_score"]
         row["#{a.name}_submission_status"] = cell["submission_status"]
@@ -139,6 +144,7 @@ module GradebookHelper
         next unless matrix.has_assessment? asmt.id
 
         header << asmt.name
+        header << "tweak"
         header << "version"
       end
       header << "#{cat} Average"
@@ -180,6 +186,7 @@ module GradebookHelper
             cell = matrix.cell(asmt.id, cud.id)
 
             row << formatted_status(cell["status"])
+            row << cell["tweak"]
             row << cell["version"]
             grace_days += cell["grace_days"]
             late_days += cell["late_days"]

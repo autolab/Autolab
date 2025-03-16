@@ -18,6 +18,7 @@ class GradeMatrix
 
       ActiveSupport::Gzip.compress(matrix!.to_json)
     end
+
     @matrix = JSON.parse ActiveSupport::Gzip.decompress(@matrix)
   end
 
@@ -112,6 +113,7 @@ private
     info = {}
 
     info["status"] = aud.status @as_seen_by
+    info["tweak"] = aud.latest_submission&.tweak&.value
     info["version"] = aud.latest_submission&.version
     info["final_score"] = aud.final_score @as_seen_by
     info["grade_type"] = (AssessmentUserDatum.grade_type_to_sym aud.grade_type).to_s
