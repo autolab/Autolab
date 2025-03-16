@@ -313,7 +313,6 @@ $(document).ready(function() {
       buttonIDs.forEach((id) => {
         const button = $(id);
         if (state) {
-          console.log(`Disabling: ${id}`, button);
           if (id === "#download-selected") {
             $(id).prop('href', baseURLs[id]);
           }
@@ -378,7 +377,6 @@ $(document).ready(function() {
         }
       });
     }
-
 
     changeButtonStates(true); // disable all buttons by default
 

@@ -88,13 +88,13 @@
 <%# Selected buttons, hidden so HTML can be accessed in DataTables %>
 <div class="selected-buttons-placeholder">
   <div id="regrade-batch-html">
-    <a id="regrade-selected" class="btn submissions-selected" title="Regrade selected submissions">
-      <i class="material-icons">cached</i>Regrade Selected
-    </a>
+    <%= link_to "Regrade Selected", class: "btn submissions-selected", title: "Regrade selected submissions" do %>
+      <i class="material-icons">cached</i> Regrade Selected
+    <% end %>
   </div>
 
   <div id="delete-batch-html">
-    <a id="delete-selected" class="btn submissions-selected" title="Delete selected submissions">
+    <a class="btn submissions-selected" title="Delete selected submissions">
       <i class="material-icons">delete_outline</i>Delete Selected
     </a>
   </div>
@@ -102,13 +102,13 @@
   <div id="download-batch-html">
     <%= link_to "<i class='material-icons'>download</i>Download Selected".html_safe,
                 download_batch_course_assessment_submissions_path(@course, @assessment, @submissions),
-                { method: :get,
+                { method: :post,
                   title: "Download selected submissions",
                   class: "btn submissions-selected" } %>
   </div>
 
   <div id="excuse-batch-html">
-    <a id="excuse-selected" class="btn submissions-selected" title="Excuse selected submissions">
+    <a class="btn submissions-selected" title="Excuse selected submissions">
       <i class="material-icons">done</i>Excuse Selected
     </a>
   </div>
