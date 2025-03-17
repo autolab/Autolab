@@ -1,0 +1,1371 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://docs.autolabproject.com/installation/lti_integration/">
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.3.1, mkdocs-material-8.5.3">
+    
+    
+      
+        <title>LTI Advantage Integration Setup - Autolab Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.7a952b86.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.cbb835fc.min.css">
+        
+      
+      
+
+    
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+  
+
+
+  
+  
+
+
+  <script id="__analytics">function __md_analytics(){function n(){dataLayer.push(arguments)}window.dataLayer=window.dataLayer||[],n("js",new Date),n("config","G-TN3N2Q9PC2"),document.addEventListener("DOMContentLoaded",function(){document.forms.search&&document.forms.search.query.addEventListener("blur",function(){this.value&&n("event","search",{search_term:this.value})}),document$.subscribe(function(){var a=document.forms.feedback;if(void 0!==a)for(var e of a.querySelectorAll("[type=submit]"))e.addEventListener("click",function(e){e.preventDefault();var t=document.location.pathname,e=this.getAttribute("data-md-value");n("event","feedback",{page:t,data:e}),a.firstElementChild.disabled=!0;e=a.querySelector(".md-feedback__note [data-md-value='"+e+"']");e&&(e.hidden=!1)}),a.hidden=!1}),location$.subscribe(function(e){n("config","G-TN3N2Q9PC2",{page_path:e.pathname})})});var e=document.createElement("script");e.async=!0,e.src="https://www.googletagmanager.com/gtag/js?id=G-TN3N2Q9PC2",document.getElementById("__analytics").insertAdjacentElement("afterEnd",e)}</script>
+
+  
+    <script>"undefined"!=typeof __md_analytics&&__md_analytics()</script>
+  
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="autolab" data-md-color-primary="" data-md-color-accent="">
+  
+    
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#lti-integration-setup" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Autolab Documentation" class="md-header__button md-logo" aria-label="Autolab Documentation" data-md-component="logo">
+      
+  <img src="../../images/logo.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Autolab Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              LTI Advantage Integration Setup
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/Autolab/autolab" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Autolab
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-tabs__inner md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+
+
+  <li class="md-tabs__item">
+    <a href="../.." class="md-tabs__link">
+      Overview
+    </a>
+  </li>
+
+      
+        
+  
+  
+    
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../overview/" class="md-tabs__link md-tabs__link--active">
+        Installation
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../instructors/" class="md-tabs__link">
+        Getting Started
+      </a>
+    </li>
+  
+
+  
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../reference/" class="md-tabs__link">
+        Reference
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+  
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Autolab Documentation" class="md-nav__button md-logo" aria-label="Autolab Documentation" data-md-component="logo">
+      
+  <img src="../../images/logo.svg" alt="logo">
+
+    </a>
+    Autolab Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/Autolab/autolab" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Autolab
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        Overview
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" checked>
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_2">
+          Installation
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Installation" data-md-level="1">
+        <label class="md-nav__title" for="__nav_2">
+          <span class="md-nav__icon md-icon"></span>
+          Installation
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../overview/" class="md-nav__link">
+        Installation Overview
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docker-compose/" class="md-nav__link">
+        Docker Compose Install
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_3" type="checkbox" id="__nav_2_3" checked>
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_2_3">
+          Autolab
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Autolab" data-md-level="2">
+        <label class="md-nav__title" for="__nav_2_3">
+          <span class="md-nav__icon md-icon"></span>
+          Autolab
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ubuntu/" class="md-nav__link">
+        Ubuntu 22.04
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../osx/" class="md-nav__link">
+        Mac OSX 10.11+
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../troubleshoot/" class="md-nav__link">
+        Troubleshooting
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mailing/" class="md-nav__link">
+        Mailing Setup
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../github_integration/" class="md-nav__link">
+        Github Integration Setup
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          LTI Advantage Integration Setup
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        LTI Advantage Integration Setup
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#definitions" class="md-nav__link">
+    Definitions
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#generate-a-jwk-for-your-autolab-instance" class="md-nav__link">
+    Generate a JWK for your Autolab instance
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#set-up-autolab-as-a-tool-on-the-lti-platform" class="md-nav__link">
+    Set up Autolab as a tool on the LTI platform
+  </a>
+  
+    <nav class="md-nav" aria-label="Set up Autolab as a tool on the LTI platform">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#generating-a-client_id-on-canvas" class="md-nav__link">
+    Generating a client_id on Canvas
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#add-autolab-to-your-course-on-canvas" class="md-nav__link">
+    Add Autolab to your Course on Canvas
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#set-up-autolabs-lti-configuration-settings" class="md-nav__link">
+    Set up Autolab's LTI configuration settings
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_4" type="checkbox" id="__nav_2_4" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_2_4">
+          Tango
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Tango" data-md-level="2">
+        <label class="md-nav__title" for="__nav_2_4">
+          <span class="md-nav__icon md-icon"></span>
+          Tango
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tango/" class="md-nav__link">
+        Installation
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tango-troubleshoot/" class="md-nav__link">
+        Troubleshooting
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3">
+          Getting Started
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Getting Started" data-md-level="1">
+        <label class="md-nav__title" for="__nav_3">
+          <span class="md-nav__icon md-icon"></span>
+          Getting Started
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3_1" type="checkbox" id="__nav_3_1" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3_1">
+          Autolab Frontend
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Autolab Frontend" data-md-level="2">
+        <label class="md-nav__title" for="__nav_3_1">
+          <span class="md-nav__icon md-icon"></span>
+          Autolab Frontend
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../instructors/" class="md-nav__link">
+        Guide for Instructors
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../lab/" class="md-nav__link">
+        Guide for Lab Authors
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../lab-hooks/" class="md-nav__link">
+        Lab Hooks
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3_1_4" type="checkbox" id="__nav_3_1_4" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3_1_4">
+          Features
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Features" data-md-level="3">
+        <label class="md-nav__title" for="__nav_3_1_4">
+          <span class="md-nav__icon md-icon"></span>
+          Features
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../features/formatted-feedback/" class="md-nav__link">
+        Formatted Feedback
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../features/scoreboards/" class="md-nav__link">
+        Scoreboards
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../features/embedded-forms/" class="md-nav__link">
+        Embedded Forms
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../features/schedulers/" class="md-nav__link">
+        Schedulers
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../features/annotations/" class="md-nav__link">
+        Annotations
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../features/moss/" class="md-nav__link">
+        MOSS Plagiarism Detection
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../features/metrics/" class="md-nav__link">
+        Metrics
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../features/git-submission/" class="md-nav__link">
+        Git Submission
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../features/lti-course-integration/" class="md-nav__link">
+        LTI Course Linking
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../features/admin-features/" class="md-nav__link">
+        Admin Features
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../command-line-interface/" class="md-nav__link">
+        Autolab Frontend CLI
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tango-cli/" class="md-nav__link">
+        Tango CLI
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4" type="checkbox" id="__nav_4" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_4">
+          Reference
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Reference" data-md-level="1">
+        <label class="md-nav__title" for="__nav_4">
+          <span class="md-nav__icon md-icon"></span>
+          Reference
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/" class="md-nav__link">
+        Reference Overview
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4_2" type="checkbox" id="__nav_4_2" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_4_2">
+          Autolab Frontend API
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Autolab Frontend API" data-md-level="2">
+        <label class="md-nav__title" for="__nav_4_2">
+          <span class="md-nav__icon md-icon"></span>
+          Autolab Frontend API
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api-overview/" class="md-nav__link">
+        Overview
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api-interface/" class="md-nav__link">
+        Endpoints
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api-managing-authorized-apps/" class="md-nav__link">
+        Managing Authorized Apps
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tango-rest/" class="md-nav__link">
+        Tango API
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tango-vmms/" class="md-nav__link">
+        Tango VMMS API
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  <a href="https://github.com/Autolab/autolab/edit/master/docs/installation/lti_integration.md" title="Edit this page" class="md-content__button md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25Z"/></svg>
+  </a>
+
+
+<h1 id="lti-integration-setup">LTI Integration Setup</h1>
+<p>Autolab supports a limited integration with <a href="http://www.imsglobal.org/activity/learning-tools-interoperability">Learning Tools Interoperability</a>, or LTI. Specifically, Autolab supports LTI Advantage, 
+with support for linking courses on an LTI platform to Autolab in order to pull roster information and sync the member
+lists of Autolab with the LTI platform. The LTI Advantage integration features have been built to mainly work with Canvas,
+but it should be possible to integrate with other platforms such as Moodle, though this has not been tested. Please
+contact us if you run into any issues with the integration process as this feature is still a work-in-progress.</p>
+<h2 id="definitions">Definitions</h2>
+<ul>
+<li>For the purposes of LTI Integration, a "platform" is an LMS such as Canvas or Moodle, while Autolab falls under the "tool" category.</li>
+</ul>
+<h2 id="generate-a-jwk-for-your-autolab-instance">Generate a JWK for your Autolab instance</h2>
+<p>JSON Web Keys (JWKs) make up the backbone of LTI Advantage's security specification. 
+As part of the LTI Advantage Specification, Autolab requires a public-private keypair of RSA JWKs in order to sign
+and verify any signatures originating from Autolab towards other LTI platforms. To generate a JWK keypair, you may use 
+a <a href="https://mkjwk.org/">website</a>, or a library such as <a href="https://github.com/jwt/ruby-jwt">ruby-jwt</a>. 
+Make sure that you specify that the key use is for signatures, using the RS256 algorithm, and include a key-id. An example
+JWK keypair is below. Save the keypair for later configuration steps.</p>
+<p>Public-Private Keypair:
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;p&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;_VqrjPDQHEce2zwxnzlBVu_6gZwfwBftu8yX8Q1np7nw9StC16e4oi8vKtTHc6hy-byOU-JyKV0Dj9LZXF_r5_HZlCEVCg9J4oopsINAwi1ekWRWj3pGCJaJ6M9QdWTd3Q0zzWVowdeDmwfWGQKesoM7O4JkxzFRV1w-8GqQYyM&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;kty&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;RSA&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;q&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;jzrFTIhNP80RUzqX4lYESsBjBhkyXY7nSsOJXLtUmie0LG_-aqJ0nSRi5Q4hhDsou3VjMWj-7QvwrgYw4GF5ktlDdEN874TuIRY2LeuWa1WlsYg7QN31G89tPFb7IxlxY9D0KG0Tg3NkXkZ1t2OgQZZeY_uTsY5yJ9e1Zb0Lpec&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;d&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;BSZb18GcM7lo72-sB84aOpUrkfhgmECsWBMfXF9fbIv8jsYt7mc5leduANHSf7aFTS39XQtGZUoZ6DLT2b-DhF2_VJCjm0r2P-YnzHV8QJ9iQKu9tEeclRFR7xeFh0HE39f28n_DKSsvUfkMjPY79Jyw7ctYezLoUJFEP1UI9W1zVbJgRn8GHv438qKGzwJWKWfNVMbNuW9eLLkR5ejPZMts_0cLF3e6JLOZCL2x6yrrqwE8bXehUHDIsVnE-YT0yHWiuNge5YZaicHhQDRqEQZ80KYUzLCecstEPCCyB5UPVP-dhuZhkM0xfadwI61oGFaF5HSNjsW-gjxsE7RIHQ&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;e&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;AQAB&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;use&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;sig&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;kid&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Nm4-PaiSvgIwk7OlFn0wK_64bt402rsHmu5zz8fTOyE&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;qi&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;PFp5xgEbWmzjgtxHBGvsBxm8YXKUf3xhm3fpBiXYIZo7LMf7PERQzIWb4amFqq0CBfShYgm9tFwdt2ldIQXvhqY2n3bp-Jp1M5P_YD89FR5-YJLk9PnFfEOEJnD1fqRILMWXUGJxL1YxLMIXXkbbhozrh2-2C-Rku7MFdIMA4UI&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;dp&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;10SkQPQYj_5qHHPP4e9fMkRjwJ7sZ2atjAVyENKIAX6_W0Gv4NdUzRF0bVswQXiegM4SzPm6cKTkst6_63phUsovSmq1mr-U0tT8SUusyZCNKtJrriuBuChY86S7Q5Q542olWt9QnGvHGgIVi1iriRhySsUnZgzkhWsO225gUqs&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;alg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;RS256&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;dq&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;LKWoTPQMCIBXDzerks03Z0nTVFpUXd-m76JGVla6x5bqzhNXHkxnx3hJL5eZEQwT5WNxOTy-gov_SW_6mmcoK4N4SGylLFCmnj-7QdM3P1wiW1XZCp5lwnaFWZLPlCBhPTksctGVjJtSxSR3m2P915QU9lu8rVN2-D6AeCdW0y8&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;n&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;jb_PoRxF0KaCMASsZwQyZFtoF6X19geXJJsx8QbAcsQEKt8RX34eAueVXn1K49UaGDkK-G9UCDmLDYTKMgjz1mtFKuV2J6CwowplkBq9rE_fUgkSY0XfLC3pCRSaQ6kjwwUjbFjF7tWVQHFhTgjqQ85HA5Pd3ix1yHnMPaNZ08CwucAx1st_WLauEmqdkmfXNIA65S5CO8EXxo94CVJ-DIZ3X7HDJq0m28SRKMR7sPM1q8A3a3z_n7DzIytjRyQkLcCWQq9oLT5dTuvAHz3Hasb1hqGqy9uS3RCFvjXk3GW3JMonVfhJ7310gUCAojEqsQ06vtoLp0g0QsjTUbADlQ&quot;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</code></pre></div>
+Public key:
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;kty&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;RSA&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;e&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;AQAB&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;use&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;sig&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;kid&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Nm4-PaiSvgIwk7OlFn0wK_64bt402rsHmu5zz8fTOyE&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;alg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;RS256&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;n&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;jb_PoRxF0KaCMASsZwQyZFtoF6X19geXJJsx8QbAcsQEKt8RX34eAueVXn1K49UaGDkK-G9UCDmLDYTKMgjz1mtFKuV2J6CwowplkBq9rE_fUgkSY0XfLC3pCRSaQ6kjwwUjbFjF7tWVQHFhTgjqQ85HA5Pd3ix1yHnMPaNZ08CwucAx1st_WLauEmqdkmfXNIA65S5CO8EXxo94CVJ-DIZ3X7HDJq0m28SRKMR7sPM1q8A3a3z_n7DzIytjRyQkLcCWQq9oLT5dTuvAHz3Hasb1hqGqy9uS3RCFvjXk3GW3JMonVfhJ7310gUCAojEqsQ06vtoLp0g0QsjTUbADlQ&quot;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</code></pre></div></p>
+<h2 id="set-up-autolab-as-a-tool-on-the-lti-platform">Set up Autolab as a tool on the LTI platform</h2>
+<p>In order for Autolab to interface with LTI platforms, it will need to have a <code>client_id</code> generated for it by the platform.
+ Canvas sometimes calls their <code>client_id</code>s as "developer keys".</p>
+<h3 id="generating-a-client_id-on-canvas">Generating a <code>client_id</code> on Canvas</h3>
+<p>To generate a developer key, follow the guide <a href="https://community.canvaslms.com/t5/Admin-Guide/How-do-I-configure-an-LTI-key-for-an-account/ta-p/140">provided by Canvas</a>
+and the instructions below. NOTE: You must be a Canvas Administrator in order to generate a developer key.</p>
+<p>During the process, fill in the JSON below with your Autolab domain, and also include your public JWK generated in the previous
+step. Then, in the step "Select Configuration Method" use the "Paste JSON" method and paste in this JSON object.</p>
+<p>Save your configuration, and then save the <code>client_id</code> generated by Canvas. This will be used to fill in the configuration file
+on Autolab's end as well.</p>
+<div class="highlight"><pre><span></span><code><span class="w">    </span><span class="p">{</span><span class="w"></span>
+<span class="w">      </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Autolab Integration&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">      </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Autolab is an open-source autograding service developed by students, for students&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">      </span><span class="nt">&quot;oidc_initiation_url&quot;</span><span class="p">:</span><span class="s2">&quot;https://&lt;your-autolab-domain&gt;/lti_launch/oidc_login&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">      </span><span class="nt">&quot;target_link_uri&quot;</span><span class="p">:</span><span class="s2">&quot;https://&lt;your-autolab-domain&gt;/lti_launch/launch&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">      </span><span class="nt">&quot;scopes&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"></span>
+<span class="w">        </span><span class="s2">&quot;https://purl.imsglobal.org/spec/lti-nrps/scope/contextmembership.readonly&quot;</span><span class="w"></span>
+<span class="w">      </span><span class="p">],</span><span class="w"></span>
+<span class="w">     </span><span class="nt">&quot;extensions&quot;</span><span class="p">:[</span><span class="w"></span>
+<span class="w">        </span><span class="p">{</span><span class="w"></span>
+<span class="w">          </span><span class="nt">&quot;tool_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;autolab-integration&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">          </span><span class="nt">&quot;platform&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;canvas.instructure.com&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">          </span><span class="nt">&quot;domain&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&lt;your-autolab-domain&gt;&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">          </span><span class="nt">&quot;privacy_level&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;public&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">          </span><span class="nt">&quot;settings&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">          </span><span class="nt">&quot;text&quot;</span><span class="p">:</span><span class="s2">&quot;Launch Autolab Integration&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">          </span><span class="nt">&quot;icon_url&quot;</span><span class="p">:</span><span class="s2">&quot;&lt;your-icon&gt;&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">            </span><span class="nt">&quot;placements&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"></span>
+<span class="w">              </span><span class="p">{</span><span class="w"></span>
+<span class="w">                </span><span class="nt">&quot;text&quot;</span><span class="p">:</span><span class="s2">&quot;Autolab&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">                </span><span class="nt">&quot;enabled&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w"></span>
+<span class="w">                </span><span class="nt">&quot;placement&quot;</span><span class="p">:</span><span class="s2">&quot;course_navigation&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">                </span><span class="nt">&quot;message_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;LtiResourceLinkRequest&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">                </span><span class="nt">&quot;target_link_uri&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://&lt;your-autolab-domain&gt;/lti_launch/launch&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">                </span><span class="nt">&quot;icon_url&quot;</span><span class="p">:</span><span class="s2">&quot;&lt;your-icon&gt;&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">                </span><span class="nt">&quot;windowTarget&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;_blank&quot;</span><span class="w"></span>
+<span class="w">               </span><span class="p">}</span><span class="w"></span>
+<span class="w">            </span><span class="p">]</span><span class="w"></span>
+<span class="w">          </span><span class="p">}</span><span class="w"></span>
+<span class="w">        </span><span class="p">}</span><span class="w"></span>
+<span class="w">      </span><span class="p">],</span><span class="w"></span>
+<span class="w">      </span><span class="nt">&quot;public_jwk&quot;</span><span class="p">:{</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;kty&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;RSA&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;e&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;AQAB&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;use&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;sig&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;kid&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;vLkAvsYBQk5KF3lRxYaUgOWodo_-PL5WrzKLNMcwke0&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;alg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;RS256&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;n&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;iHN9QvbOTCTlyQwiyUKCAF5iLyAMGPZSnS46okSH5EZv0k3B65k0DdQr8b454RfwOABp7FgXKOEG4oMG62GiFoWebf1nKVBF5O80QOHZquTZLXYPMBKW9FVB0oDol-pzzNmqX0iDPBnCsoII3S8_sDn5V4ur3LUKM2j7oBBphhAPiin8Oh64gnAPS5nlnJmaV8VIbOdpQgzLLHPH4jIfjFhvIKzwRf1kqQGZsUaGYhrGZTusPOLJ0nBHlNh5cEEjbfp0oEvsNJoMzF0COZaMt2d89G7-oaVE64vcEc4rRbW4g1nL4NbeO8xh1Vkhp4rsqL8Zw__DHNue-8kJQt2LUw&quot;</span><span class="w"></span>
+<span class="w">      </span><span class="p">}</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+</code></pre></div>
+<h3 id="add-autolab-to-your-course-on-canvas">Add Autolab to your Course on Canvas</h3>
+<p>Once Autolab has been configured and a <code>client_id</code> has been generated, Instructors are then able to add Autolab via the <code>client_id</code>.</p>
+<p>Go to "Settings", and click on the "Apps" tab, then click on "+ App". Select Configuration Type "By Client ID", and paste in the <code>client_id</code> generated in the 
+previous step.</p>
+<p>You should receive a confirmation pop-up similar to </p>
+<blockquote>
+<p>"Tool "Autolab Integration Tool" found for client ID <client_id>. Would you like to install it?"</p>
+</blockquote>
+<p>Click "Install". Refresh your Course page and Autolab should appear on the Course Navigation Panel on the left-hand side.</p>
+<p><img alt="Canvas Course Navigation" src="/images/Canvas_Course_Navigation.png" /></p>
+<h2 id="set-up-autolabs-lti-configuration-settings">Set up Autolab's LTI configuration settings</h2>
+<p>Setting up Autolab to function as an LTI Advantage Tool requires setting up the LTI Tool Configuration specified in the "LTI Configuration Settings" Page.</p>
+<ol>
+<li>
+<p>Go to "LTI Configuration Settings" via the "Manage Autolab" Dropdown or by navigating to <code>/lti_config/index</code></p>
+<p>The "LTI Configuration Settings" should look like the following image. Here, Admins are able to specify a single LTI platform which they can link with.</p>
+<p><img alt="Autolab LTI Configuration Settings Page" src="/images/lti_configuration_settings.png" /></p>
+</li>
+<li>
+<p>Fill in the text-fields with your platform-specific information. For example, you should paste in the <code>client_id</code> created by your platform into the "Developer Key" field.
+   To find the right values for "iss URL", "LTI Launch Auth URL", "LTI platform public JWK URL", and "Platform OAuth2 Endpoint", please consult your respective platforms' guides
+   on LTI integration. For example, for Canvas please consult "Configuring Canvas in the Tool" on <a href="https://canvas.instructure.com/doc/api/file.lti_dev_key_config.html">this page</a>.</p>
+<p>A summary of some of the values needed for configuring a Canvas integration in Autolab are provided below:</p>
+<ul>
+<li>iss URL: <code>https://canvas.instructure.com</code></li>
+<li>LTI Launch Auth URL: <code>https://&lt;your-canvas-domain&gt;/api/lti/authorize_redirect</code></li>
+<li>Platform OAuth2 Endpoint: <code>https://&lt;your-canvas-domain&gt;/login/oauth2/token</code></li>
+<li>LTI platform public JWK URL: <code>https://&lt;your-canvas-domain&gt;/api/lti/security/jwks</code></li>
+</ul>
+<p>There is a choice of using the "LTI platform public JWK URL" field or uploading a public JWK as a JSON file field, depending on which is defined in the Configuration. However, it is highly recommended to use
+ "LTI platform public JWK URL" as most platforms use multiple private keys to sign their JWTs, which is not supported when using the file upload method. Therefore, Autolab will default to using "LTI platform public JWK URL", even if a platform public JWK is uploaded.</p>
+</li>
+<li>
+<p>Upload Autolab's private JWK as a JSON file in the "Upload Autolab's JWK as a JSON file" field. The format of the JWK is shown in the sample below:</p>
+<div class="codehilite"><pre><span></span><code> {
+ &quot;p&quot;: &quot;-ZtUu_QDlz9XX218fNCUkGLwggD9-w86WRE5R7uON9W6p7mme8l2z2dOyTTftkiHTee4dN2Cww3c5-EV-6QCiIapPCwbIFQxsXeMNatPjA2IthiqQPUM1R7Rc9KkwRYIBz6J-1sjWsAQlJDM3WOGgabr_VY13KsG6wOPw2lrCF0&quot;,
+ &quot;kty&quot;: &quot;RSA&quot;,
+ &quot;q&quot;: &quot;yDAwjdLNfzZXXGK3b_Unmx_jvlCzKqF4ysYVtB6ULg3LgKGLBgGhcYMHnCU2-KeTLRsJYaE8CbigiJaWtC2QfkYbLZ6yU8v8kM5wum7hENEgm8PINbCNxRTTYJM9Y5LTzKnNMPYu1DXUx7iC_TkeAX0Gj-7rKBaTAdmdXvmbieM&quot;,
+ &quot;d&quot;: &quot;CJYgyd0xavwIjOocVL4lYj2FsdMxRDhu13457a5v3Sq_OCfPMTL5_pzE187DN0eCBSOGUTmTYbsiJVkOeO-cHZoOjsRFIM2hrDPLAjud00a6dPoLNlPNwQ5IQppHXMbP2r7Uq30Y1hXXA7aQMnH0205Wv7bgWVd1yBO-d0LlqgA1jqQx_8XTIOdv3CQgBKOXWtvYhBgrOpUoeozL9xm2qbl3bjwvr1cniaJhhP_vUNVjphdxpA1aczOr0ZYJNebwrEoNndnEGlIYr0MkQmatnGmw-al5cn20_DhGgzmxykwXMYfWpt9xM5S7q8DgtC0v-kdh2sF3-KPW5yIwXL-NqQ&quot;,
+ &quot;e&quot;: &quot;AQAB&quot;,
+ &quot;use&quot;: &quot;sig&quot;,
+ &quot;kid&quot;: &quot;PdwZOKsxtweAiBua4y_aBYmKfMe8L2dBj60AmhzR0bw&quot;,
+ &quot;qi&quot;: &quot;q82CtY2kzU_k-EaIeaEsJ6mTaG0YgKHtAmLohY5GQSOgYPMnvN7vLSCdgilXzVZCmNo4zu5CuHSO7cOhbfPFr2VP9rkNnhxG2bIhfuUOWn5vap2AQz5K6KD9HuRW6h4g8JJR1zL2FtdYkOZArQAEuwg9YDesHk6xUTIKR3pemK4&quot;,
+ &quot;dp&quot;: &quot;Pe6pnp0UCwIfZsEew0Vpp021STx_yDxmCNV6Ne82gWoZjyZERbCeNyX16XyiCXODhvP4055mpIkbB7nUn4R5UHDBKvnynRnm3pbABk0ERsbQ5gXGsKlczsB_zdI1KOeThGCjEefyJMFFG-e1vTTFmgPVyB0M7jzNUaCnmh_c-80&quot;,
+ &quot;alg&quot;: &quot;RS256&quot;,
+ &quot;dq&quot;: &quot;q23pBmpxI_ErGqhGog90XTkP1FhTNbyVLkA3McnF5zJVBNBRt1EKKaSljaeozYLjXAr9G6fxO_npL06Vu7IRPLFYcNanq27R2EeQ7XYqMjaEEB-2gZOxtAXDhb5RIcYIrgjy-Gy5aWy3zFhLhAG3mlqwle1pXykFtt3eEAj8kzU&quot;,
+ &quot;n&quot;: &quot;wzBWqiHbQQn-IXI2xjxkjURHVZb2ROEauJ0eRXiiSN4GeTWp9QEVL5Lo4BZKPM0OtXWbXxdoRjHkhA7m3rVqZZkwHKp6z9ncHIuEk0ep8l_gXL92OJCRWONvhJ7xQ8RihlIsbTLowGSdfDBMGWjOeZRiNqpRLeQKQmCon_RcbZIDDA28f6zZnC59nkxE7SA-MsCpF_JDgPYvzXoBytU2gqif2YRCFZSlgMBX-jqVybeaqjxDq3-IXNVCwpsWSMChU3JyIWm7K6czNbkOEytf9qnMV7yHg9_-n7ty8arTDhN1N4y7yXiM0gQx-UQsZe80Jy0Um6U2UHU2NRfHRrEvdw&quot;
+ }
+</code></pre></div>
+
+</li>
+<li>
+<p>Once all settings have been filled in, click "Update Configuration", and the LTI Configuration should be live on the server. it should be possible to launch Autolab from your specified platform, given your configuration is correct.</p>
+</li>
+</ol>
+
+
+  
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+    <nav class="md-footer__inner md-grid" aria-label="Footer" >
+      
+        
+        <a href="../github_integration/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Github Integration Setup" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              Github Integration Setup
+            </div>
+          </div>
+        </a>
+      
+      
+        
+        <a href="../tango/" class="md-footer__link md-footer__link--next" aria-label="Next: Installation" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              Installation
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4Z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        <div class="md-social">
+  
+    
+    
+      
+      
+    
+    <a href="https://github.com/Autolab" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M186.1 328.7c0 20.9-10.9 55.1-36.7 55.1s-36.7-34.2-36.7-55.1 10.9-55.1 36.7-55.1 36.7 34.2 36.7 55.1zM480 278.2c0 31.9-3.2 65.7-17.5 95-37.9 76.6-142.1 74.8-216.7 74.8-75.8 0-186.2 2.7-225.6-74.8-14.6-29-20.2-63.1-20.2-95 0-41.9 13.9-81.5 41.5-113.6-5.2-15.8-7.7-32.4-7.7-48.8 0-21.5 4.9-32.3 14.6-51.8 45.3 0 74.3 9 108.8 36 29-6.9 58.8-10 88.7-10 27 0 54.2 2.9 80.4 9.2 34-26.7 63-35.2 107.8-35.2 9.8 19.5 14.6 30.3 14.6 51.8 0 16.4-2.6 32.7-7.7 48.2 27.5 32.4 39 72.3 39 114.2zm-64.3 50.5c0-43.9-26.7-82.6-73.5-82.6-18.9 0-37 3.4-56 6-14.9 2.3-29.8 3.2-45.1 3.2-15.2 0-30.1-.9-45.1-3.2-18.7-2.6-37-6-56-6-46.8 0-73.5 38.7-73.5 82.6 0 87.8 80.4 101.3 150.4 101.3h48.2c70.3 0 150.6-13.4 150.6-101.3zm-82.6-55.1c-25.8 0-36.7 34.2-36.7 55.1s10.9 55.1 36.7 55.1 36.7-34.2 36.7-55.1-10.9-55.1-36.7-55.1z"/></svg>
+    </a>
+  
+    
+    
+      
+      
+    
+    <a href="https://communityinviter.com/apps/autolab/autolab-project" target="_blank" rel="noopener" title="communityinviter.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M94.12 315.1c0 25.9-21.16 47.06-47.06 47.06S0 341 0 315.1c0-25.9 21.16-47.06 47.06-47.06h47.06v47.06zm23.72 0c0-25.9 21.16-47.06 47.06-47.06s47.06 21.16 47.06 47.06v117.84c0 25.9-21.16 47.06-47.06 47.06s-47.06-21.16-47.06-47.06V315.1zm47.06-188.98c-25.9 0-47.06-21.16-47.06-47.06S139 32 164.9 32s47.06 21.16 47.06 47.06v47.06H164.9zm0 23.72c25.9 0 47.06 21.16 47.06 47.06s-21.16 47.06-47.06 47.06H47.06C21.16 243.96 0 222.8 0 196.9s21.16-47.06 47.06-47.06H164.9zm188.98 47.06c0-25.9 21.16-47.06 47.06-47.06 25.9 0 47.06 21.16 47.06 47.06s-21.16 47.06-47.06 47.06h-47.06V196.9zm-23.72 0c0 25.9-21.16 47.06-47.06 47.06-25.9 0-47.06-21.16-47.06-47.06V79.06c0-25.9 21.16-47.06 47.06-47.06 25.9 0 47.06 21.16 47.06 47.06V196.9zM283.1 385.88c25.9 0 47.06 21.16 47.06 47.06 0 25.9-21.16 47.06-47.06 47.06-25.9 0-47.06-21.16-47.06-47.06v-47.06h47.06zm0-23.72c-25.9 0-47.06-21.16-47.06-47.06 0-25.9 21.16-47.06 47.06-47.06h117.84c25.9 0 47.06 21.16 47.06 47.06 0 25.9-21.16 47.06-47.06 47.06H283.1z"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "toc.integrate", "content.code.copy"], "search": "../../assets/javascripts/workers/search.5bf1dace.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.37e9125f.min.js"></script>
+      
+    
+  </body>
+</html>
