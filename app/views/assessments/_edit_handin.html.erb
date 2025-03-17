@@ -8,7 +8,12 @@
 
       document.addEventListener('DOMContentLoaded', function() {
           const disableHandinsCheckbox = document.querySelector('.disable-handins-toggle');
+          const handinField = document.querySelector('.handin-filename-field');
+          const hiddenHandinField = document.querySelector('.hidden-handin-filename-field');
           toggleHandinAutolab(disableHandinsCheckbox);
+          handinField.addEventListener('input', function() {
+              hiddenHandinField.value = handinField.value;
+          });
       });
   </script>
 <% end %>
@@ -52,6 +57,9 @@
                  class: "handin-filename-field",
                  pattern: "^[a-zA-Z0-9._-]+$",
                  title: "Only alphanumeric characters, dots, hyphens, and underscores are allowed." %>
+<%= f.hidden_field :handin_filename,
+                   value: f.object.handin_filename.presence,
+                   class: "hidden-handin-filename-field" %>
 <%= f.text_field :max_size, help_text: "The maximum size that a handin file can have in megabytes (MB)." %>
 
 <div class="action_buttons">
