@@ -11,3 +11,10 @@ $ redis-cli
 OK
 127.0.0.1:6379> 
 ```
+
+## Tango jobs completed but scores are not updated
+If you are accessing Autolab on localhost, Tango will attempt to send the autograder logs to its own localhost instead. 
+
+To fix this, add `127.0.0.1 autolab` to your `/etc/hosts` file and access Autolab via `http://autolab` instead of `http://localhost`.
+
+If you are accessing Autolab on a different host, add `<your public_ip> <your fqdn> autolab` to your `/etc/hosts` file and access Autolab via `http://autolab`.
