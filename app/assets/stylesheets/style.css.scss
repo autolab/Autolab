@@ -1628,6 +1628,21 @@ table.sub td, th {
   align-items: center;
 }
 
+.selected-count-placeholder {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  text-align: center;
+  background-color: $autolab-submissions-background;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  border-radius: 4px;
+}
+
+.selected-count-red {
+  color: $autolab-red;
+}
+
 .excused-popover {
   background-color: $autolab-submissions-background;
   border-radius: 11px;
