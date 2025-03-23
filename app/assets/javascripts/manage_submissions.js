@@ -370,6 +370,7 @@ $(document).ready(function() {
                 changeButtonStates(true);
               },
               error: function (error) {
+                clearInterval(refreshInterval);
                 alert("An error occurred while processing the request.");
               },
             });

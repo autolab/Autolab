@@ -87,7 +87,15 @@ module AssessmentAutograde
   # action_auth_level :regradeBatch, :instructor
   def regradeBatch
     request_body = request.body.read
-    submission_ids = JSON.parse(request_body)['submission_ids']
+    submission_ids = begin if request_body.present?
+                             parsed_data = JSON.parse(request_body)
+                         Array(parsed_data['submission_ids'])
+                       else
+                         params[:submission_ids]
+                       end
+                     rescue JSON::ParserError => e
+                       params[:submission_ids] || []
+                     end
 
     # Ensure submission_ids is an array
     submission_ids = Array(submission_ids)
