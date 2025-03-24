@@ -54,9 +54,7 @@
                  value: f.object.handin_filename.presence,
                  help_text: "The suffix that is appended to student submission files. Autolab stores submission files in the handin directory as email/version_fname",
                  placeholder: "E.g. mm.c",
-                 class: "handin-filename-field",
-                 pattern: "^[a-zA-Z0-9._-]+$",
-                 title: "Only alphanumeric characters, dots, hyphens, and underscores are allowed." %>
+                 class: "handin-filename-field" %>
 <%= f.hidden_field :handin_filename,
                    value: f.object.handin_filename.presence,
                    class: "hidden-handin-filename-field" %>
