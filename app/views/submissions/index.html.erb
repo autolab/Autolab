@@ -50,12 +50,12 @@
   <%= javascript_include_tag "manage_submissions" %>
 <% end %>
 
-<% if @regrading %>
+<% if @grading %>
   <div class="regrade-refresh">
-    Currently regrading <%= ActionController::Base.helpers.pluralize(@regrading_submissions.count, "submission") %>.
+    Currently grading <%= ActionController::Base.helpers.pluralize(@grading_submissions.count, "submission") %>.
     View detailed progress
     <%= link_to "here", url_for(controller: 'jobs') %>. To update scores,
-    <%= link_to "refresh", url_for([@course, @assessment, :submissions, { regrading: 'true' }]) %>.
+    <%= link_to "refresh", url_for([@course, @assessment, :submissions]) %>.
   </div>
 <% end %>
 
@@ -203,7 +203,7 @@
       <%# Score %>
       <td class="submissions-td">
         <div class="submissions-score-align">
-          <% if @regrading_submissions.include?(submission.id) then %>
+          <% if @grading_submissions.include?(submission.id) then %>
             <div class="score-icon">
               <%= link_to "<i class='tiny material-icons'>access_time</i>".html_safe,
                           { controller: "jobs", action: "getjob", id: submission.jobid } %>
