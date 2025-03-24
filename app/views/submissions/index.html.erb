@@ -50,6 +50,15 @@
   <%= javascript_include_tag "manage_submissions" %>
 <% end %>
 
+<% if @grading %>
+  <div class="regrade-refresh">
+    Currently grading <%= ActionController::Base.helpers.pluralize(@grading_submissions.count, "submission") %>.
+    View detailed progress
+    <%= link_to "here", url_for(controller: 'jobs') %>. To update scores,
+    <%= link_to "refresh", url_for([@course, @assessment, :submissions]) %>.
+  </div>
+<% end %>
+
 <h3>Manage Submissions</h3>
 <hr>
 
@@ -194,15 +203,22 @@
       <%# Score %>
       <td class="submissions-td">
         <div class="submissions-score-align">
-          <div class="score-num"><%= computed_score { submission.final_score(@cud) } %></div>
-          <div class="score-icon">
-            <a class="modal-trigger score-details"
-              data-email="<%= submission.course_user_datum.email %>"
-              data-cuid=" <%= submission.course_user_datum.id %>">
-              <i class="material-icons submissions-score-icon">zoom_in</i>
-            </a>
+          <% if @grading_submissions.include?(submission.id) then %>
+            <div class="score-icon">
+              <%= link_to "<i class='tiny material-icons'>access_time</i>".html_safe,
+                          { controller: "jobs", action: "getjob", id: submission.jobid } %>
             </div>
-        </div>
+          <% else %>
+            <div class="score-num"><%= computed_score { submission.final_score(@cud) } %></div>
+            <div class="score-icon">
+              <a class="modal-trigger score-details"
+                data-email="<%= submission.course_user_datum.email %>"
+                data-cuid=" <%= submission.course_user_datum.id %>">
+                <i class="material-icons submissions-score-icon">zoom_in</i>
+              </a>
+              </div>
+            </div>
+          <% end %>
       </td>
 
       <%# Submission Date %>

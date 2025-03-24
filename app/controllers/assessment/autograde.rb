@@ -116,12 +116,6 @@ module AssessmentAutograde
       end
     end
 
-    success_jobs = submissions.size - failure_jobs
-    if success_jobs > 0
-      link = "<a href=\"#{url_for(controller: 'jobs')}\">#{ActionController::Base.helpers.pluralize(success_jobs, "submission")}</a>"
-      flash[:success] = ("Regrading #{link}")
-    end
-
     # For both :success and :error
     flash[:html_safe] = true
 
