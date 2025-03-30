@@ -8,8 +8,78 @@
                 help_text: "(Optional) Use your own provided access key to authenticate to different EC2 instances than the default one on Tango" %>
 <%= f.text_field :access_key, display_name: "Access Key" %>
 <%= f.text_field :access_key_id, display_name: "Access Key ID" %>
-<%= f.text_field :instance_type, display_name: "EC2 Instance Type",
-                                 help_text: "Type of EC2 instance to be used to run the autograding job. See <a href='https://aws.amazon.com/ec2/instance-types/'> here </a> for more details".html_safe %>
+
+<% 
+  # Group EC2 instance options by category for better organization
+  ec2_instance_options = [
+    # General Purpose - T2 (burstable)
+    ['T2 - General Purpose (Burstable)', [
+      ['t2.nano - 1 vCPU, 0.5 GiB RAM (minimal, lowest cost)', 't2.nano'],
+      ['t2.micro - 1 vCPU, 1 GiB RAM (lowest cost, suitable for small jobs)', 't2.micro'],
+      ['t2.small - 1 vCPU, 2 GiB RAM (low cost, better for memory-intensive tasks)', 't2.small'],
+      ['t2.medium - 2 vCPU, 4 GiB RAM (balanced, good for most autograding tasks)', 't2.medium'],
+      ['t2.large - 2 vCPU, 8 GiB RAM (better for memory-heavy workloads)', 't2.large'],
+      ['t2.xlarge - 4 vCPU, 16 GiB RAM (good for parallel processing)', 't2.xlarge'],
+      ['t2.2xlarge - 8 vCPU, 32 GiB RAM (high performance, burstable)', 't2.2xlarge']
+    ]],
+    
+    # General Purpose - T3 (newer generation)
+    ['T3 - General Purpose (Newer Generation)', [
+      ['t3.micro - 2 vCPU, 1 GiB RAM (better performance than t2.micro)', 't3.micro'],
+      ['t3.small - 2 vCPU, 2 GiB RAM (improved over t2.small)', 't3.small'],
+      ['t3.medium - 2 vCPU, 4 GiB RAM (better CPU performance than t2)', 't3.medium'],
+      ['t3.large - 2 vCPU, 8 GiB RAM (improved networking)', 't3.large']
+    ]],
+    
+    # Compute Optimized
+    ['C - Compute Optimized', [
+      ['c5.large - 2 vCPU, 4 GiB RAM (compute-optimized, faster CPU)', 'c5.large'],
+      ['c5.xlarge - 4 vCPU, 8 GiB RAM (high compute performance)', 'c5.xlarge'],
+      ['c5.2xlarge - 8 vCPU, 16 GiB RAM (very high compute performance)', 'c5.2xlarge']
+    ]],
+    
+    # Memory Optimized
+    ['R - Memory Optimized', [
+      ['r5.large - 2 vCPU, 16 GiB RAM (memory-optimized, for large datasets)', 'r5.large'],
+      ['r5.xlarge - 4 vCPU, 32 GiB RAM (high memory capacity)', 'r5.xlarge'],
+      ['r5.2xlarge - 8 vCPU, 64 GiB RAM (very high memory capacity)', 'r5.2xlarge']
+    ]]
+  ]
+%>
+
+<div style="margin-bottom: 5px;"><strong>EC2 Instance Type</strong></div>
+
+<%= f.select :instance_type, 
+             grouped_options_for_select(ec2_instance_options, @autograder.instance_type),
+             { include_blank: false, label: "EC2 Instance Type" },
+             { class: 'browser-default', 
+               data: { tooltip: "Select an EC2 instance type based on your autograding needs. Larger instances cost more but run faster." }, 
+               display_name: "EC2 Instance Type" } %>
+<div class="help-text">
+  Choose an instance type based on your autograding requirements:
+  <ul class="browser-default" style="margin-top: 5px; margin-left: 15px;">
+    <li><strong>T2 instances</strong>: Burstable performance instances, good for varying workloads
+      <ul>
+        <li><strong>t2.micro</strong>: Default, lowest cost, suitable for simple autograding</li>
+        <li><strong>t2.medium/large</strong>: Better for more complex tests with moderate requirements</li>
+      </ul>
+    </li>
+    <li><strong>T3 instances</strong>: Newer generation with better baseline performance than T2</li>
+    <li><strong>C5 (Compute-optimized)</strong>: Best for CPU-bound tasks like compilation, testing algorithms</li>
+    <li><strong>R5 (Memory-optimized)</strong>: Best for memory-intensive operations with large datasets</li>
+  </ul>
+  <div class="recommendation-box" style="background-color: #f5f5f5; padding: 10px; border-left: 4px solid #2196F3; margin-top: 10px;">
+    <strong>Recommendations:</strong>
+    <ul class="browser-default" style="margin-top: 5px; margin-left: 15px;">
+      <li>Start with <strong>t2.micro</strong> for basic assignments with minimal resource requirements</li>
+      <li>Use <strong>t2.medium</strong> or <strong>t3.medium</strong> for most standard programming assignments</li>
+      <li>Choose <strong>c5.xlarge</strong> for computationally intensive tasks (e.g., compiler projects)</li>
+      <li>Select <strong>r5.large</strong> for memory-intensive workloads (e.g., large datasets, ML)</li>
+    </ul>
+  </div>
+  <small>Note: Larger instances incur higher AWS costs. <a href='https://aws.amazon.com/ec2/pricing/on-demand/' target='_blank'>View EC2 pricing</a></small>
+</div>
+
 <%= f.submit "Save Settings" %>
 
 <%= link_to "Delete Autograder", course_assessment_autograder_path(@course, @assessment),
