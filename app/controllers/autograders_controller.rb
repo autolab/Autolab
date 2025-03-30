@@ -37,6 +37,8 @@ class AutogradersController < ApplicationController
     tar_path = Rails.root.join("courses", @course.name, @assessment.name, "autograde.tar")
     @makefile_exists = File.exist?(makefile_path) ? makefile_path : nil
     @tar_exists = File.exist?(tar_path) ? tar_path : nil
+    tango_info = TangoClient.info
+    @tagged_amis = tango_info["tagged_amis"] || []
   end
 
   action_auth_level :update, :instructor
