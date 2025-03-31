@@ -9,7 +9,7 @@
 <%= f.text_field :access_key, display_name: "Access Key" %>
 <%= f.text_field :access_key_id, display_name: "Access Key ID" %>
 
-<% 
+<%
   # Group EC2 instance options by category for better organization
   ec2_instance_options = [
     # General Purpose - T2 (burstable)
@@ -49,11 +49,11 @@
 
 <div style="margin-bottom: 5px;"><strong>EC2 Instance Type</strong></div>
 
-<%= f.select :instance_type, 
+<%= f.select :instance_type,
              grouped_options_for_select(ec2_instance_options, @autograder.instance_type),
              { include_blank: false, label: "EC2 Instance Type" },
-             { class: 'browser-default', 
-               data: { tooltip: "Select an EC2 instance type based on your autograding needs. Larger instances cost more but run faster." }, 
+             { class: 'browser-default',
+               data: { tooltip: "Select an EC2 instance type based on your autograding needs. Larger instances cost more but run faster." },
                display_name: "EC2 Instance Type" } %>
 <div class="help-text">
   Choose an instance type based on your autograding requirements:
