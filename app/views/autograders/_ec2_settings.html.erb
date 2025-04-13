@@ -10,7 +10,15 @@
 <%= f.text_field :access_key_id, display_name: "Access Key ID" %>
 <%= f.text_field :instance_type, display_name: "EC2 Instance Type",
                                  help_text: "Type of EC2 instance to be used to run the autograding job. See <a href='https://aws.amazon.com/ec2/instance-types/'> here </a> for more details".html_safe %>
-<%= f.select :access_key, options_for_select(@tagged_amis), {}, { display_name: "AMI" } %> <!-- change the ami -->
+AMI
+<%= f.select :ami,
+             options_for_select(@tagged_amis.map { |ami| ["Name: #{ami['name']}, ID: #{ami['id']}", ami['id']] }, f.object.ami),
+             { include_blank: "Use Tango Default" } %>
+<br>
+Security Groups
+<%= f.select :security_group,
+             options_for_select(@security_groups.map { |sg| ["Name: #{sg['name']}, ID: #{sg['id']}", sg['name']] }, f.object.security_group),
+             { include_blank: "Use Tango Default" } %>
 <%= f.submit "Save Settings" %>
 
 <%= link_to "Delete Autograder", course_assessment_autograder_path(@course, @assessment),
