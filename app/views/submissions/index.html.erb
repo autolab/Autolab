@@ -90,7 +90,7 @@
                 { method: :post,
                   title: "Regrade all submissions for this assignment",
                   class: "btn submissions-main",
-                  data: { confirm: "Are you sure you want to regrade all #{@assessment.submissions.where(special_type: [Submission::NORMAL, nil]).count} submissions?" } } %>
+                  data: { confirm: "Are you sure you want to regrade all #{@assessment.submissions.where(special_type: [Submission::NORMAL, nil]).latest.count} latest submissions?" } } %>
   </div>
 </div>
 
@@ -134,7 +134,7 @@
   <span id="selected-count-html">0 submissions selected</span>
   <span>Click <%= link_to "Regrade All", regradeAll_course_assessment_path(@course, @assessment),
                           { method: :post, title: "Regrade all submissions", class: "selected-count-red",
-                            data: { confirm: "Are you sure you want to regrade all #{@assessment.submissions.where(special_type: [Submission::NORMAL, nil]).count} submissions?" } } %>  to regrade </span><%= @submissions.length %><span> submissions.</span>
+                            data: { confirm: "Are you sure you want to regrade all #{@assessment.submissions.where(special_type: [Submission::NORMAL, nil]).latest.count} latest submissions?" } } %>  to regrade all </span><%= @submissions.latest.length %><span> latest submissions.</span>
 </div>
 
 <table class="prettyBorder" id="submissions">
