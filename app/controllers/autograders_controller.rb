@@ -19,6 +19,8 @@ class AutogradersController < ApplicationController
       a.access_key_id = ""
       a.access_key = ""
       a.instance_type = "t2.micro"
+      a.ami = ""
+      a.security_group = ""
     end
     if @autograder.save
       flash[:success] = "Autograder created."
@@ -39,6 +41,7 @@ class AutogradersController < ApplicationController
     @tar_exists = File.exist?(tar_path) ? tar_path : nil
     tango_info = TangoClient.info
     @tagged_amis = tango_info["tagged_amis"] || []
+    @security_groups = tango_info["security_groups"] || []
   end
 
   action_auth_level :update, :instructor
@@ -118,7 +121,7 @@ private
 
   def autograder_params
     params[:autograder].permit(:autograde_timeout, :autograde_image, :release_score, :access_key,
-                               :access_key_id, :instance_type)
+                               :access_key_id, :instance_type, :ami, :security_group)
   end
 
   def assessment_params

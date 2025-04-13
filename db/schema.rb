@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2025_01_30_055238) do
+ActiveRecord::Schema.define(version: 2025_04_13_141437) do
 
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
@@ -153,6 +153,8 @@ ActiveRecord::Schema.define(version: 2025_01_30_055238) do
     t.string "access_key", default: ""
     t.string "access_key_id", default: ""
     t.boolean "use_access_key", default: false
+    t.string "ami", default: ""
+    t.string "security_group", default: ""
   end
 
   create_table "course_user_data", force: :cascade do |t|
@@ -384,7 +386,6 @@ ActiveRecord::Schema.define(version: 2025_01_30_055238) do
     t.text "missing_problems"
     t.index ["assessment_id"], name: "index_submissions_on_assessment_id"
     t.index ["course_user_datum_id"], name: "index_submissions_on_course_user_datum_id"
-    t.index ["created_at"], name: "index_submissions_on_created_at"
   end
 
   create_table "users", force: :cascade do |t|
