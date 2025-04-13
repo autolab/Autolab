@@ -15,7 +15,7 @@ AMI
              options_for_select(@tagged_amis.map { |ami| ["Name: #{ami['name']}, ID: #{ami['id']}", ami['id']] }, f.object.ami),
              { include_blank: "Use Tango Default" } %>
 <br>
-Security Groups
+Security Group
 <%= f.select :security_group,
              options_for_select(@security_groups.map { |sg| ["Name: #{sg['name']}, ID: #{sg['id']}", sg['name']] }, f.object.security_group),
              { include_blank: "Use Tango Default" } %>
