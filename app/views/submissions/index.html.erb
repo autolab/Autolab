@@ -84,7 +84,7 @@
                   class: "btn submissions-main" } %>
   </div>
 
-  <div>
+  <div id="regrade-all-html">
     <%= link_to "<i class='material-icons left submissions-icons'>cached</i>Regrade All".html_safe,
                 regradeAll_course_assessment_path(@course, @assessment),
                 { method: :post,

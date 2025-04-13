@@ -303,6 +303,7 @@ $(document).ready(function() {
 
     if (!is_autograded) {
       $('#regrade-selected').hide();
+      $('#regrade-all-html').hide();
     }
 
     // base URLs for selected buttons
