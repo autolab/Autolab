@@ -62,11 +62,14 @@
           <td><span class="moment-date-time"><%= grade[:time] %></span></td>
           <% if @colspec %>
             <% @colspec.each_with_index do |c, i| %>
-              <%# this is a hack for 15-122's image lab.  It displays b64 encoded results in image tags %>
               <% if c["img"] %>
-                <td><img src="data:image/png;base64,<%= grade[:entry][i] %>"></td>
+                <% if grade[:entry].is_a?(Array) && grade[:entry].length > i && !grade[:entry][i].nil? %>
+                  <td><img src="data:image/png;base64,<%= grade[:entry][i] %>"></td>
+                <% else %>
+                  <%= render 'error_icon' %>
+                <% end %>
               <% else %>
-                <% if grade[:entry].is_a?(Array) && grade[:entry].length > i %>
+                <% if grade[:entry].is_a?(Array) && grade[:entry].length > i && !grade[:entry][i].nil? %>
                   <td><%= grade[:entry][i] %></td>
                 <% else %>
                   <%= render 'error_icon' %>
@@ -74,10 +77,13 @@
               <% end %>
             <% end %>
           <% else %>
-            <%# this should be guaranteed to be an array, but for redundancy, check that entry is array %>
             <% if grade[:entry].is_a?(Array) %>
               <% grade[:entry].each do |column| %>
-                <td><%= column %></td>
+                <% if !column.nil? %>
+                  <td><%= column %></td>
+                <% else %>
+                  <%= render 'error_icon' %>
+                <% end %>
               <% end %>
             <% else %>
               <%= render 'error_icon' %>
