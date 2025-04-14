@@ -10,9 +10,9 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2024_04_06_174050) do
+ActiveRecord::Schema.define(version: 2024_12_11_042124) do
 
-  create_table "active_storage_attachments", force: :cascade do |t|
+  create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
     t.bigint "record_id", null: false
@@ -22,7 +22,7 @@ ActiveRecord::Schema.define(version: 2024_04_06_174050) do
     t.index ["record_type", "record_id", "name", "blob_id"], name: "index_active_storage_attachments_uniqueness", unique: true
   end
 
-  create_table "active_storage_blobs", force: :cascade do |t|
+  create_table "active_storage_blobs", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "key", null: false
     t.string "filename", null: false
     t.string "content_type"
@@ -34,13 +34,13 @@ ActiveRecord::Schema.define(version: 2024_04_06_174050) do
     t.index ["key"], name: "index_active_storage_blobs_on_key", unique: true
   end
 
-  create_table "active_storage_variant_records", force: :cascade do |t|
+  create_table "active_storage_variant_records", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.string "variation_digest", null: false
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
   end
 
-  create_table "annotations", force: :cascade do |t|
+  create_table "annotations", id: :integer, charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.integer "submission_id"
     t.string "filename"
     t.integer "position"
@@ -56,11 +56,11 @@ ActiveRecord::Schema.define(version: 2024_04_06_174050) do
     t.boolean "global_comment", default: false
   end
 
-  create_table "announcements", force: :cascade do |t|
+  create_table "announcements", id: :integer, charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "title"
     t.text "description"
-    t.datetime "start_date"
-    t.datetime "end_date"
+    t.timestamp "start_date"
+    t.timestamp "end_date"
     t.integer "course_user_datum_id"
     t.integer "course_id"
     t.datetime "created_at"
@@ -69,7 +69,7 @@ ActiveRecord::Schema.define(version: 2024_04_06_174050) do
     t.boolean "system", default: false, null: false
   end
 
-  create_table "assessment_user_data", force: :cascade do |t|
+  create_table "assessment_user_data", id: :integer, charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.integer "course_user_datum_id", null: false
     t.integer "assessment_id", null: false
     t.integer "latest_submission_id"
@@ -85,10 +85,10 @@ ActiveRecord::Schema.define(version: 2024_04_06_174050) do
     t.index ["latest_submission_id"], name: "index_assessment_user_data_on_latest_submission_id", unique: true
   end
 
-  create_table "assessments", force: :cascade do |t|
-    t.datetime "due_at"
-    t.datetime "end_at"
-    t.datetime "start_at"
+  create_table "assessments", id: :integer, charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.timestamp "due_at"
+    t.timestamp "end_at"
+    t.timestamp "start_at"
     t.string "name"
     t.text "description"
     t.datetime "created_at"
@@ -121,7 +121,7 @@ ActiveRecord::Schema.define(version: 2024_04_06_174050) do
     t.boolean "disable_network", default: false
   end
 
-  create_table "attachments", force: :cascade do |t|
+  create_table "attachments", id: :integer, charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "filename"
     t.string "mime_type"
     t.string "name"
@@ -136,7 +136,7 @@ ActiveRecord::Schema.define(version: 2024_04_06_174050) do
     t.index ["slug"], name: "index_attachments_on_slug", unique: true
   end
 
-  create_table "authentications", force: :cascade do |t|
+  create_table "authentications", id: :integer, charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "provider", null: false
     t.string "uid", null: false
     t.integer "user_id"
@@ -144,14 +144,18 @@ ActiveRecord::Schema.define(version: 2024_04_06_174050) do
     t.datetime "updated_at"
   end
 
-  create_table "autograders", force: :cascade do |t|
+  create_table "autograders", id: :integer, charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.integer "assessment_id"
     t.integer "autograde_timeout"
     t.string "autograde_image"
     t.boolean "release_score"
+    t.string "instance_type", default: ""
+    t.string "access_key", default: ""
+    t.string "access_key_id", default: ""
+    t.boolean "use_access_key", default: false
   end
 
-  create_table "course_user_data", force: :cascade do |t|
+  create_table "course_user_data", id: :integer, charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "lecture"
     t.string "section", default: ""
     t.string "grade_policy", default: ""
@@ -167,7 +171,7 @@ ActiveRecord::Schema.define(version: 2024_04_06_174050) do
     t.string "course_number", default: ""
   end
 
-  create_table "courses", force: :cascade do |t|
+  create_table "courses", id: :integer, charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "name"
     t.string "semester"
     t.integer "late_slack"
@@ -187,14 +191,14 @@ ActiveRecord::Schema.define(version: 2024_04_06_174050) do
     t.boolean "disable_on_end", default: false
   end
 
-  create_table "extensions", force: :cascade do |t|
+  create_table "extensions", id: :integer, charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.integer "course_user_datum_id"
     t.integer "assessment_id"
     t.integer "days"
     t.boolean "infinite", default: false, null: false
   end
 
-  create_table "friendly_id_slugs", charset: "utf8mb3", force: :cascade do |t|
+  create_table "friendly_id_slugs", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "slug", null: false
     t.integer "sluggable_id", null: false
     t.string "sluggable_type", limit: 50
@@ -205,7 +209,7 @@ ActiveRecord::Schema.define(version: 2024_04_06_174050) do
     t.index ["sluggable_type", "sluggable_id"], name: "index_friendly_id_slugs_on_sluggable_type_and_sluggable_id"
   end
 
-  create_table "github_integrations", force: :cascade do |t|
+  create_table "github_integrations", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "oauth_state"
     t.text "access_token_ciphertext"
     t.integer "user_id"
@@ -215,37 +219,37 @@ ActiveRecord::Schema.define(version: 2024_04_06_174050) do
     t.index ["user_id"], name: "index_github_integrations_on_user_id", unique: true
   end
 
-  create_table "groups", force: :cascade do |t|
+  create_table "groups", id: :integer, charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "name"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
 
-  create_table "lti_course_data", force: :cascade do |t|
+  create_table "lti_course_data", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "context_id"
     t.integer "course_id"
     t.datetime "last_synced"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
     t.string "membership_url"
     t.string "platform"
     t.boolean "auto_sync", default: false
     t.boolean "drop_missing_students", default: false
   end
 
-  create_table "module_data", force: :cascade do |t|
+  create_table "module_data", id: :integer, charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.integer "field_id"
     t.integer "data_id"
     t.binary "data"
   end
 
-  create_table "module_fields", force: :cascade do |t|
+  create_table "module_fields", id: :integer, charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.integer "user_module_id"
     t.string "name"
     t.string "data_type"
   end
 
-  create_table "oauth_access_grants", force: :cascade do |t|
+  create_table "oauth_access_grants", id: :integer, charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.integer "resource_owner_id", null: false
     t.integer "application_id", null: false
     t.string "token", null: false
@@ -254,10 +258,11 @@ ActiveRecord::Schema.define(version: 2024_04_06_174050) do
     t.datetime "created_at", null: false
     t.datetime "revoked_at"
     t.string "scopes"
+    t.index ["application_id"], name: "fk_rails_b4b53e07b8"
     t.index ["token"], name: "index_oauth_access_grants_on_token", unique: true
   end
 
-  create_table "oauth_access_tokens", force: :cascade do |t|
+  create_table "oauth_access_tokens", id: :integer, charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.integer "resource_owner_id"
     t.integer "application_id"
     t.string "token", null: false
@@ -267,12 +272,13 @@ ActiveRecord::Schema.define(version: 2024_04_06_174050) do
     t.datetime "created_at", null: false
     t.string "scopes"
     t.string "previous_refresh_token", default: "", null: false
+    t.index ["application_id"], name: "fk_rails_732cb83ab7"
     t.index ["refresh_token"], name: "index_oauth_access_tokens_on_refresh_token", unique: true
     t.index ["resource_owner_id"], name: "index_oauth_access_tokens_on_resource_owner_id"
     t.index ["token"], name: "index_oauth_access_tokens_on_token", unique: true
   end
 
-  create_table "oauth_applications", force: :cascade do |t|
+  create_table "oauth_applications", id: :integer, charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "name", null: false
     t.string "uid", null: false
     t.string "secret", null: false
@@ -284,7 +290,7 @@ ActiveRecord::Schema.define(version: 2024_04_06_174050) do
     t.index ["uid"], name: "index_oauth_applications_on_uid", unique: true
   end
 
-  create_table "oauth_device_flow_requests", force: :cascade do |t|
+  create_table "oauth_device_flow_requests", id: :integer, charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.integer "application_id", null: false
     t.string "scopes", default: "", null: false
     t.string "device_code", null: false
@@ -294,11 +300,12 @@ ActiveRecord::Schema.define(version: 2024_04_06_174050) do
     t.datetime "resolved_at"
     t.integer "resource_owner_id"
     t.string "access_code"
+    t.index ["application_id"], name: "fk_rails_4035c6e0ed"
     t.index ["device_code"], name: "index_oauth_device_flow_requests_on_device_code", unique: true
     t.index ["user_code"], name: "index_oauth_device_flow_requests_on_user_code", unique: true
   end
 
-  create_table "problems", force: :cascade do |t|
+  create_table "problems", id: :integer, charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "name"
     t.text "description"
     t.integer "assessment_id"
@@ -310,7 +317,7 @@ ActiveRecord::Schema.define(version: 2024_04_06_174050) do
     t.index ["assessment_id", "name"], name: "problem_uniq", unique: true
   end
 
-  create_table "risk_conditions", force: :cascade do |t|
+  create_table "risk_conditions", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.integer "condition_type"
     t.text "parameters"
     t.integer "version"
@@ -319,9 +326,9 @@ ActiveRecord::Schema.define(version: 2024_04_06_174050) do
     t.integer "course_id"
   end
 
-  create_table "scheduler", force: :cascade do |t|
+  create_table "scheduler", id: :integer, charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "action"
-    t.datetime "next"
+    t.timestamp "next"
     t.integer "interval"
     t.integer "course_id"
     t.datetime "created_at"
@@ -330,20 +337,20 @@ ActiveRecord::Schema.define(version: 2024_04_06_174050) do
     t.boolean "disabled", default: false
   end
 
-  create_table "score_adjustments", force: :cascade do |t|
+  create_table "score_adjustments", id: :integer, charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.integer "kind", null: false
     t.float "value", null: false
     t.string "type", default: "Tweak", null: false
   end
 
-  create_table "scoreboards", force: :cascade do |t|
+  create_table "scoreboards", id: :integer, charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.integer "assessment_id"
     t.text "banner"
     t.text "colspec"
     t.boolean "include_instructors", default: false
   end
 
-  create_table "scores", force: :cascade do |t|
+  create_table "scores", id: :integer, charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.integer "submission_id"
     t.float "score"
     t.text "feedback", size: :medium
@@ -356,7 +363,7 @@ ActiveRecord::Schema.define(version: 2024_04_06_174050) do
     t.index ["submission_id"], name: "index_scores_on_submission_id"
   end
 
-  create_table "submissions", force: :cascade do |t|
+  create_table "submissions", id: :integer, charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.integer "version"
     t.integer "course_user_datum_id"
     t.integer "assessment_id"
@@ -382,7 +389,7 @@ ActiveRecord::Schema.define(version: 2024_04_06_174050) do
     t.index ["course_user_datum_id"], name: "index_submissions_on_course_user_datum_id"
   end
 
-  create_table "users", force: :cascade do |t|
+  create_table "users", id: :integer, charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "email", default: "", null: false
     t.string "first_name", default: "", null: false
     t.string "last_name", default: "", null: false
@@ -411,20 +418,20 @@ ActiveRecord::Schema.define(version: 2024_04_06_174050) do
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
 
-  create_table "watchlist_configurations", force: :cascade do |t|
+  create_table "watchlist_configurations", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.json "category_blocklist"
     t.json "assessment_blocklist"
-    t.integer "course_id"
+    t.bigint "course_id"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.boolean "allow_ca", default: false
     t.index ["course_id"], name: "index_watchlist_configurations_on_course_id"
   end
 
-  create_table "watchlist_instances", force: :cascade do |t|
-    t.integer "course_user_datum_id"
-    t.integer "course_id"
-    t.integer "risk_condition_id"
+  create_table "watchlist_instances", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.bigint "course_user_datum_id"
+    t.bigint "course_id"
+    t.bigint "risk_condition_id"
     t.integer "status", default: 0
     t.boolean "archived", default: false
     t.datetime "created_at", null: false
@@ -437,4 +444,8 @@ ActiveRecord::Schema.define(version: 2024_04_06_174050) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "github_integrations", "users"
+  add_foreign_key "oauth_access_grants", "oauth_applications", column: "application_id"
+  add_foreign_key "oauth_access_tokens", "oauth_applications", column: "application_id"
+  add_foreign_key "oauth_device_flow_requests", "oauth_applications", column: "application_id"
 end
