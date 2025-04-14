@@ -329,9 +329,56 @@ $(document).ready(function() {
       }
     }
 
+    $(document).on("click", "#regrade-all-btn, #regrade-all-trigger", function (event) {
+      event.preventDefault();
+      if (!confirm(`Are you sure you want to regrade all selected submissions?`)) return;
+      const icon = $("#regrade-all-icon");
+      const button = $("#regrade-all-btn");
+      const link = $('#regrade-all-trigger');
+      let refreshInterval = setInterval(() => {
+        location.reload();
+      }, 5000);
+
+      $.ajax({
+        url: "regradeAll",
+        type: "POST",
+        contentType: "application/json",
+        headers: {
+          "X-CSRF-Token": $('meta[name="csrf-token"]').attr("content")
+        },
+        beforeSend: function () {
+          if (icon && button) {
+            button.addClass("disabled");
+            link.addClass("disabled-link");
+            icon.text("autorenew");
+            icon.addClass("loading-icon");
+          }
+        },
+        success: function (response) {
+          clearInterval(refreshInterval);
+          if (response.redirect) {
+            console.log(response.redirect);
+            window.location.href = response.redirect;
+            return;
+          }
+          if (response.error) {
+            alert(response.error);
+          }
+          if (response.success) {
+            alert(response.success);
+          }
+        },
+        error: function () {
+          clearInterval(refreshInterval);
+          alert("An error occurred while regrading.");
+        }
+      });
+    });
+
     function changeButtonStates(state) {
       buttonIDs.forEach((id) => {
         const button = $(id);
+        const icon = button.find("i");
         if (state) {
           if (id === "#download-selected") {
             $(id).prop('href', baseURLs[id]);
@@ -373,6 +420,13 @@ $(document).ready(function() {
               dataType: "json",
               headers: {
                 "X-CSRF-Token": $('meta[name="csrf-token"]').attr("content"),
+              },
+              beforeSend: function () {
+                button.addClass('disabled');
+                if (icon) {
+                  icon.text("autorenew");
+                  icon.addClass("loading-icon");
+                }
               },
               success: function (response) {
                 clearInterval(refreshInterval);

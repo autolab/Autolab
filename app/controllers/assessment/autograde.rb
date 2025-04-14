@@ -105,8 +105,7 @@ module AssessmentAutograde
     # any handins that fail.
     submissions = submission_ids.filter_map do |sid|
       _is_i?(sid) ? @assessment.submissions.find_by_id(sid) : nil
-    end
-
+    end.compact
     begin
       failed_list = sendJob_batch(@course, @assessment, submissions, @cud)
     rescue AssessmentAutogradeCore::AutogradeError => e
@@ -119,7 +118,7 @@ module AssessmentAutograde
 
     failure_jobs = failed_list.length
     if failure_jobs > 0
-      flash[:error] = 
+      flash[:error] =
         "Warning: Could not regrade #{ActionController::Base.helpers.pluralize(failure_jobs, 
 "submission")}:<br>"
       failed_list.each do |failure|
@@ -193,7 +192,10 @@ success_jobs, "submission")}</a>"
     # For both :success and :error
     flash[:html_safe] = true
 
-    redirect_to([@course, @assessment, :submissions]) && return
+    respond_to do |format|
+      format.html { redirect_to [@course, @assessment, :submissions] }
+      format.json { render json: { redirect: url_for([@course, @assessment, :submissions]) } }
+    end
   end
 
   ##
@@ -260,7 +262,7 @@ submission_id: submissions[0].id, feedback: assessment.problems[0].id)}\">View a
     job
   end
 
-  def _is_i?(string)
-    !!(string =~ /\A[-+]?[0-9]+\z/)
+  def _is_i?(value)
+    value.is_a?(Integer) || (value.is_a?(String) && value =~ /\A[-+]?\d+\z/)
   end
 end
