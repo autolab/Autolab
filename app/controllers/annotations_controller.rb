@@ -13,7 +13,12 @@ class AnnotationsController < ApplicationController
   # POST /:course/annotations.json
   action_auth_level :create, :course_assistant
   def create
-    annotation = @submission.annotations.new(annotation_params)
+    updated_params = if annotation_params[:filename].blank?
+                       annotation_params.merge({ filename: @submission.handin_file_path })
+                     else
+                       annotation_params
+                     end
+    annotation = @submission.annotations.new(updated_params)
 
     ActiveRecord::Base.transaction do
       annotation.save
@@ -65,7 +70,6 @@ class AnnotationsController < ApplicationController
                        .joins(:submission).where(shared_comment: true)
                        .where("submissions.assessment_id = ?", @assessment.id)
                        .order(updated_at: :desc).limit(50).as_json
-
     render json: result, status: :ok
   end
 

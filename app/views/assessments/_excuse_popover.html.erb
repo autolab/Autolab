@@ -1,0 +1,16 @@
+<div class="excuse-popover-content">
+  <div class="excuse-popover-content-text excuse-popover-content-header">
+    MARK UNEXCUSED?
+  </div>
+  <div class="excuse-popover-content-text">
+    <%= email %>
+  </div>
+  <div class="excuse-popover-buttons">
+    <a class="btn excuse-popover-cancel">CANCEL</a>
+    <%= link_to "CONFIRM".html_safe,
+                unexcuse_course_assessment_submissions_path(@course, @assessment, submission:),
+                { method: "post",
+                  title: "Unexcuse this student",
+                  class: "btn excuse-popover-confirm" } %>
+  </div>
+</div>
