@@ -161,9 +161,15 @@ $(document).ready(function() {
                   ${submission.total}
                 </td>
                 ${submission.problems.
-                map((problem) =>
-                  `<td class="submissions-td">${data.scores[submission.id]?.[problem.id]?.['score'] ?? "-"}</td>`
-                ).join('')}
+                    map((problem) =>
+                        `<td class="submissions-td">
+                        ${data.scores[submission.id]?.[problem.id]?.['score'] !== undefined
+                          ? `<a href="viewFeedback?submission_id=${submission.id}&feedback=${problem.id}">
+                        ${data.scores[submission.id][problem.id]['score'].toFixed(1)}
+                     </a>`
+                        : "-"}
+                    </td>`
+                    ).join('')}
                 <td class="submissions-td">
                   ${submission.late_penalty}
                 </td>
@@ -283,7 +289,6 @@ $(document).ready(function() {
       changeButtonStates(!selectedSubmissions.length); // update button states
     }
 
-
     // SELECTED BUTTONS
 
     // create selected buttons inside datatable wrapper
@@ -301,6 +306,7 @@ $(document).ready(function() {
 
     if (!is_autograded) {
       $('#regrade-selected').hide();
+      $('#regrade-all-html').hide();
     }
 
     // base URLs for selected buttons
@@ -308,6 +314,20 @@ $(document).ready(function() {
     buttonIDs.forEach(function(id) {
       baseURLs[id] = $(id).prop('href');
     });
+
+    function updateSelectedCount(numericSubmissions) {
+      const allBoxes = $('#submissions tbody .cbox').length;
+      const selectedCountElement = document.getElementById("selected-count-html");
+      const placeholder = document.querySelector(".selected-count-placeholder");
+      if (selectedCountElement) {
+        selectedCountElement.innerText = `All ${numericSubmissions.length} submissions on this page selected.`;
+        if (numericSubmissions.length === allBoxes) {
+          placeholder.style.display = "block";
+        } else if (numericSubmissions.length <= allBoxes) {
+          placeholder.style.display = "none";
+        }
+      }
+    }
 
     function changeButtonStates(state) {
       buttonIDs.forEach((id) => {
@@ -413,6 +433,7 @@ $(document).ready(function() {
       const numericSelectedSubmissions = selectedSubmissions.filter(submissionId => typeof submissionId === 'number');
       // Update the "Select All" checkbox based on filtered numeric submissions
       $('#cbox-select-all').prop('checked', numericSelectedSubmissions.length === $('#submissions tbody .cbox').length);
+      updateSelectedCount(numericSelectedSubmissions);
       changeButtonStates(disableButtons);
     }
 
