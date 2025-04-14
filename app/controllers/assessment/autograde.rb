@@ -28,10 +28,11 @@ module AssessmentAutograde
 
     extend_config_module(@assessment, submissions[0], @cud)
 
-    if (@assessment.use_unique_module_name)
+    if @assessment.use_unique_module_name
       require_relative(@assessment.unique_config_file_path)
     else
-      require_relative(Rails.root.join("assessmentConfig", "#{@course.name}-#{@assessment.name}.rb"))
+      require_relative(Rails.root.join("assessmentConfig", 
+"#{@course.name}-#{@assessment.name}.rb"))
     end
 
     if @assessment.overwrites_method?(:autogradeDone)
@@ -106,20 +107,23 @@ module AssessmentAutograde
 
     failure_jobs = failed_list.length
     if failure_jobs > 0
-      flash[:error] = "Warning: Could not regrade #{ActionController::Base.helpers.pluralize(failure_jobs, "submission")}:<br>"
+      flash[:error] = 
+        "Warning: Could not regrade #{ActionController::Base.helpers.pluralize(failure_jobs, 
+"submission")}:<br>"
       failed_list.each do |failure|
-        if failure[:error].error_code == :nil_submission
-          flash[:error] += "Unrecognized submission ID<br>"
-        else
-          flash[:error] += "#{failure[:submission].filename}: #{failure[:error].message}<br>"
-        end
+        flash[:error] += if failure[:error].error_code == :nil_submission
+                           "Unrecognized submission ID<br>"
+                         else
+                           "#{failure[:submission].filename}: #{failure[:error].message}<br>"
+                         end
       end
     end
 
     success_jobs = submissions.size - failure_jobs
     if success_jobs > 0
-      link = "<a href=\"#{url_for(controller: 'jobs')}\">#{ActionController::Base.helpers.pluralize(success_jobs, "submission")}</a>"
-      flash[:success] = ("Regrading #{link}")
+      link = "<a href=\"#{url_for(controller: 'jobs')}\">#{ActionController::Base.helpers.pluralize(
+success_jobs, "submission")}</a>"
+      flash[:success] = "Regrading #{link}"
     end
 
     # For both :success and :error
@@ -136,7 +140,7 @@ module AssessmentAutograde
   # action_auth_level :regradeAll, :instructor
   def regradeAll
     # Grab all of the submissions for this assessment
-    @submissions = @assessment.submissions.where(special_type: Submission::NORMAL)
+    @submissions = @assessment.submissions.where(special_type: [Submission::NORMAL, nil])
                    .order("version DESC")
 
     last_submissions = @submissions.latest
@@ -153,20 +157,22 @@ module AssessmentAutograde
 
     failure_jobs = failed_list.length
     if failure_jobs > 0
-      flash[:error] = "Warning: Could not regrade #{ActionController::Base.helpers.pluralize(failure_jobs, "submission")}:<br>"
+      flash[:error] =
+        "Warning: Could not regrade #{ActionController::Base.helpers.pluralize(failure_jobs, "submission")}"
+
+      @failure_messages = []
       failed_list.each do |failure|
-        if failure[:error].error_code == :nil_submission
-          flash[:error] += "Unrecognized submission ID<br>"
-        else
-          flash[:error] += "#{failure[:submission].filename}: #{failure[:error].message}<br>"
-        end
+        @failure_messages << if failure[:error].error_code == :nil_submission
+                               "Unrecognized submission ID"
+                             else
+                               "#{failure[:submission].filename}: #{failure[:error].message}"
+                             end
       end
     end
 
     success_jobs = last_submissions.size - failure_jobs
     if success_jobs > 0
-      link = "<a href=\"#{url_for(controller: 'jobs')}\">#{ActionController::Base.helpers.pluralize(success_jobs, "student")}</a>"
-      flash[:success] = ("Regrading the most recent submissions from #{link}")
+      flash[:success] = "Regrading #{success_jobs} recent submissions"
     end
 
     # For both :success and :error
@@ -189,7 +195,8 @@ module AssessmentAutograde
   #
   def sendJob_AddHTMLMessages(course, assessment, submissions)
     # Check for nil first, since students should know about this
-    flash[:error] = "Submission could not be autograded due to an error in creation" && return if submissions.blank?
+    flash[:error] = 
+      "Submission could not be autograded due to an error in creation" && return if submissions.blank?
 
     begin
       job = sendJob(course, assessment, submissions, @cud)
@@ -198,25 +205,29 @@ module AssessmentAutograde
       when :missing_autograding_props
         flash[:error] = "Autograding failed because there are no autograding properties."
         if @cud.instructor?
-          link = (view_context.link_to "Autograder Settings", [:edit, course, assessment, :autograder])
+          link = (view_context.link_to "Autograder Settings", 
+[:edit, course, assessment, :autograder])
           flash[:error] += " Visit #{link} to set the autograding properties."
           flash[:html_safe] = true
         else
           flash[:error] += " Please contact your instructor."
         end
       when :tango_open
-        flash[:error] = "There was an error submitting your autograding job. We are likely down for maintenance if issues persist, please contact #{Rails.configuration.school['support_email']}"
+        flash[:error] = 
+          "There was an error submitting your autograding job. We are likely down for maintenance if issues persist, please contact #{Rails.configuration.school['support_email']}"
       when :tango_upload
         flash[:error] = "There was an error uploading the submission file."
       when :tango_add_job
         flash[:error] = "Submission was rejected by autograder."
         if @cud.instructor?
-          link = (view_context.link_to "Autograder Settings", [:edit, course, assessment, :autograder])
+          link = (view_context.link_to "Autograder Settings", 
+[:edit, course, assessment, :autograder])
           flash[:error] += " Verify the autograding properties at #{link}.<br>ErrorMsg: " + e.additional_data
           flash[:html_safe] = true
         end
       when :missing_autograder_file
-        flash[:error] = "One or more files are missing in the server. Please contact the instructor. The missing files are: " + e.additional_data
+        flash[:error] = 
+          "One or more files are missing in the server. Please contact the instructor. The missing files are: " + e.additional_data
       else
         flash[:error] = "Autograding failed because of an unexpected exception in the system."
       end
@@ -224,10 +235,12 @@ module AssessmentAutograde
       raise e # pass it on
     end
 
-    link = "<a href=\"#{url_for(controller: 'jobs', action: 'getjob', id: job)}\">Job ID = #{job}</a>"
-    viewFeedbackLink = "<a href=\"#{url_for(controller: 'assessments', action: 'viewFeedback', submission_id: submissions[0].id, feedback: assessment.problems[0].id)}\">View autograding progress.</a>"
-    flash[:success] = ("Submitted file #{submissions[0].filename} (#{link}) for autograding." \
-      " #{viewFeedbackLink}")
+    link = "<a href=\"#{url_for(controller: 'jobs', action: 'getjob', 
+id: job)}\">Job ID = #{job}</a>"
+    viewFeedbackLink = "<a href=\"#{url_for(controller: 'assessments', action: 'viewFeedback', 
+submission_id: submissions[0].id, feedback: assessment.problems[0].id)}\">View autograding progress.</a>"
+    flash[:success] = "Submitted file #{submissions[0].filename} (#{link}) for autograding." \
+      " #{viewFeedbackLink}"
     flash[:html_safe] = true
     job
   end

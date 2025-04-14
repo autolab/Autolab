@@ -75,14 +75,23 @@
                 missing_course_assessment_submissions_path(@course, @assessment),
                 { title: "List the students who have not submitted anything",
                   class: "btn submissions-main" } %>
-    </div>
+  </div>
 
-    <div class="buttons-spacing">
+  <div class="buttons-spacing">
     <%= link_to "<i class='material-icons left submissions-icons'>event</i>Manage Extensions".html_safe,
                 [@course, @assessment, :extensions],
                 { title: "Manage extensions for this assignment",
                   class: "btn submissions-main" } %>
-    </div>
+  </div>
+
+  <div id="regrade-all-html">
+    <%= link_to "<i class='material-icons left submissions-icons'>cached</i>Regrade All".html_safe,
+                regradeAll_course_assessment_path(@course, @assessment),
+                { method: :post,
+                  title: "Regrade all submissions for this assignment",
+                  class: "btn submissions-main",
+                  data: { confirm: "Are you sure you want to regrade all #{@assessment.submissions.where(special_type: [Submission::NORMAL, nil]).latest.count} latest submissions?" } } %>
+  </div>
 </div>
 
 <%# Selected buttons, hidden so HTML can be accessed in DataTables %>
@@ -119,7 +128,13 @@
                   title: "Excuse selected submissions",
                   class: "btn submissions-selected" } %>
   </div>
+</div>
 
+<div class="selected-count-placeholder" style="display: none;">
+  <span id="selected-count-html">0 submissions selected</span>
+  <span>Click <%= link_to "Regrade All", regradeAll_course_assessment_path(@course, @assessment),
+                          { method: :post, title: "Regrade all submissions", class: "selected-count-red",
+                            data: { confirm: "Are you sure you want to regrade all #{@assessment.submissions.where(special_type: [Submission::NORMAL, nil]).latest.count} latest submissions?" } } %>  to regrade all </span><%= @submissions.latest.length %><span> latest submissions.</span>
 </div>
 
 <table class="prettyBorder" id="submissions">

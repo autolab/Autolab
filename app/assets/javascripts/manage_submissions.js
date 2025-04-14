@@ -303,6 +303,7 @@ $(document).ready(function() {
 
     if (!is_autograded) {
       $('#regrade-selected').hide();
+      $('#regrade-all-html').hide();
     }
 
     // base URLs for selected buttons
@@ -310,6 +311,20 @@ $(document).ready(function() {
     buttonIDs.forEach(function(id) {
       baseURLs[id] = $(id).prop('href');
     });
+
+    function updateSelectedCount(numericSubmissions) {
+      const allBoxes = $('#submissions tbody .cbox').length;
+      const selectedCountElement = document.getElementById("selected-count-html");
+      const placeholder = document.querySelector(".selected-count-placeholder");
+      if (selectedCountElement) {
+        selectedCountElement.innerText = `All ${numericSubmissions.length} submissions on this page selected.`;
+        if (numericSubmissions.length === allBoxes) {
+          placeholder.style.display = "block";
+        } else if (numericSubmissions.length <= allBoxes) {
+          placeholder.style.display = "none";
+        }
+      }
+    }
 
     function changeButtonStates(state) {
       state ? buttonIDs.forEach((id) => $(id).addClass('disabled')) : buttonIDs.forEach((id) => $(id).removeClass('disabled'));
@@ -362,6 +377,7 @@ $(document).ready(function() {
       const numericSelectedSubmissions = selectedSubmissions.filter(submissionId => typeof submissionId === 'number');
       // Update the "Select All" checkbox based on filtered numeric submissions
       $('#cbox-select-all').prop('checked', numericSelectedSubmissions.length === $('#submissions tbody .cbox').length);
+      updateSelectedCount(numericSelectedSubmissions);
       changeButtonStates(disableButtons);
     }
 
