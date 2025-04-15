@@ -5,12 +5,14 @@ require "json"
 require "tempfile"
 
 class SubmissionsController < ApplicationController
+  include ApplicationHelper
   # inherited from ApplicationController
   before_action :set_assessment
   before_action :set_assessment_breadcrumb
   before_action :set_manage_submissions_breadcrumb, except: %i[index]
   before_action :set_submission, only: %i[destroy destroyConfirm download edit update
-                                          view release_student_grade unrelease_student_grade]
+                                          view release_student_grade unrelease_student_grade
+                                          tweak_total]
   before_action :get_submission_file, only: %i[download view]
 
   action_auth_level :index, :instructor
@@ -18,6 +20,62 @@ class SubmissionsController < ApplicationController
     @submissions = @assessment.submissions.includes({ course_user_datum: :user })
                               .order("created_at DESC")
     @autograded = @assessment.has_autograder?
+
+    @submissions_to_cud = {}
+    @submissions.each do |submission|
+      currSubId = submission.id
+      currCud = submission.course_user_datum_id
+      @submissions_to_cud[currSubId] = currCud
+    end
+    @submissions_to_cud = @submissions_to_cud.to_json
+    @excused_cids = []
+    excused_students = AssessmentUserDatum.where(
+      assessment_id: @assessment.id,
+      grade_type: AssessmentUserDatum::EXCUSED
+    )
+    @excused_cids = excused_students.pluck(:course_user_datum_id)
+    @problems = @assessment.problems.to_a
+  end
+
+  action_auth_level :score_details, :instructor
+  def score_details
+    cuid = params[:cuid]
+    cud = CourseUserDatum.find(cuid)
+    submissions = @assessment.submissions.where(course_user_datum_id: cuid).order("created_at DESC")
+    scores = submissions.map(&:scores).flatten
+
+    # make a dictionary that makes submission id to score data
+    submission_id_to_score_data = {}
+    scores.each do |score|
+      if submission_id_to_score_data[score.submission_id].nil?
+        submission_id_to_score_data[score.submission_id] = {}
+      end
+      submission_id_to_score_data[score.submission_id][score.problem_id] = score
+    end
+
+    tweaks = {}
+    submission_info = submissions.as_json
+    submissions.each_with_index do |submission, index|
+      tweaks[submission.id] = submission.tweak
+      submission_info[index]["base_path"] =
+        course_assessment_submission_annotations_path(@course, @assessment, submission)
+      submission_info[index]["scores"] = Score.where(submission_id: submission.id)
+      submission_info[index]["tweak_total"] =
+        submission.global_annotations.empty? ? nil : submission.global_annotations.sum(:value)
+      total = computed_score { submission.final_score(cud) }
+      submission_info[index]["total"] =
+        submission.global_annotations.empty? ? total : total + submission_info[index]["tweak_total"]
+      submission_info[index]["late_penalty"] = computed_score { submission.late_penalty(cud) }
+    end
+
+    submissions.as_json(seen_by: @cud)
+
+    render json: { submissions: submission_info,
+                   scores: submission_id_to_score_data,
+                   tweaks: }, status: :ok
+  rescue StandardError => e
+    render json: { error: e.message }, status: :not_found
+    nil
   end
 
   action_auth_level :new, :instructor
@@ -125,10 +183,14 @@ class SubmissionsController < ApplicationController
 
   action_auth_level :destroy, :instructor
   def destroy
-    if @submission.destroy
-      flash[:success] = "Submission successfully destroyed"
+    if params["destroy-confirm-check"]
+      if @submission.destroy
+        flash[:success] = "Submission successfully destroyed."
+      else
+        flash[:error] = "Submission failed to be destroyed."
+      end
     else
-      flash[:error] = "Submission failed to be destroyed"
+      flash[:error] = "There was an error deleting the submission."
     end
     redirect_to(course_assessment_submissions_path(@submission.course_user_datum.course,
                                                    @submission.assessment))
@@ -136,6 +198,58 @@ class SubmissionsController < ApplicationController
 
   # page to show to instructor to confirm that they would like to
   # remove a given submission for a student
+  action_auth_level :destroy_batch, :instructor
+  def destroy_batch
+    request_body = request.body.read
+    submission_ids = JSON.parse(request_body)['submission_ids']
+    submission_ids = Array(submission_ids)
+    submissions = Submission.where(id: submission_ids)
+    scount = 0
+    fcount = 0
+
+    if submissions.empty? || submissions[0].nil?
+      return
+    end
+
+    submissions.each do |s|
+      if s.nil?
+        next
+      end
+
+      unless @cud.instructor || @cud.course_assistant || s.course_user_datum_id == @cud.id
+        flash[:error] =
+          "You do not have permission to delete #{s.course_user_datum.user.email}'s submission."
+        redirect_to(course_assessment_submissions_path(submissions[0].course_user_datum.course,
+                                                       submissions[0].assessment)) && return
+      end
+      if s.destroy
+        scount += 1
+      else
+        fcount += 1
+      end
+    end
+    if fcount == 0
+      flash[:success] =
+        "#{ActionController::Base.helpers.pluralize(scount,
+                                                    'submission')} destroyed.
+                                                    #{ActionController::Base.helpers.pluralize(
+                                                      fcount, 'submission'
+                                                    )} failed."
+    else
+      flash[:error] =
+        "#{ActionController::Base.helpers.pluralize(scount,
+                                                    'submission')} destroyed.
+                                                    #{ActionController::Base.helpers.pluralize(
+                                                      fcount, 'submission'
+                                                    )} failed."
+    end
+    respond_to do |format|
+      format.html { redirect_to [@course, @assessment, :submissions] }
+      format.json { render json: { redirect: url_for([@course, @assessment, :submissions]) } }
+    end
+  end
+
+  # this is good
   action_auth_level :destroyConfirm, :instructor
   def destroyConfirm; end
 
@@ -163,13 +277,9 @@ class SubmissionsController < ApplicationController
   end
 
   # should be okay, but untested
-  action_auth_level :downloadAll, :course_assistant
-  def downloadAll
-    failure_redirect_path = if @cud.course_assistant
-                              course_assessment_path(@course, @assessment)
-                            else
-                              course_assessment_submissions_path(@course, @assessment)
-                            end
+  action_auth_level :download_all, :course_assistant
+  def download_all
+    flash[:error] = "Cannot index submissions for nil assessment" if @assessment.nil?
 
     unless @assessment.valid?
       flash[:error] = "The assessment has errors which must be rectified."
@@ -182,7 +292,12 @@ class SubmissionsController < ApplicationController
 
     if @assessment.disable_handins
       flash[:error] = "There are no submissions to download."
-      redirect_to failure_redirect_path and return
+      if @cud.course_assistant
+        redirect_to course_assessment_path(@course, @assessment)
+      else
+        redirect_to course_assessment_submissions_path(@course, @assessment)
+      end
+      return
     end
 
     submissions = if params[:final]
@@ -190,6 +305,10 @@ class SubmissionsController < ApplicationController
                   else
                     @assessment.submissions.includes(:course_user_datum)
                   end
+
+    if submissions.empty?
+      return
+    end
 
     submissions = submissions.select do |s|
       p = s.handin_file_path
@@ -205,13 +324,154 @@ class SubmissionsController < ApplicationController
 
     if result.nil?
       flash[:error] = "There are no submissions to download."
-      redirect_to failure_redirect_path and return
+      redirect_to appropriate_redirect_path
+      return
     end
 
     send_data(result.read, # to read from stringIO object returned by create_zip
               type: "application/zip",
               disposition: "attachment", # tell browser to download
               filename: "#{@course.name}_#{@course.semester}_#{@assessment.name}_submissions.zip")
+  end
+
+  action_auth_level :download_batch, :course_assistant
+  def download_batch
+    submission_ids = params[:submission_ids]
+    flash[:error] = "Cannot index submissions for nil assessment" if @assessment.nil?
+
+    unless @assessment.valid?
+      @assessment.errors.full_messages.each do |msg|
+        flash[:error] += "<br>#{msg}"
+      end
+      flash[:html_safe] = true
+    end
+
+    submissions = @assessment.submissions.where(id: submission_ids).select do |submission|
+      @cud.can_administer?(submission.course_user_datum)
+    end
+
+    if submissions.empty? || submissions[0].nil?
+      return
+    end
+
+    filedata = submissions.collect do |s|
+      unless @cud.instructor || @cud.course_assistant || s.course_user_datum_id == @cud.id
+        flash[:error] =
+          "You do not have permission to download #{s.course_user_datum.user.email}'s submission."
+        redirect_to(course_assessment_submissions_path(submissions[0].course_user_datum.course,
+                                                       submissions[0].assessment)) && return
+      end
+      p = s.handin_file_path
+      email = s.course_user_datum.user.email
+      [p, download_filename(p, email)] if !p.nil? && File.exist?(p) && File.readable?(p)
+    end.compact
+
+    result = Archive.create_zip filedata # result is stringIO to be sent
+    if result.nil?
+      flash[:error] = "There are no submissions to download."
+      redirect_to appropriate_redirect_path
+      return
+    end
+
+    send_data(result.read, # to read from stringIO object returned by create_zip
+              type: "application/zip",
+              disposition: "attachment", # tell browser to download
+              filename: "#{@course.name}_#{@course.semester}_#{@assessment.name}_submissions.zip")
+  end
+
+  action_auth_level :submission_info, :instructor
+  def tweak_total
+    tweak =
+      @submission.global_annotations.empty? ? nil : @submission.global_annotations.sum(:value)
+    render json: tweak
+  end
+
+  action_auth_level :excuse_batch, :course_assistant
+  def excuse_batch
+    request_body = request.body.read
+    submission_ids = JSON.parse(request_body)['submission_ids']
+    submission_ids = Array(submission_ids)
+    flash[:error] = "Cannot index submissions for nil assessment" if @assessment.nil?
+
+    unless @assessment.valid?
+      @assessment.errors.full_messages.each do |msg|
+        flash[:error] += "<br>#{msg}"
+      end
+      flash[:html_safe] = true
+    end
+
+    submissions = submission_ids.map { |sid| @assessment.submissions.find_by(id: sid) }
+
+    if submissions.empty? || submissions[0].nil?
+      flash[:error] = "No students selected."
+      redirect_to course_assessment_submissions_path(@course, @assessment)
+      return
+    end
+
+    auds_to_excuse = []
+    submissions.each do |submission|
+      next if submission.nil?
+
+      aud = AssessmentUserDatum.find_by(
+        assessment_id: @assessment.id,
+        course_user_datum_id: submission.course_user_datum_id
+      )
+
+      if !aud.nil? && aud.grade_type != AssessmentUserDatum::EXCUSED
+        auds_to_excuse << aud
+      end
+    end
+
+    if auds_to_excuse.empty?
+      flash[:error] = "No students to excuse."
+      redirect_to course_assessment_submissions_path(@course, @assessment)
+      return
+    end
+
+    auds_to_excuse.each do |aud|
+      next if aud.update(grade_type: AssessmentUserDatum::EXCUSED)
+
+      student_email = aud.course_user_datum.user.email
+      student_name = aud.course_user_datum.user.name
+      flash[:error] ||= ""
+      flash[:error] += "Could not excuse student #{student_name} (#{student_email}): "\
+        "#{aud.errors.full_messages.join(', ')}"
+    end
+
+    flash[:success] =
+      "#{ActionController::Base.helpers.pluralize(auds_to_excuse.size, 'student')} excused."
+    respond_to do |format|
+      format.html { redirect_to [@course, @assessment, :submissions] }
+      format.json { render json: { redirect: url_for([@course, @assessment, :submissions]) } }
+    end
+  end
+
+  action_auth_level :unexcuse, :course_assistant
+  def unexcuse
+    submission_id = params[:submission]
+    flash[:error] = "Cannot index submission for nil assessment" if @assessment.nil?
+
+    unless @assessment.valid?
+      @assessment.errors.full_messages.each do |msg|
+        flash[:error] += "<br>#{msg}"
+      end
+      flash[:html_safe] = true
+    end
+
+    submission = @assessment.submissions.find_by(id: submission_id)
+
+    unless submission.nil?
+      aud = AssessmentUserDatum.find_by(
+        assessment_id: @assessment.id,
+        course_user_datum_id: submission.course_user_datum_id
+      )
+      if !aud.nil? && !aud.update(grade_type: AssessmentUserDatum::NORMAL)
+        flash[:error] = "Could not un-excuse student."
+      end
+    end
+
+    flash[:success] = "#{aud.course_user_datum.user.email} has been unexcused."
+    redirect_to course_assessment_submissions_path(@course, @assessment)
   end
 
   # Action to be taken when the user wants do download a submission but
@@ -233,7 +493,7 @@ class SubmissionsController < ApplicationController
     elsif params[:annotated]
       # Only show annotations if grades have been released or the user is an instructor
       @annotations = []
-      if @submission.grades_released?(@cud)
+      if @submission.grades_released?(@cud) || @cud.instructor || @cud.course_assistant
         @annotations = @submission.annotations.to_a
       end
 
@@ -453,7 +713,7 @@ class SubmissionsController < ApplicationController
     @annotations.sort! { |a, b| a.line.to_i <=> b.line.to_i }
 
     # Only show annotations if grades have been released or the user is an instructor
-    unless @submission.grades_released?(@cud)
+    unless @submission.grades_released?(@cud) || @cud.instructor || @cud.course_assistant
       @annotations = []
     end
 
@@ -618,6 +878,19 @@ class SubmissionsController < ApplicationController
   end
 
 private
+
+  def appropriate_redirect_path
+    if @cud.course_assistant
+      course_assessment_path(@course, @assessment)
+    else
+      course_assessment_submissions_path(@course, @assessment)
+    end
+  end
+
+  def new_submission_params
+    params.require(:submission).permit(:course_used_datum_id, :notes, :file,
+                                       tweak_attributes: %i[_destroy kind value])
+  end
 
   def edit_submission_params
     params.require(:submission).permit(:notes,

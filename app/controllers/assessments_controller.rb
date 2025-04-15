@@ -45,6 +45,9 @@ class AssessmentsController < ApplicationController
   action_auth_level :quickGetTotal, :course_assistant
   action_auth_level :statistics, :instructor
 
+  # Manage submissions
+  action_auth_level :excuse_popover, :course_assistant
+
   # Handin
   action_auth_level :handin, :student
 
@@ -213,9 +216,26 @@ class AssessmentsController < ApplicationController
     render json: import_results
   end
 
+  def excuse_popover
+    submission_id = params[:submission_id]
+    @submission = Submission.find(submission_id)
+    if @submission.course_user_datum.course != @course
+      render plain: "Unauthorized", status: :forbidden
+      return
+    end
+    @assessment = @submission.assessment
+    @student_email = @submission.course_user_datum.user.email
+
+    render partial: "excuse_popover", locals: {
+      email: @student_email,
+      submission: @submission
+    }
+  rescue ActiveRecord::RecordNotFound
+    render plain: "Submission not found", status: :not_found
+  end
+
   # import_assessment - Imports an existing assessment from local file system
   action_auth_level :import_assessment, :instructor
-
   def import_assessment
     if params[:assessment_name].blank?
       flash[:error] = "No assessment name specified."

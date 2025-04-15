@@ -1,7 +1,9 @@
 class UsersController < ApplicationController
   skip_before_action :set_course
   skip_before_action :authorize_user_for_course
-  skip_before_action :authenticate_for_action
+  skip_before_action :authenticate_for_action,
+                     except: [:change_password_for_user, :update_password_for_user,
+                              :lti_launch_link_course]
   skip_before_action :update_persistent_announcements
   before_action :set_gh_oauth_client, only: [:github_oauth, :github_oauth_callback]
   before_action :set_user,
@@ -117,9 +119,21 @@ class UsersController < ApplicationController
       save_worked = false
     end
     if save_worked
-      @user.send_reset_password_instructions
-      flash[:success] = "Successfully created user."
-      redirect_to(users_path) && return
+      begin
+        @user.send_reset_password_instructions
+        flash[:success] = "Successfully created user."
+      rescue Net::SMTPFatalError => e
+        error_message = e.message
+        flash[:notice] = "Successfully created user but reset password instructions were not sent.
+          Error message: #{error_message}"
+      rescue StandardError => e
+        error_message = e.message
+        flash[:error] = "Failed to create user: Incorrectly configured SMTP config:
+          #{error_message}"
+        @user.destroy
+      ensure
+        redirect_to(users_path)
+      end
     else
       render action: "new"
     end
@@ -151,6 +165,11 @@ class UsersController < ApplicationController
   action_auth_level :download_all_submissions, :student
   def download_all_submissions
     user = User.find(params[:id])
+    # user can only download their own submissions
+    if user != current_user
+      flash[:error] = "Permission denied: You are not allowed to download submissions of this user."
+      redirect_to(user_path(current_user)) && return
+    end
     submissions = if params[:final]
                     Submission.latest.where(course_user_datum: CourseUserDatum.where(user_id: user))
                   else
@@ -175,6 +194,8 @@ class UsersController < ApplicationController
 
     temp_file = Tempfile.new("autolab_submissions.zip")
     Zip::File.open(temp_file.path, Zip::File::CREATE) do |zipfile|
+      # track counts of each file name
+      track_duplicate_counts = Hash.new(0)
       submissions.each do |s|
         p = s.handin_file_path
         course_name = s.course_user_datum.course.name
@@ -182,6 +203,28 @@ class UsersController < ApplicationController
         course_directory = "#{filename}/#{course_name}"
         assignment_directory = "#{course_directory}/#{assignment_name}"
         entry_name = download_filename(p, assignment_name)
+        final_path = "#{assignment_directory}/#{entry_name}"
+        track_duplicate_counts[final_path] += 1
+      end
+
+      # track which version is being processed (for naming purposes)
+      filename_counts = Hash.new(0)
+      submissions.each do |s|
+        p = s.handin_file_path
+        course_name = s.course_user_datum.course.name
+        assignment_name = s.assessment.name
+        course_directory = "#{filename}/#{course_name}"
+        assignment_directory = "#{course_directory}/#{assignment_name}"
+        entry_name = download_filename(p, assignment_name)
+        final_path = "#{assignment_directory}/#{entry_name}"
+        filename_counts[final_path] += 1
+        # append version number to submission if more than one of same name
+        if track_duplicate_counts[final_path] > 1
+          version_suffix = "_ver#{filename_counts[final_path]}"
+          extname = File.extname(entry_name)
+          basename = File.basename(entry_name, extname)
+          entry_name = "#{basename}#{version_suffix}#{extname}"
+        end
         zipfile.add(File.join(assignment_directory, entry_name), p)
       end
     end
@@ -404,6 +447,7 @@ class UsersController < ApplicationController
     redirect_to(user_path)
   end
 
+  action_auth_level :update_password_for_user, :administrator
   def update_password_for_user
     @user = User.find_by(id: params[:id])
     return if params[:user].nil? || params[:user].is_a?(String) || @user.nil?

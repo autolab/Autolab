@@ -6,6 +6,7 @@ Rails.application.routes.draw do
     get 'lti_launch/oidc_login', to: "lti_launch#oidc_login"
     post 'lti_launch/launch', to: "lti_launch#launch"
     get 'lti_launch/launch', to: "lti_launch#launch"
+    get 'lti_launch/jwks', to: "lti_launch#jwks"
     post 'lti_nrps/sync_roster', to: "lti_nrps#sync_roster"
   get 'lti_config/index', to: "lti_config#index"
   post 'github_config/update_config', to: "github_config#update_config"
@@ -139,7 +140,9 @@ Rails.application.routes.draw do
     resources :attachments
 
     resources :assessments, param: :name, except: :update do
-      resource :autograder, except: [:new, :show]
+      resource :autograder, except: [:new, :show] do
+        get "download_file"
+      end
       resources :assessment_user_data, only: [:edit, :update]
       resources :attachments
       resources :extensions, only: [:index, :create, :destroy]
@@ -169,11 +172,18 @@ Rails.application.routes.draw do
           get "view"
           post "release_student_grade"
           post "unrelease_student_grade"
+          get "tweak_total"
         end
 
         collection do
-          get "downloadAll"
+          get "download_all"
+          post "destroy_batch"
+          post "download_batch"
+          get "popover"
+          post "excuse_batch"
+          post "unexcuse"
           get "missing"
+          get "score_details"
         end
       end
 
@@ -209,6 +219,9 @@ Rails.application.routes.draw do
         get "quickGetTotal"
         get "score_grader_info"
         get "submission_popover"
+
+        # Manage submissions excuse students
+        get "excuse_popover"
 
         # remote calls
         match "local_submit", via: [:get, :post]
