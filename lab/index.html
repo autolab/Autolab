@@ -1,0 +1,1691 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://docs.autolabproject.com/lab/">
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.3.1, mkdocs-material-8.5.3">
+    
+    
+      
+        <title>Guide for Lab Authors - Autolab Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.7a952b86.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.cbb835fc.min.css">
+        
+      
+      
+
+    
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+  
+
+
+  
+  
+
+
+  <script id="__analytics">function __md_analytics(){function n(){dataLayer.push(arguments)}window.dataLayer=window.dataLayer||[],n("js",new Date),n("config","G-TN3N2Q9PC2"),document.addEventListener("DOMContentLoaded",function(){document.forms.search&&document.forms.search.query.addEventListener("blur",function(){this.value&&n("event","search",{search_term:this.value})}),document$.subscribe(function(){var a=document.forms.feedback;if(void 0!==a)for(var e of a.querySelectorAll("[type=submit]"))e.addEventListener("click",function(e){e.preventDefault();var t=document.location.pathname,e=this.getAttribute("data-md-value");n("event","feedback",{page:t,data:e}),a.firstElementChild.disabled=!0;e=a.querySelector(".md-feedback__note [data-md-value='"+e+"']");e&&(e.hidden=!1)}),a.hidden=!1}),location$.subscribe(function(e){n("config","G-TN3N2Q9PC2",{page_path:e.pathname})})});var e=document.createElement("script");e.async=!0,e.src="https://www.googletagmanager.com/gtag/js?id=G-TN3N2Q9PC2",document.getElementById("__analytics").insertAdjacentElement("afterEnd",e)}</script>
+
+  
+    <script>"undefined"!=typeof __md_analytics&&__md_analytics()</script>
+  
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="autolab" data-md-color-primary="" data-md-color-accent="">
+  
+    
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#guide-for-lab-authors" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Autolab Documentation" class="md-header__button md-logo" aria-label="Autolab Documentation" data-md-component="logo">
+      
+  <img src="../images/logo.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Autolab Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Guide for Lab Authors
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/Autolab/autolab" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Autolab
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-tabs__inner md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+
+
+  <li class="md-tabs__item">
+    <a href=".." class="md-tabs__link">
+      Overview
+    </a>
+  </li>
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../installation/overview/" class="md-tabs__link">
+        Installation
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+    
+  
+
+
+  
+  
+  
+    
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../instructors/" class="md-tabs__link md-tabs__link--active">
+        Getting Started
+      </a>
+    </li>
+  
+
+  
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../reference/" class="md-tabs__link">
+        Reference
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+  
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Autolab Documentation" class="md-nav__button md-logo" aria-label="Autolab Documentation" data-md-component="logo">
+      
+  <img src="../images/logo.svg" alt="logo">
+
+    </a>
+    Autolab Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/Autolab/autolab" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Autolab
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        Overview
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_2">
+          Installation
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Installation" data-md-level="1">
+        <label class="md-nav__title" for="__nav_2">
+          <span class="md-nav__icon md-icon"></span>
+          Installation
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../installation/overview/" class="md-nav__link">
+        Installation Overview
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../installation/docker-compose/" class="md-nav__link">
+        Docker Compose Install
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_3" type="checkbox" id="__nav_2_3" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_2_3">
+          Autolab
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Autolab" data-md-level="2">
+        <label class="md-nav__title" for="__nav_2_3">
+          <span class="md-nav__icon md-icon"></span>
+          Autolab
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../installation/ubuntu/" class="md-nav__link">
+        Ubuntu 22.04
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../installation/osx/" class="md-nav__link">
+        Mac OSX 10.11+
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../installation/troubleshoot/" class="md-nav__link">
+        Troubleshooting
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../installation/mailing/" class="md-nav__link">
+        Mailing Setup
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../installation/github_integration/" class="md-nav__link">
+        Github Integration Setup
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../installation/lti_integration/" class="md-nav__link">
+        LTI Advantage Integration Setup
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_4" type="checkbox" id="__nav_2_4" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_2_4">
+          Tango
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Tango" data-md-level="2">
+        <label class="md-nav__title" for="__nav_2_4">
+          <span class="md-nav__icon md-icon"></span>
+          Tango
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../installation/tango/" class="md-nav__link">
+        Installation
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../installation/tango-troubleshoot/" class="md-nav__link">
+        Troubleshooting
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" checked>
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3">
+          Getting Started
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Getting Started" data-md-level="1">
+        <label class="md-nav__title" for="__nav_3">
+          <span class="md-nav__icon md-icon"></span>
+          Getting Started
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3_1" type="checkbox" id="__nav_3_1" checked>
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3_1">
+          Autolab Frontend
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Autolab Frontend" data-md-level="2">
+        <label class="md-nav__title" for="__nav_3_1">
+          <span class="md-nav__icon md-icon"></span>
+          Autolab Frontend
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../instructors/" class="md-nav__link">
+        Guide for Instructors
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Guide for Lab Authors
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        Guide for Lab Authors
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#writing-autograders" class="md-nav__link">
+    Writing Autograders
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#installing-autograded-labs" class="md-nav__link">
+    Installing Autograded Labs
+  </a>
+  
+    <nav class="md-nav" aria-label="Installing Autograded Labs">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#creating-an-autograded-lab-from-scratch" class="md-nav__link">
+    Creating an Autograded Lab from Scratch
+  </a>
+  
+    <nav class="md-nav" aria-label="Creating an Autograded Lab from Scratch">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#step-1-create-the-new-lab" class="md-nav__link">
+    Step 1: Create the new lab.
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-2-configure-the-lab-for-autograding" class="md-nav__link">
+    Step 2: Configure the lab for autograding.
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-3-add-the-required-autograding-files" class="md-nav__link">
+    Step 3: Add the required autograding files.
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#importing-an-autograded-lab-from-a-previous-semester" class="md-nav__link">
+    Importing an Autograded Lab from a Previous Semester
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#example-hello-lab" class="md-nav__link">
+    Example: Hello Lab
+  </a>
+  
+    <nav class="md-nav" aria-label="Example: Hello Lab">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#directory-structure" class="md-nav__link">
+    Directory Structure
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#source-directory" class="md-nav__link">
+    Source Directory
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#handout-directory" class="md-nav__link">
+    Handout Directory
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#autograder" class="md-nav__link">
+    Autograder
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#required-autograding-files" class="md-nav__link">
+    Required Autograding Files
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#test-directory" class="md-nav__link">
+    Test Directory
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#writeup-directory" class="md-nav__link">
+    Writeup directory
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#other-sample-autograders" class="md-nav__link">
+    Other sample autograders
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#troubleshooting" class="md-nav__link">
+    Troubleshooting
+  </a>
+  
+    <nav class="md-nav" aria-label="Troubleshooting">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#why-is-autolab-not-displaying-my-stdout-output" class="md-nav__link">
+    Why is Autolab not displaying my stdout output?
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#why-is-autolab-not-able-to-stream-my-stdout-output-the-output-only-seems-to-be-displayed-when-autograding-is-completed" class="md-nav__link">
+    Why is Autolab not able to stream my stdout output? The output only seems to be displayed when autograding is completed.
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#why-is-my-assessment-failing-to-be-imported" class="md-nav__link">
+    Why is my assessment failing to be imported?
+  </a>
+  
+    <nav class="md-nav" aria-label="Why is my assessment failing to be imported?">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#import-via-tar" class="md-nav__link">
+    Import via Tar
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#import-via-file-system" class="md-nav__link">
+    Import via file system
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#assessment-naming-rules" class="md-nav__link">
+    Assessment Naming Rules
+  </a>
+  
+    <nav class="md-nav" aria-label="Assessment Naming Rules">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#valid-assessment-names" class="md-nav__link">
+    Valid Assessment Names
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#invalid-assessment-names" class="md-nav__link">
+    Invalid Assessment Names
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../lab-hooks/" class="md-nav__link">
+        Lab Hooks
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3_1_4" type="checkbox" id="__nav_3_1_4" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3_1_4">
+          Features
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Features" data-md-level="3">
+        <label class="md-nav__title" for="__nav_3_1_4">
+          <span class="md-nav__icon md-icon"></span>
+          Features
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../features/formatted-feedback/" class="md-nav__link">
+        Formatted Feedback
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../features/scoreboards/" class="md-nav__link">
+        Scoreboards
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../features/embedded-forms/" class="md-nav__link">
+        Embedded Forms
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../features/schedulers/" class="md-nav__link">
+        Schedulers
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../features/annotations/" class="md-nav__link">
+        Annotations
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../features/moss/" class="md-nav__link">
+        MOSS Plagiarism Detection
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../features/metrics/" class="md-nav__link">
+        Metrics
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../features/git-submission/" class="md-nav__link">
+        Git Submission
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../features/lti-course-integration/" class="md-nav__link">
+        LTI Course Linking
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../features/admin-features/" class="md-nav__link">
+        Admin Features
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../command-line-interface/" class="md-nav__link">
+        Autolab Frontend CLI
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tango-cli/" class="md-nav__link">
+        Tango CLI
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4" type="checkbox" id="__nav_4" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_4">
+          Reference
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Reference" data-md-level="1">
+        <label class="md-nav__title" for="__nav_4">
+          <span class="md-nav__icon md-icon"></span>
+          Reference
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/" class="md-nav__link">
+        Reference Overview
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4_2" type="checkbox" id="__nav_4_2" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_4_2">
+          Autolab Frontend API
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Autolab Frontend API" data-md-level="2">
+        <label class="md-nav__title" for="__nav_4_2">
+          <span class="md-nav__icon md-icon"></span>
+          Autolab Frontend API
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api-overview/" class="md-nav__link">
+        Overview
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api-interface/" class="md-nav__link">
+        Endpoints
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api-managing-authorized-apps/" class="md-nav__link">
+        Managing Authorized Apps
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tango-rest/" class="md-nav__link">
+        Tango API
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tango-vmms/" class="md-nav__link">
+        Tango VMMS API
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  <a href="https://github.com/Autolab/autolab/edit/master/docs/lab.md" title="Edit this page" class="md-content__button md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25Z"/></svg>
+  </a>
+
+
+<h1 id="guide-for-lab-authors">Guide for Lab Authors</h1>
+<p>This guide explains how to create autograded programming assignments (labs) for the Autolab system. While <strong>reading through the documentation is recommended</strong>, for a quick start, here's a <a href="https://youtu.be/GQ2EkBcRH4k" target="_blank">short video</a> that gives a brief introduction of autograders.</p>
+<h2 id="writing-autograders">Writing Autograders</h2>
+<p>An <em>autograder</em> is a program that takes a student's work as input, and generates some quantitative evaluation of that work as output. The student's work consists of one or more source files written in an arbitrary programming language. The autograder processes these files and generates arbitrary text lines on stdout. What's written to stdout will be displayed to the students as <strong>autograder feedback</strong>.</p>
+<div class="admonition info">
+<p class="admonition-title">Streaming Output</p>
+<p>As of Autolab v2.10, any output written into the stdout will be streamed directly for students to see, so students can see the live progress of the autograding. Many programming languages do buffered writes to <code>stdout</code>, so if you want live progress, you would have to guarantee that you are writing to stdout by flushing the buffer accordingly (e.g. <a href="https://docs.python.org/3/library/functions.html#print">Python <code>print</code>'s flush flag</a>, <a href="https://www.tutorialspoint.com/c_standard_library/c_function_fflush.htm">C's <code>fflush</code></a>, <a href="https://en.cppreference.com/w/cpp/io/c/fflush">CPP's <code>fflush</code></a>) </p>
+</div>
+<p>The last text line on stdout must be a JSON string, called an <em>autoresult</em>, that assigns an autograded score to one or more problems, and optionally, generates the scoreboard entries for this submission.</p>
+<p>The JSON autoresult is a "scores" hash that assigns a numerical score to one or more problems, and an optional "scoreboard" array that provides the scoreboard entries for this submission. For example,</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"> </span><span class="nt">&quot;scores&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;Prob1&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;Prob2&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">5</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w"></span>
+</code></pre></div>
+<p>assigns 10 points to "Prob1" and 5 points to "Prob2" for this submission. The names of the problems must exactly match the names of the problems for this lab on the Autolab website. Not all problems need to be autograded. For example, there might be a problem for this assessment called "Style" that you grade manually after the due date.</p>
+<p>If you used the Autolab website to configure a scoreboard for this lab with three columns called "Prob1", "Prob2", and "Total", then the autoresult might be:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="w"> </span><span class="nt">&quot;scores&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;Prob1&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;Prob2&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">5</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="nt">&quot;scoreboard&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">10</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="mi">15</span><span class="p">]</span><span class="w"> </span><span class="p">}</span><span class="w"></span>
+</code></pre></div>
+<p>By convention, an autograder accepts an optional <code>-A</code> command line argument that tells it to emit the JSON autoresult. So if you run the autograder outside of the context of Autolab, you can suppress the autoresult line by calling the autograder without the <code>-A</code> argument.</p>
+<p>One of the nice properties of Autolab autograders is that they can be written and tested offline, without requiring any interaction with Autolab. Writing autograders is not easy, but the fact that they can be developed offline allows you to develop and test them in your own familiar computing environment.</p>
+<p>To format your autoresult feedback provided to the students, use the <a href="/features/formatted-feedback">formatted feedback feature</a>.</p>
+<h2 id="installing-autograded-labs">Installing Autograded Labs</h2>
+<p>After you've written and tested the autograder, you then use the Autolab website to create the autograded lab. Autolab supports creating new labs from scratch, or reusing labs from previous semesters. We'll describe each of these in turn.</p>
+<h3 id="creating-an-autograded-lab-from-scratch">Creating an Autograded Lab from Scratch</h3>
+<h4 id="step-1-create-the-new-lab">Step 1: Create the new lab.</h4>
+<p>Create a new lab by clicking the "Install Assessment" button and choosing "Option 1: Create a New Assessment from Scratch." For course <code>&lt;course&gt;</code> and lab <code>&lt;lab&gt;</code>, this will create a <i>lab directory</i> in the Autolab file hierarchy called <code>courses/&lt;course&gt;/&lt;lab&gt;</code>. This initial directory contains a couple of config files and a directory called <code>&lt;lab&gt;/handin</code> that will contain all student handin files. In general, you should never modify any of these.</p>
+<div class="admonition warning">
+<p class="admonition-title">Attention CMU Lab Authors</p>
+<p>At CMU, the lab directory is called <code>/afs/cs/academic/class/&lt;course&gt;/autolab/&lt;lab&gt;</code>. For example: <code>/afs/cs/academic/class/15213-f16/autolab/foo</code> is the lab directory for the lab named <code>foo</code> for the Fall 2016 instance of 15-213. All lab-related files must go in this <code>autolab</code> directory to avoid permissions issues.</p>
+</div>
+<h4 id="step-2-configure-the-lab-for-autograding">Step 2: Configure the lab for autograding.</h4>
+<p>Using the "Edit Assessment" page, turn on autograding for this lab by selecting "Add Autograder." You will be asked for the name of the image to be used for autograding this lab. The default image distributed with Autolab is an Ubuntu image called <code>autograding_image</code>. If your class needs different software, then you or your facilities staff will need to update the default image or create a new one.</p>
+<div class="admonition warning">
+<p class="admonition-title">Attention CMU Lab Authors</p>
+<p>The default autograding image at CMU is called <code>rhel.img</code> and is a copy of the software on the CMU Andrew machines (<code>linux.andrew.cmu.edu</code>). If you need custom software installed, please send mail to autolab-help@andrew.cmu.edu.</p>
+</div>
+<p>If you want a scoreboard, you should select "Add Scoreboard," which will allow you to specify the number of columns and their names. The "Add Scoreboard" page contains a tutorial on how to do this.</p>
+<p>You'll also need to define the names and point values for all the problems in this lab, including the autograded ones.</p>
+<p>Each student submission is a single file, either a text source file or an archive file containing multiple files and directories. You'll need to specify the <em>base name</em> for the student submission files (e.g., <code>mm.c</code>, <code>handin.tar</code>).</p>
+<h4 id="step-3-add-the-required-autograding-files">Step 3: Add the required autograding files.</h4>
+<p>For an autograded lab, Autolab expects the following two <em>autograding files</em> in the lab directory:</p>
+<ul>
+<li><code>autograde-Makefile</code>: runs the autograder on a student submission.</li>
+<li><code>autograde.tar</code>: contains all of the files (except for the student handin file) that are needed for autograding.</li>
+</ul>
+<p>Each time a student submits their work or an instructor requests a regrade, Autolab</p>
+<ol>
+<li>copies the student handin file, along with the two autograding files, to an empty directory on an <em>autograding instance</em>,</li>
+<li>renames the student handin file to <em>base name</em> (e.g., hello.c, handin.tar),</li>
+<li>renames <code>autograde-Makefile</code> to <code>Makefile</code>,</li>
+<li>executes the command <code>make</code> on the autograding instance, and finally</li>
+<li>captures the stdout generated by the autograder, and parses the resulting JSON autoresult to determine the autograded scores.</li>
+</ol>
+<h3 id="importing-an-autograded-lab-from-a-previous-semester">Importing an Autograded Lab from a Previous Semester</h3>
+<p>If you've created a lab for a course in a previous semester and have access to the lab directory (as we do at CMU via AFS), you can import the lab into your current course by</p>
+<ol>
+<li>copying the lab directory from the previous course to the current course,</li>
+<li>cleaning out the <code>handin</code> directory, then</li>
+<li>visiting the "Install Assessment" page and selecting "Option 2: Import an existing assessment from the file system." Autolab will give you a list of all of the directories that appear to be uninstalled labs, from which you can select your particular lab.</li>
+</ol>
+<p>If you don't have access to the lab directory, another option is to import a lab from a tarball that was created by running "Export assessment" in an instance of a lab from a previous semester. Visit the "Install Assessment" page and select "Option 3: Import an existing assessment from tarball." This will upload the tarball, create a new lab directory by expanding the tarball, and then import the directory.</p>
+<h2 id="example-hello-lab">Example: Hello Lab</h2>
+<p>In this section we'll look at the simplest possible autograded lab we could imagine, called, appropriately enough, the <a href="https://github.com/autolab/Autolab/tree/master/examples/hello" target="_blank">Hello Lab</a> (with <a href="https://github.com/autolab/Autolab/tree/master/examples/hello.tar" target="_blank">tarball</a>), which is stored in a lab directory called <code>hello</code> in the Autolab github repo. While it's trivial, it illustrates all of the aspects of developing an autograded lab, and provides a simple example that you can use for sanity testing on your Autolab installation.</p>
+<p>In this lab, students are asked to write a version of the K&amp;R "hello, world" program, called <code>hello.c</code>. The autograder simply checks that the submitted <code>hello.c</code> program compiles and runs with an exit status of zero. If so, the submission gets 100 points. Otherwise it gets 0 points.</p>
+<h3 id="directory-structure">Directory Structure</h3>
+<p>Autolab expects to find the <code>autograde-Makefile</code>and <code>autograde.tar</code> files in the <code>hello</code> lab directory, but otherwise places no constraints on the contents and organization of this directory. However, based on our experience, we strongly recommend a directory structure with the following form:</p>
+<p><a href="https://github.com/autolab/Autolab/tree/master/examples/hello/README" target="_blank">hello/README</a>:</p>
+<div class="highlight"><pre><span></span><code><span class="gh"># Basic files created by the lab author</span>
+
+Makefile              Builds the lab from src/
+README
+autograde-Makefile    Makefile that runs the autograder
+src/                  Contains all src files and solutions  
+test-autograder/      For testing autograder offline
+writeup/              Lab writeup that students view from Autolab
+
+<span class="gh"># Files created by running make</span>
+
+hello-handout/        The directory that is handed out to students, created
+                      using files from src/.
+hello-handout.tar     Archive of hello-handout directory
+autograde.tar         File that is copied to the autograding instance
+                      (along with autograde-Makefile and student handin file)
+
+<span class="gh"># Files created and managed by Autolab</span>
+
+handin/               All students handin files
+hello.rb              Config file
+hello.yml             Database properties that persist from semester to semester
+log.txt               Log of autograded submissions
+</code></pre></div>
+<p>The key idea with this directory structure is to place <em>all</em> code for the lab in the <code>src</code> directory, including the autograding code and any starter code handed out to students in the handout directory (<code>hello-handout.tar</code> in this example). Keeping all hard state in the <code>src</code> directory helps limit inconsistencies.</p>
+<p>The main makefile creates <code>hello-handout</code> by copying files from <code>src</code>, and then tars it up:</p>
+<p><a href="https://github.com/autolab/Autolab/tree/master/examples/hello/Makefile" target="_blank">hello/Makefile</a>:</p>
+<div class="highlight"><pre><span></span><code><span class="c">#</span>
+<span class="c"># Makefile to manage the example Hello Lab</span>
+<span class="c">#</span>
+
+<span class="c"># Get the name of the lab directory</span>
+<span class="nv">LAB</span> <span class="o">=</span> <span class="k">$(</span>notdir <span class="k">$(</span>PWD<span class="k">))</span>
+
+<span class="nf">all</span><span class="o">:</span> <span class="n">handout</span> <span class="n">handout</span>-<span class="n">tarfile</span>
+
+<span class="nf">handout</span><span class="o">:</span>
+<span class="c">    # Rebuild the handout directory that students download</span>
+    <span class="o">(</span>rm -rf <span class="k">$(</span>LAB<span class="k">)</span>-handout<span class="p">;</span> mkdir <span class="k">$(</span>LAB<span class="k">)</span>-handout<span class="o">)</span>
+    cp -p src/Makefile-handout <span class="k">$(</span>LAB<span class="k">)</span>-handout/Makefile
+    cp -p src/README-handout <span class="k">$(</span>LAB<span class="k">)</span>-handout/README
+    cp -p src/hello.c-handout <span class="k">$(</span>LAB<span class="k">)</span>-handout/hello.c
+    cp -p src/driver.sh <span class="k">$(</span>LAB<span class="k">)</span>-handout
+
+<span class="nf">handout-tarfile</span><span class="o">:</span> <span class="n">handout</span>
+<span class="c">    # Build *-handout.tar and autograde.tar</span>
+    tar cvf <span class="k">$(</span>LAB<span class="k">)</span>-handout.tar <span class="k">$(</span>LAB<span class="k">)</span>-handout
+    cp -p <span class="k">$(</span>LAB<span class="k">)</span>-handout.tar autograde.tar
+
+<span class="nf">clean</span><span class="o">:</span>
+<span class="c">    # Clean the entire lab directory tree.  Note that you can run</span>
+<span class="c">    # &quot;make clean; make&quot; at any time while the lab is live with no</span>
+<span class="c">    # adverse effects.</span>
+    rm -f *~ *.tar
+    <span class="o">(</span><span class="nb">cd</span> src<span class="p">;</span> make clean<span class="o">)</span>
+    <span class="o">(</span><span class="nb">cd</span> test-autograder<span class="p">;</span> make clean<span class="o">)</span>
+    rm -rf <span class="k">$(</span>LAB<span class="k">)</span>-handout
+    rm -f autograde.tar
+<span class="c">#</span>
+<span class="c"># CAREFULL!!! This will delete all student records in the logfile and</span>
+<span class="c"># in the handin directory. Don&#39;t run this once the lab has started.</span>
+<span class="c"># Use it to clean the directory when you are starting a new version</span>
+<span class="c"># of the lab from scratch, or when you are debugging the lab prior</span>
+<span class="c"># to releasing it to the students.</span>
+<span class="c">#</span>
+<span class="nf">cleanallfiles</span><span class="o">:</span>
+<span class="c">    # Reset the lab from scratch.</span>
+    make clean
+    rm -f log.txt
+    rm -rf handin/*
+</code></pre></div>
+<p>Filenames are disambiguated by appending <code>-handout</code>, which is stripped when they are copied to the handout directory. For example, <code>src/hello.c</code> is the instructor's solution file, and <code>src/hello.c-handout</code> is the starter code that is given to the students in <code>hello-handout/hello.c</code>. And <code>src/README</code> is the README for the src directory and <code>src/README-handout</code> is the README that is handed out to students in <code>hello-handout/README</code>.</p>
+<p>To build the lab, type <code>make clean; make</code>. You can do this as often as you like while the lab is live with no adverse effects. However, be careful to never type <code>make cleanallfiles</code> while the lab is live; this should only be done before the lab goes live; never during or after.</p>
+<h3 id="source-directory">Source Directory</h3>
+<p>The <a href="https://github.com/autolab/Autolab/tree/master/examples/hello/src" target="_blank">hello/src/</a> directory
+contains <em>all</em> of the code files for the Hello Lab, including the files that are handed out to students:</p>
+<p><a href="https://github.com/autolab/Autolab/tree/master/examples/hello/src/README" target="_blank">hello/src/README</a>:</p>
+<div class="highlight"><pre><span></span><code># Autograder and solution files
+Makefile                Makefile and ...
+README                  ... README for this directory
+driver.sh*              Autograder
+hello.c                 Solution hello.c file
+
+# Files that are handed out to students
+Makefile-handout        Makefile and ...
+README-handout          ... README handed out to students
+hello.c-handout         Blank hello.c file handed out to students
+</code></pre></div>
+<h3 id="handout-directory">Handout Directory</h3>
+<p>The <a href="https://github.com/autolab/Autolab/tree/master/examples/hello/hello-handout/" target="_blank">hello/hello-handout/</a> directory
+contains the files that the students will use to work on the lab. It contains no hard state, and is populated entirely with files from <code>hello/src</code>:</p>
+<p><a href="https://github.com/autolab/Autolab/tree/master/examples/hello/hello-handout/README" target="_blank">hello/hello-handout/README</a>:</p>
+<div class="highlight"><pre><span></span><code>For this lab, you should write a tiny C program, called &quot;hello.c&quot;,
+that prints &quot;hello, world&quot; to stdout and then indicates success by
+exiting with a status of zero.
+
+To test your work:
+$ make clean; make; ./hello
+
+To run the same autograder that Autolab will use when you submit:
+$ ./driver.sh
+
+Files:
+README          This file
+Makefile        Compiles hello.c
+driver.sh       Autolab autograder
+hello.c         Empty C file that you will edit
+</code></pre></div>
+<p><a href="https://github.com/autolab/Autolab/tree/master/examples/hello/hello-handout/Makefile" target="_blank">hello/hello-handout/Makefile</a> contains the rules that compile the student source code:</p>
+<div class="highlight"><pre><span></span><code><span class="c"># Student makefile for the Hello Lab</span>
+<span class="nf">all</span><span class="o">:</span>
+    gcc hello.c -o hello
+
+<span class="nf">clean</span><span class="o">:</span>
+    rm -rf *~ hello
+</code></pre></div>
+<p>To compile and run their code, students type:</p>
+<div class="highlight"><pre><span></span><code>$ make clean<span class="p">;</span> make
+$ ./hello
+</code></pre></div>
+<h3 id="autograder">Autograder</h3>
+<p>The autograder for the Hello Lab is a trivially simple bash script called <code>driver.sh</code> that compiles and runs <code>hello.c</code> and verifies that it returns with an exit status of zero:</p>
+<p><a href="https://github.com/autolab/Autolab/tree/master/examples/hello/src/driver.sh" target="_blank">hello/src/driver.sh</a>:</p>
+<div class="highlight"><pre><span></span><code><span class="ch">#!/bin/bash</span>
+
+<span class="c1"># driver.sh - The simplest autograder we could think of. It checks</span>
+<span class="c1">#   that students can write a C program that compiles, and then</span>
+<span class="c1">#   executes with an exit status of zero.</span>
+<span class="c1">#   Usage: ./driver.sh</span>
+
+<span class="c1"># Compile the code</span>
+<span class="nb">echo</span> <span class="s2">&quot;Compiling hello.c&quot;</span>
+<span class="o">(</span>make clean<span class="p">;</span> make<span class="o">)</span>
+<span class="nv">status</span><span class="o">=</span><span class="nv">$?</span>
+<span class="k">if</span> <span class="o">[</span> <span class="si">${</span><span class="nv">status</span><span class="si">}</span> -ne <span class="m">0</span> <span class="o">]</span><span class="p">;</span> <span class="k">then</span>
+    <span class="nb">echo</span> <span class="s2">&quot;Failure: Unable to compile hello.c (return status = </span><span class="si">${</span><span class="nv">status</span><span class="si">}</span><span class="s2">)&quot;</span>
+    <span class="nb">echo</span> <span class="s2">&quot;{\&quot;scores\&quot;: {\&quot;Correctness\&quot;: 0}}&quot;</span>
+    <span class="nb">exit</span>
+<span class="k">fi</span>
+
+<span class="c1"># Run the code</span>
+<span class="nb">echo</span> <span class="s2">&quot;Running ./hello&quot;</span>
+./hello
+<span class="nv">status</span><span class="o">=</span><span class="nv">$?</span>
+<span class="k">if</span> <span class="o">[</span> <span class="si">${</span><span class="nv">status</span><span class="si">}</span> -eq <span class="m">0</span> <span class="o">]</span><span class="p">;</span> <span class="k">then</span>
+    <span class="nb">echo</span> <span class="s2">&quot;Success: ./hello runs with an exit status of 0&quot;</span>
+    <span class="nb">echo</span> <span class="s2">&quot;{\&quot;scores\&quot;: {\&quot;Correctness\&quot;: 100}}&quot;</span>
+<span class="k">else</span>
+    <span class="nb">echo</span> <span class="s2">&quot;Failure: ./hello fails or returns nonzero exit status of </span><span class="si">${</span><span class="nv">status</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="nb">echo</span> <span class="s2">&quot;{\&quot;scores\&quot;: {\&quot;Correctness\&quot;: 0}}&quot;</span>
+<span class="k">fi</span>
+
+<span class="nb">exit</span>
+</code></pre></div>
+<p>For example:</p>
+<div class="highlight"><pre><span></span><code>$ ./driver.sh
+<span class="c1"># Compiling hello.c</span>
+<span class="c1"># rm -rf *~ hello</span>
+<span class="c1"># gcc hello.c -o hello</span>
+<span class="c1"># Running ./hello</span>
+<span class="c1"># Hello, world</span>
+<span class="c1"># Success: ./hello runs with an exit status of 0</span>
+<span class="c1"># {&quot;scores&quot;: {&quot;Correctness&quot;: 100}}</span>
+</code></pre></div>
+<p>Notice that the autograder expects the <code>hello</code> lab on the Autolab front-end to have been defined with a problem called "Correctness", with a maximum value of 100 points. If you forget to define the problems listed in the JSON autoresult, scores will still be logged, but they won't be posted to the database.</p>
+<h3 id="required-autograding-files">Required Autograding Files</h3>
+<p>Autolab requires two <em>autograding files</em> called <code>autograde.tar</code>, which contains all of the code required by the autograder, and <code>autograde-Makefile</code>, which runs the autograder on the autograding image when each submission is graded.</p>
+<p>For the Hello Lab, <code>autograde.tar</code> is simply a copy of the <code>hello-handout.tar</code> file that is handed out to students. And here is the corresponding
+<a href="https://github.com/autolab/Autolab/tree/master/examples/hello/autograde-Makefile" target="_blank">hello/autograde-makefile</a>:</p>
+<div class="highlight"><pre><span></span><code><span class="nf">all</span><span class="o">:</span>
+    tar xvf autograde.tar
+    cp hello.c hello-handout
+    <span class="o">(</span><span class="nb">cd</span> hello-handout<span class="p">;</span> ./driver.sh<span class="o">)</span>
+
+<span class="nf">clean</span><span class="o">:</span>
+    rm -rf *~ hello-handout
+</code></pre></div>
+<p>The makefile expands <code>autograde.tar</code> into <code>hello-handout</code>, copies <code>hello.c</code> (the submission file) into <code>hello-handout</code>, changes directory to <code>hello-handout</code>, builds the autograder, and then runs it.</p>
+<h3 id="test-directory">Test Directory</h3>
+<p>For our labs, we like to setup a test directory (called <code>test-autograder</code> in this example), that allows us to test our <code>autograde-Makefile</code> and <code>autograde-tar</code> files by simulating Autolab's behavior on the autograding instance. The <code>test-autograder</code> directory has the following form:</p>
+<div class="highlight"><pre><span></span><code>$ <span class="nb">cd</span> test-autograder
+$ ls -l
+<span class="c1"># total 3</span>
+<span class="c1"># lrwxr-xr-x 1 droh users  21 Aug  4 16:43 Makefile -&gt; autograde-Makefile</span>
+<span class="c1"># lrwxr-xr-x 1 droh users  16 Aug  4 16:43 autograde.tar -&gt; autograde.tar</span>
+<span class="c1"># -rw-rw-r-- 1 droh users 113 Aug  4 16:44 hello.c</span>
+</code></pre></div>
+<p>To simulate Autolab's behavior on an autograding instance:</p>
+<div class="highlight"><pre><span></span><code>$ <span class="nb">cd</span> test-autograder <span class="o">&amp;&amp;</span> make clean <span class="o">&amp;&amp;</span> make
+<span class="c1"># Running ./hello</span>
+<span class="c1"># Hello, world</span>
+<span class="c1"># Success: ./hello runs with an exit status of 0</span>
+<span class="c1"># {&quot;scores&quot;: {&quot;Correctness&quot;: 100}}</span>
+</code></pre></div>
+<h3 id="writeup-directory">Writeup directory</h3>
+<p>The <code>hello/writeup</code> contains the detailed lab writeup, either html or pdf file, that students can download from the Autolab front end.</p>
+<h2 id="other-sample-autograders">Other sample autograders</h2>
+<p>We have a <a href="https://github.com/autolab/autograders-examples">repository for sample autograders</a> written for popular languages, which includes Python, Java, C++, Golang, and Javascript.</p>
+<h2 id="troubleshooting">Troubleshooting</h2>
+<h4 id="why-is-autolab-not-displaying-my-stdout-output">Why is Autolab not displaying my stdout output?</h4>
+<p>Autolab always shows the stdout output of running make, even when the program crashed or timed out. However, when it does crash and the expected autoresult json string is not appended to the output, parsing of the last line will fail. If this happens, any stdout output that is longer than 10,000 lines will be discarded (Note that this limit does not apply when the autoresult json is valid).</p>
+<h4 id="why-is-autolab-not-able-to-stream-my-stdout-output-the-output-only-seems-to-be-displayed-when-autograding-is-completed">Why is Autolab not able to stream my stdout output? The output only seems to be displayed when autograding is completed.</h4>
+<p>Autolab can only stream stdout. Many programming languages do buffered writes to <code>stdout</code>, so you would have to guarantee that you are writing to stdout by flushing the buffer accordingly (e.g. <a href="https://docs.python.org/3/library/functions.html#print">Python <code>print</code>'s flush flag</a>, <a href="https://www.tutorialspoint.com/c_standard_library/c_function_fflush.htm">C's <code>fflush</code></a>, <a href="https://en.cppreference.com/w/cpp/io/c/fflush">CPP's <code>fflush</code></a>)</p>
+<h4 id="why-is-my-assessment-failing-to-be-imported">Why is my assessment failing to be imported?</h4>
+<h5 id="import-via-tar">Import via Tar</h5>
+<p>A valid assessment tar has a single root directory that's named after the assessment, containing an assessment yaml file with the <strong>same name</strong> as the root directory.
+See name rules <a href="/lab/#assessment-naming-rules">below</a>.
+An assessment config ruby file can optionally be provided, and the config file name also must have the same name as the root directory. The module name of the config file can be any name.</p>
+<p>The bare minimum for an assessment with a folder name of "hello-asmt" is shown below:</p>
+<div class="highlight"><pre><span></span><code>hello-asmt/:
+hello-asmt.yml
+</code></pre></div>
+<h5 id="import-via-file-system">Import via file system</h5>
+<p>The same restrictions to assessment imports via tar apply to importing via file system.</p>
+<h2 id="assessment-naming-rules">Assessment Naming Rules</h2>
+<p>Assessments on Autolab have two names: a "name" and a "display name."
+The "name" is automatically created upon creation of a new assessment, based on the inputted "display name."
+However, in the case of importing assessments from the file directory, or importing via tarball,
+the name of the folder containing the assessment files determines the assessment name.
+In addition, the assessment "name" is used to determine the name of the assessment config file.</p>
+<p>As a result, the assessment name must be a valid <a href="https://ruby-doc.org/docs/ruby-doc-bundle/Manual/man-1.4/syntax.html#ident">Ruby Identifier</a>,
+but hyphens are also allowed. The assessment name must also be unique within a course.</p>
+<h4 id="valid-assessment-names">Valid Assessment Names</h4>
+<ul>
+<li><code>autolabAsmt</code></li>
+<li><code>Autolab-Asmt</code></li>
+<li><code>Autolab_Asmt10</code></li>
+<li><code>AuTol4b-_4smt</code></li>
+</ul>
+<h4 id="invalid-assessment-names">Invalid Assessment Names</h4>
+<ul>
+<li><code>_autolab</code></li>
+<li><code>4utolab</code></li>
+<li><code>autolabAsmt!!</code></li>
+<li><code>-autolabAsmt</code></li>
+<li><code>.autolab.asmt</code></li>
+</ul>
+<p>When a new assessment is created from scratch, a "name" will
+be generated based on the "display name," as long as a valid "name" can be generated by stripping out special characters.
+Otherwise, the server will reject the given "display name." When editing an existing assessment, or by specifying
+the <code>display_name</code> field in the course <code>yml</code> file, the "display name" has no restrictions on special characters.</p>
+
+
+  
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+    <nav class="md-footer__inner md-grid" aria-label="Footer" >
+      
+        
+        <a href="../instructors/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Guide for Instructors" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              Guide for Instructors
+            </div>
+          </div>
+        </a>
+      
+      
+        
+        <a href="../lab-hooks/" class="md-footer__link md-footer__link--next" aria-label="Next: Lab Hooks" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              Lab Hooks
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4Z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        <div class="md-social">
+  
+    
+    
+      
+      
+    
+    <a href="https://github.com/Autolab" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M186.1 328.7c0 20.9-10.9 55.1-36.7 55.1s-36.7-34.2-36.7-55.1 10.9-55.1 36.7-55.1 36.7 34.2 36.7 55.1zM480 278.2c0 31.9-3.2 65.7-17.5 95-37.9 76.6-142.1 74.8-216.7 74.8-75.8 0-186.2 2.7-225.6-74.8-14.6-29-20.2-63.1-20.2-95 0-41.9 13.9-81.5 41.5-113.6-5.2-15.8-7.7-32.4-7.7-48.8 0-21.5 4.9-32.3 14.6-51.8 45.3 0 74.3 9 108.8 36 29-6.9 58.8-10 88.7-10 27 0 54.2 2.9 80.4 9.2 34-26.7 63-35.2 107.8-35.2 9.8 19.5 14.6 30.3 14.6 51.8 0 16.4-2.6 32.7-7.7 48.2 27.5 32.4 39 72.3 39 114.2zm-64.3 50.5c0-43.9-26.7-82.6-73.5-82.6-18.9 0-37 3.4-56 6-14.9 2.3-29.8 3.2-45.1 3.2-15.2 0-30.1-.9-45.1-3.2-18.7-2.6-37-6-56-6-46.8 0-73.5 38.7-73.5 82.6 0 87.8 80.4 101.3 150.4 101.3h48.2c70.3 0 150.6-13.4 150.6-101.3zm-82.6-55.1c-25.8 0-36.7 34.2-36.7 55.1s10.9 55.1 36.7 55.1 36.7-34.2 36.7-55.1-10.9-55.1-36.7-55.1z"/></svg>
+    </a>
+  
+    
+    
+      
+      
+    
+    <a href="https://communityinviter.com/apps/autolab/autolab-project" target="_blank" rel="noopener" title="communityinviter.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M94.12 315.1c0 25.9-21.16 47.06-47.06 47.06S0 341 0 315.1c0-25.9 21.16-47.06 47.06-47.06h47.06v47.06zm23.72 0c0-25.9 21.16-47.06 47.06-47.06s47.06 21.16 47.06 47.06v117.84c0 25.9-21.16 47.06-47.06 47.06s-47.06-21.16-47.06-47.06V315.1zm47.06-188.98c-25.9 0-47.06-21.16-47.06-47.06S139 32 164.9 32s47.06 21.16 47.06 47.06v47.06H164.9zm0 23.72c25.9 0 47.06 21.16 47.06 47.06s-21.16 47.06-47.06 47.06H47.06C21.16 243.96 0 222.8 0 196.9s21.16-47.06 47.06-47.06H164.9zm188.98 47.06c0-25.9 21.16-47.06 47.06-47.06 25.9 0 47.06 21.16 47.06 47.06s-21.16 47.06-47.06 47.06h-47.06V196.9zm-23.72 0c0 25.9-21.16 47.06-47.06 47.06-25.9 0-47.06-21.16-47.06-47.06V79.06c0-25.9 21.16-47.06 47.06-47.06 25.9 0 47.06 21.16 47.06 47.06V196.9zM283.1 385.88c25.9 0 47.06 21.16 47.06 47.06 0 25.9-21.16 47.06-47.06 47.06-25.9 0-47.06-21.16-47.06-47.06v-47.06h47.06zm0-23.72c-25.9 0-47.06-21.16-47.06-47.06 0-25.9 21.16-47.06 47.06-47.06h117.84c25.9 0 47.06 21.16 47.06 47.06 0 25.9-21.16 47.06-47.06 47.06H283.1z"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs", "toc.integrate", "content.code.copy"], "search": "../assets/javascripts/workers/search.5bf1dace.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.37e9125f.min.js"></script>
+      
+    
+  </body>
+</html>

@@ -1,0 +1,1528 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://docs.autolabproject.com/lab-hooks/">
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.3.1, mkdocs-material-8.5.3">
+    
+    
+      
+        <title>Lab Hooks - Autolab Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.7a952b86.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.cbb835fc.min.css">
+        
+      
+      
+
+    
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+  
+
+
+  
+  
+
+
+  <script id="__analytics">function __md_analytics(){function n(){dataLayer.push(arguments)}window.dataLayer=window.dataLayer||[],n("js",new Date),n("config","G-TN3N2Q9PC2"),document.addEventListener("DOMContentLoaded",function(){document.forms.search&&document.forms.search.query.addEventListener("blur",function(){this.value&&n("event","search",{search_term:this.value})}),document$.subscribe(function(){var a=document.forms.feedback;if(void 0!==a)for(var e of a.querySelectorAll("[type=submit]"))e.addEventListener("click",function(e){e.preventDefault();var t=document.location.pathname,e=this.getAttribute("data-md-value");n("event","feedback",{page:t,data:e}),a.firstElementChild.disabled=!0;e=a.querySelector(".md-feedback__note [data-md-value='"+e+"']");e&&(e.hidden=!1)}),a.hidden=!1}),location$.subscribe(function(e){n("config","G-TN3N2Q9PC2",{page_path:e.pathname})})});var e=document.createElement("script");e.async=!0,e.src="https://www.googletagmanager.com/gtag/js?id=G-TN3N2Q9PC2",document.getElementById("__analytics").insertAdjacentElement("afterEnd",e)}</script>
+
+  
+    <script>"undefined"!=typeof __md_analytics&&__md_analytics()</script>
+  
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="autolab" data-md-color-primary="" data-md-color-accent="">
+  
+    
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#lab-hooks" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Autolab Documentation" class="md-header__button md-logo" aria-label="Autolab Documentation" data-md-component="logo">
+      
+  <img src="../images/logo.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Autolab Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Lab Hooks
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/Autolab/autolab" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Autolab
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-tabs__inner md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+
+
+  <li class="md-tabs__item">
+    <a href=".." class="md-tabs__link">
+      Overview
+    </a>
+  </li>
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../installation/overview/" class="md-tabs__link">
+        Installation
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+    
+  
+
+
+  
+  
+  
+    
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../instructors/" class="md-tabs__link md-tabs__link--active">
+        Getting Started
+      </a>
+    </li>
+  
+
+  
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../reference/" class="md-tabs__link">
+        Reference
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+  
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Autolab Documentation" class="md-nav__button md-logo" aria-label="Autolab Documentation" data-md-component="logo">
+      
+  <img src="../images/logo.svg" alt="logo">
+
+    </a>
+    Autolab Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/Autolab/autolab" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Autolab
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        Overview
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_2">
+          Installation
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Installation" data-md-level="1">
+        <label class="md-nav__title" for="__nav_2">
+          <span class="md-nav__icon md-icon"></span>
+          Installation
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../installation/overview/" class="md-nav__link">
+        Installation Overview
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../installation/docker-compose/" class="md-nav__link">
+        Docker Compose Install
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_3" type="checkbox" id="__nav_2_3" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_2_3">
+          Autolab
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Autolab" data-md-level="2">
+        <label class="md-nav__title" for="__nav_2_3">
+          <span class="md-nav__icon md-icon"></span>
+          Autolab
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../installation/ubuntu/" class="md-nav__link">
+        Ubuntu 22.04
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../installation/osx/" class="md-nav__link">
+        Mac OSX 10.11+
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../installation/troubleshoot/" class="md-nav__link">
+        Troubleshooting
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../installation/mailing/" class="md-nav__link">
+        Mailing Setup
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../installation/github_integration/" class="md-nav__link">
+        Github Integration Setup
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../installation/lti_integration/" class="md-nav__link">
+        LTI Advantage Integration Setup
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_4" type="checkbox" id="__nav_2_4" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_2_4">
+          Tango
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Tango" data-md-level="2">
+        <label class="md-nav__title" for="__nav_2_4">
+          <span class="md-nav__icon md-icon"></span>
+          Tango
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../installation/tango/" class="md-nav__link">
+        Installation
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../installation/tango-troubleshoot/" class="md-nav__link">
+        Troubleshooting
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" checked>
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3">
+          Getting Started
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Getting Started" data-md-level="1">
+        <label class="md-nav__title" for="__nav_3">
+          <span class="md-nav__icon md-icon"></span>
+          Getting Started
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3_1" type="checkbox" id="__nav_3_1" checked>
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3_1">
+          Autolab Frontend
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Autolab Frontend" data-md-level="2">
+        <label class="md-nav__title" for="__nav_3_1">
+          <span class="md-nav__icon md-icon"></span>
+          Autolab Frontend
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../instructors/" class="md-nav__link">
+        Guide for Instructors
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../lab/" class="md-nav__link">
+        Guide for Lab Authors
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Lab Hooks
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        Lab Hooks
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#modify-submission-score" class="md-nav__link">
+    Modify Submission Score
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#raw-score-calculations" class="md-nav__link">
+    Raw Score Calculations
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#submission-file-mime-type-check" class="md-nav__link">
+    Submission File MIME Type Check
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#lab-handout" class="md-nav__link">
+    Lab Handout
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#on-autograde-completion" class="md-nav__link">
+    On Autograde Completion
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#list-options" class="md-nav__link">
+    List Options
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#scoreboard-header" class="md-nav__link">
+    Scoreboard Header
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#scoreboard-entries" class="md-nav__link">
+    Scoreboard Entries
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#scoreboard-ordering" class="md-nav__link">
+    Scoreboard Ordering
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#autograding-input-files" class="md-nav__link">
+    Autograding Input Files
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#autoresult-parsing" class="md-nav__link">
+    Autoresult Parsing
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3_1_4" type="checkbox" id="__nav_3_1_4" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3_1_4">
+          Features
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Features" data-md-level="3">
+        <label class="md-nav__title" for="__nav_3_1_4">
+          <span class="md-nav__icon md-icon"></span>
+          Features
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../features/formatted-feedback/" class="md-nav__link">
+        Formatted Feedback
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../features/scoreboards/" class="md-nav__link">
+        Scoreboards
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../features/embedded-forms/" class="md-nav__link">
+        Embedded Forms
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../features/schedulers/" class="md-nav__link">
+        Schedulers
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../features/annotations/" class="md-nav__link">
+        Annotations
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../features/moss/" class="md-nav__link">
+        MOSS Plagiarism Detection
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../features/metrics/" class="md-nav__link">
+        Metrics
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../features/git-submission/" class="md-nav__link">
+        Git Submission
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../features/lti-course-integration/" class="md-nav__link">
+        LTI Course Linking
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../features/admin-features/" class="md-nav__link">
+        Admin Features
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../command-line-interface/" class="md-nav__link">
+        Autolab Frontend CLI
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tango-cli/" class="md-nav__link">
+        Tango CLI
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4" type="checkbox" id="__nav_4" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_4">
+          Reference
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Reference" data-md-level="1">
+        <label class="md-nav__title" for="__nav_4">
+          <span class="md-nav__icon md-icon"></span>
+          Reference
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/" class="md-nav__link">
+        Reference Overview
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4_2" type="checkbox" id="__nav_4_2" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_4_2">
+          Autolab Frontend API
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Autolab Frontend API" data-md-level="2">
+        <label class="md-nav__title" for="__nav_4_2">
+          <span class="md-nav__icon md-icon"></span>
+          Autolab Frontend API
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api-overview/" class="md-nav__link">
+        Overview
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api-interface/" class="md-nav__link">
+        Endpoints
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api-managing-authorized-apps/" class="md-nav__link">
+        Managing Authorized Apps
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tango-rest/" class="md-nav__link">
+        Tango API
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tango-vmms/" class="md-nav__link">
+        Tango VMMS API
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  <a href="https://github.com/Autolab/autolab/edit/master/docs/lab-hooks.md" title="Edit this page" class="md-content__button md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25Z"/></svg>
+  </a>
+
+
+<h1 id="lab-hooks">Lab Hooks</h1>
+<p>This document provides a summary of all the lab (aka assessment) hooks available to an instructor.</p>
+<p>Lab hooks are defined in the lab's configuration file, <code>&lt;labname&gt;.rb</code>. The configuration file is located in the lab's directory, at the path <code>&lt;coursename&gt;/&lt;labname&gt;/&lt;labname&gt;.rb</code>.</p>
+<p>To make changes live, you must select the "Reload config file" option on the lab's index page. You can also upload a new config file from the lab's setting page.</p>
+<p>To debug the hooks, you can make use of the <code>ASSESSMENT_LOGGER.log(&lt;expr&gt;)</code> method to print output into the lab's <code>log.txt</code> file.</p>
+<div class="admonition danger">
+<p class="admonition-title">Function Arity</p>
+<p>When defining the hooks below, be sure that they take the correct number of arguments.
+Failure to do so might leave your assessment in a hard-to-recover state. </p>
+</div>
+<h2 id="modify-submission-score">Modify Submission Score</h2>
+<p>Hook: <code>modifySubmissionScores</code></p>
+<p>By default, the scores output by the autograder will be directly assigned to the individual problem scores. This hook allows you to override the score calculation for a lab.</p>
+<p><div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">assessmentVariables</span>
+    <span class="n">variables</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">variables</span><span class="o">[</span><span class="s2">&quot;previous_submissions_lookback&quot;</span><span class="o">]</span> <span class="o">=</span> <span class="mi">1000</span>
+    <span class="n">variables</span><span class="o">[</span><span class="s2">&quot;exclude_autograding_in_progress_submissions&quot;</span><span class="o">]</span> <span class="o">=</span> <span class="kp">false</span>
+    <span class="n">variables</span>
+<span class="k">end</span>
+
+<span class="k">def</span> <span class="nf">modifySubmissionScores</span><span class="p">(</span><span class="n">scores</span><span class="p">,</span> <span class="n">previous_submissions</span><span class="p">,</span> <span class="n">problems</span><span class="p">)</span>
+
+  <span class="n">scores</span><span class="o">[</span><span class="s2">&quot;Score1&quot;</span><span class="o">]</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="n">previous_submissions</span><span class="o">.</span><span class="n">length</span><span class="p">)</span>
+
+  <span class="c1"># Get Score1 score for previous submission</span>
+  <span class="n">scores</span><span class="o">[</span><span class="s2">&quot;Score2&quot;</span><span class="o">]</span> <span class="o">=</span> <span class="n">previous_submissions</span><span class="o">[</span><span class="mi">0</span><span class="o">].</span><span class="n">scores</span><span class="o">.</span><span class="n">find_or_initialize_by</span><span class="p">(</span><span class="ss">:problem_id</span> <span class="o">=&gt;</span> <span class="n">problems</span><span class="o">.</span><span class="n">find_by</span><span class="p">(</span><span class="ss">:name</span> <span class="o">=&gt;</span> <span class="s2">&quot;Score1&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">id</span><span class="p">)</span><span class="o">.</span><span class="n">score</span>
+
+  <span class="c1"># Get Score2 score for previous submission</span>
+  <span class="n">scores</span><span class="o">[</span><span class="s2">&quot;Score3&quot;</span><span class="o">]</span> <span class="o">=</span> <span class="n">previous_submissions</span><span class="o">[</span><span class="mi">0</span><span class="o">].</span><span class="n">scores</span><span class="o">.</span><span class="n">find_or_initialize_by</span><span class="p">(</span><span class="ss">:problem_id</span> <span class="o">=&gt;</span> <span class="n">problems</span><span class="o">.</span><span class="n">find_by</span><span class="p">(</span><span class="ss">:name</span> <span class="o">=&gt;</span> <span class="s2">&quot;Score2&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">id</span><span class="p">)</span><span class="o">.</span><span class="n">score</span>
+
+  <span class="n">scores</span>
+<span class="k">end</span>
+</code></pre></div>
+The code snippet above allows you to create a lab that has a score that is a function of the number of previous submissions, and the scores of previous submissions. This particular lab has four problems called "Autograded Score", "Score1", "Score2", "Score3". It assigns the score of "Score1" to be the negative of the number of previous submissions, and the score of "Score2" to be the score of "Score1" of the previous submission, and the score of "Score3" to be the score of "Score2" of the previous submission.</p>
+<p>There are two settings that you can change in the <code>assessmentVariables</code> function that will affect the behavior of the <code>modifySubmissionScores</code> function:</p>
+<ul>
+<li><code>previous_submissions_lookback</code>: The number of previous submissions to look back when calculating the score. By default, it is set to 1000.</li>
+<li><code>exclude_autograding_in_progress_submissions</code>: If set to <code>true</code>, the submissions that are currently being autograded will be excluded when passed into the <code>modifySubmissionScores</code> function. By default, it is set to <code>false</code>.</li>
+</ul>
+<p>The three arguments passed into the <code>modifySubmissionScores</code> function are:</p>
+<ul>
+<li><code>scores</code>: A hash that maps the problem name to the score.</li>
+<li><code>previous_submissions</code>: A list of previous submissions, sorted by submission time in descending order, it is an ActiveRecord object.</li>
+<li><code>problems</code>: A list of problems in the lab, it is an ActiveRecord object.</li>
+</ul>
+<p>For more information on how to use ActiveRecord, please refer to the <a href="http://guides.rubyonrails.org/active_record_querying.html">ActiveRecord documentation</a>. For the schema of the <code>Submission</code> and <code>Problem</code> models, please refer to the <a href="https://github.com/autolab/Autolab/blob/master/db/schema.rb">Autolab Schema</a>.</p>
+<h2 id="raw-score-calculations">Raw Score Calculations</h2>
+<p>Hook: <code>raw_score</code></p>
+<p>By default, the raw score for a submission is the sum of the individual problem scores. This hook allows you to override the raw score calculation for a lab.</p>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">raw_score</span><span class="p">(</span><span class="n">score</span><span class="p">)</span>
+    <span class="n">perfindex</span> <span class="o">=</span> <span class="n">score</span><span class="o">[</span><span class="s2">&quot;Autograded Score&quot;</span><span class="o">].</span><span class="n">to_f</span><span class="p">()</span>
+    <span class="n">heap</span> <span class="o">=</span> <span class="n">score</span><span class="o">[</span><span class="s2">&quot;Heap Checker&quot;</span><span class="o">].</span><span class="n">to_f</span><span class="p">()</span>
+    <span class="n">style</span> <span class="o">=</span> <span class="n">score</span><span class="o">[</span><span class="s2">&quot;Style&quot;</span><span class="o">].</span><span class="n">to_f</span><span class="p">()</span>
+    <span class="n">deduct</span> <span class="o">=</span> <span class="n">score</span><span class="o">[</span><span class="s2">&quot;CorrectnessDeductions&quot;</span><span class="o">].</span><span class="n">to_f</span><span class="p">()</span>
+    <span class="n">perfpoints</span> <span class="o">=</span> <span class="n">perfindex</span>
+
+    <span class="c1"># perfindex below 50 gets autograded score of 0.</span>
+    <span class="k">if</span> <span class="n">perfindex</span> <span class="o">&lt;</span> <span class="mi">50</span><span class="o">.</span><span class="mi">0</span> <span class="k">then</span>
+        <span class="n">perfpoints</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">else</span>
+        <span class="n">perfpoints</span> <span class="o">=</span> <span class="n">perfindex</span>
+    <span class="k">end</span>
+
+    <span class="k">return</span> <span class="n">perfpoints</span> <span class="o">+</span> <span class="n">heap</span> <span class="o">+</span> <span class="n">style</span> <span class="o">+</span> <span class="n">deduct</span>
+<span class="k">end</span>
+</code></pre></div>
+<p>This particular lab has four problems called "Autograded Score", "Heap Checker", "Style", and "CorrectnessDeductions". The code snippet above sets an "Autograded Score" of less than 50 to 0 when the raw score is calculated.</p>
+<h2 id="submission-file-mime-type-check">Submission File MIME Type Check</h2>
+<p>Hook: <code>checkMimeType</code></p>
+<p>By default, Autolab does not perform MIME type check for submission files. This hook allows you to define a MIME type check method. For example, to prevent students from submitting a binary file to the assessment, you might add the following <code>checkMimeType</code> function:</p>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">checkMimeType</span><span class="p">(</span><span class="n">contentType</span><span class="p">,</span> <span class="n">fileName</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">contentType</span> <span class="o">!=</span> <span class="s2">&quot;application/octet-stream&quot;</span>
+<span class="k">end</span>
+</code></pre></div>
+<p>As of now, the only way to provide a more informative message to students is to raise an error:</p>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">checkMimeType</span><span class="p">(</span><span class="n">contentType</span><span class="p">,</span> <span class="n">fileName</span><span class="p">)</span>
+    <span class="k">raise</span> <span class="s2">&quot;Do not submit binary files!&quot;</span> <span class="k">if</span> <span class="n">contentType</span> <span class="o">==</span> <span class="s2">&quot;application/octet-stream&quot;</span>
+
+    <span class="k">return</span> <span class="kp">true</span>
+<span class="k">end</span>
+</code></pre></div>
+<p>This results in the following error message being displayed to students when they attempt to submit binary files.</p>
+<p><img alt="MIME Type Check" src="/images/mime_type_check.png" /></p>
+<p>Alternatively, you can use the file name to do file type checks. The following snippet prevents students from submitting python files:</p>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">checkMimeType</span><span class="p">(</span><span class="n">contentType</span><span class="p">,</span> <span class="n">fileName</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">fileName</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)</span><span class="o">[-</span><span class="mi">1</span><span class="o">]</span> <span class="o">!=</span> <span class="s2">&quot;py&quot;</span>
+<span class="k">end</span>
+</code></pre></div>
+<p>Note that this function does not have access to Rails controller attributes such as <code>flash</code> or <code>params</code>. Attempts to access what's beyond the arguments passed to the function will result in an error.</p>
+<h2 id="lab-handout">Lab Handout</h2>
+<p>Hook: <code>handout</code></p>
+<p>By default, the handout provided to students when they click on "Download handout" is the file path or URL specified in the lab settings. This hook allows you to run custom code when the button is clicked and then return a path to the handout. This can be useful in creating customized handouts on a per-student basis.</p>
+<div class="admonition info">
+<p class="admonition-title">Restrictions on Handout Path</p>
+<p>For security reasons, the handout path returned by the hook must reside within the lab folder.</p>
+</div>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">handout</span>
+    <span class="n">course</span> <span class="o">=</span> <span class="vi">@assessment</span><span class="o">.</span><span class="n">course</span><span class="o">.</span><span class="n">name</span>
+    <span class="n">asmt</span> <span class="o">=</span> <span class="vi">@assessment</span><span class="o">.</span><span class="n">name</span>
+    <span class="n">file</span> <span class="o">=</span> <span class="s2">&quot;autograde-Makefile&quot;</span>
+
+    <span class="n">file_path</span> <span class="o">=</span> <span class="s2">&quot;courses/</span><span class="si">#{</span><span class="n">course</span><span class="si">}</span><span class="s2">/</span><span class="si">#{</span><span class="n">asmt</span><span class="si">}</span><span class="s2">/</span><span class="si">#{</span><span class="n">file</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="n">filename</span> <span class="o">=</span> <span class="s2">&quot;makefile&quot;</span>
+    <span class="no">Hash</span><span class="o">[</span><span class="s2">&quot;fullpath&quot;</span><span class="p">,</span> <span class="n">file_path</span><span class="p">,</span> <span class="s2">&quot;filename&quot;</span><span class="p">,</span> <span class="n">filename</span><span class="o">]</span>
+<span class="k">end</span>
+</code></pre></div>
+<p>The code snippet above downloads the <code>autograde-Makefile</code> (assuming it resides at the root of the lab directory) as the file <code>makefile</code>.</p>
+<h2 id="on-autograde-completion">On Autograde Completion</h2>
+<p>Hook: <code>autogradeDone</code></p>
+<p>By default, upon autograding completion, the feedback is saved to the feedback file and submission(s) scores are updated, amongst other things.</p>
+<p>This hook allows you to override this behavior. Unless you know what you're doing, you should probably leave this hook alone.</p>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">autogradeDone</span><span class="p">(</span><span class="n">submissions</span><span class="p">,</span> <span class="n">feedback</span><span class="p">)</span>
+    <span class="c1"># submissions: all the submissions connected to this feedback (could be multiple if this was a group submission)</span>
+    <span class="c1"># feedback: feedback string from the autograder</span>
+
+    <span class="c1"># default behavior - write feedback into feedback file</span>
+
+    <span class="n">saveAutograde</span><span class="p">(</span><span class="n">submissions</span><span class="p">,</span> <span class="n">feedback</span><span class="p">)</span> <span class="c1"># you should probably call this</span>
+<span class="k">end</span>
+</code></pre></div>
+<h2 id="list-options">List Options</h2>
+<p>Hook: <code>listOptions</code></p>
+<p>By default, the following options are displayed to students when viewing an assessment:</p>
+<ul>
+<li>View handin history</li>
+<li>View writeup (if the assessment has a writeup defined)</li>
+<li>Download handout (if the assessment has a handout defined)</li>
+<li>Group options (if the assessment has groups enabled)</li>
+<li>View scoreboard (if the assessment has a scoreboard)</li>
+</ul>
+<p>This hook allows you to disable the display of these options and/or display your own options.</p>
+<div class="admonition info">
+<p class="admonition-title">Only affects the dropdown</p>
+<p>Even if certain options are hidden from the "Options" dropdown through this hook,
+students can still navigate directly to the corresponding pages if they so wish. </p>
+</div>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">listOptions</span><span class="p">(</span><span class="n">list</span><span class="p">)</span>
+    <span class="c1"># The default options are: history, writeup, handout, groups, scoreboard</span>
+    <span class="c1"># Delete the options that you do not want to show</span>
+    <span class="n">list</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="s2">&quot;history&quot;</span><span class="p">)</span> <span class="c1"># hides &quot;View handin history&quot;</span>
+
+    <span class="c1"># You can display your own options</span>
+    <span class="c1"># list[&lt;key&gt;] = &lt;value&gt; where &lt;key&gt; is the url route and &lt;value&gt; is the text to display for the option</span>
+    <span class="c1"># (Non-exhaustive) possible values for &lt;key&gt;: history, writeup, handout</span>
+    <span class="n">list</span><span class="o">[</span><span class="s2">&quot;history&quot;</span><span class="o">]</span> <span class="o">=</span> <span class="s2">&quot;View your official scores&quot;</span>
+    <span class="n">list</span><span class="o">[</span><span class="s2">&quot;writeup&quot;</span><span class="o">]</span> <span class="o">=</span> <span class="s2">&quot;View the writeup&quot;</span>
+    <span class="n">list</span><span class="o">[</span><span class="s2">&quot;handout&quot;</span><span class="o">]</span> <span class="o">=</span> <span class="s2">&quot;Download your bomb&quot;</span>
+
+    <span class="c1"># Avoid setting custom keys to a value of nil, as that is how the code distinguishes default options.</span>
+    <span class="k">return</span> <span class="n">list</span>
+<span class="k">end</span>
+</code></pre></div>
+<p>The code snippet above hides the default option "View handin history" and defines three custom options <code>history</code>, <code>writeup</code>, and <code>handout</code>.
+In particular, the link to <code>history</code> now has the text "View your official scores".</p>
+<div class="admonition info">
+<p class="admonition-title">Valid keys for options</p>
+<p>Other than <code>history</code>, <code>writeup</code>, and <code>handout</code>, a valid key could technically be any route associated with assessments.
+However, many of these routes are not visible to students and it would not make sense to list them.</p>
+<p>For this reason, the following keys are explicitly ignored (but this is not comprehensive):
+<code>edit</code>, <code>viewGradesheet</code>, <code>reload</code></p>
+<p>Invalid keys will be marked as such.</p>
+</div>
+<h2 id="scoreboard-header">Scoreboard Header</h2>
+<p>Hook: <code>scoreboardHeader</code></p>
+<p>By default, the scoreboard header follows the following format:</p>
+<ul>
+<li>If a <a href="/features/scoreboards/#custom-scoreboards">custom column specification</a> is provided: <code>Rank</code>, <code>Nickname</code>, <code>Version</code>, <code>Time</code>, followed by the columns defined in the column specification</li>
+<li>Otherwise: <code>Rank</code>, <code>Nickname</code>, <code>Version</code>, <code>Time</code>, <code>Total</code>, followed by the name of each problem in the assessment</li>
+</ul>
+<p>This hook allows for even greater flexibility in the definition of the scoreboard header.
+If defined, it takes precedence over a custom column specification.</p>
+<div class="admonition info">
+<p class="admonition-title">Restrictions on HTML tags</p>
+<p>Only <code>th</code> and <code>td</code> tags can be used, all other tags will be stripped.</p>
+</div>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">scoreboardHeader</span>
+    <span class="s2">&quot;&lt;th&gt;Nickname&lt;/th&gt;&lt;th&gt;Version&lt;/th&gt;&lt;th&gt;Time&lt;/th&gt;&lt;th&gt;Total&lt;/th&gt;&lt;th&gt;Problem 1&lt;/th&gt;&lt;th&gt;Problem 2&lt;/th&gt;&quot;</span>
+<span class="k">end</span>
+</code></pre></div>
+<p>The code snippet above defines a scoreboard whose header consists of the fields <code>Rank</code>, <code>Nickname</code>, <code>Version</code>, <code>Time</code>, <code>Total</code>, <code>Problem 1</code>, <code>Problem 2</code>.</p>
+<p>Thus, other than the <code>Rank</code> column, the number of columns and their names can be fully customized.</p>
+<h2 id="scoreboard-entries">Scoreboard Entries</h2>
+<p>Hook: <code>createScoreboardEntry</code></p>
+<p>By default, each scoreboard row, corresponding to a user, follows the following format: <code>Rank</code>, <code>Nickname</code>, <code>Version</code>, <code>Time</code>, <code>Total</code>, followed by the score for each problem in the assessment.</p>
+<p>This hook allows for greater flexibility in the values displayed for each student.
+In particular, the values displayed for the columns beyond <code>Rank</code>, <code>Nickname</code>, <code>Version</code>, and <code>Time</code> can be configured.
+This hook should most likely be used in conjunction with the <code>scoreboardHeader</code> hook or a <a href="/features/scoreboards/#custom-scoreboards">custom column specification</a>.</p>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">createScoreboardEntry</span><span class="p">(</span><span class="n">scores</span><span class="p">,</span> <span class="n">autoresult</span><span class="p">)</span>
+    <span class="n">defused</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">explosions</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">scores</span><span class="o">.</span><span class="n">each_pair</span> <span class="k">do</span> <span class="o">|</span><span class="nb">name</span><span class="p">,</span> <span class="n">value</span><span class="o">|</span>
+        <span class="k">if</span> <span class="nb">name</span> <span class="o">==</span> <span class="s2">&quot;explosion&quot;</span>
+            <span class="n">explosions</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">to_i</span><span class="p">()</span>
+        <span class="k">else</span>
+            <span class="n">defused</span> <span class="o">+=</span> <span class="n">value</span><span class="o">.</span><span class="n">to_i</span><span class="p">()</span>
+        <span class="k">end</span>
+    <span class="k">end</span>
+    <span class="n">totalscore</span> <span class="o">=</span> <span class="n">raw_score</span><span class="p">(</span><span class="n">scores</span><span class="p">)</span>
+    <span class="o">[</span><span class="n">defused</span><span class="p">,</span> <span class="n">explosions</span><span class="p">,</span> <span class="n">totalscore</span><span class="o">]</span>
+<span class="k">end</span>
+</code></pre></div>
+<p>Assuming a suitable <code>raw_score</code> method is defined, the code snippet above displays a student's score,
+together with statistics such as the value associated with the problem <code>explosion</code> and the sum of values associated
+with the other problems.</p>
+<h2 id="scoreboard-ordering">Scoreboard Ordering</h2>
+<p>Hook: <code>scoreboardOrderSubmissions</code></p>
+<p>By default, scoreboard rows are sorted as follows:</p>
+<ul>
+<li>If a <a href="/features/scoreboards/#custom-scoreboards">custom column specification</a> is provided (and an autograder is defined): Sort the columns from left to right in descending/ascending order (depending on the column specification) </li>
+<li>Otherwise: Sort by decreasing total score, followed by increasing submission time</li>
+</ul>
+<p>This hook allows for greater flexibility in the sorting logic.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># The hash contains the following keys:</span>
+<span class="c1"># {:nickname, :andrewID, :fullName, :problems, :time, :version, :autoresult, :entry}</span>
+<span class="c1"># where :entry is the scoreboard entry array returned by createScoreboardEntry</span>
+<span class="k">def</span> <span class="nf">scoreboardOrderSubmissions</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+    <span class="c1"># In this example, assume that each entry has the format [defused, explosions, totalscore]</span>
+
+    <span class="c1"># Entry A ranks higher than entry B if it has more defused phases.</span>
+    <span class="n">rank</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="n">a</span><span class="o">[</span><span class="ss">:entry</span><span class="o">][</span><span class="mi">0</span><span class="o">]</span> <span class="o">&lt;=&gt;</span> <span class="n">b</span><span class="o">[</span><span class="ss">:entry</span><span class="o">][</span><span class="mi">0</span><span class="o">]</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">rank</span> <span class="o">!=</span> <span class="mi">0</span>
+        <span class="k">return</span> <span class="n">rank</span>
+    <span class="k">end</span>
+
+    <span class="c1"># If defused phases are equal, entry A ranks higher than entry</span>
+    <span class="c1"># B if it has _fewer_ explosions.</span>
+    <span class="n">rank</span> <span class="o">=</span> <span class="n">a</span><span class="o">[</span><span class="ss">:entry</span><span class="o">][</span><span class="mi">1</span><span class="o">]</span> <span class="o">&lt;=&gt;</span> <span class="n">b</span><span class="o">[</span><span class="ss">:entry</span><span class="o">][</span><span class="mi">1</span><span class="o">]</span>
+    <span class="k">if</span> <span class="n">rank</span> <span class="o">!=</span> <span class="mi">0</span>
+        <span class="k">return</span> <span class="o">-</span><span class="n">rank</span>
+    <span class="k">end</span>
+
+    <span class="c1"># As a final tiebreaker, earlier submissions rank higher.</span>
+    <span class="o">-</span><span class="p">(</span><span class="n">a</span><span class="o">[</span><span class="ss">:time</span><span class="o">]</span> <span class="o">&lt;=&gt;</span> <span class="n">b</span><span class="o">[</span><span class="ss">:time</span><span class="o">]</span><span class="p">)</span>
+<span class="k">end</span>
+</code></pre></div>
+<p>The code snippet above sorts by the first column (<code>defused</code>) in decreasing order, followed by the second column (<code>explosions</code>) in increasing order. As a final tiebreaker, it sorts by time.</p>
+<h2 id="autograding-input-files">Autograding Input Files</h2>
+<p>Hook: <code>autogradeInputFiles</code></p>
+<p>By default, the following autograding input files are sent to Tango</p>
+<ol>
+<li>The student's handin file</li>
+<li>The makefile that runs the process</li>
+<li>The tarfile with all of the files needed by the autograder</li>
+</ol>
+<p>This hook allows you to define a custom list of input files to be sent instead.</p>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">autogradeInputFiles</span><span class="p">(</span><span class="n">ass_dir</span><span class="p">,</span> <span class="n">assessment</span><span class="p">,</span> <span class="n">submission</span><span class="p">)</span>
+    <span class="n">local_handin</span> <span class="o">=</span> <span class="n">submission</span><span class="o">.</span><span class="n">handin_file_path</span>
+    <span class="n">remote_handin</span> <span class="o">=</span> <span class="n">submission</span><span class="o">.</span><span class="n">handin_file_long_filename</span>
+    <span class="n">dest_handin</span> <span class="o">=</span> <span class="n">assessment</span><span class="o">.</span><span class="n">handin_filename</span>
+
+    <span class="c1"># localFile: path to file on local machine</span>
+    <span class="c1"># remoteFile: name of the file on the Tango machine</span>
+    <span class="c1"># - if this file is unique per-submission (e.g. student&#39;s code), then the filename should also be unique per-submission</span>
+    <span class="c1">#   so as to avoid name-collisions</span>
+    <span class="c1"># - if undefined, value of localFile will be used instead</span>
+    <span class="c1"># destFile: name of the file on the destination machine (e.g. docker container)</span>
+
+    <span class="n">handin</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;localFile&quot;</span> <span class="o">=&gt;</span> <span class="n">local_handin</span><span class="p">,</span>
+            <span class="s2">&quot;remoteFile&quot;</span> <span class="o">=&gt;</span> <span class="n">remote_handin</span><span class="p">,</span>
+            <span class="s2">&quot;destFile&quot;</span> <span class="o">=&gt;</span> <span class="n">dest_handin</span>
+    <span class="p">}</span>
+
+    <span class="o">[</span><span class="n">handin</span><span class="o">]</span> <span class="c1"># and any other files required</span>
+<span class="k">end</span>
+</code></pre></div>
+<h2 id="autoresult-parsing">Autoresult Parsing</h2>
+<p>Hook: <code>parseAutoresult</code></p>
+<p>By default, the autoresult string from the autograder (the last non-empty line) is assumed to be encoded in JSON and is parsed as such.
+If a different format is used for the autoresult string, this hook allows you to define custom parsing logic.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># _isOfficial is true except for log submissions</span>
+<span class="c1"># If &quot;Allow unofficial&quot; is disabled, don&#39;t worry about this.</span>
+<span class="k">def</span> <span class="nf">parseAutoresult</span><span class="p">(</span><span class="n">autoresult</span><span class="p">,</span> <span class="n">_isOfficial</span><span class="p">)</span>
+    <span class="c1"># Return a hash of problem name to scores</span>
+    <span class="p">{</span> <span class="s2">&quot;Problem 1&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;Problem 2&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">&quot;Problem 3&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s2">&quot;Problem 4&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span> <span class="s2">&quot;Problem 5&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="s2">&quot;Problem 6&quot;</span><span class="p">:</span> <span class="mi">6</span> <span class="p">}</span>
+<span class="k">end</span>
+</code></pre></div>
+
+
+  
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+    <nav class="md-footer__inner md-grid" aria-label="Footer" >
+      
+        
+        <a href="../lab/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Guide for Lab Authors" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              Guide for Lab Authors
+            </div>
+          </div>
+        </a>
+      
+      
+        
+        <a href="../features/formatted-feedback/" class="md-footer__link md-footer__link--next" aria-label="Next: Formatted Feedback" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              Formatted Feedback
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4Z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        <div class="md-social">
+  
+    
+    
+      
+      
+    
+    <a href="https://github.com/Autolab" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M186.1 328.7c0 20.9-10.9 55.1-36.7 55.1s-36.7-34.2-36.7-55.1 10.9-55.1 36.7-55.1 36.7 34.2 36.7 55.1zM480 278.2c0 31.9-3.2 65.7-17.5 95-37.9 76.6-142.1 74.8-216.7 74.8-75.8 0-186.2 2.7-225.6-74.8-14.6-29-20.2-63.1-20.2-95 0-41.9 13.9-81.5 41.5-113.6-5.2-15.8-7.7-32.4-7.7-48.8 0-21.5 4.9-32.3 14.6-51.8 45.3 0 74.3 9 108.8 36 29-6.9 58.8-10 88.7-10 27 0 54.2 2.9 80.4 9.2 34-26.7 63-35.2 107.8-35.2 9.8 19.5 14.6 30.3 14.6 51.8 0 16.4-2.6 32.7-7.7 48.2 27.5 32.4 39 72.3 39 114.2zm-64.3 50.5c0-43.9-26.7-82.6-73.5-82.6-18.9 0-37 3.4-56 6-14.9 2.3-29.8 3.2-45.1 3.2-15.2 0-30.1-.9-45.1-3.2-18.7-2.6-37-6-56-6-46.8 0-73.5 38.7-73.5 82.6 0 87.8 80.4 101.3 150.4 101.3h48.2c70.3 0 150.6-13.4 150.6-101.3zm-82.6-55.1c-25.8 0-36.7 34.2-36.7 55.1s10.9 55.1 36.7 55.1 36.7-34.2 36.7-55.1-10.9-55.1-36.7-55.1z"/></svg>
+    </a>
+  
+    
+    
+      
+      
+    
+    <a href="https://communityinviter.com/apps/autolab/autolab-project" target="_blank" rel="noopener" title="communityinviter.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M94.12 315.1c0 25.9-21.16 47.06-47.06 47.06S0 341 0 315.1c0-25.9 21.16-47.06 47.06-47.06h47.06v47.06zm23.72 0c0-25.9 21.16-47.06 47.06-47.06s47.06 21.16 47.06 47.06v117.84c0 25.9-21.16 47.06-47.06 47.06s-47.06-21.16-47.06-47.06V315.1zm47.06-188.98c-25.9 0-47.06-21.16-47.06-47.06S139 32 164.9 32s47.06 21.16 47.06 47.06v47.06H164.9zm0 23.72c25.9 0 47.06 21.16 47.06 47.06s-21.16 47.06-47.06 47.06H47.06C21.16 243.96 0 222.8 0 196.9s21.16-47.06 47.06-47.06H164.9zm188.98 47.06c0-25.9 21.16-47.06 47.06-47.06 25.9 0 47.06 21.16 47.06 47.06s-21.16 47.06-47.06 47.06h-47.06V196.9zm-23.72 0c0 25.9-21.16 47.06-47.06 47.06-25.9 0-47.06-21.16-47.06-47.06V79.06c0-25.9 21.16-47.06 47.06-47.06 25.9 0 47.06 21.16 47.06 47.06V196.9zM283.1 385.88c25.9 0 47.06 21.16 47.06 47.06 0 25.9-21.16 47.06-47.06 47.06-25.9 0-47.06-21.16-47.06-47.06v-47.06h47.06zm0-23.72c-25.9 0-47.06-21.16-47.06-47.06 0-25.9 21.16-47.06 47.06-47.06h117.84c25.9 0 47.06 21.16 47.06 47.06 0 25.9-21.16 47.06-47.06 47.06H283.1z"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs", "toc.integrate", "content.code.copy"], "search": "../assets/javascripts/workers/search.5bf1dace.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.37e9125f.min.js"></script>
+      
+    
+  </body>
+</html>
