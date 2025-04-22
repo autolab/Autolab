@@ -27,6 +27,10 @@ module AssessmentHandin
       return false
     end
 
+    # Clear cache since new submission made, need to remake cache
+    Rails.cache.delete(["submission_ids", @assessment.id])
+    Rails.cache.delete(["submissions_to_cud", @assessment.id])
+
     if @assessment.embedded_quiz
       contents = params[:submission]["embedded_quiz_form_answer"].to_s
       out_file = Tempfile.new('out.txt-')
