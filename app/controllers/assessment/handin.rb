@@ -274,6 +274,13 @@ module AssessmentHandin
       render(plain: err, status: :bad_request) && return
     end
 
+    # Validate assessment dates
+    current_time = Time.current
+    if current_time < @assessment.start_at || current_time > @assessment.end_at
+      err = "ERROR: Submissions are not allowed outside the assessment period"
+      render(plain: err, status: :bad_request) && return
+    end
+
     @result = params[:result]
     render(plain: "ERROR: No result!", status: :bad_request) && return unless @result
 
