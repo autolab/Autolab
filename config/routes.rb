@@ -155,7 +155,10 @@ Rails.application.routes.draw do
 
         post "import", on: :collection
       end
-      resources :problems, except: [:index, :show]
+      # resources :problems, except: [:index, :show]
+      resources :problems, except: [:index, :show] do
+        resources :rubric_items, except: [:index, :show]
+      end
       resource :scoreboard, except: [:new]
       resources :submissions, except: [:show] do
         resources :annotations, only: [:create, :update, :destroy] do

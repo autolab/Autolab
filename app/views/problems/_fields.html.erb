@@ -1,3 +1,10 @@
+<% content_for :javascripts do %>
+  <script type="text/javascript">
+    var basePath = "<%= course_assessment_problem_path(@course, @assessment, @problem) %>";
+  </script>
+  <%= javascript_include_tag "rubric_items" %>
+<% end %>
+
 <%= f.text_field :name, help_text: "Each problem has a name that is unique to the assessment.",
                         placeholder: "problem1", required: true %>
 
@@ -21,6 +28,67 @@ unchecked." %>
 <%= f.check_box :starred, help_text: "By default, all problems are
 \"not starred\". Starred problems are displayed first in the problems dropdown when creating annotations." %>
 
+<% if false %>
+<% if @problem %>
+<div class="rubric-section">
+  <h5>Rubric Items</h5>
+  <div id="rubric-items">
+    <% @problem.rubric_items.each do |item| %>
+      <div class="rubric-item" data-id="<%= item.id %>">
+        <div class="row">
+          <div class="input-field col s8">
+            <input type="text" class="rubric-description" value="<%= item.description %>" placeholder="Description">
+          </div>
+          <div class="input-field col s2">
+            <input type="number" class="rubric-points" value="<%= item.points %>" placeholder="Points" step="any">
+          </div>
+          <div class="col s2">
+            <button class="btn-flat delete-rubric-item"><i class="material-icons">delete</i></button>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+  <button class="btn" id="add-rubric-item">Add Rubric Item</button>
+</div>
+<% end %>
+<% end %>
+
+<% if @problem %>
+<div class="rubric-section">
+  <h5>Rubric Items</h5>
+  <table class="bordered responsive-table">
+    <thead>
+      <tr>
+        <th>Description</th>
+        <th>Points</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @problem.rubric_items.each do |item| %>
+        <tr>
+          <td><%= item.description %></td>
+          <td><%= item.points %></td>
+          <td>
+            <%= link_to "<i class=\"material-icons left\">mode_edit</i>".html_safe, 
+                        edit_course_assessment_problem_rubric_item_path(@course, @assessment, @problem, item), 
+                        { class: "small" } %>
+            <%= link_to "<i class=\"material-icons left\">delete</i>".html_safe, 
+                        [@course, @assessment, @problem, item], 
+                        method: :delete, 
+                        class: "small", 
+                        data: { confirm: "Are you sure you want to delete this rubric item?" } %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+  <br>
+  <%= link_to "Add Rubric Item", new_course_assessment_problem_rubric_item_path(@course, @assessment, @problem), { class: "btn" } %>
+</div>
+<% end %>
+
 <div class="action_buttons">
   <%= f.submit "Save Problem", { class: "btn primary" } %>
   <% if @problem %>
@@ -29,5 +97,4 @@ unchecked." %>
                 method: :delete, class: 'btn btn-danger',
                 data: { confirm: "Deleting will delete all associated problem data (such as scores and annotations) and cannot be undone. Are you sure you want to delete this problem?" } %>
   </button>
-  <% end %>
-</div>
+  <% end %> 

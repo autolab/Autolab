@@ -9,6 +9,7 @@ class Problem < ApplicationRecord
   has_many :scores, dependent: :delete_all
   belongs_to :assessment, touch: true
   has_many :annotations, dependent: :destroy
+  has_many :rubric_items, dependent: :destroy
 
   validates :name, :max_score, presence: true
   validates :name, uniqueness: { case_sensitive: false, scope: :assessment_id }

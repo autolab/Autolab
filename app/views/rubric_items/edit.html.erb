@@ -1,0 +1,22 @@
+<%# For navigation breadcrumbs %>
+<% @title = "Edit Rubric Item" %>
+
+<% content_for :stylesheets do %>
+  <%= stylesheet_link_tag "problems" %>
+<% end %>
+
+<h4>Edit Rubric Item</h4>
+<%= form_for [@course, @assessment, @problem, @rubric_item], builder: FormBuilderWithDateTimeInput do |f| %>
+  <%= f.text_field :description, help_text: "Description of the rubric item.", placeholder: "Description", required: true %>
+  
+  <%= f.number_field :points, help_text: "Points for this rubric item.", placeholder: "0", step: "any", required: true %>
+
+  <div class="action_buttons">
+    <%= f.submit "Save Rubric Item", { class: "btn primary" } %>
+    <button class="delete_btn">
+      <%= link_to "Delete this Rubric Item", [@course, @assessment, @problem, @rubric_item],
+                  method: :delete, class: 'btn btn-danger',
+                  data: { confirm: "Are you sure you want to delete this rubric item?" } %>
+    </button>
+  </div>
+<% end %> 
