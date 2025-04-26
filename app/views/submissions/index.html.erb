@@ -84,21 +84,16 @@
                   class: "btn submissions-main" } %>
   </div>
 
-  <div id="regrade-all-html">
-    <%= link_to "<i class='material-icons left submissions-icons'>cached</i>Regrade All".html_safe,
-                regradeAll_course_assessment_path(@course, @assessment),
-                { method: :post,
-                  title: "Regrade all submissions for this assignment",
-                  class: "btn submissions-main",
-                  data: { confirm: "Are you sure you want to regrade all #{@assessment.submissions.where(special_type: [Submission::NORMAL, nil]).latest.count} latest submissions?" } } %>
-  </div>
+  <a id="regrade-all-btn" class="btn submissions-main" title="Regrade all submissions for this assignment">
+    <i class='material-icons left submissions-icons' id="regrade-all-icon">cached</i>Regrade All
+  </a>
 </div>
 
 <%# Selected buttons, hidden so HTML can be accessed in DataTables %>
 <div class="selected-buttons-placeholder">
   <div id="regrade-batch-html">
-    <%= link_to "Regrade Selected", class: "btn submissions-selected", title: "Regrade selected submissions" do %>
-      <i class="material-icons">cached</i> Regrade Selected
+    <%= link_to "Regrade Selected", class: "btn submissions-selected", id: "regrade-selected-btn", title: "Regrade selected submissions" do %>
+      <i class="material-icons" id="regrade-selected-icon">cached</i>Regrade Selected
     <% end %>
   </div>
 
@@ -125,9 +120,13 @@
 
 <div class="selected-count-placeholder" style="display: none;">
   <span id="selected-count-html">0 submissions selected</span>
-  <span>Click <%= link_to "Regrade All", regradeAll_course_assessment_path(@course, @assessment),
-                          { method: :post, title: "Regrade all submissions", class: "selected-count-red",
-                            data: { confirm: "Are you sure you want to regrade all #{@assessment.submissions.where(special_type: [Submission::NORMAL, nil]).latest.count} latest submissions?" } } %>  to regrade all </span><%= @submissions.latest.length %><span> latest submissions.</span>
+  <span>
+    Click
+    <a href="#" id="regrade-all-trigger" class="selected-count-red" title="Regrade all submissions">
+      Regrade All
+    </a>
+    to regrade all <%= @submissions.latest.length %> latest submissions.
+  </span>
 </div>
 
 <table class="prettyBorder" id="submissions">
