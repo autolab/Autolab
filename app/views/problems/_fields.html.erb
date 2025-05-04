@@ -1,10 +1,3 @@
-<% content_for :javascripts do %>
-  <script type="text/javascript">
-    var basePath = "<%= course_assessment_problem_path(@course, @assessment, @problem) %>";
-  </script>
-  <%= javascript_include_tag "rubric_items" %>
-<% end %>
-
 <%= f.text_field :name, help_text: "Each problem has a name that is unique to the assessment.",
                         placeholder: "problem1", required: true %>
 
@@ -27,32 +20,6 @@ unchecked." %>
 
 <%= f.check_box :starred, help_text: "By default, all problems are
 \"not starred\". Starred problems are displayed first in the problems dropdown when creating annotations." %>
-
-<% if false %>
-<% if @problem %>
-<div class="rubric-section">
-  <h5>Rubric Items</h5>
-  <div id="rubric-items">
-    <% @problem.rubric_items.each do |item| %>
-      <div class="rubric-item" data-id="<%= item.id %>">
-        <div class="row">
-          <div class="input-field col s8">
-            <input type="text" class="rubric-description" value="<%= item.description %>" placeholder="Description">
-          </div>
-          <div class="input-field col s2">
-            <input type="number" class="rubric-points" value="<%= item.points %>" placeholder="Points" step="any">
-          </div>
-          <div class="col s2">
-            <button class="btn-flat delete-rubric-item"><i class="material-icons">delete</i></button>
-          </div>
-        </div>
-      </div>
-    <% end %>
-  </div>
-  <button class="btn" id="add-rubric-item">Add Rubric Item</button>
-</div>
-<% end %>
-<% end %>
 
 <% if @problem %>
 <div class="rubric-section">
