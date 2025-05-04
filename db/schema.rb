@@ -15,8 +15,8 @@ ActiveRecord::Schema.define(version: 2025_04_26_203028) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
-    t.bigint "record_id", null: false
-    t.bigint "blob_id", null: false
+    t.integer "record_id", null: false
+    t.integer "blob_id", null: false
     t.datetime "created_at", null: false
     t.index ["blob_id"], name: "index_active_storage_attachments_on_blob_id"
     t.index ["record_type", "record_id", "name", "blob_id"], name: "index_active_storage_attachments_uniqueness", unique: true
@@ -27,7 +27,7 @@ ActiveRecord::Schema.define(version: 2025_04_26_203028) do
     t.string "filename", null: false
     t.string "content_type"
     t.text "metadata"
-    t.bigint "byte_size", null: false
+    t.integer "byte_size", null: false
     t.string "checksum", null: false
     t.datetime "created_at", null: false
     t.string "service_name", null: false
@@ -130,7 +130,7 @@ ActiveRecord::Schema.define(version: 2025_04_26_203028) do
     t.integer "course_id"
     t.integer "assessment_id"
     t.string "category_name", default: "General"
-    t.datetime "release_at", default: -> { "CURRENT_TIMESTAMP" }
+    t.datetime "release_at"
     t.string "slug"
     t.index ["assessment_id"], name: "index_attachments_on_assessment_id"
     t.index ["slug"], name: "index_attachments_on_slug", unique: true
@@ -200,8 +200,8 @@ ActiveRecord::Schema.define(version: 2025_04_26_203028) do
     t.string "sluggable_type", limit: 50
     t.string "scope"
     t.datetime "created_at"
-    t.index ["slug", "sluggable_type", "scope"], name: "index_friendly_id_slugs_on_slug_and_sluggable_type_and_scope", unique: true, length: { slug: 70, scope: 70 }
-    t.index ["slug", "sluggable_type"], name: "index_friendly_id_slugs_on_slug_and_sluggable_type", length: { slug: 140 }
+    t.index ["slug", "sluggable_type", "scope"], name: "index_friendly_id_slugs_on_slug_and_sluggable_type_and_scope", unique: true
+    t.index ["slug", "sluggable_type"], name: "index_friendly_id_slugs_on_slug_and_sluggable_type"
     t.index ["sluggable_type", "sluggable_id"], name: "index_friendly_id_slugs_on_sluggable_type_and_sluggable_id"
   end
 
@@ -340,7 +340,7 @@ ActiveRecord::Schema.define(version: 2025_04_26_203028) do
     t.integer "course_id"
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.datetime "until", default: -> { "CURRENT_TIMESTAMP" }
+    t.datetime "until"
     t.boolean "disabled", default: false
   end
 
@@ -352,15 +352,15 @@ ActiveRecord::Schema.define(version: 2025_04_26_203028) do
 
   create_table "scoreboards", id: :integer, charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.integer "assessment_id"
-    t.text "banner"
-    t.text "colspec"
+    t.text "banner", limit: 65535
+    t.text "colspec", limit: 65535
     t.boolean "include_instructors", default: false
   end
 
   create_table "scores", id: :integer, charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.integer "submission_id"
     t.float "score"
-    t.text "feedback", size: :medium
+    t.text "feedback", limit: 16777215
     t.integer "problem_id"
     t.datetime "created_at"
     t.datetime "updated_at"
@@ -386,7 +386,7 @@ ActiveRecord::Schema.define(version: 2025_04_26_203028) do
     t.string "submitter_ip", limit: 40
     t.integer "tweak_id"
     t.boolean "ignored", default: false, null: false
-    t.string "dave"
+    t.string "dave", limit: 255
     t.text "embedded_quiz_form_answer"
     t.integer "submitted_by_app_id"
     t.string "group_key", default: ""
