@@ -40,6 +40,11 @@ class SubmissionsController < ApplicationController
     )
     @excused_cids = excused_students.pluck(:course_user_datum_id)
     @problems = @assessment.problems.to_a
+    @rubric_items_by_problem = {}
+
+    @problems.each do |problem|
+      @rubric_items_by_problem[problem.id] = problem.rubric_items.to_a
+    end
   end
 
   action_auth_level :score_details, :instructor
@@ -733,6 +738,12 @@ class SubmissionsController < ApplicationController
 
     @problems = @assessment.problems.ordered.to_a
 
+    # Initialize rubric items by problem
+    @rubric_items_by_problem = {}
+    @problems.each do |problem|
+      @rubric_items_by_problem[problem.id] = problem.rubric_items.to_a
+    end
+
     # Allow scores to be assessed by the view
     @scores = Score.where(submission_id: @submission.id)
 
@@ -782,7 +793,7 @@ class SubmissionsController < ApplicationController
       @problemNameToId[problem] ||= -1
 
       @problemAnnotations[problem] << [description, value, line, annotation.submitted_by,
-                                       annotation.id, annotation.position, filename, shared, global]
+                                       annotation.id, annotation.position, filename, shared, global, annotation.rubric_item_id]
       @problemScores[problem] += value
     end
 

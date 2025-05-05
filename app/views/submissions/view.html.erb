@@ -42,6 +42,9 @@
 
     // a json list of scores for this assessment
     var scores = <%= raw @scores.to_json %>;
+
+    var rubricItemsByProblem = <%= raw @rubric_items_by_problem.to_json %>;
+
     var basePath = "<%= course_assessment_submission_annotations_path(@course, @assessment, @submission) %>";
 
     var localCache = {};

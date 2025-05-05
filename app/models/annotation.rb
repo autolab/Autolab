@@ -6,10 +6,12 @@
 class Annotation < ApplicationRecord
   belongs_to :submission
   belongs_to :problem
+  belongs_to :rubric_item, optional: true
 
   validates :comment, :value, :filename, :submission_id, :problem_id, presence: true
+  validate :rubric_item_belongs_to_same_problem
 
-  def as_text
+  def as_text 
     if value
       if problem
         "#{comment} (#{value}, #{problem.name})"
@@ -88,6 +90,18 @@ class Annotation < ApplicationRecord
       scores.each do |group_score|
         group_score.update!(score: new_score)
       end
+    end
+  end
+
+  private
+
+  def rubric_item_belongs_to_same_problem
+    return if rubric_item_id.blank?
+
+    if rubric_item.nil?
+      errors.add(:rubric_item, "must exist")
+    elsif rubric_item.problem_id != problem_id
+      errors.add(:rubric_item, "must belong to the same problem as the annotation")
     end
   end
 end

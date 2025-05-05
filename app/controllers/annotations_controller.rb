@@ -18,6 +18,13 @@ class AnnotationsController < ApplicationController
                      else
                        annotation_params
                      end
+
+    # If rubric_item_id is present, set the value to the rubric item's points
+    if updated_params[:rubric_item_id].present?
+      rubric_item = RubricItem.find(updated_params[:rubric_item_id])
+      updated_params[:value] = rubric_item.points
+    end
+
     annotation = @submission.annotations.new(updated_params)
 
     ActiveRecord::Base.transaction do
@@ -34,6 +41,7 @@ class AnnotationsController < ApplicationController
     tweaked_params = annotation_params
     tweaked_params.delete(:submission_id)
     tweaked_params.delete(:filename)
+    
     ActiveRecord::Base.transaction do
       # Remove effect of annotation to handle updating annotation problem
       @annotation.update({ "value" => "0" })
@@ -83,7 +91,7 @@ private
     params[:annotation][:submitted_by] = @current_user.email
     params.require(:annotation).permit(:filename, :position, :line, :submitted_by,
                                        :comment, :shared_comment, :global_comment, :value,
-                                       :problem_id, :submission_id, :coordinate)
+                                       :problem_id, :submission_id, :coordinate, :rubric_item_id)
   end
 
   def set_annotation
