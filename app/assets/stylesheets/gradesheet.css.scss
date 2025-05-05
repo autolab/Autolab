@@ -9,11 +9,21 @@ td.focus {
   width: 90%;
   max-width: none;
 }
+
 #grades_wrapper .tools {
+  margin-top: 15px;
+  margin-bottom: 20px;
+}
+
+div.filter_container.search-student-bar {
   display: flex;
-  justify-content: left;
-  padding-bottom: 0;
-  margin-bottom: 0;
+  flex-direction: row;
+  align-items: center;
+}
+
+div.filter_container.search-student-bar input {
+  padding-left: 8px;
+  height: 3rem;
 }
 
 #grades_wrapper .tools div {
@@ -58,18 +68,14 @@ td.focus {
 }
 
 #grades_filter input {
-  margin-bottom: 0;
-  padding-bottom: 0;
-  font-size: 14px;
-  border: none;
-  border-radius: 0;
-  border-bottom: 2px solid #d9534f;
-  box-shadow: none;
-  outline: none;
-  width: 300px;
-  color: #333;
+  border: 1px solid #d0d0d0;
+  border-radius: 3px;
+  box-shadow: 0 0 2px $autolab-highlight-gray;
+  font-size: 18px;
+  padding: 6px 12px;
+  width: 100%;
+  max-width: 400px;
 }
-
 
 #grades td.edit input {
   border: 0 solid $autolab-highlight-gray;
