@@ -581,6 +581,61 @@ class SubmissionsController < ApplicationController
       }]
     end
 
+    # Make sure @problems is initialized early
+    @problems = @assessment.problems.ordered.to_a
+
+    # Initialize problem-related hashes
+    @problemAnnotations = {}
+    @problemMaxScores = {}
+    @problemScores = {}
+    @problemNameToId = {}
+
+    # Initialize all problems
+    @problems.each do |problem|
+      @problemAnnotations[problem.name] ||= []
+      @problemMaxScores[problem.name] ||= problem.max_score
+      @problemScores[problem.name] ||= 0
+      @problemNameToId[problem.name] ||= problem.id
+    end
+
+    # Pass problems with rubric items to the view template for JavaScript
+    @problems_with_rubric_items = @problems.map do |problem|
+      problem_data = problem.as_json
+      problem_data["rubric_items"] = problem.rubric_items.map do |item|
+        {
+          id: item.id,
+          description: item.description,
+          points: item.points
+        }
+      end
+      problem_data
+    end
+
+    # For the annotation form, if we're viewing a specific file and line
+    if params[:header_position].present? && params[:line].present?
+      # Get the problem_id from the URL query parameters if available
+      problem_id = params[:problem_id]
+
+      # If not provided in URL, try to figure out which problem we're annotating
+      if !problem_id && !@problemNameToId.empty? && !@problemNameToId.values.first.nil?
+        # Default to first problem if none specified
+        problem_id = @problemNameToId.values.first
+      end
+
+      # Set the problem for the annotation form if we found one
+      @problem = Problem.find_by(id: problem_id) if problem_id
+    end
+
+    # Refresh problem scores after a rubric item toggle - do this early
+    if params[:refresh].present?
+      @problems.each do |problem|
+        score = Score.find_by(submission_id: @submission.id, problem_id: problem.id)
+        if score
+          @problemScores[problem.name] = score.score || 0
+        end
+      end
+    end
+
     viewing_autograder_output = params.include?(:header_position) &&
                                 (params[:header_position].to_i == -1)
 
@@ -713,6 +768,14 @@ class SubmissionsController < ApplicationController
       end
     end
 
+    # Refresh problem scores after a rubric item toggle
+    if params[:refresh].present?
+      @problems.each do |problem|
+        score = Score.find_by(submission_id: @submission.id, problem_id: problem.id)
+        @problemScores[problem.name] = score&.score || 0
+      end
+    end
+
     @annotations = @submission.annotations.to_a
     unless @submission.group_key.empty?
       group_submissions = @submission.group_associated_submissions
@@ -727,11 +790,16 @@ class SubmissionsController < ApplicationController
       @annotations = []
     end
 
-    files = if Archive.archive? @filename
-              Archive.get_files(@filename)
-            end
+    if Archive.archive? @filename
+      Archive.get_files(@filename)
+    end
 
     @problems = @assessment.problems.ordered.to_a
+
+    # Preload rubric items and their assignments for this submission
+    @rubric_item_assignments = RubricItemAssignment.includes(:rubric_item)
+                                                   .where(submission_id: @submission.id)
+                                                   .index_by(&:rubric_item_id)
 
     # Allow scores to be assessed by the view
     @scores = Score.where(submission_id: @submission.id)
@@ -749,41 +817,74 @@ class SubmissionsController < ApplicationController
       end
     end
 
-    # initialize all problems
+    # Process problems for the annotation pane
+    @problem_data = []
     @problems.each do |problem|
-      # exclude problems that were autograded
-      # so that we do not render the header in the annotation pane
-      next if autogradedProblems.key? problem.id
+      # skip problems that were autograded
+      next if autogradedProblems.key?(problem.id)
 
+      problem_score = @scores.find { |s| s.problem_id == problem.id }&.score || 0
+
+      # Prepare basic problem data
+      problem_data = {
+        id: problem.id,
+        name: problem.name,
+        max_score: problem.max_score,
+        score: problem_score,
+        has_rubric: problem.rubric_items.any?,
+        rubric_items: []
+      }
+
+      # Add to collections for backward compatibility
       @problemAnnotations[problem.name] ||= []
       @problemMaxScores[problem.name] ||= problem.max_score
-      @problemScores[problem.name] ||= 0
+      @problemScores[problem.name] ||= problem_score
       @problemNameToId[problem.name] ||= problem.id
-    end
 
-    # extract information from annotations
-    @annotations.each do |annotation|
-      description = annotation.comment
-      value = annotation.value || 0
-      line = annotation.line
-      problem = if annotation.problem
-                  annotation.problem.name
-                else
-                  annotation.problem_id ? "Deleted Problem(s)" : "Global"
-                end
-      shared = annotation.shared_comment
-      global = annotation.global_comment
-      filename = get_correct_filename(annotation, files, @submission)
+      # Process annotations for this problem
+      annotations_data = @annotations.select { |a| a.problem_id == problem.id }
+      annotations_data.select(&:global_comment)
+      file_annotations = annotations_data.reject(&:global_comment)
+      file_annotations.group_by { |a| a.filename || "" }
 
-      # To handle annotations on deleted problems
-      @problemAnnotations[problem] ||= []
-      @problemMaxScores[problem] ||= 0
-      @problemScores[problem] ||= 0
-      @problemNameToId[problem] ||= -1
+      # Process rubric items and their annotations
+      problem_data[:rubric_items] = problem.rubric_items.map do |item|
+        item_data = {
+          id: item.id,
+          description: item.description,
+          points: item.points,
+          assigned: false,
+          global_annotations: [],
+          annotations_by_file: {}
+        }
 
-      @problemAnnotations[problem] << [description, value, line, annotation.submitted_by,
-                                       annotation.id, annotation.position, filename, shared, global]
-      @problemScores[problem] += value
+        # Check assignment status
+        assignment = RubricItemAssignment.find_or_initialize_by(
+          rubric_item_id: item.id,
+          submission_id: @submission.id
+        )
+        item_data[:assigned] = assignment.assigned
+
+        # Get annotations linked to this rubric item
+        item_annotations = annotations_data.select { |a| a.rubric_item_id == item.id }
+        item_global_annotations = item_annotations.select(&:global_comment)
+        item_file_annotations = item_annotations.reject(&:global_comment)
+
+        item_data[:global_annotations] = item_global_annotations
+        item_data[:annotations_by_file] = item_file_annotations.group_by { |a| a.filename || "" }
+
+        item_data
+      end
+
+      # Process non-rubric annotations
+      non_rubric_annotations = annotations_data.select { |a| a.rubric_item_id.nil? }
+      problem_data[:global_annotations] = non_rubric_annotations.select(&:global_comment)
+      problem_data[:annotations_by_file] = non_rubric_annotations.
+                                           reject(&:global_comment).group_by { |a|
+        a.filename || ""
+      }
+
+      @problem_data << problem_data
     end
 
     # Process @problemSummaries
@@ -1015,7 +1116,7 @@ private
 
   def is_binary_file?(file)
     mm = MimeMagic.by_magic(file)
-    mm.present? && (!mm.text? && (mm.subtype != "pdf"))
+    mm.present? && !mm.text? && (mm.subtype != "pdf")
   end
 
   def set_manage_submissions_breadcrumb

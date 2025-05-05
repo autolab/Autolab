@@ -198,8 +198,7 @@ protected
     invalid_cud = !@cud.valid?
     nicknameless_student = @cud.student? && @cud.nickname.blank?
     in_edit_or_unsudo = (params[:controller] == "course_user_data") &&
-                        (params[:action] == "edit" || params[:action] == "update" ||
-                         params[:action] == "unsudo")
+                        ["edit", "update", "unsudo"].include?(params[:action])
 
     return unless (invalid_cud || nicknameless_student) && !in_edit_or_unsudo
 

@@ -47,7 +47,7 @@ class CourseUserDatum < ApplicationRecord
 
   def strip_html
     CourseUserDatum.content_columns.each do |column|
-      next unless column.type == :string || column.type == :text
+      next unless [:string, :text].include?(column.type)
 
       self[column.name] = self[column.name].gsub(/</, "") unless self[column.name].nil?
     end
