@@ -197,8 +197,9 @@
               <!-- Existing Global Annotations (not associated with rubric items) -->
               <% if !global_annotations.empty? %>
                   <div class="file_annotations">
-                    <strong> <%= filename %> </strong>
                     <% global_annotations.each do |description, value, line, user, id, position, filename, shared, global| %>
+                    <strong> <%= filename %> </strong>
+                      
                       <% annotation = Annotation.find_by(id: id) %>
                       <% next if annotation && annotation.rubric_item_id.present? %>
                       <div class="global-annotation" id="li-annotation-<%= id %>">
