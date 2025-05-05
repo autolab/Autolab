@@ -231,7 +231,7 @@ GEM
     momentjs-rails (2.15.1)
       railties (>= 3.1)
     multi_xml (0.6.0)
-    mysql2 (0.5.5)
+    mysql2 (0.5.4)
     net-http (0.4.0)
       uri
     net-imap (0.4.9)
@@ -510,7 +510,7 @@ DEPENDENCIES
   mini_racer (~> 0.6.3)
   moment_timezone-rails
   momentjs-rails (>= 2.9.0)
-  mysql2 (~> 0.5)
+  mysql2 (= 0.5.4)
   net-http
   net-ldap
   newrelic_rpm
