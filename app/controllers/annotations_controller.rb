@@ -23,8 +23,6 @@ class AnnotationsController < ApplicationController
     if updated_params[:rubric_item_id].present?
       rubric_item = RubricItem.find(updated_params[:rubric_item_id])
       updated_params[:value] = rubric_item.points
-    else
-      updated_params[:value] = 0
     end
 
     annotation = @submission.annotations.new(updated_params)
@@ -43,10 +41,6 @@ class AnnotationsController < ApplicationController
     tweaked_params = annotation_params
     tweaked_params.delete(:submission_id)
     tweaked_params.delete(:filename)
-
-    if !tweaked_params[:rubric_item_id].present?
-      tweaked_params[:value] = 0
-    end
     
     ActiveRecord::Base.transaction do
       # Remove effect of annotation to handle updating annotation problem

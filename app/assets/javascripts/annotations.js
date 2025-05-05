@@ -711,6 +711,42 @@ function globalAnnotationFormCode(newAnnotation, config) {
     $(this).parents(".annotation-form").parent().remove();
   })
 
+  // Add rubric items handling
+  const $rubricSelect = box.find('.rubric-item-id');
+  $rubricSelect.empty();
+  
+  // Add "No Rubric" option first
+  $rubricSelect.append(
+    $('<option />')
+      .val('')
+      .text('No Rubric')
+  );
+
+  // Set the current rubric item if it exists
+  const problem_id = problemNameToIdMap[config.problem];
+  const rubricItems = rubricItemsByProblem[problem_id] || [];
+  rubricItems.forEach(item => {
+    $rubricSelect.append(
+      $('<option />')
+        .val(item.id)
+        .text(`${item.description} (${item.points} points)`)
+    );
+  });
+
+  // Add change handler for rubric item selection
+  box.find('.rubric-item-id').on('change', function() {
+    const selectedRubricId = $(this).val();
+    if (selectedRubricId) {
+      const rubricItems = rubricItemsByProblem[problem_id] || [];
+      const rubricItem = rubricItems.find(item => item.id == selectedRubricId);
+      if (rubricItem) {
+        box.find('.score').val(rubricItem.points);
+      }
+    } else {
+      box.find('.score').val('0');
+    }
+  });
+
   box.find('#comment-textarea').autocomplete({
     appendTo: box.find('#comment-textarea').parent(),
     minLength: 0,
@@ -733,6 +769,7 @@ function globalAnnotationFormCode(newAnnotation, config) {
     var shared_comment = $(this).find("#shared-comment").is(":checked");
     var score = $(this).find(".score").val();
     var problem_id = problemNameToIdMap[config.problem];
+    var rubric_item_id = $(this).find(".rubric-item-id").val();
 
     if (comment === undefined || comment === "") {
       box.find('.error').text("Annotation comment can not be blank!").show();
@@ -745,10 +782,17 @@ function globalAnnotationFormCode(newAnnotation, config) {
     }
 
     if (newAnnotation) {
-      submitNewAnnotation(comment, shared_comment, true, score, problem_id, 0, $(this));
+      submitNewAnnotation(comment, shared_comment, true, score, problem_id, 0, $(this), rubric_item_id);
     } else {
       const annotationObject = getAnnotationObject(config.annotationId);
-      Object.assign(annotationObject, { comment, value: score, problem_id, shared_comment, global_comment: true });
+      Object.assign(annotationObject, { 
+        comment, 
+        value: score, 
+        problem_id, 
+        shared_comment, 
+        global_comment: true,
+        rubric_item_id 
+      });
 
       updateAnnotation(annotationObject, box);
     }

@@ -783,7 +783,7 @@ class SubmissionsController < ApplicationController
       @problemNameToId[problem] ||= -1
 
       @problemAnnotations[problem] << [description, value, line, annotation.submitted_by,
-                                       annotation.id, annotation.position, filename, shared, global]
+                                       annotation.id, annotation.position, filename, shared, global, annotation.rubric_item_id]
       @problemScores[problem] += value
     end
 
