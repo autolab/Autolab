@@ -947,3 +947,45 @@ span > .material-icons {
 .hljs-comment span {
   color: var($autolab-highlight-comments) !important;
 }
+
+.rubric-items-container {
+  margin: 10px 0;
+  padding: 0px;
+  border-top: 1px solid #ddd;
+}
+.rubric-items-list {
+  list-style: none;
+  padding: 0;
+}
+.rubric-item {
+  margin-bottom: 5px;
+}
+.rubric-item-toggle-btn {
+  display: flex;
+  align-items: center;
+  padding: 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  background: none;
+  border: none;
+  width: 100%;
+  text-align: left;
+}
+.rubric-item-toggle-btn:hover {
+  background-color: #f0f0f0;
+}
+.rubric-item-toggle-btn.active {
+  background-color: #e0f2f1;
+}
+.rubric-item-desc {
+  flex-grow: 1;
+}
+.rubric-item-points {
+  margin: 0 10px;
+  font-weight: bold;
+}
+.rubric-toggle-form {
+  margin: 0;
+  padding: 0;
+}

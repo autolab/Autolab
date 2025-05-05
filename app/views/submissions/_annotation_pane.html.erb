@@ -20,10 +20,10 @@
           <div class="collapsible-header-wrap">
             <div class="collapsible-header">
               <h4> <%= problem.capitalize %>
-                  <div class="summary_score">
+                  <div class="summary_score" id="summary-score-<%= @problemNameToId[problem] %>">
                     <% p_score = p_scores[@problemNameToId[problem]] %>
                     <% if @submission.grades_released?(@cud) %>
-                      <%= plus_fix(@problemScores[problem]) %>
+                      <%= p_score&.score ? sprintf("%.2f", p_score.score.round(2)) : 0.0 %>
                       (<%= p_score&.score ? sprintf("%.2f", p_score.score.round(2)) : raw("&ndash;") %>
                       / <%= @problemMaxScores[problem] ? sprintf("%.2f", @problemMaxScores[problem].round(2)) : raw("&ndash;") %>)
                     <% end %>
@@ -44,8 +44,42 @@
             <% if @submission.grades_released?(@cud) %>
               <% global_annotations = all_annotations[:global_annotations]
                  annotations_by_file = all_annotations[:annotations_by_file] %>
+              
+              <!-- Add Rubric Items Section -->
+              <% problem_obj = Problem.find_by(id: @problemNameToId[problem]) %>
+              <% if problem_obj && (@cud.instructor? || @cud.course_assistant?) %>
+                <div class="rubric-items-container">
+                  <% if problem_obj.rubric_items.any? %>
+                    <ul class="rubric-items-list">
+                      <% problem_obj.rubric_items.each do |item| %>
+                        <% assignment = RubricItemAssignment.find_or_initialize_by(
+                             rubric_item_id: item.id,
+                             submission_id: @submission.id
+                           ) %>
+                        <li class="rubric-item">
+                          <%= form_tag toggle_course_assessment_submission_rubric_item_path(@course, @assessment, @submission, item), method: :post, class: "rubric-toggle-form" do %>
+                            <input type="hidden" name="header_position" value="<%= params[:header_position] %>">
+                            <button type="submit" class="rubric-item-toggle-btn <%= assignment.assigned ? 'active' : '' %>" 
+                                    data-problem-id="<%= problem_obj.id %>">
+                              <span class="rubric-item-desc"><%= item.description %></span>
+                              <span class="rubric-item-points"><%= plus_fix(item.points) %></span>
+                              <i class="material-icons rubric-toggle-icon">
+                                <%= assignment.assigned ? 'check_box' : 'check_box_outline_blank' %>
+                              </i>
+                            </button>
+                          <% end %>
+                        </li>
+                      <% end %>
+                    </ul>
+                  <% else %>
+                    <div></div>
+                  <% end %>
+                </div>
+              <% end %>
+              
+              <!-- Existing Annotations Section -->
               <% if global_annotations.empty? && annotations_by_file.empty? %>
-                There are currently no annotations.
+                <div></div>
               <% end %>
               <% if !global_annotations.empty? %>
                   <div class="file_annotations">

@@ -157,7 +157,9 @@ Rails.application.routes.draw do
       end
       # resources :problems, except: [:index, :show]
       resources :problems, except: [:index, :show] do
-        resources :rubric_items, except: [:index, :show]
+        resources :rubric_items, except: [:index, :show] do
+          patch :toggle_assignment, on: :member
+        end
       end
       resource :scoreboard, except: [:new]
       resources :submissions, except: [:show] do
@@ -168,6 +170,10 @@ Rails.application.routes.draw do
         end
 
         resources :scores, only: [:create, :show, :update]
+
+        resources :rubric_items do
+          post :toggle, on: :member
+        end
 
         member do
           get "destroyConfirm"

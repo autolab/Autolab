@@ -571,6 +571,33 @@ class SubmissionsController < ApplicationController
       }]
     end
 
+    # Make sure @problems is initialized early
+    @problems = @assessment.problems.ordered.to_a
+    
+    # Initialize problem-related hashes
+    @problemAnnotations = {}
+    @problemMaxScores = {}
+    @problemScores = {}
+    @problemNameToId = {}
+    
+    # Initialize all problems
+    @problems.each do |problem|
+      @problemAnnotations[problem.name] ||= []
+      @problemMaxScores[problem.name] ||= problem.max_score
+      @problemScores[problem.name] ||= 0
+      @problemNameToId[problem.name] ||= problem.id
+    end
+    
+    # Refresh problem scores after a rubric item toggle - do this early
+    if params[:refresh].present?
+      @problems.each do |problem|
+        score = Score.find_by(submission_id: @submission.id, problem_id: problem.id)
+        if score
+          @problemScores[problem.name] = score.score || 0
+        end
+      end
+    end
+
     viewing_autograder_output = params.include?(:header_position) &&
                                 (params[:header_position].to_i == -1)
 
@@ -703,6 +730,14 @@ class SubmissionsController < ApplicationController
       end
     end
 
+    # Refresh problem scores after a rubric item toggle
+    if params[:refresh].present?
+      @problems.each do |problem|
+        score = Score.find_by(submission_id: @submission.id, problem_id: problem.id)
+        @problemScores[problem.name] = score&.score || 0
+      end
+    end
+
     @annotations = @submission.annotations.to_a
     unless @submission.group_key.empty?
       group_submissions = @submission.group_associated_submissions
@@ -722,6 +757,11 @@ class SubmissionsController < ApplicationController
             end
 
     @problems = @assessment.problems.ordered.to_a
+
+    # Preload rubric items and their assignments for this submission
+    @rubric_item_assignments = RubricItemAssignment.includes(:rubric_item)
+                                                   .where(submission_id: @submission.id)
+                                                   .index_by(&:rubric_item_id)
 
     # Allow scores to be assessed by the view
     @scores = Score.where(submission_id: @submission.id)
