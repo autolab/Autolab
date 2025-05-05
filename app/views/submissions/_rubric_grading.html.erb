@@ -1,0 +1,23 @@
+<% if @problem && @problem.rubric_items.any? %>
+  <div class="rubric-grading-section">
+    <h5>Rubric Items for <%= @problem.name %></h5>
+    <% @problem.rubric_items.each do |item| %>
+      <% grading = @submission.rubric_gradings.find_by(rubric_item: item) %>
+      <div class="rubric-item">
+        <div class="rubric-item-description">
+          <%= item.description %> (<%= item.points %> points)
+        </div>
+        <%= form_for [@course, @assessment, @submission, grading || @submission.rubric_gradings.build], remote: true do |f| %>
+          <%= f.hidden_field :problem_id, value: @problem.id %>
+          <%= f.hidden_field :rubric_item_id, value: item.id %>
+          <div class="rubric-item-controls">
+            <%= f.check_box :awarded, class: "filled-in" %>
+            <%= f.label :awarded, "Awarded" %>
+            <%= f.text_area :comment, placeholder: "Comment (optional)", class: "materialize-textarea" %>
+          </div>
+          <%= f.submit "Save", class: "btn" %>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+<% end %>

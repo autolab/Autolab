@@ -49,7 +49,7 @@
               <% end %>
               <% if !global_annotations.empty? %>
                   <div class="file_annotations">
-                    <% global_annotations.each do |description, value, line, user, id, position, filename, shared, global| %>
+                    <% global_annotations.each do |description, value, line, user, id, position, filename, shared, global, rubric_item_id| %>
                       <div class="global-annotation" id="li-annotation-<%= id %>">
                         <div class="annotation-badge">
                           <span class="point_badge <%= if value > 0
@@ -58,6 +58,12 @@
                                                          value < 0 ? "negative" : "neutral"
                                                        end %>">
                             <%= plus_fix(value) %>
+                            <% if rubric_item_id %>
+                              <% rubric_item = @rubric_items_by_problem[@problemNameToId[problem]].find { |ri| ri.id == rubric_item_id } %>
+                              <% if rubric_item %>
+                                <span class="rubric-item">(<%= rubric_item.description %>)</span>
+                              <% end %>
+                            <% end %>
                           </span>
                         </div>
                         <div class="annotation-description">
@@ -70,7 +76,8 @@
                                 data-problem="<%= problem %>"
                                 data-score="<%= value %>"
                                 data-comment="<%= description %>"
-                                data-shared="<%= shared %>">
+                                data-shared="<%= shared %>"
+                                data-rubric-item-id="<%= rubric_item_id %>">
                             <a class="global-annotation-edit-button" href="#"
                                title="Edit global annotation">
                               <i class="material-icons">edit</i>
@@ -88,8 +95,8 @@
               <% annotations_by_file.each do |filename, annotations| %>
                   <div class="file_annotations">
                     <strong> <%= filename %> </strong>
-                    <% annotations.each do |description, value, line, user, id, position, filename, global| %>
-                      <div class="descript" id="li-annotation-<%= id %>"> <!-- Line + 1 because the code line numbers starts with 1 not 0. -->
+                    <% annotations.each do |description, value, line, user, id, position, filename, global, rubric_item_id| %>
+                      <div class="descript" id="li-annotation-<%= id %>">
                         <%= link_to(
                               url_for([:view, @course, @assessment, @submission, { header_position: position.nil? ? 0 : position, line: line.nil? ? 1 : line + 1 }]),
                               class: 'descript-link',
@@ -107,6 +114,12 @@
                                   <span class="line_number">Line <%= line + 1 %>:</span>
                                 <% end %>
                                 <%= plus_fix(value) %>
+                                <% if rubric_item_id %>
+                                  <% rubric_item = @rubric_items_by_problem[@problemNameToId[problem]].find { |ri| ri.id == rubric_item_id } %>
+                                  <% if rubric_item %>
+                                    <span class="rubric-item">(<%= rubric_item.description %>)</span>
+                                  <% end %>
+                                <% end %>
                               </span>
                             </div>
                             <div class="annotation-description">

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2025_04_26_203028) do
+ActiveRecord::Schema.define(version: 2025_05_04_213522) do
 
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "name", null: false
@@ -54,6 +54,8 @@ ActiveRecord::Schema.define(version: 2025_04_26_203028) do
     t.string "coordinate"
     t.boolean "shared_comment", default: false
     t.boolean "global_comment", default: false
+    t.bigint "rubric_item_id"
+    t.index ["rubric_item_id"], name: "index_annotations_on_rubric_item_id"
   end
 
   create_table "announcements", id: :integer, charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
@@ -322,6 +324,19 @@ ActiveRecord::Schema.define(version: 2025_04_26_203028) do
     t.integer "course_id"
   end
 
+  create_table "rubric_gradings", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.integer "submission_id", null: false
+    t.integer "problem_id", null: false
+    t.bigint "rubric_item_id", null: false
+    t.boolean "awarded"
+    t.text "comment"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["problem_id"], name: "index_rubric_gradings_on_problem_id"
+    t.index ["rubric_item_id"], name: "index_rubric_gradings_on_rubric_item_id"
+    t.index ["submission_id"], name: "index_rubric_gradings_on_submission_id"
+  end
+
   create_table "rubric_items", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.integer "problem_id", null: false
     t.string "description", null: false
@@ -451,9 +466,13 @@ ActiveRecord::Schema.define(version: 2025_04_26_203028) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "annotations", "rubric_items"
   add_foreign_key "github_integrations", "users"
   add_foreign_key "oauth_access_grants", "oauth_applications", column: "application_id"
   add_foreign_key "oauth_access_tokens", "oauth_applications", column: "application_id"
   add_foreign_key "oauth_device_flow_requests", "oauth_applications", column: "application_id"
+  add_foreign_key "rubric_gradings", "problems"
+  add_foreign_key "rubric_gradings", "rubric_items"
+  add_foreign_key "rubric_gradings", "submissions"
   add_foreign_key "rubric_items", "problems"
 end
