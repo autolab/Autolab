@@ -15,9 +15,6 @@ module ScoreCalculation
       score.grader_id = instructor ? instructor.id : submission.course_user_datum_id
     end
     
-    # Set the score as released
-    score.released = true
-    
     # Calculate the total score from both annotations and rubric items
     total_score = calculate_total_score
     

@@ -182,6 +182,7 @@ Rails.application.routes.draw do
           post "release_student_grade"
           post "unrelease_student_grade"
           get "tweak_total"
+          get "rubric_items"
         end
 
         collection do

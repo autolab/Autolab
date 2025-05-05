@@ -2,6 +2,7 @@ class RubricItem < ApplicationRecord
   belongs_to :problem
   has_many :rubric_item_assignments, dependent: :destroy
   has_many :submissions, through: :rubric_item_assignments
+  has_many :annotations, dependent: :nullify
 
   validates :description, :points, :order, presence: true
   validates :points, numericality: true

@@ -26,7 +26,6 @@ class RubricItemAssignmentsController < ApplicationController
       # Set grader if not already set
       if score.new_record? || score.grader_id.nil?
         score.grader_id = @cud.id
-        score.released = true
       end
       
       # Calculate the sum of all assigned rubric items for this problem

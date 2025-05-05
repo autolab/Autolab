@@ -587,7 +587,37 @@ class SubmissionsController < ApplicationController
       @problemScores[problem.name] ||= 0
       @problemNameToId[problem.name] ||= problem.id
     end
-    
+
+    # Pass problems with rubric items to the view template for JavaScript
+    @problems_with_rubric_items = @problems.map do |problem|
+      problem_data = problem.as_json
+      problem_data["rubric_items"] = problem.rubric_items.map do |item|
+        {
+          id: item.id,
+          description: item.description,
+          points: item.points
+        }
+      end
+      problem_data
+    end
+
+    # For the annotation form, if we're viewing a specific file and line
+    if params[:header_position].present? && params[:line].present?
+      # Get the problem_id from the URL query parameters if available
+      problem_id = params[:problem_id]
+
+      # If not provided in URL, try to figure out which problem we're annotating
+      unless problem_id
+        if !@problemNameToId.empty? && !@problemNameToId.values.first.nil?
+          # Default to first problem if none specified
+          problem_id = @problemNameToId.values.first
+        end
+      end
+
+      # Set the problem for the annotation form if we found one
+      @problem = Problem.find_by(id: problem_id) if problem_id
+    end
+
     # Refresh problem scores after a rubric item toggle - do this early
     if params[:refresh].present?
       @problems.each do |problem|

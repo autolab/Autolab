@@ -8,6 +8,7 @@ class Annotation < ApplicationRecord
   
   belongs_to :submission
   belongs_to :problem
+  belongs_to :rubric_item, optional: true
 
   validates :comment, :value, :filename, :submission_id, :problem_id, presence: true
 

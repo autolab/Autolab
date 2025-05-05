@@ -428,6 +428,27 @@
   margin-bottom: 10px;
 }
 
+.annotation-form select#annotation-rubric-item-id {
+  margin-top: 10px;
+  font-size: 0.9rem;
+}
+
+.annotation-form .helper-text {
+  color: #666;
+  font-size: 0.8rem;
+  margin-top: 4px;
+}
+
+.annotation-form optgroup {
+  font-weight: bold;
+  color: #333;
+}
+
+.annotation-form optgroup option {
+  font-weight: normal;
+  padding-left: 10px;
+}
+
 #code-box pre {
   padding-top: 0;
   padding-bottom: 0;
@@ -951,7 +972,6 @@ span > .material-icons {
 .rubric-items-container {
   margin: 10px 0;
   padding: 0px;
-  border-top: 1px solid #ddd;
 }
 .rubric-items-list {
   list-style: none;
@@ -960,24 +980,11 @@ span > .material-icons {
 .rubric-item {
   margin-bottom: 5px;
 }
-.rubric-item-toggle-btn {
-  display: flex;
-  align-items: center;
-  padding: 8px;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.2s;
-  background: none;
-  border: none;
-  width: 100%;
-  text-align: left;
-}
+
 .rubric-item-toggle-btn:hover {
-  background-color: #f0f0f0;
+  background-color: #e2e2e2;
 }
-.rubric-item-toggle-btn.active {
-  background-color: #e0f2f1;
-}
+
 .rubric-item-desc {
   flex-grow: 1;
 }
@@ -988,4 +995,68 @@ span > .material-icons {
 .rubric-toggle-form {
   margin: 0;
   padding: 0;
+}
+
+.rubric-item {
+  margin-bottom: 5px;
+  padding-bottom: 5px;
+}
+
+.rubric-item-toggle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 8px 12px;
+  background: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.rubric-item-toggle-btn.active {
+  background-color: #e2e2e2;
+  border-color: #ccc;
+}
+
+.rubric-item-desc {
+  flex: 1;
+  margin-right: 10px;
+}
+
+.rubric-item-points {
+  margin-right: 10px;
+  font-weight: bold;
+}
+
+.rubric-toggle-icon {
+  font-size: 18px;
+}
+
+.rubric-item-annotations {
+  margin-left: 20px;
+  padding: 5px 0px 0px 10px;
+  border-left: 2px solid #ddd;
+}
+
+.rubric-item-annotations .annotation-badge {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.rubric-item-badge {
+  display: inline-flex;
+  align-items: center;
+  background-color: #f0f0f0;
+  border-radius: 4px;
+  padding: 2px 5px;
+  margin-left: 5px;
+  font-size: 0.8em;
+}
+
+.rubric-item-badge i {
+  margin-right: 3px;
 }
