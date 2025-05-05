@@ -809,41 +809,71 @@ class SubmissionsController < ApplicationController
       end
     end
 
-    # initialize all problems
+    # Process problems for the annotation pane
+    @problem_data = []
     @problems.each do |problem|
-      # exclude problems that were autograded
-      # so that we do not render the header in the annotation pane
-      next if autogradedProblems.key? problem.id
-
+      # skip problems that were autograded
+      next if autogradedProblems.key?(problem.id)
+      
+      problem_score = @scores.find { |s| s.problem_id == problem.id }&.score || 0
+      
+      # Prepare basic problem data
+      problem_data = {
+        id: problem.id,
+        name: problem.name,
+        max_score: problem.max_score,
+        score: problem_score,
+        has_rubric: problem.rubric_items.any?,
+        rubric_items: []
+      }
+      
+      # Add to collections for backward compatibility
       @problemAnnotations[problem.name] ||= []
       @problemMaxScores[problem.name] ||= problem.max_score
-      @problemScores[problem.name] ||= 0
+      @problemScores[problem.name] ||= problem_score
       @problemNameToId[problem.name] ||= problem.id
-    end
-
-    # extract information from annotations
-    @annotations.each do |annotation|
-      description = annotation.comment
-      value = annotation.value || 0
-      line = annotation.line
-      problem = if annotation.problem
-                  annotation.problem.name
-                else
-                  annotation.problem_id ? "Deleted Problem(s)" : "Global"
-                end
-      shared = annotation.shared_comment
-      global = annotation.global_comment
-      filename = get_correct_filename(annotation, files, @submission)
-
-      # To handle annotations on deleted problems
-      @problemAnnotations[problem] ||= []
-      @problemMaxScores[problem] ||= 0
-      @problemScores[problem] ||= 0
-      @problemNameToId[problem] ||= -1
-
-      @problemAnnotations[problem] << [description, value, line, annotation.submitted_by,
-                                       annotation.id, annotation.position, filename, shared, global]
-      @problemScores[problem] += value
+      
+      # Process annotations for this problem
+      annotations_data = @annotations.select { |a| a.problem_id == problem.id }
+      global_annotations = annotations_data.select(&:global_comment)
+      file_annotations = annotations_data.reject(&:global_comment)
+      annotations_by_file = file_annotations.group_by { |a| a.filename || "" }
+      
+      # Process rubric items and their annotations
+      problem_data[:rubric_items] = problem.rubric_items.map do |item|
+        item_data = {
+          id: item.id,
+          description: item.description,
+          points: item.points,
+          assigned: false,
+          global_annotations: [],
+          annotations_by_file: {}
+        }
+        
+        # Check assignment status
+        assignment = RubricItemAssignment.find_or_initialize_by(
+          rubric_item_id: item.id,
+          submission_id: @submission.id
+        )
+        item_data[:assigned] = assignment.assigned
+        
+        # Get annotations linked to this rubric item
+        item_annotations = annotations_data.select { |a| a.rubric_item_id == item.id }
+        item_global_annotations = item_annotations.select(&:global_comment)
+        item_file_annotations = item_annotations.reject(&:global_comment)
+        
+        item_data[:global_annotations] = item_global_annotations
+        item_data[:annotations_by_file] = item_file_annotations.group_by { |a| a.filename || "" }
+        
+        item_data
+      end
+      
+      # Process non-rubric annotations
+      non_rubric_annotations = annotations_data.select { |a| a.rubric_item_id.nil? }
+      problem_data[:global_annotations] = non_rubric_annotations.select(&:global_comment)
+      problem_data[:annotations_by_file] = non_rubric_annotations.reject(&:global_comment).group_by { |a| a.filename || "" }
+      
+      @problem_data << problem_data
     end
 
     # Process @problemSummaries

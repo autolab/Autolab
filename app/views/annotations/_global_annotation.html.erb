@@ -1,0 +1,32 @@
+<div class="global-annotation" id="li-annotation-<%= annotation.id %>">
+  <div class="annotation-badge">
+    <span class="point_badge <%= if annotation.value > 0
+                               "positive"
+                             else
+                               annotation.value < 0 ? "negative" : "neutral"
+                             end %>">
+      <%= plus_fix(annotation.value) %>
+    </span>
+  </div>
+  <div class="annotation-description">
+    <span><%= annotation.comment %></span>
+  </div>
+  <% if @cud.instructor? or @cud.course_assistant? %>
+    <div class="annotation-tools">
+      <span
+            data-annotationid="<%= annotation.id %>"
+            data-problem="<%= problem_name %>"
+            data-score="<%= annotation.value %>"
+            data-comment="<%= annotation.comment %>"
+            data-shared="<%= annotation.shared_comment %>">
+        <a class="global-annotation-edit-button" href="#"
+           title="Edit global annotation">
+          <i class="material-icons">edit</i>
+        </a>
+        <a class="global-annotation-delete-button" href="#" title="Delete global annotation">
+          <i class="material-icons">delete</i>
+        </a>
+      </span>
+    </div>
+  <% end %>
+</div>

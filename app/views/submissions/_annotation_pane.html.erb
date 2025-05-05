@@ -15,17 +15,17 @@
   <div class="annotationSummary">
     <ul class="collapsible expandable">
       <% p_scores = @submission.problems_to_scores %>
-      <% @problemAnnotations.each do |problem, all_annotations| %>
-        <li id="li-problem-<%= problem %>" class="active">
+      <% @problem_data.each do |problem_data| %>
+        <li id="li-problem-<%= problem_data[:name] %>" class="active problem_item">
           <div class="collapsible-header-wrap">
             <div class="collapsible-header">
-              <h4> <%= problem.capitalize %>
-                  <div class="summary_score" id="summary-score-<%= @problemNameToId[problem] %>">
-                    <% p_score = p_scores[@problemNameToId[problem]] %>
+              <h4> <%= problem_data[:name].capitalize %>
+                  <div class="summary_score" id="summary-score-<%= problem_data[:id] %>">
+                    <% p_score = p_scores[problem_data[:id]] %>
                     <% if @submission.grades_released?(@cud) %>
                       <%= p_score&.score ? sprintf("%.2f", p_score.score.round(2)) : 0.0 %>
                       (<%= p_score&.score ? sprintf("%.2f", p_score.score.round(2)) : raw("&ndash;") %>
-                      / <%= @problemMaxScores[problem] ? sprintf("%.2f", @problemMaxScores[problem].round(2)) : raw("&ndash;") %>)
+                      / <%= problem_data[:max_score] ? sprintf("%.2f", problem_data[:max_score].round(2)) : raw("&ndash;") %>)
                     <% end %>
                   </div>
               </h4>
@@ -34,7 +34,7 @@
               <a href="#" title="Expand dropdown"><i class="small material-icons expand-icon">expand_more</i></a>
               <a href="#" title="Collapse dropdown"><i class="small material-icons collapse-icon">expand_less</i></a>
               <% if @cud.instructor? or @cud.course_assistant? %>
-              <a href="#" class="global-annotation-add-button" data-problem="<%= problem %>" title="Add global annotation">
+              <a href="#" class="global-annotation-add-button" data-problem="<%= problem_data[:name] %>" title="Add global annotation">
                 <i class="small material-icons">add</i>
               </a>
               <% end %>
@@ -42,242 +42,68 @@
           </div>
           <div class="collapsible-body">
             <% if @submission.grades_released?(@cud) %>
-              <% global_annotations = all_annotations[:global_annotations]
-                 annotations_by_file = all_annotations[:annotations_by_file] %>
-              
-              <!-- Add Rubric Items Section -->
-              <% problem_obj = Problem.find_by(id: @problemNameToId[problem]) %>
-              <% if problem_obj && (@cud.instructor? || @cud.course_assistant?) %>
+              <!-- Rubric Items Section -->
+              <% if problem_data[:has_rubric] && (@cud.instructor? || @cud.course_assistant?) %>
                 <div class="rubric-items-container">
-                  <% if problem_obj.rubric_items.any? %>
-                    <ul class="rubric-items-list">
-                      <% 
-                      problem_id = problem_obj.id
-                      
-                      # Get all annotations for this problem
-                      problem_annotations = []
-                      
-                      # Add global annotations for this problem
-                      if global_annotations.present?
-                        global_annotations.each do |annotation_data|
-                          id = annotation_data[4]
-                          annotation = Annotation.find_by(id: id)
-                          problem_annotations << annotation if annotation 
-                        end
-                      end
-                      
-                      # Add file-specific annotations for this problem
-                      annotations_by_file.each do |filename, file_annotations|
-                        file_annotations.each do |annotation_data|
-                          id = annotation_data[4]
-                          annotation = Annotation.find_by(id: id)
-                          problem_annotations << annotation if annotation
-                        end
-                      end
-                      
-                      # Group annotations by rubric item ID (or nil for non-rubric annotations)
-                      annotations_by_rubric_item = problem_annotations.group_by { |a| a.rubric_item_id }
-                      %>
-                      
-                      <% problem_obj.rubric_items.each do |item| %>
-                        <% 
-                        # Get assignment status
-                        assignment = RubricItemAssignment.find_or_initialize_by(
-                          rubric_item_id: item.id,
-                          submission_id: @submission.id
-                        )
+                  <ul class="rubric-items-list">
+                    <% problem_data[:rubric_items].each do |item_data| %>
+                      <li class="rubric-item">
+                        <%= form_tag toggle_course_assessment_submission_rubric_item_path(@course, @assessment, @submission, item_data[:id]), method: :post, class: "rubric-toggle-form" do %>
+                          <input type="hidden" name="header_position" value="<%= params[:header_position] %>">
+                          <button type="submit" class="rubric-item-toggle-btn <%= item_data[:assigned] ? 'active' : '' %>" 
+                                  data-problem-id="<%= problem_data[:id] %>">
+                            <span class="rubric-item-desc"><%= item_data[:description] %></span>
+                            <span class="rubric-item-points"><%= plus_fix(item_data[:points]) %></span>
+                            <i class="material-icons rubric-toggle-icon">
+                              <%= item_data[:assigned] ? 'check_box' : 'check_box_outline_blank' %>
+                            </i>
+                          </button>
+                        <% end %>
                         
-                        # Get annotations linked to this rubric item
-                        rubric_annotations = annotations_by_rubric_item[item.id] || []
-                        %>
-                        <li class="rubric-item">
-                          <%= form_tag toggle_course_assessment_submission_rubric_item_path(@course, @assessment, @submission, item), method: :post, class: "rubric-toggle-form" do %>
-                            <input type="hidden" name="header_position" value="<%= params[:header_position] %>">
-                            <button type="submit" class="rubric-item-toggle-btn <%= assignment.assigned ? 'active' : '' %>" 
-                                    data-problem-id="<%= problem_obj.id %>">
-                              <span class="rubric-item-desc"><%= item.description %></span>
-                              <span class="rubric-item-points"><%= plus_fix(item.points) %></span>
-                              <i class="material-icons rubric-toggle-icon">
-                                <%= assignment.assigned ? 'check_box' : 'check_box_outline_blank' %>
-                              </i>
-                            </button>
-                          <% end %>
-                          
-                          <% if rubric_annotations.any? %>
-                            <div class="rubric-item-annotations">
-                              <% 
-                              # Separate global annotations from file-specific ones
-                              global_rubric_annotations = rubric_annotations.select { |a| a.global_comment }
-                              file_rubric_annotations = rubric_annotations.reject { |a| a.global_comment }
-                              
-                              # Group file annotations by filename
-                              annotations_by_filename = file_rubric_annotations.group_by { |a| a.filename || "" }
-                              %>
-                              
-                              <% # Show global annotations first %>
-                              <% global_rubric_annotations.each do |annotation| %>
-                                <div class="global-annotation" id="li-annotation-<%= annotation.id %>">
-                                  <div class="annotation-badge">
-                                    <span class="point_badge <%= if annotation.value > 0
-                                                                 "positive"
-                                                               else
-                                                                 annotation.value < 0 ? "negative" : "neutral"
-                                                               end %>">
-                                      <%= plus_fix(annotation.value) %>
-                                    </span>
-                                  </div>
-                                  <div class="annotation-description">
-                                    <span><%= annotation.comment %></span>
-                                  </div>
-                                  <% if @cud.instructor? or @cud.course_assistant? %>
-                                  <div class="annotation-tools">
-                                    <span
-                                          data-annotationid="<%= annotation.id %>"
-                                          data-problem="<%= problem %>"
-                                          data-score="<%= annotation.value %>"
-                                          data-comment="<%= annotation.comment %>"
-                                          data-shared="<%= annotation.shared_comment %>">
-                                      <a class="global-annotation-edit-button" href="#"
-                                         title="Edit global annotation">
-                                        <i class="material-icons">edit</i>
-                                      </a>
-                                      <a class="global-annotation-delete-button" href="#" title="Delete global annotation">
-                                        <i class="material-icons">delete</i>
-                                      </a>
-                                    </span>
-                                  </div>
+                        <% if item_data[:global_annotations].any? || item_data[:annotations_by_file].any? %>
+                          <div class="rubric-item-annotations">
+                            <% # Render global annotations %>
+                            <% item_data[:global_annotations].each do |annotation| %>
+                              <%= render partial: "annotations/global_annotation", locals: { annotation: annotation, problem_name: problem_data[:name] } %>
+                            <% end %>
+                            
+                            <% # Render file annotations grouped by filename %>
+                            <% item_data[:annotations_by_file].each do |filename, file_annotations| %>
+                              <div class="file_annotations">
+                                <strong><%= clean_filename(filename) %></strong>
+                                <% file_annotations.each do |annotation| %>
+                                  <%= render partial: "annotations/line_annotation", locals: { annotation: annotation } %>
                                 <% end %>
-                                </div>
-                              <% end %>
-                              
-                              <% # Then show file annotations grouped by filename %>
-                              <% annotations_by_filename.each do |filename, file_annotations| %>
-                                <div class="file_annotations">
-                                  <strong> <%= File.basename(filename) %> </strong>
-                                  <% file_annotations.each do |annotation| %>
-                                    <div class="descript" id="li-annotation-<%= annotation.id %>">
-                                      <%= link_to(
-                                            url_for([:view, @course, @assessment, @submission, { header_position: annotation.position.nil? ? 0 : annotation.position, line: annotation.line.nil? ? 1 : annotation.line + 1 }]),
-                                            class: 'descript-link',
-                                            "data-header_position": annotation.position.nil? ? 0 : annotation.position,
-                                            "data-line": annotation.line.nil? ? 1 : annotation.line + 1,
-                                            remote: true,
-                                          ) do %>
-                                          <div class="annotation-badge">
-                                            <span class="point_badge <%= if annotation.value > 0
-                                                                           "positive"
-                                                                         else
-                                                                           annotation.value < 0 ? "negative" : "neutral"
-                                                                         end %>">
-                                              <% unless annotation.line.nil? %>
-                                                <span class="line_number">Line <%= annotation.line + 1 %>:</span>
-                                              <% end %>
-                                              <%= plus_fix(annotation.value) %>
-                                            </span>
-                                          </div>
-                                          <div class="annotation-description">
-                                            <span><%= annotation.comment %></span>
-                                          </div>
-                                      <% end %>
-                                    </div>
-                                  <% end %>
-                                </div>
-                              <% end %>
-                            </div>
-                          <% end %>
-                        </li>
-                      <% end %>
-                    </ul>
-                  <% else %>
-                    <div></div>
+                              </div>
+                            <% end %>
+                          </div>
+                        <% end %>
+                      </li>
+                    <% end %>
+                  </ul>
+                </div>
+              <% end %>
+              
+              <!-- Global Annotations (not associated with rubric items) -->
+              <% if problem_data[:global_annotations].any? %>
+                <div class="file_annotations">
+                  <% problem_data[:global_annotations].each do |annotation| %>
+                    <%= render partial: "annotations/global_annotation", locals: { annotation: annotation, problem_name: problem_data[:name] } %>
                   <% end %>
                 </div>
               <% end %>
               
-              <!-- Existing Global Annotations (not associated with rubric items) -->
-              <% if !global_annotations.empty? %>
-                  <div class="file_annotations">
-                    <% global_annotations.each do |description, value, line, user, id, position, filename, shared, global| %>
-                    <strong> <%= filename %> </strong>
-                      
-                      <% annotation = Annotation.find_by(id: id) %>
-                      <% next if annotation && annotation.rubric_item_id.present? %>
-                      <div class="global-annotation" id="li-annotation-<%= id %>">
-                        <div class="annotation-badge">
-                          <span class="point_badge <%= if value > 0
-                                                         "positive"
-                                                       else
-                                                         value < 0 ? "negative" : "neutral"
-                                                       end %>">
-                            <%= plus_fix(value) %>
-                          </span>
-                        </div>
-                        <div class="annotation-description">
-                          <span><%= description %></span>
-                        </div>
-                        <% if @cud.instructor? or @cud.course_assistant? %>
-                        <div class="annotation-tools">
-                          <span
-                                data-annotationid="<%= id %>"
-                                data-problem="<%= problem %>"
-                                data-score="<%= value %>"
-                                data-comment="<%= description %>"
-                                data-shared="<%= shared %>">
-                            <a class="global-annotation-edit-button" href="#"
-                               title="Edit global annotation">
-                              <i class="material-icons">edit</i>
-                            </a>
-                            <a class="global-annotation-delete-button" href="#" title="Delete global annotation">
-                              <i class="material-icons">delete</i>
-                            </a>
-                          </span>
-                        </div>
-                      <% end %>
-                      </div>
-                    <% end %>
-                  </div>
-                <% end %>
-              
               <!-- File Annotations (not associated with rubric items) -->
-              <% annotations_by_file.each do |filename, annotations| %>
+              <% problem_data[:annotations_by_file].each do |filename, annotations| %>
                 <div class="file_annotations">
-                  <% annotations.each do |description, value, line, user, id, position, filename, global| %>
-                    <% 
-                      annotation = Annotation.find_by(id: id)
-                      # Skip if this annotation is associated with a rubric item
-                      next if annotation && annotation.rubric_item_id.present?
-                    %>
-                  <strong> <%= filename %> </strong>
-                    <div class="descript" id="li-annotation-<%= id %>">
-                      <%= link_to(
-                            url_for([:view, @course, @assessment, @submission, { header_position: position.nil? ? 0 : position, line: line.nil? ? 1 : line + 1 }]),
-                            class: 'descript-link',
-                            "data-header_position": position.nil? ? 0 : position,
-                            "data-line": line.nil? ? 1 : line + 1,
-                            remote: true,
-                          ) do %>
-                          <div class="annotation-badge">
-                            <span class="point_badge <%= if value > 0
-                                                           "positive"
-                                                         else
-                                                           value < 0 ? "negative" : "neutral"
-                                                         end %>">
-                              <% unless line.nil? %>
-                                <span class="line_number">Line <%= line + 1 %>:</span>
-                              <% end %>
-                              <%= plus_fix(value) %>
-                            </span>
-                          </div>
-                          <div class="annotation-description">
-                            <span><%= description %></span>
-                          </div>
-                      <% end %>
-                    </div>
+                  <strong><%= clean_filename(filename) %></strong>
+                  <% annotations.each do |annotation| %>
+                    <%= render partial: "annotations/line_annotation", locals: { annotation: annotation } %>
                   <% end %>
                 </div>
               <% end %>
             <% else %>
-              
+              Annotations have yet to be released.
             <% end %>
           </div>
         </li>
