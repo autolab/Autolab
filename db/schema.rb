@@ -10,13 +10,13 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2025_04_26_203028) do
+ActiveRecord::Schema.define(version: 2024_04_06_174050) do
 
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
-    t.integer "record_id", null: false
-    t.integer "blob_id", null: false
+    t.bigint "record_id", null: false
+    t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
     t.index ["blob_id"], name: "index_active_storage_attachments_on_blob_id"
     t.index ["record_type", "record_id", "name", "blob_id"], name: "index_active_storage_attachments_uniqueness", unique: true
@@ -27,7 +27,7 @@ ActiveRecord::Schema.define(version: 2025_04_26_203028) do
     t.string "filename", null: false
     t.string "content_type"
     t.text "metadata"
-    t.integer "byte_size", null: false
+    t.bigint "byte_size", null: false
     t.string "checksum", null: false
     t.datetime "created_at", null: false
     t.string "service_name", null: false
@@ -35,7 +35,7 @@ ActiveRecord::Schema.define(version: 2025_04_26_203028) do
   end
 
   create_table "active_storage_variant_records", force: :cascade do |t|
-    t.integer "blob_id", null: false
+    t.bigint "blob_id", null: false
     t.string "variation_digest", null: false
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
   end
@@ -130,7 +130,7 @@ ActiveRecord::Schema.define(version: 2025_04_26_203028) do
     t.integer "course_id"
     t.integer "assessment_id"
     t.string "category_name", default: "General"
-    t.datetime "release_at"
+    t.datetime "release_at", default: -> { "CURRENT_TIMESTAMP" }
     t.string "slug"
     t.index ["assessment_id"], name: "index_attachments_on_assessment_id"
     t.index ["slug"], name: "index_attachments_on_slug", unique: true
@@ -194,14 +194,14 @@ ActiveRecord::Schema.define(version: 2025_04_26_203028) do
     t.boolean "infinite", default: false, null: false
   end
 
-  create_table "friendly_id_slugs", force: :cascade do |t|
+  create_table "friendly_id_slugs", charset: "utf8mb3", force: :cascade do |t|
     t.string "slug", null: false
     t.integer "sluggable_id", null: false
     t.string "sluggable_type", limit: 50
     t.string "scope"
     t.datetime "created_at"
-    t.index ["slug", "sluggable_type", "scope"], name: "index_friendly_id_slugs_on_slug_and_sluggable_type_and_scope", unique: true
-    t.index ["slug", "sluggable_type"], name: "index_friendly_id_slugs_on_slug_and_sluggable_type"
+    t.index ["slug", "sluggable_type", "scope"], name: "index_friendly_id_slugs_on_slug_and_sluggable_type_and_scope", unique: true, length: { slug: 70, scope: 70 }
+    t.index ["slug", "sluggable_type"], name: "index_friendly_id_slugs_on_slug_and_sluggable_type", length: { slug: 140 }
     t.index ["sluggable_type", "sluggable_id"], name: "index_friendly_id_slugs_on_sluggable_type_and_sluggable_id"
   end
 
@@ -225,8 +225,8 @@ ActiveRecord::Schema.define(version: 2025_04_26_203028) do
     t.string "context_id"
     t.integer "course_id"
     t.datetime "last_synced"
-    t.datetime "created_at", precision: 6, null: false
-    t.datetime "updated_at", precision: 6, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.string "membership_url"
     t.string "platform"
     t.boolean "auto_sync", default: false
@@ -319,17 +319,6 @@ ActiveRecord::Schema.define(version: 2025_04_26_203028) do
     t.integer "course_id"
   end
 
-  create_table "rubric_items", force: :cascade do |t|
-    t.integer "problem_id", null: false
-    t.string "description", null: false
-    t.float "points", null: false
-    t.integer "order", null: false
-    t.datetime "created_at", precision: 6, null: false
-    t.datetime "updated_at", precision: 6, null: false
-    t.index ["problem_id", "order"], name: "index_rubric_items_on_problem_id_and_order", unique: true
-    t.index ["problem_id"], name: "index_rubric_items_on_problem_id"
-  end
-
   create_table "scheduler", force: :cascade do |t|
     t.string "action"
     t.datetime "next"
@@ -337,7 +326,7 @@ ActiveRecord::Schema.define(version: 2025_04_26_203028) do
     t.integer "course_id"
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.datetime "until"
+    t.datetime "until", default: -> { "CURRENT_TIMESTAMP" }
     t.boolean "disabled", default: false
   end
 
@@ -349,15 +338,15 @@ ActiveRecord::Schema.define(version: 2025_04_26_203028) do
 
   create_table "scoreboards", force: :cascade do |t|
     t.integer "assessment_id"
-    t.text "banner", limit: 65535
-    t.text "colspec", limit: 65535
+    t.text "banner"
+    t.text "colspec"
     t.boolean "include_instructors", default: false
   end
 
   create_table "scores", force: :cascade do |t|
     t.integer "submission_id"
     t.float "score"
-    t.text "feedback", limit: 16777215
+    t.text "feedback", size: :medium
     t.integer "problem_id"
     t.datetime "created_at"
     t.datetime "updated_at"
@@ -383,7 +372,7 @@ ActiveRecord::Schema.define(version: 2025_04_26_203028) do
     t.string "submitter_ip", limit: 40
     t.integer "tweak_id"
     t.boolean "ignored", default: false, null: false
-    t.string "dave", limit: 255
+    t.string "dave"
     t.text "embedded_quiz_form_answer"
     t.integer "submitted_by_app_id"
     t.string "group_key", default: ""
@@ -448,9 +437,4 @@ ActiveRecord::Schema.define(version: 2025_04_26_203028) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
-  add_foreign_key "github_integrations", "users"
-  add_foreign_key "oauth_access_grants", "oauth_applications", column: "application_id"
-  add_foreign_key "oauth_access_tokens", "oauth_applications", column: "application_id"
-  add_foreign_key "oauth_device_flow_requests", "oauth_applications", column: "application_id"
-  add_foreign_key "rubric_items", "problems"
 end
