@@ -8,7 +8,7 @@
 <h4>Edit Rubric Item</h4>
 <%= form_for [@course, @assessment, @problem, @rubric_item], builder: FormBuilderWithDateTimeInput do |f| %>
   <%= f.text_field :description, help_text: "Description of the rubric item.", placeholder: "Description", required: true %>
-  
+
   <%= f.number_field :points, help_text: "Points for this rubric item.", placeholder: "0", step: "any", required: true %>
 
   <div class="action_buttons">
@@ -19,4 +19,4 @@
                   data: { confirm: "Are you sure you want to delete this rubric item?" } %>
     </button>
   </div>
-<% end %> 
+<% end %>

@@ -573,13 +573,13 @@ class SubmissionsController < ApplicationController
 
     # Make sure @problems is initialized early
     @problems = @assessment.problems.ordered.to_a
-    
+
     # Initialize problem-related hashes
     @problemAnnotations = {}
     @problemMaxScores = {}
     @problemScores = {}
     @problemNameToId = {}
-    
+
     # Initialize all problems
     @problems.each do |problem|
       @problemAnnotations[problem.name] ||= []
@@ -607,11 +607,9 @@ class SubmissionsController < ApplicationController
       problem_id = params[:problem_id]
 
       # If not provided in URL, try to figure out which problem we're annotating
-      unless problem_id
-        if !@problemNameToId.empty? && !@problemNameToId.values.first.nil?
-          # Default to first problem if none specified
-          problem_id = @problemNameToId.values.first
-        end
+      if !problem_id && !@problemNameToId.empty? && !@problemNameToId.values.first.nil?
+        # Default to first problem if none specified
+        problem_id = @problemNameToId.values.first
       end
 
       # Set the problem for the annotation form if we found one
@@ -782,9 +780,9 @@ class SubmissionsController < ApplicationController
       @annotations = []
     end
 
-    files = if Archive.archive? @filename
-              Archive.get_files(@filename)
-            end
+    if Archive.archive? @filename
+      Archive.get_files(@filename)
+    end
 
     @problems = @assessment.problems.ordered.to_a
 
@@ -814,9 +812,9 @@ class SubmissionsController < ApplicationController
     @problems.each do |problem|
       # skip problems that were autograded
       next if autogradedProblems.key?(problem.id)
-      
+
       problem_score = @scores.find { |s| s.problem_id == problem.id }&.score || 0
-      
+
       # Prepare basic problem data
       problem_data = {
         id: problem.id,
@@ -826,19 +824,19 @@ class SubmissionsController < ApplicationController
         has_rubric: problem.rubric_items.any?,
         rubric_items: []
       }
-      
+
       # Add to collections for backward compatibility
       @problemAnnotations[problem.name] ||= []
       @problemMaxScores[problem.name] ||= problem.max_score
       @problemScores[problem.name] ||= problem_score
       @problemNameToId[problem.name] ||= problem.id
-      
+
       # Process annotations for this problem
       annotations_data = @annotations.select { |a| a.problem_id == problem.id }
-      global_annotations = annotations_data.select(&:global_comment)
+      annotations_data.select(&:global_comment)
       file_annotations = annotations_data.reject(&:global_comment)
-      annotations_by_file = file_annotations.group_by { |a| a.filename || "" }
-      
+      file_annotations.group_by { |a| a.filename || "" }
+
       # Process rubric items and their annotations
       problem_data[:rubric_items] = problem.rubric_items.map do |item|
         item_data = {
@@ -849,30 +847,33 @@ class SubmissionsController < ApplicationController
           global_annotations: [],
           annotations_by_file: {}
         }
-        
+
         # Check assignment status
         assignment = RubricItemAssignment.find_or_initialize_by(
           rubric_item_id: item.id,
           submission_id: @submission.id
         )
         item_data[:assigned] = assignment.assigned
-        
+
         # Get annotations linked to this rubric item
         item_annotations = annotations_data.select { |a| a.rubric_item_id == item.id }
         item_global_annotations = item_annotations.select(&:global_comment)
         item_file_annotations = item_annotations.reject(&:global_comment)
-        
+
         item_data[:global_annotations] = item_global_annotations
         item_data[:annotations_by_file] = item_file_annotations.group_by { |a| a.filename || "" }
-        
+
         item_data
       end
-      
+
       # Process non-rubric annotations
       non_rubric_annotations = annotations_data.select { |a| a.rubric_item_id.nil? }
       problem_data[:global_annotations] = non_rubric_annotations.select(&:global_comment)
-      problem_data[:annotations_by_file] = non_rubric_annotations.reject(&:global_comment).group_by { |a| a.filename || "" }
-      
+      problem_data[:annotations_by_file] = non_rubric_annotations.
+                                           reject(&:global_comment).group_by { |a|
+        a.filename || ""
+      }
+
       @problem_data << problem_data
     end
 
@@ -1105,7 +1106,7 @@ private
 
   def is_binary_file?(file)
     mm = MimeMagic.by_magic(file)
-    mm.present? && (!mm.text? && (mm.subtype != "pdf"))
+    mm.present? && !mm.text? && (mm.subtype != "pdf")
   end
 
   def set_manage_submissions_breadcrumb

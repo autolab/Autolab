@@ -1,10 +1,10 @@
 <div class="global-annotation" id="li-annotation-<%= annotation.id %>">
   <div class="annotation-badge">
     <span class="point_badge <%= if annotation.value > 0
-                               "positive"
-                             else
-                               annotation.value < 0 ? "negative" : "neutral"
-                             end %>">
+                                   "positive"
+                                 else
+                                   annotation.value < 0 ? "negative" : "neutral"
+                                 end %>">
       <%= plus_fix(annotation.value) %>
     </span>
   </div>

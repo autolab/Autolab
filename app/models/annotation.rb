@@ -5,7 +5,7 @@
 #
 class Annotation < ApplicationRecord
   include ScoreCalculation
-  
+
   belongs_to :submission
   belongs_to :problem
   belongs_to :rubric_item, optional: true
@@ -30,7 +30,7 @@ class Annotation < ApplicationRecord
   def update_non_autograded_score
     # Get score for submission
     score = Score.find_or_initialize_by(
-      submission_id: submission_id, 
+      submission_id: submission_id,
       problem_id: problem_id
     )
 

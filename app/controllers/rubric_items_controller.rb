@@ -29,8 +29,7 @@ class RubricItemsController < ApplicationController
   end
 
   action_auth_level :edit, :instructor
-  def edit
-  end
+  def edit; end
 
   action_auth_level :update, :instructor
   def update
@@ -61,42 +60,42 @@ class RubricItemsController < ApplicationController
       submission_id: @submission.id,
       rubric_item_id: @rubric_item.id
     )&.assigned || false
-    
+
     # Find or create the rubric item assignment
     assignment = RubricItemAssignment.find_or_initialize_by(
       submission_id: @submission.id,
       rubric_item_id: @rubric_item.id
     )
-    
+
     # Toggle the assigned status
     assignment.assigned = !assignment.assigned
-    
+
     # Save the assignment status and get the final score
     if assignment.save
       # Get the updated score after the save (which triggers recalculation)
       score = Score.find_by(submission_id: @submission.id, problem_id: @rubric_item.problem_id)
-      current_score = score&.score || 0
-      max_score = @problem.max_score || 0
-      
+      score&.score || 0
+      @problem.max_score || 0
+
       # Points change message
       point_change = was_assigned ? -@rubric_item.points : @rubric_item.points
-      point_text = point_change >= 0 ? "+#{point_change}" : "#{point_change}"
-    
+      point_change >= 0 ? "+#{point_change}" : point_change.to_s
+
     else
       flash[:error] = "Failed to update rubric item assignment"
     end
-    
+
     # Redirect with a cache-busting parameter to ensure fresh data is loaded
     redirect_to view_course_assessment_submission_path(
-      @course, 
-      @assessment, 
-      @submission, 
+      @course,
+      @assessment,
+      @submission,
       params[:header_position],
       refresh: Time.now.to_i
     )
   end
 
-  private
+private
 
   def set_problem
     @problem = @assessment.problems.find(params[:problem_id])
@@ -104,11 +103,11 @@ class RubricItemsController < ApplicationController
 
   def set_rubric_item
     # For toggle action, find rubric item directly without going through problem
-    if action_name == 'toggle'
-      @rubric_item = RubricItem.find(params[:id])
-    else
-      @rubric_item = @problem.rubric_items.find(params[:id])
-    end
+    @rubric_item = if action_name == 'toggle'
+                     RubricItem.find(params[:id])
+                   else
+                     @problem.rubric_items.find(params[:id])
+                   end
   end
 
   # Add this new method to set the problem from the rubric item when toggling

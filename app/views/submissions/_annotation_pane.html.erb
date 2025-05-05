@@ -50,7 +50,7 @@
                       <li class="rubric-item">
                         <%= form_tag toggle_course_assessment_submission_rubric_item_path(@course, @assessment, @submission, item_data[:id]), method: :post, class: "rubric-toggle-form" do %>
                           <input type="hidden" name="header_position" value="<%= params[:header_position] %>">
-                          <button type="submit" class="rubric-item-toggle-btn <%= item_data[:assigned] ? 'active' : '' %>" 
+                          <button type="submit" class="rubric-item-toggle-btn <%= item_data[:assigned] ? 'active' : '' %>"
                                   data-problem-id="<%= problem_data[:id] %>">
                             <span class="rubric-item-desc"><%= item_data[:description] %></span>
                             <span class="rubric-item-points"><%= plus_fix(item_data[:points]) %></span>
@@ -59,20 +59,20 @@
                             </i>
                           </button>
                         <% end %>
-                        
+
                         <% if item_data[:global_annotations].any? || item_data[:annotations_by_file].any? %>
                           <div class="rubric-item-annotations">
-                            <% # Render global annotations %>
+# Render global annotations %>
                             <% item_data[:global_annotations].each do |annotation| %>
-                              <%= render partial: "annotations/global_annotation", locals: { annotation: annotation, problem_name: problem_data[:name] } %>
+                              <%= render partial: "annotations/global_annotation", locals: { annotation:, problem_name: problem_data[:name] } %>
                             <% end %>
-                            
-                            <% # Render file annotations grouped by filename %>
+
+# Render file annotations grouped by filename %>
                             <% item_data[:annotations_by_file].each do |filename, file_annotations| %>
                               <div class="file_annotations">
                                 <strong><%= clean_filename(filename) %></strong>
                                 <% file_annotations.each do |annotation| %>
-                                  <%= render partial: "annotations/line_annotation", locals: { annotation: annotation } %>
+                                  <%= render partial: "annotations/line_annotation", locals: { annotation: } %>
                                 <% end %>
                               </div>
                             <% end %>
@@ -83,22 +83,22 @@
                   </ul>
                 </div>
               <% end %>
-              
+
               <!-- Global Annotations (not associated with rubric items) -->
               <% if problem_data[:global_annotations].any? %>
                 <div class="file_annotations">
                   <% problem_data[:global_annotations].each do |annotation| %>
-                    <%= render partial: "annotations/global_annotation", locals: { annotation: annotation, problem_name: problem_data[:name] } %>
+                    <%= render partial: "annotations/global_annotation", locals: { annotation:, problem_name: problem_data[:name] } %>
                   <% end %>
                 </div>
               <% end %>
-              
+
               <!-- File Annotations (not associated with rubric items) -->
               <% problem_data[:annotations_by_file].each do |filename, annotations| %>
                 <div class="file_annotations">
                   <strong><%= clean_filename(filename) %></strong>
                   <% annotations.each do |annotation| %>
-                    <%= render partial: "annotations/line_annotation", locals: { annotation: annotation } %>
+                    <%= render partial: "annotations/line_annotation", locals: { annotation: } %>
                   <% end %>
                 </div>
               <% end %>

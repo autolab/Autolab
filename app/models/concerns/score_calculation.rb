@@ -31,6 +31,7 @@ module ScoreCalculation
   def calculate_total_score
     # Get problem ID depending on whether this is an annotation or rubric item assignment
     problem_id = problem_id_for_score
+    problem = Problem.find(problem_id)
     
     # Calculate rubric item points
     rubric_item_points = submission.rubric_item_assignments
@@ -53,8 +54,8 @@ module ScoreCalculation
       end
     end
     
-    # Add both rubric item points and annotation points for the final score
-    rubric_item_points + annotation_points
+    # Include the problem's max_score in the final score calculation
+    annotation_points + rubric_item_points
   end
   
   private
