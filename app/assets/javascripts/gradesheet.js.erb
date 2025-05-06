@@ -118,10 +118,9 @@ jQuery(function() {
     // main score table
     var oTable = jQuery("#grades").dataTable({
         'data' : table_data,
-        'sDom' : '<"tools"f>t', // '<"tools"fC>t', for individual problem column hide/show
+        'sDom' : 't', // '<"tools"fC>t', for individual problem column hide/show
         'bInfo': false,
         'bPaginate': true,
-        'oLanguage': { "sSearch": "" },
         'iTabIndex': -1,
         'iDisplayLength': rows_on_display,
         'iDisplayStart': 0,
@@ -147,6 +146,19 @@ jQuery(function() {
         },
         "aaSorting": [[ email_col, 'asc' ],[lec_sec_col, 'asc']]
     }).fnSetFilteringDelay();
+
+    $('#filter').on('keyup', function() {
+        oTable.fnFilter(this.value);
+    });
+
+    $('#filter').on('keydown', function(event) {
+        if (event.keyCode === 13) { // return
+            asap(function() { jQuery(focusser).focus(); });
+        } else if (event.keyCode === 27) { // esc
+            event.preventDefault();
+            jQuery(this).val("");
+        }
+    });
 
     // add sorting icons to table headings
     function add_icons(selector) {
@@ -186,10 +198,6 @@ jQuery(function() {
         loadMoreRows();
       }
     })
-
-    // placeholder text in Search field
-    jQuery("#grades_filter input").attr("placeholder", "Search");
-
 
     // get enclosing editor from inside of it
     function get_enclosing_editor(el) {
@@ -500,18 +508,6 @@ jQuery(function() {
     jQuery("#grades").on('change', 'div.popover .score_details input.released', function(event) {
         $(event.target).data('changed', !$(event.target).data('changed'));
     });
-
-
-    jQuery("#grades_filter input").keydown(function(event){
-            if (event.keyCode === 13) { // return
-                asap(function() { jQuery(focusser).focus(); });
-            } else if (event.keyCode === 27) { // esc
-                event.preventDefault();
-                jQuery(this).val("");
-            }
-    });
-
-    jQuery('#grades_filter input').focus()
 
     jQuery(document).click(function(event) {
       close_current_editor_on_blur(event);

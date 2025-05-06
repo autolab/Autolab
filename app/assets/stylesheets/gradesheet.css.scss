@@ -15,6 +15,17 @@ td.focus {
   margin-bottom: 20px;
 }
 
+div.filter_container.search-student-bar {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+div.filter_container.search-student-bar input {
+  padding-left: 8px;
+  height: 3rem;
+}
+
 #grades_wrapper .tools div {
   display: inline;
   margin-right: 7px;
