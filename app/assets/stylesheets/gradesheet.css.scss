@@ -335,3 +335,14 @@ th:not(.sorting) .sort-icon {
   width: 100%;
   overflow: auto;
 }
+
+div.filter_container.search-student-bar {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+div.filter_container.search-student-bar input {
+  padding-left: 8px;
+  height: 3rem;
+}

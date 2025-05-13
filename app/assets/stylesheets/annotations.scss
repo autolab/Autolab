@@ -947,3 +947,29 @@ span > .material-icons {
 .hljs-comment span {
   color: var($autolab-highlight-comments) !important;
 }
+
+/* User Dropdown */
+#compare-controls {
+  display: flex;
+  flex-direction: row;
+  gap: 2rem;
+  justify-content: center;
+  align-items: end;
+  padding-bottom: 1rem;
+}
+
+.user-dropdown-btn-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.user-dropdown-btn-container .btn {
+  display: inline-flex;
+  align-items: center;
+  height: 2rem;
+}
+
+select.browser-default {
+  height: 2rem;
+}

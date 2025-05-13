@@ -584,6 +584,60 @@ class SubmissionsController < ApplicationController
     if viewing_autograder_output
       file = get_autograder_output(@submission)
       @displayFilename = "Autograder Output"
+    elsif params[:header_position] == "combined"
+      @displayFilename = "Combined Submission"
+      if Archive.archive? @filename
+        begin
+          all_files = Archive.get_files(@submission.handin_file_path)
+          stitched = all_files.map do |f|
+            content = Archive.get_nth_file(@submission.handin_file_path, f[:header_position])&.first
+            content ||= ""
+            "// ===== FILE: #{f[:pathname]} =====\n#{content}"
+          end
+          file = stitched.join("\n\n")
+        rescue StandardError
+          flash[:error] = "Could not read combined submission."
+          redirect_to course_assessment_path(@course, @assessment) and return false
+        end
+      else
+        stitched_output_list = @files.map do |file_info|
+          current_pathname = file_info[:pathname]
+          content_to_display = ""
+
+          if file_info[:directory]
+            content_to_display = "### Content not applicable: '#{current_pathname}' is a directory. ###"
+          elsif file_info[:mac_bs_file]
+            content_to_display = ""
+          else
+            begin
+              if File.exist?(current_pathname) && File.file?(current_pathname)
+                content_to_display = File.read(current_pathname)
+                if content_to_display.is_a?(String) && !content_to_display.empty?
+                  begin
+                    temp_content = content_to_display.dup
+                    if !temp_content.force_encoding("UTF-8").valid_encoding?
+                      temp_content.force_encoding("Windows-1252")
+                      content_to_display = temp_content.encode("UTF-8", invalid: :replace, undef: :replace, replace: "\uFFFD")
+                    else
+                      content_to_display = temp_content.force_encoding("UTF-8")
+                    end
+                  rescue EncodingError => e
+                  end
+                end
+              else
+                content_to_display = "### Error: File not found or is not a regular file at '#{current_pathname}'. ###"
+              end
+            rescue SystemCallError => e
+              content_to_display = "### Error reading file '#{current_pathname}': #{e.class.name} - #{e.message} ###"
+            rescue StandardError => e
+              content_to_display = "### Unexpected error reading file '#{current_pathname}': #{e.message} ###"
+            end
+          end
+
+          "// ===== FILE: #{current_pathname} =====\n#{content_to_display}"
+        end
+        file = stitched_output_list.join("\n\n")
+      end
     elsif params.include?(:header_position) && Archive.archive?(@submission.handin_file_path)
       file, pathname = Archive.get_nth_file(@submission.handin_file_path,
                                             params[:header_position].to_i)
@@ -811,10 +865,16 @@ class SubmissionsController < ApplicationController
     @nextSubmission = if @curSubmissionIndex < (@latestSubmissions.size - 1)
                         @latestSubmissions[@curSubmissionIndex + 1]
                       end
-
     @userVersions = @assessment.submissions
                                .where(course_user_datum_id: @submission.course_user_datum_id)
                                .order("version DESC")
+    @allUsersWithSubmissions =
+      @assessment.submissions
+                 .includes(:course_user_datum)
+                 .order(course_user_datum_id: :asc, version: :desc)
+                 .group_by(&:course_user_datum_id)
+                 .transform_values(&:first)
+                 .values
 
     if viewing_autograder_output
       # Autograder Output is a dummy file
@@ -830,10 +890,15 @@ class SubmissionsController < ApplicationController
                                                                  @submission.version)
     end
 
+    if curVersionIndex.nil?
+      curVersionIndex = 0
+    end
+
     # Previous and next versions
     @prevVersion = if curVersionIndex < (matchedVersions.size - 1)
                      matchedVersions[curVersionIndex + 1]
                    end
+    @currentVersion = matchedVersions[curVersionIndex]
     @nextVersion = if curVersionIndex > 0
                      matchedVersions[curVersionIndex - 1]
                    end
@@ -841,6 +906,60 @@ class SubmissionsController < ApplicationController
     # For diff viewer
     if @prevVersion
       @prev_file_contents = get_file(@prevVersion[:submission], @prevVersion[:header_position])
+    end
+
+    @compareVersion = @prevVersion
+    @compare_file_contents = @prev_file_contents
+    submission_cud_id = @submission.course_user_datum_id
+    @current_version_email = User.find_by(id: CourseUserDatum.find_by(id: submission_cud_id)
+                                                             .user_id).email
+    @compare_version_email = User.find_by(id: CourseUserDatum.find_by(id: submission_cud_id)
+                                                             .user_id).email
+
+    # If compare submission was specified
+    if params[:compare_submission_id].present?
+      compare_submission = Submission.find_by(id: params[:compare_submission_id])
+
+      compare_cud_id = compare_submission.course_user_datum_id
+
+      if compare_submission
+        compare_versions = @assessment.submissions
+                                      .where(course_user_datum_id: compare_cud_id)
+                                      .order(version: :desc)
+
+        if viewing_autograder_output
+          matchedCompareVersions = compare_versions.map do |submission|
+            { version: submission.version, header_position: -1, submission: }
+          end
+        else
+          matchedCompareVersions, = find_versions_with_file(
+            @displayFilename,
+            compare_versions,
+            params[:compare_version] || compare_submission.version
+          )
+        end
+
+        @compare_version_email = User.find_by(id: CourseUserDatum.find_by(id: compare_cud_id)
+                                                                 .user_id).email
+
+        version = begin
+                    Integer(params[:compare_version])
+                  rescue StandardError
+                    0
+                  end
+        version_count = matchedVersions.length
+
+        # Use this submission/version for comparison
+        @compareVersion = if version == 0
+                            matchedCompareVersions.first
+                          else
+                            matchedCompareVersions[version_count - version]
+                          end
+        if @compareVersion
+          @prev_file_contents = get_file(@compareVersion[:submission],
+                                         @compareVersion[:header_position])
+        end
+      end
     end
 
     # Rendering this page fails. Often. Mostly due to PDFs.

@@ -24,11 +24,20 @@ newFile = {
     newFile.pdf = false;
 <% end %>
 
+console.log("js");
+const newFileString = JSON.stringify(newFile);
+console.log("Estimated size of newFile (characters in JSON string):", newFileString.length);
+
 if (!newFile.pdf) localCache[<%= params[:header_position] %>] = newFile;
+
+console.log("loaded cache");
 
 // If we've navigated to another file, don't update the page
 if (currentHeaderPos === <%= params[:header_position] %>) {
+    console.log("loading file");
     loadFile(newFile);
+
+    console.log("file loaded");
 
     <% if params[:line] # note: line numbers are non-zero %>
         scrollToLine(<%= params[:line] %>);

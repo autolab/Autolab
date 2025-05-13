@@ -1,6 +1,6 @@
 <span id="version-links">
-  <% if !@prevVersion.nil? %>
-    <%= link_to(view_course_assessment_submission_path(@course, @assessment, @prevVersion[:submission], header_position: @prevVersion[:header_position]),
+  <% if !@compareVersion.nil? %>
+    <%= link_to(view_course_assessment_submission_path(@course, @assessment, @compareVersion[:submission], header_position: @prevVersion[:header_position]),
                 class: "btn small", title: "Previous version containing this file (shortcut: [)", id: "prev_version_link") do %>
       <i class="material-icons">south</i>
     <% end %>

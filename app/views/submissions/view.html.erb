@@ -106,6 +106,45 @@
         highlightComments();
     });
     PDFJS.workerSrc = "<%= asset_url 'pdf.worker.js' %>";
+
+    window.addEventListener('DOMContentLoaded', () => {
+        function getActiveTabTitle() {
+            const stacks = document.querySelectorAll('.lm_stack');
+            const stack = stacks[2];
+            const allTabs = stack.querySelectorAll('.lm_tab');
+            for (const tab of allTabs) {
+                if (tab.classList.contains('lm_active')) {
+                    const titleEl = tab.querySelector('.lm_title');
+                    if (titleEl) {
+                        const title = titleEl.textContent.trim();
+                        console.log('Active tab title:', title);
+                        const dropdown = document.querySelector('.diff-viewer-dropdown');
+                        if (dropdown) {
+                            dropdown.style.display = title === 'Diff Viewer' ? 'block' : 'none';
+                        }
+                        return title;
+                    }
+                }
+            }
+            console.log('No active tab found.');
+            return null;
+        }
+
+        setTimeout(() => {
+            getActiveTabTitle();
+        }, 400);
+
+        const observer = new MutationObserver(() => {
+            getActiveTabTitle();
+        });
+
+        observer.observe(document.querySelector('.lm_tabs'), {
+            childList: true,
+            subtree: true,
+            attributes: true,
+            attributeFilter: ['class']
+        });
+    });
   </script>
   <%= render partial: "golden-layout" %>
 <% end %>
@@ -150,8 +189,11 @@
       <button id="showAnnotations" style="display: none;" class="btn small" onclick="showAnnotations()">Show Comments</button>
     </div>
   </div>
-
 <% end %>
+
+<div class="diff-viewer-dropdown">
+  <%= render "user_dropdown" %>
+</div>
 
 <div class="row" id="speedgrader">
 </div>

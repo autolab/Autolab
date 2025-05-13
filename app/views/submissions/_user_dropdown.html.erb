@@ -1,0 +1,60 @@
+<% content_for :javascripts do %>
+  <script type="text/javascript">
+      document.getElementById('compare-trigger').addEventListener('click', function () {
+          const userId = document.getElementById('compare-user').value;
+          const version = document.getElementById('compare-version').value;
+
+          if (!userId || !version) {
+              alert("Please select both a user and version to compare.");
+              return;
+          }
+
+          const url = new URL(window.location.href);
+          url.searchParams.set('compare_submission_id', userId);
+          url.searchParams.set('compare_version', version);
+
+          window.location.href = url.toString();
+      });
+  </script>
+<% end %>
+
+<div id="compare-controls">
+  <div>
+    <strong>Choose a user to compare against</strong>
+    <select id="compare-user" class="browser-default" title="Select a user to compare">
+      <option value="">Select User</option>
+      <% @allUsersWithSubmissions.each do |submission| %>
+        <option value="<%= submission.id %>" <%= "selected" if submission.id.to_s == params[:compare_submission_id] %>>
+          <%= submission.course_user_datum.user.email %>
+        </option>
+      <% end %>
+    </select>
+  </div>
+
+  <div>
+    <strong>Version:</strong>
+    <select id="compare-version" class="browser-default" title="Select a version to compare">
+      <% if params[:compare_submission_id].present? %>
+        <% selected_submission = @allUsersWithSubmissions.find { |s| s.id.to_s == params[:compare_submission_id].to_s } %>
+        <% if selected_submission %>
+          <% selected_versions = @assessment.submissions
+                                            .where(course_user_datum_id: selected_submission.course_user_datum_id)
+                                            .order(version: :desc) %>
+          <% selected_versions.each do |submission| %>
+            <option value="<%= submission.version %>" <%= "selected" if submission.version.to_s == params[:compare_version] %>>
+              <%= submission.version %>
+            </option>
+          <% end %>
+        <% else %>
+          <option value="0">0</option>
+        <% end %>
+      <% else %>
+        <option>Select a user first</option>
+      <% end %>
+    </select>
+  </div>
+
+  <div class="user-dropdown-btn-container">
+    <a class="btn small" id="compare-trigger">Compare</a>
+  </div>
+</div>

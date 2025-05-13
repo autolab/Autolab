@@ -40,6 +40,15 @@ end
 <!-- Actual file tree column -->
 <div class="file-explorer">
   <div class="file-list">
+    <%= link_to(
+          view_course_assessment_submission_path(@course, @assessment, @submission, header_position: "combined"),
+          class: "file valign-wrapper noselect#{params[:header_position] == "combined" ? ' active' : ''}",
+          "data-header_position": "combined",
+          remote: true
+        ) do %>
+      <i class="material-icons md_18 closed-icon">article</i>
+      Combined
+    <% end %>
     <% @files.sort { |a, b| a[:header_position] <=> b[:header_position] }.each do |file| %>
         <%
           if !file[:mac_bs_file]
