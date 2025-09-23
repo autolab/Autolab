@@ -1,5 +1,8 @@
 const manage_submissions_endpoints = {
     'regrade-selected': 'regradeBatch',
+    'delete-selected': 'submissions/destroy_batch',
+    'download-selected': 'submissions/download_batch',
+    'excuse-selected': 'submissions/excuse_batch',
     'score_details': 'submissions/score_details',
 };
 
@@ -303,6 +306,7 @@ $(document).ready(function() {
 
     if (!is_autograded) {
       $('#regrade-selected').hide();
+      $('#regrade-all-html').hide();
     }
 
     // base URLs for selected buttons
@@ -311,21 +315,88 @@ $(document).ready(function() {
       baseURLs[id] = $(id).prop('href');
     });
 
-    function changeButtonStates(state) {
-      state ? buttonIDs.forEach((id) => $(id).addClass('disabled')) : buttonIDs.forEach((id) => $(id).removeClass('disabled'));
-
-      // prop each selected button with selected submissions
-      if (!state) {
-        var urlParam = $.param({'submission_ids': selectedSubmissions});
-        buttonIDs.forEach(function(id) {
-          var newHref = baseURLs[id] + '?' + urlParam;
-          $(id).prop('href', newHref);
-        });
-      } else {
-        buttonIDs.forEach(function(id) {
-          $(id).prop('href', baseURLs[id]);
-        });
+    function updateSelectedCount(numericSubmissions) {
+      const allBoxes = $('#submissions tbody .cbox').length;
+      const selectedCountElement = document.getElementById("selected-count-html");
+      const placeholder = document.querySelector(".selected-count-placeholder");
+      if (selectedCountElement) {
+        selectedCountElement.innerText = `All ${numericSubmissions.length} submissions on this page selected.`;
+        if (numericSubmissions.length === allBoxes) {
+          placeholder.style.display = "block";
+        } else if (numericSubmissions.length <= allBoxes) {
+          placeholder.style.display = "none";
+        }
       }
+    }
+
+    function changeButtonStates(state) {
+      buttonIDs.forEach((id) => {
+        const button = $(id);
+        if (state) {
+          if (id === "#download-selected") {
+            $(id).prop('href', baseURLs[id]);
+          }
+          button.addClass("disabled");
+          button.off("click").prop("disabled", true);
+        } else {
+          button.removeClass("disabled").prop("disabled", false);
+          if (id == "#download-selected") {
+            var urlParam = $.param({'submission_ids': selectedSubmissions});
+            buttonIDs.forEach(function(id) {
+              var newHref = baseURLs[id] + '?' + urlParam;
+              $(id).prop('href', newHref);
+            });
+            return;
+          }
+          $(document).off("click", id).on("click", id, function (event) {
+            console.log(`${id} button clicked`);
+            event.preventDefault();
+            if (selectedSubmissions.length === 0) {
+              alert("No submissions selected.");
+              return;
+            }
+            const endpoint = manage_submissions_endpoints[id.replace("#", "")];
+            const requestData = { submission_ids: selectedSubmissions };
+            if (id === "#delete-selected") {
+              if (!confirm("Deleting will delete all checked submissions and cannot be undone. Are you sure you want to delete these submissions?")) {
+                return;
+              }
+            }
+            let refreshInterval = setInterval(() => {
+              location.reload();
+            }, 5000);
+            $.ajax({
+              url: endpoint,
+              type: "POST",
+              contentType: "application/json",
+              data: JSON.stringify(requestData),
+              dataType: "json",
+              headers: {
+                "X-CSRF-Token": $('meta[name="csrf-token"]').attr("content"),
+              },
+              success: function (response) {
+                clearInterval(refreshInterval);
+                if (response.redirect) {
+                  window.location.href = response.redirect;
+                  return;
+                }
+                if (response.error) {
+                  alert(response.error);
+                }
+                if (response.success) {
+                  alert(response.success);
+                }
+                selectedSubmissions = [];
+                changeButtonStates(true);
+              },
+              error: function (error) {
+                clearInterval(refreshInterval);
+                alert("An error occurred while processing the request.");
+              },
+            });
+          });
+        }
+      });
     }
 
     changeButtonStates(true); // disable all buttons by default
@@ -362,6 +433,7 @@ $(document).ready(function() {
       const numericSelectedSubmissions = selectedSubmissions.filter(submissionId => typeof submissionId === 'number');
       // Update the "Select All" checkbox based on filtered numeric submissions
       $('#cbox-select-all').prop('checked', numericSelectedSubmissions.length === $('#submissions tbody .cbox').length);
+      updateSelectedCount(numericSelectedSubmissions);
       changeButtonStates(disableButtons);
     }
 

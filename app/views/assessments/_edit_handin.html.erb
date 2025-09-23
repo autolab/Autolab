@@ -1,5 +1,21 @@
 <% content_for :javascripts do %>
   <%= javascript_include_tag "init_handin_datetimepickers" %>
+  <script>
+      function toggleHandinAutolab(disable_button) {
+          const handinField = document.querySelector('.handin-filename-field');
+          handinField.disabled = disable_button.checked;
+      }
+
+      document.addEventListener('DOMContentLoaded', function() {
+          const disableHandinsCheckbox = document.querySelector('.disable-handins-toggle');
+          const handinField = document.querySelector('.handin-filename-field');
+          const hiddenHandinField = document.querySelector('.hidden-handin-filename-field');
+          toggleHandinAutolab(disableHandinsCheckbox);
+          handinField.addEventListener('input', function() {
+              hiddenHandinField.value = handinField.value;
+          });
+      });
+  </script>
 <% end %>
 <%# Initialize datepickers by defining linked relationships (using IDs) %>
 <%= f.datetime_select :start_at,
@@ -29,14 +45,20 @@
                   help_text: "Autolab has not been configured to use Github integration. Please contact your
   Autolab admin to perform the necessary setup and configuration based on the instructions on our docs." %>
 <% end %>
-<% unless f.object.disable_handins %>
-  <%= f.text_field :handin_filename, help_text: "The suffix that is appended to student submission files.
-    Autolab stores submission files in the handin directory as email/version_fname", placeholder: "E.g. mm.c" %>
-<% end %>
-<%= f.text_field :max_size, help_text: "The maximum size that a handin file can have in megabytes (MB)." %>
 <%= f.check_box :disable_handins,
-                help_text: "Check this to disallow handins through Autolab. This option can be used to track scores
-  for assignments that are not submitted through Autolab such as midterms and written assignments." %>
+                display_name: "Disable Autolab submissions",
+                help_text: "Check this to disallow handins through Autolab. This option can be used to track scores for assignments that are not submitted through Autolab such as midterms and written assignments.",
+                class: "disable-handins-toggle",
+                onchange: "toggleHandinAutolab(this)" %>
+<%= f.text_field :handin_filename,
+                 value: f.object.handin_filename.presence,
+                 help_text: "The suffix that is appended to student submission files. Autolab stores submission files in the handin directory as email/version_fname",
+                 placeholder: "E.g. mm.c",
+                 class: "handin-filename-field" %>
+<%= f.hidden_field :handin_filename,
+                   value: f.object.handin_filename.presence,
+                   class: "hidden-handin-filename-field" %>
+<%= f.text_field :max_size, help_text: "The maximum size that a handin file can have in megabytes (MB)." %>
 
 <div class="action_buttons">
   <%= f.submit "Save", name: "handin" %>

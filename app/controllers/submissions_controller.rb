@@ -17,17 +17,22 @@ class SubmissionsController < ApplicationController
 
   action_auth_level :index, :instructor
   def index
-    @submissions = @assessment.submissions.includes({ course_user_datum: :user })
-                              .order("created_at DESC")
+    # cache ids instead of entire entries
+    submission_ids = Rails.cache.fetch(["submission_ids", @assessment.id], expires_in: 1.day) do
+      @assessment.submissions.order("created_at DESC").pluck(:id)
+    end
+    @submissions = Submission.where(id: submission_ids).includes({ course_user_datum: :user })
     @autograded = @assessment.has_autograder?
 
-    @submissions_to_cud = {}
-    @submissions.each do |submission|
-      currSubId = submission.id
-      currCud = submission.course_user_datum_id
-      @submissions_to_cud[currSubId] = currCud
-    end
-    @submissions_to_cud = @submissions_to_cud.to_json
+    @submissions_to_cud =
+      Rails.cache.fetch(["submissions_to_cud", @assessment.id], expires_in: 1.day) do
+        submissions_to_cud = {}
+        @submissions.each do |submission|
+          submissions_to_cud[submission.id] = submission.course_user_datum_id
+        end
+        submissions_to_cud.to_json
+      end
+
     @excused_cids = []
     excused_students = AssessmentUserDatum.where(
       assessment_id: @assessment.id,
@@ -80,6 +85,10 @@ class SubmissionsController < ApplicationController
 
   action_auth_level :new, :instructor
   def new
+    # Clear cache since new submission exists, need to remake
+    Rails.cache.delete(["submission_ids", @assessment.id])
+    Rails.cache.delete(["submissions_to_cud", @assessment.id])
+
     @submission = @assessment.submissions.new(tweak: Tweak.new)
 
     if !params["course_user_datum_id"].nil?
@@ -141,6 +150,7 @@ class SubmissionsController < ApplicationController
         @submission.save_file(params[:submission])
       end
     end
+
     flash[:success] =
       "#{ActionController::Base.helpers.pluralize(cud_ids.size, 'Submission')} Created"
     redirect_to course_assessment_submissions_path(@course, @assessment)
@@ -200,7 +210,9 @@ class SubmissionsController < ApplicationController
   # remove a given submission for a student
   action_auth_level :destroy_batch, :instructor
   def destroy_batch
-    submission_ids = params[:submission_ids]
+    request_body = request.body.read
+    submission_ids = JSON.parse(request_body)['submission_ids']
+    submission_ids = Array(submission_ids)
     submissions = Submission.where(id: submission_ids)
     scount = 0
     fcount = 0
@@ -241,8 +253,10 @@ class SubmissionsController < ApplicationController
                                                       fcount, 'submission'
                                                     )} failed."
     end
-    redirect_to(course_assessment_submissions_path(submissions[0].course_user_datum.course,
-                                                   submissions[0].assessment)) && return
+    respond_to do |format|
+      format.html { redirect_to [@course, @assessment, :submissions] }
+      format.json { render json: { redirect: url_for([@course, @assessment, :submissions]) } }
+    end
   end
 
   # this is good
@@ -384,7 +398,9 @@ class SubmissionsController < ApplicationController
 
   action_auth_level :excuse_batch, :course_assistant
   def excuse_batch
-    submission_ids = params[:submission_ids]
+    request_body = request.body.read
+    submission_ids = JSON.parse(request_body)['submission_ids']
+    submission_ids = Array(submission_ids)
     flash[:error] = "Cannot index submissions for nil assessment" if @assessment.nil?
 
     unless @assessment.valid?
@@ -434,7 +450,10 @@ class SubmissionsController < ApplicationController
 
     flash[:success] =
       "#{ActionController::Base.helpers.pluralize(auds_to_excuse.size, 'student')} excused."
-    redirect_to course_assessment_submissions_path(@course, @assessment)
+    respond_to do |format|
+      format.html { redirect_to [@course, @assessment, :submissions] }
+      format.json { render json: { redirect: url_for([@course, @assessment, :submissions]) } }
+    end
   end
 
   action_auth_level :unexcuse, :course_assistant
