@@ -8,7 +8,6 @@
                 help_text: "(Optional) Use your own provided access key to authenticate to different EC2 instances than the default one on Tango" %>
 <%= f.text_field :access_key, display_name: "Access Key" %>
 <%= f.text_field :access_key_id, display_name: "Access Key ID" %>
-
 <%
   # Group EC2 instance options by category for better organization
   ec2_instance_options = [
@@ -76,7 +75,15 @@
   </div>
   <small>Note: Larger instances incur higher AWS costs. <a href='https://aws.amazon.com/ec2/pricing/on-demand/' target='_blank'>View EC2 pricing</a></small>
 </div>
-
+AMI
+<%= f.select :ami,
+             options_for_select(@tagged_amis.map { |ami| ["Name: #{ami['name']}, ID: #{ami['id']}", ami['id']] }, f.object.ami),
+             { include_blank: "Use Tango Default" } %>
+<br>
+Security Group
+<%= f.select :security_group,
+             options_for_select(@security_groups.map { |sg| ["Name: #{sg['name']}, ID: #{sg['id']}", sg['name']] }, f.object.security_group),
+             { include_blank: "Use Tango Default" } %>
 <%= f.submit "Save Settings" %>
 
 <%= link_to "Delete Autograder", course_assessment_autograder_path(@course, @assessment),

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2024_12_11_042124) do
+ActiveRecord::Schema.define(version: 2025_04_13_141437) do
 
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "name", null: false
@@ -153,6 +153,8 @@ ActiveRecord::Schema.define(version: 2024_12_11_042124) do
     t.string "access_key", default: ""
     t.string "access_key_id", default: ""
     t.boolean "use_access_key", default: false
+    t.string "ami", default: ""
+    t.string "security_group", default: ""
   end
 
   create_table "course_user_data", id: :integer, charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|

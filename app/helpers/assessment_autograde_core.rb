@@ -177,10 +177,11 @@ module AssessmentAutogradeCore
         job_properties["accessKeyId"] = ""
       end
       job_properties["instanceType"] = @autograde_prop.instance_type
+      job_properties["ami"] = @autograde_prop.ami
+      job_properties["security_group"] = @autograde_prop.security_group
     end
 
     job_properties = job_properties.to_json
-
     begin
       response = TangoClient.addjob("#{course.name}-#{assessment.name}", job_properties)
     rescue TangoClient::TangoException => e

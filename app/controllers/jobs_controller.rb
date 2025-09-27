@@ -164,6 +164,11 @@ class JobsController < ApplicationController
   def tango_status
     # Obtain overall Tango info and pool status
     @tango_info = TangoClient.info
+
+    # Obtain tagged AMIs and security groups from Tango
+    @tagged_amis = @tango_info["tagged_amis"] || []
+    @security_groups = @tango_info["security_groups"] || []
+
     @vm_pool_list = TangoClient.pool
     # Obtain Image -> Course mapping
     @img_to_course = {}
