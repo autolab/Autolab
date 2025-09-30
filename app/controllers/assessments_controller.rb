@@ -889,21 +889,60 @@ class AssessmentsController < ApplicationController
 
   action_auth_level :update, :instructor
   def update
-    uploaded_embedded_quiz_form = params[:assessment][:embedded_quiz_form]
-    uploaded_config_file = params[:assessment][:config_file]
-    unless uploaded_embedded_quiz_form.nil?
-      @assessment.embedded_quiz_form_data = uploaded_embedded_quiz_form.read
-      @assessment.save!
+    # Check if assessment params exist
+    unless params[:assessment]
+      flash[:error] = "No assessment parameters provided."
+      redirect_to(tab_index) && return
     end
 
-    unless uploaded_config_file.nil?
-      config_source = uploaded_config_file.read
+    uploaded_embedded_quiz_form = params[:assessment][:embedded_quiz_form]
+    uploaded_config_file = params[:assessment][:config_file]
 
-      assessment_config_file_path = @assessment.unique_source_config_file_path
-      File.open(assessment_config_file_path, "w") do |f|
-        f.write(config_source)
+    # Handle embedded quiz form upload
+    unless uploaded_embedded_quiz_form.nil?
+      begin
+        quiz_data = uploaded_embedded_quiz_form.read
+        @assessment.embedded_quiz_form_data = quiz_data
+        @assessment.save!
+      rescue StandardError => e
+        flash[:error] = "Failed to upload embedded quiz form: #{e.message}"
+        redirect_to(tab_index) && return
+      end
+    end
+
+    # Handle config file upload
+    unless uploaded_config_file.nil?
+      begin
+        config_source = uploaded_config_file.read
+        assessment_config_file_path = @assessment.unique_source_config_file_path
+
+        # Ensure the directory exists
+        FileUtils.mkdir_p(File.dirname(assessment_config_file_path))
+
+        # Write config file with error handling
+        File.open(assessment_config_file_path, "w") do |f|
+          bytes_written = f.write(config_source)
+          # Verify the write was successful
+          if bytes_written != config_source.bytesize
+            raise "File write incomplete: expected #{config_source.bytesize} bytes, wrote #{bytes_written} bytes"
+          end
+        end
+
+        # Verify file was actually written and is readable
+        unless File.exist?(assessment_config_file_path) && File.readable?(assessment_config_file_path)
+          raise "Config file was not successfully written or is not readable"
+        end
+
+        # Verify file size matches what we wrote
+        if File.size(assessment_config_file_path) != config_source.bytesize
+          raise "Config file size mismatch: expected #{config_source.bytesize} bytes, got #{File.size(assessment_config_file_path)} bytes"
+        end
+      rescue StandardError => e
+        flash[:error] = "Failed to write config file: #{e.message}"
+        redirect_to(tab_index) && return
       end
 
+      # Load and validate the config file
       begin
         @assessment.load_config_file
       rescue StandardError, SyntaxError => e
@@ -912,8 +951,15 @@ class AssessmentsController < ApplicationController
       end
     end
 
+    # Update assessment with parameter validation
     begin
-      @assessment.update!(edit_assessment_params)
+      assessment_params = edit_assessment_params
+      if assessment_params.nil? || assessment_params.empty?
+        flash[:error] = "No valid assessment parameters to update."
+        redirect_to(tab_index) && return
+      end
+
+      @assessment.update!(assessment_params)
       flash[:success] = "Assessment configuration updated!"
 
       redirect_to(tab_index) && return
@@ -922,6 +968,9 @@ class AssessmentsController < ApplicationController
       flash[:error] += @assessment.errors.full_messages.join("<br>")
       flash[:html_safe] = true
 
+      redirect_to(tab_index) && return
+    rescue StandardError => e
+      flash[:error] = "An unexpected error occurred while updating the assessment: #{e.message}"
       redirect_to(tab_index) && return
     end
   end
