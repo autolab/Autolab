@@ -54,9 +54,30 @@
           <td>
             <%= check_box_tag 'selected_files[]', entry[:relative], false, { class: "check", html: { data: { path: entry[:relative] } } } %>
           <td>
-            <%= link_to entry[:relative].to_s do %>
-              <i class='material-icons left middle'><%= entry[:type] == :file ? 'article' : 'folder' %></i>
-              <span><%= entry[:entry] %></span>
+            <% 
+              # Check if file is a tar archive
+              file_ext = File.extname(entry[:entry]).downcase
+              is_tar = file_ext == '.tar' || file_ext == '.tgz' || 
+                       (file_ext == '.gz' && entry[:entry].downcase.end_with?('.tar.gz'))
+            %>
+            <% if entry[:type] == :file && is_tar %>
+              <!-- Special handling for tar files -->
+              <%= link_to entry[:relative].to_s, onclick: "return false;", style: "cursor: pointer;" do %>
+                <i class='material-icons left middle'>archive</i>
+                <span><%= entry[:entry] %></span>
+              <% end %>
+              <div style="margin-top: 5px;">
+                <%= link_to "View", entry[:relative], style: "margin-right: 10px; font-size: 12px;" %>
+                <%= link_to "Extract", "#{entry[:relative]}?extract=true", 
+                    onclick: "return confirm('This will extract the tar file to a new subdirectory. Continue?');", 
+                    style: "margin-right: 10px; font-size: 12px; color: #4CAF50;" %>
+              </div>
+            <% else %>
+              <!-- Normal file/directory handling -->
+              <%= link_to entry[:relative].to_s do %>
+                <i class='material-icons left middle'><%= entry[:type] == :file ? 'article' : 'folder' %></i>
+                <span><%= entry[:entry] %></span>
+              <% end %>
             <% end %>
           </td>
           <td>
