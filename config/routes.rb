@@ -81,6 +81,7 @@ Rails.application.routes.draw do
       put ':path', to: 'file_manager#rename', constraints: { path: /.+/ }, as: :rename
       post ':path', to: 'file_manager#upload', constraints: { path: /.+/ }, as: :upload_path
       delete ':path', to: 'file_manager#delete', constraints: { path: /.+/ }, as: :delete
+      patch ':path/chmod', to: 'file_manager#chmod', constraints: { path: /.+/ }, as: :chmod
     end
   end
 

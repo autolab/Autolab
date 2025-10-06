@@ -173,6 +173,53 @@ class FileManagerController < ApplicationController
     flash[:error] = e.message
   end
 
+  def chmod
+    absolute_path = check_path_exist(params[:path])
+    if check_instructor(absolute_path)
+      if params[:permissions].nil? || params[:permissions].empty?
+        raise ArgumentError, "Permissions not provided"
+      end
+
+      # Validate permission format (should be 3-4 digit octal)
+      unless params[:permissions].match(/\A[0-7]{3,4}\Z/)
+        raise ArgumentError, "Invalid permission format. Use 3-4 digit octal format (e.g., 755, 644)"
+      end
+
+      # Convert octal string to integer
+      permission_mode = params[:permissions].to_i(8)
+      
+      # Validate permission range (0000 to 7777)
+      unless permission_mode.between?(0, 0o7777)
+        raise ArgumentError, "Permission value out of range"
+      end
+
+      # Apply the permission change
+      File.chmod(permission_mode, absolute_path)
+      flash[:success] = "Successfully changed permissions to #{params[:permissions]}"
+    else
+      flash[:error] = "You are not authorized to change permissions for this path"
+      redirect_to root_path
+    end
+  rescue ArgumentError => e
+    flash[:error] = e.message
+    respond_to do |format|
+      format.html { redirect_back(fallback_location: file_manager_index_path) }
+      format.json { render json: { error: e.message }, status: :bad_request }
+    end
+  rescue Errno::EPERM, Errno::EACCES => e
+    flash[:error] = "Permission denied: #{e.message}"
+    respond_to do |format|
+      format.html { redirect_back(fallback_location: file_manager_index_path) }
+      format.json { render json: { error: "Permission denied: #{e.message}" }, status: :forbidden }
+    end
+  rescue StandardError => e
+    flash[:error] = "Error changing permissions: #{e.message}"
+    respond_to do |format|
+      format.html { redirect_back(fallback_location: file_manager_index_path) }
+      format.json { render json: { error: "Error changing permissions: #{e.message}" }, status: :internal_server_error }
+    end
+  end
+
   def find_by_directory_path(absolute_path)
     # Normalize the path to ensure consistent comparison
     normalized_path = Pathname.new(absolute_path).cleanpath.to_s
@@ -358,6 +405,11 @@ private
         type: (is_file ? :file : :directory),
         date: begin
           stat.mtime.strftime('%d %b %Y %H:%M')
+        rescue StandardError
+          '-'
+        end,
+        permissions: begin
+          sprintf('%o', stat.mode & 0777)
         rescue StandardError
           '-'
         end,

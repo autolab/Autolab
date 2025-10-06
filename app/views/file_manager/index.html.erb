@@ -42,6 +42,7 @@
       </th>
       <th>Filename</th>
       <th>Bytes</th>
+      <th>Permissions</th>
       <th>Date</th>
       <th>Rename</th>
       <th>Delete</th>
@@ -82,6 +83,24 @@
           </td>
           <td>
             <%= entry[:size] %>
+          </td>
+          <td>
+            <div class="permissions-container">
+              <input type="text" 
+                     id="permissions-<%= entry[:relative].gsub(/[^a-zA-Z0-9]/, '_') %>" 
+                     value="<%= entry[:permissions] %>" 
+                     class="permissions-input"
+                     data-file-path="<%= entry[:relative] %>"
+                     maxlength="4" 
+                     pattern="[0-7]{3,4}"
+                     title="Enter 3-4 digit octal permissions (e.g., 755, 644)">
+              <button type="button" 
+                      class="permissions-button"
+                      onclick="changePermissions('<%= entry[:relative] %>', document.getElementById('permissions-<%= entry[:relative].gsub(/[^a-zA-Z0-9]/, '_') %>').value)"
+                      title="Apply permissions">
+                <i class='material-icons'>check</i>
+              </button>
+            </div>
           </td>
           <td>
             <%= entry[:date] %>
