@@ -258,27 +258,23 @@ class FileManagerController < ApplicationController
 
       full_path = File.join(dir_path, entry)
       tar_path = base_name.empty? ? entry : File.join(base_name, entry)
-
+      mode = File.stat(full_path).mode
       if File.directory?(full_path)
         # Add directory entry
-        tar.mkdir(tar_path, 0o755)
+        tar.mkdir(tar_path, mode)
         # Recursively add directory contents
         add_directory_to_tar(tar, full_path, tar_path)
       elsif File.file?(full_path)
         # Add file entry
         File.open(full_path, 'rb') do |_file|
-          File.stat(full_path)
-          # tar.add_file_simple(tar_path, File.stat(full_path).mode,
-          #                     File.size(full_path)) do |tar_file|
-          #   while (chunk = file.read(8192))
-          #     tar_file.write(chunk)
-          #   end
-          # end
+          tar.add_file(tar_path, mode) do |tar_file|
+            tar_file.write(_file.read)
+          end
         end
       elsif File.symlink?(full_path)
         # Add symbolic link
         target = File.readlink(full_path)
-        tar.add_symlink(tar_path, target, 0o755)
+        tar.add_symlink(tar_path, target, mode)
       end
     end
   end
