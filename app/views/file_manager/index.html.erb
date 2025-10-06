@@ -55,10 +55,10 @@
           <td>
             <%= check_box_tag 'selected_files[]', entry[:relative], false, { class: "check", html: { data: { path: entry[:relative] } } } %>
           <td>
-            <% 
+            <%
               # Check if file is a tar archive
               file_ext = File.extname(entry[:entry]).downcase
-              is_tar = file_ext == '.tar' || file_ext == '.tgz' || 
+              is_tar = file_ext == '.tar' || file_ext == '.tgz' ||
                        (file_ext == '.gz' && entry[:entry].downcase.end_with?('.tar.gz'))
             %>
             <% if entry[:type] == :file && is_tar %>
@@ -69,9 +69,9 @@
               <% end %>
               <div style="margin-top: 5px;">
                 <%= link_to "View", entry[:relative], style: "margin-right: 10px; font-size: 12px;" %>
-                <%= link_to "Extract", "#{entry[:relative]}?extract=true", 
-                    onclick: "return confirm('This will extract the tar file to a new subdirectory. Continue?');", 
-                    style: "margin-right: 10px; font-size: 12px; color: #4CAF50;" %>
+                <%= link_to "Extract", "#{entry[:relative]}?extract=true",
+                            onclick: "return confirm('This will extract the tar file to a new subdirectory. Continue?');",
+                            style: "margin-right: 10px; font-size: 12px; color: #4CAF50;" %>
               </div>
             <% else %>
               <!-- Normal file/directory handling -->
@@ -86,15 +86,16 @@
           </td>
           <td>
             <div class="permissions-container">
-              <input type="text" 
-                     id="permissions-<%= entry[:relative].gsub(/[^a-zA-Z0-9]/, '_') %>" 
-                     value="<%= entry[:permissions] %>" 
+              <input type="text"
+                     id="permissions-<%= entry[:relative].gsub(/[^a-zA-Z0-9]/, '_') %>"
+                     value="<%= entry[:permissions] %>"
                      class="permissions-input"
                      data-file-path="<%= entry[:relative] %>"
-                     maxlength="4" 
+                     maxlength="4"
                      pattern="[0-7]{3,4}"
+                     autocomplete="off"
                      title="Enter 3-4 digit octal permissions (e.g., 755, 644)">
-              <button type="button" 
+              <button type="button"
                       class="permissions-button"
                       onclick="changePermissions('<%= entry[:relative] %>', document.getElementById('permissions-<%= entry[:relative].gsub(/[^a-zA-Z0-9]/, '_') %>').value)"
                       title="Apply permissions">

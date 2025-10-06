@@ -81,7 +81,8 @@ class FileManagerController < ApplicationController
           end
 
           flash[:success] =
-            "Successfully extracted #{File.basename(absolute_path)} to #{File.basename(extract_dir)}/"
+            "Successfully extracted #{File.basename(absolute_path)} to
+              #{File.basename(extract_dir)}/"
           redirect_to file_manager_index_path(path: File.dirname(path))
           nil
         rescue Gem::Package::TarInvalidError => e
@@ -182,12 +183,13 @@ class FileManagerController < ApplicationController
 
       # Validate permission format (should be 3-4 digit octal)
       unless params[:permissions].match(/\A[0-7]{3,4}\Z/)
-        raise ArgumentError, "Invalid permission format. Use 3-4 digit octal format (e.g., 755, 644)"
+        raise ArgumentError,
+              "Invalid permission format. Use 3-4 digit octal format (e.g., 755, 644)"
       end
 
       # Convert octal string to integer
       permission_mode = params[:permissions].to_i(8)
-      
+
       # Validate permission range (0000 to 7777)
       unless permission_mode.between?(0, 0o7777)
         raise ArgumentError, "Permission value out of range"
@@ -216,7 +218,10 @@ class FileManagerController < ApplicationController
     flash[:error] = "Error changing permissions: #{e.message}"
     respond_to do |format|
       format.html { redirect_back(fallback_location: file_manager_index_path) }
-      format.json { render json: { error: "Error changing permissions: #{e.message}" }, status: :internal_server_error }
+      format.json {
+        render json: { error: "Error changing permissions: #{e.message}" },
+               status: :internal_server_error
+      }
     end
   end
 
@@ -295,7 +300,7 @@ class FileManagerController < ApplicationController
       elsif assessment.present?
         tar_stream = StringIO.new("")
         Gem::Package::TarWriter.new(tar_stream) do |tar_assessment|
-          asmt_dir = assessment.name
+          assessment.name
           assessment.dump_yaml
           filter = []
           assessment.load_dir_to_tar(absolute_path.to_s, "", tar_assessment, filter, "")
@@ -409,7 +414,7 @@ private
           '-'
         end,
         permissions: begin
-          sprintf('%o', stat.mode & 0777)
+          sprintf('%o', stat.mode & 0o777)
         rescue StandardError
           '-'
         end,
@@ -508,7 +513,8 @@ private
             end
           rescue StandardError => e
             # If reading fails, try to read the entire content at once as fallback
-            Rails.logger.warn "Chunked reading failed for #{entry.full_name}: #{e.message}, trying full read"
+            Rails.logger.warn "Chunked reading failed for #{entry.full_name}:
+              #{e.message}, trying full read"
             begin
               entry.rewind
               content = entry.read
@@ -523,7 +529,8 @@ private
 
           # Verify file size matches expected size
           if expected_size > 0 && bytes_written != expected_size
-            Rails.logger.warn "Size mismatch for #{entry.full_name}: expected #{expected_size}, got #{bytes_written}"
+            Rails.logger.warn "Size mismatch for #{entry.full_name}:
+              expected #{expected_size}, got #{bytes_written}"
           end
         end
 
@@ -629,7 +636,8 @@ private
   # Validate tar file integrity before extraction
   def validate_tar_file(file_path)
     # Check if file is readable and has content
-    raise "Tar file is empty or unreadable" unless File.readable?(file_path) && File.size(file_path) > 0
+    raise "Tar file is empty or unreadable" unless File.readable?(file_path) &&
+                                                   File.size(file_path) > 0
 
     # Validate based on file extension
     if File.extname(file_path).downcase.in?(['.gz', '.tgz']) ||
