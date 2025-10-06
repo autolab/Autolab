@@ -315,6 +315,9 @@ class FileManagerController < ApplicationController
       elsif File.directory?(absolute_path)
         tar_stream = StringIO.new("")
         Gem::Package::TarWriter.new(tar_stream) do |tar|
+          # Make base directory
+          mode = File.stat(absolute_path).mode
+          tar.mkdir(File.basename(absolute_path), mode)
           add_directory_to_tar(tar, absolute_path, File.basename(absolute_path))
         end
         tar_stream.rewind
