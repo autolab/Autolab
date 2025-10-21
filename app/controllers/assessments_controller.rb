@@ -166,6 +166,7 @@ class AssessmentsController < ApplicationController
           # In case the directory was implicitly created by a file
           FileUtils.chmod entry.header.mode, entry_file,
                           verbose: false
+          FilesystemEnforcer.fix_path(entry_file)
         elsif entry.file?
           # Skip config files
           next if existing_asmt && (entry_file == existing_asmt.asmt_yaml_path.to_s ||
@@ -180,11 +181,13 @@ class AssessmentsController < ApplicationController
           end
           FileUtils.chmod entry.header.mode, entry_file,
                           verbose: false
+          FilesystemEnforcer.fix_path(entry_file)
         elsif entry.header.typeflag == "2"
           File.symlink entry.header.linkname, entry_file
         end
       end
       tar_extract.close
+    FilesystemEnforcer.fix_tree(assessment_path.to_s)
     rescue StandardError => e
       flash[:error] = "Error while extracting tarball to server -- #{e.message}."
       redirect_to(action: "install_assessment") && return
@@ -318,6 +321,7 @@ class AssessmentsController < ApplicationController
       end
       begin
         new_assessment.load_config_file # only call this on saved assessments
+        FilesystemEnforcer.fix_tree(assessment_path.to_s)
       rescue StandardError => e
         import_statuses[i][:errors] = "Error loading config module: #{e}"
         import_statuses[i][:status] = AssessmentsController::IMPORT_ASMT_FAILURE_STATUS
@@ -421,6 +425,7 @@ class AssessmentsController < ApplicationController
 
     begin
       @assessment.construct_folder
+      FilesystemEnforcer.fix_tree(@assessment.folder_path.to_s)
     rescue StandardError => e
       # Something bad happened. Undo everything
       flash[:error] = e.to_s
@@ -903,6 +908,7 @@ class AssessmentsController < ApplicationController
       File.open(assessment_config_file_path, "w") do |f|
         f.write(config_source)
       end
+      FilesystemEnforcer.fix_path(assessment_config_file_path.to_s)
 
       begin
         @assessment.load_config_file

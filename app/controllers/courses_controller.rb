@@ -305,6 +305,7 @@ class CoursesController < ApplicationController
       File.open(course_config_source_path, "w") do |f|
         f.write(config_source)
       end
+      FilesystemEnforcer.fix_path(course_config_source_path.to_s)
 
       begin
         @course.reload_course_config
@@ -1192,6 +1193,7 @@ private
 
         # Copy their submission over
         FileUtils.cp(subFile, stuDir)
+        FilesystemEnforcer.fix_path(File.join(stuDir, File.basename(subFile)))
 
         # Read archive files
         next unless isArchive
@@ -1249,6 +1251,7 @@ private
     extTarPath = File.join(extTarDir, "input_file")
     external_tar.rewind
     File.open(extTarPath, "wb") { |f| f.write(external_tar.read) } # Write tar file.
+    FilesystemEnforcer.fix_path(extTarPath)
 
     # Directory to hold all external individual submission.
     extFilesDir = File.join(extTarDir, "submissions")
@@ -1287,6 +1290,7 @@ private
             nil
           end
         end
+        FilesystemEnforcer.fix_path(output_file)
       end
     rescue StandardError
       @failures << "External Tar"
@@ -1351,6 +1355,7 @@ private
     end
 
     params[:cleanup_on_failure] = true
+    FilesystemEnforcer.fix_tree(dest_directory.to_s)
   end
 
   # same as assessment import check, ensures the tar has a single root directory

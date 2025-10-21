@@ -91,6 +91,7 @@ class FileManagerController < ApplicationController
 
         FileUtils.mkdir_p(parent)
         FileUtils.mv(absolute_path, new_path)
+        FilesystemEnforcer.fix_path(new_path.to_s)
         flash[:success] = "Successfully renamed file to #{params[:new_name]}"
       end
     else
@@ -157,6 +158,7 @@ class FileManagerController < ApplicationController
           # Creating a folder
           dir = "#{absolute_path}/#{params[:name]}"
           FileUtils.mkdir_p(dir)
+          FilesystemEnforcer.fix_path(dir)
 
         else
           # Uploading a file
@@ -167,9 +169,9 @@ class FileManagerController < ApplicationController
           elsif input_file.size >= 1.gigabyte
             raise "File size is too large. Upload a file that is smaller than 1 GB."
           else
-            File.open(Rails.root.join(absolute_path, input_file.original_filename), 'wb') do |file|
-              file.write(input_file.read)
-            end
+            dest = absolute_path.join(input_file.original_filename) 
+            File.open(dest, 'wb') { |f| f.write(input_file.read) }
+            FilesystemEnforcer.fix_path(dest.to_s)          
           end
         end
       else

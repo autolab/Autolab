@@ -10,7 +10,6 @@ class Course < ApplicationRecord
   validates :version_threshold, numericality: { only_integer: true, greater_than_or_equal_to: -1 }
   validate :order_of_dates
   validate :valid_name?, on: :create
-  # validates course website format if there exists one
   validate :valid_website?
   validates :access_code, uniqueness: true, allow_nil: true
 
@@ -35,8 +34,8 @@ class Course < ApplicationRecord
   after_create :init_course_folder
 
   # Constants
-  VALID_CODE_REGEX = /\A[A-Z0-9]{6}\z/ # String is transformed to uppercase
-  VALID_CODE_REGEX_HTML = "[a-zA-Z0-9]{6}".freeze # For use in HTML
+  VALID_CODE_REGEX = /\A[A-Z0-9]{6}\z/
+  VALID_CODE_REGEX_HTML = "[a-zA-Z0-9]{6}".freeze
 
   # Misc.
   accepts_nested_attributes_for :late_penalty, :version_penalty
@@ -65,48 +64,35 @@ class Course < ApplicationRecord
     newCourse.start_date = Time.current
     newCourse.end_date = Time.current
 
-    newCourse.late_penalty = Penalty.new
-    newCourse.late_penalty.kind = "points"
-    newCourse.late_penalty.value = "0"
-
-    newCourse.version_penalty = Penalty.new
-    newCourse.version_penalty.kind = "points"
-    newCourse.version_penalty.value = "0"
+    newCourse.late_penalty = Penalty.new(kind: "points", value: "0")
+    newCourse.version_penalty = Penalty.new(kind: "points", value: "0")
 
     unless newCourse.save
-      raise "Failed to create course #{newCourse.name}: "\
+      raise "Failed to create course #{newCourse.name}: " \
             "#{newCourse.errors.full_messages.join(', ')}"
     end
 
-    # Check instructor
     instructor = User.where(email: instructor_email).first
-    # create a new user as instructor if didn't exist
     if instructor.nil?
       begin
-        instructor = User.instructor_create(instructor_email,
-                                            newCourse.name)
+        instructor = User.instructor_create(instructor_email, newCourse.name)
       rescue StandardError => e
-        # roll back course creation
         newCourse.destroy
         raise "Failed to create instructor for course: #{e}"
       end
     end
 
-    # Create CUD
     newCUD = newCourse.course_user_data.new
     newCUD.user = instructor
     newCUD.instructor = true
     unless newCUD.save
-      # roll back course creation
       newCourse.destroy
       raise "Failed to create CUD for instructor of new course #{newCourse.name}"
     end
 
-    # Load course config
     begin
       newCourse.reload_course_config
     rescue StandardError, SyntaxError
-      # roll back course and CUD creation
       newCUD.destroy
       newCourse.destroy
     end
@@ -117,20 +103,25 @@ class Course < ApplicationRecord
   # generate course folder
   def init_course_folder
     dir_path = directory_path
+
+    # Ensure base dirs exist first, then normalize
     FileUtils.mkdir_p dir_path
-
-    FileUtils.touch File.join(dir_path, "autolab.log")
-
-    course_rb = File.join(dir_path, "course.rb")
-
-    # rubocop:disable Rails/FilePath
-    default_course_rb = Rails.root.join("lib", "__defaultCourse.rb")
-    # rubocop:enable Rails/FilePath
-
-    FileUtils.cp default_course_rb, course_rb
-
     FileUtils.mkdir_p Rails.root.join("assessmentConfig")
     FileUtils.mkdir_p Rails.root.join("courseConfig")
+    FilesystemEnforcer.fix_path(dir_path.to_s)
+    FilesystemEnforcer.fix_path(Rails.root.join("assessmentConfig").to_s)
+    FilesystemEnforcer.fix_path(Rails.root.join("courseConfig").to_s)
+
+    # Touch log and copy default course.rb
+    FileUtils.touch File.join(dir_path, "autolab.log")
+    course_rb = File.join(dir_path, "course.rb")
+    default_course_rb = Rails.root.join("lib", "__defaultCourse.rb") # rubocop:disable Rails/FilePath
+    FileUtils.cp default_course_rb, course_rb
+
+    # Sweep perms/ownership on created trees
+    FilesystemEnforcer.fix_tree(dir_path.to_s)
+    FilesystemEnforcer.fix_tree(Rails.root.join("assessmentConfig").to_s)
+    FilesystemEnforcer.fix_tree(Rails.root.join("courseConfig").to_s)
   end
 
   def order_of_dates
@@ -143,29 +134,25 @@ class Course < ApplicationRecord
     if /\A(\w|-)+\z/.match?(name)
       true
     else
-      suggest_name = name.gsub(/(\s+)/) { '-' }
-      suggest_name = suggest_name.gsub(/([^\w-]+)/) { '' }
-      name_error = if !suggest_name.empty?
-                     "cannot include characters other than alphanumeric characters, hyphens, "\
-                       "and underscores. Suggestion: #{suggest_name}"
-                   else
-                     "cannot include characters other than alphanumeric characters, hyphens, "\
-                       "and underscores."
-                   end
+      suggest_name = name.gsub(/(\s+)/, "-").gsub(/([^\w-]+)/, "")
+      name_error =
+        if !suggest_name.empty?
+          "cannot include characters other than alphanumeric characters, hyphens, " \
+          "and underscores. Suggestion: #{suggest_name}"
+        else
+          "cannot include characters other than alphanumeric characters, hyphens, and underscores."
+        end
       errors.add("name", name_error)
       false
     end
   end
 
   def valid_website?
-    if website.nil? || website.eql?("")
-      true
-    elsif website[0..7].eql?("https://")
-      true
-    else
-      errors.add("website", "needs to start with https://")
-      false
-    end
+    return true if website.nil? || website.eql?("")
+    return true if website[0..7].eql?("https://")
+
+    errors.add("website", "needs to start with https://")
+    false
   end
 
   def temporal_status(now = DateTime.now)
@@ -183,7 +170,7 @@ class Course < ApplicationRecord
   end
 
   def is_disabled?
-    disabled? or (disable_on_end? && DateTime.now > end_date)
+    disabled? || (disable_on_end? && DateTime.now > end_date)
   end
 
   def current_assessments(now = DateTime.now)
@@ -207,15 +194,12 @@ class Course < ApplicationRecord
     lines = s.readlines
     s.close
 
-    # read from source
     config_source = File.open(source_config_file_path, "r", &:read)
-
-    # validate syntax of config
     RubyVM::InstructionSequence.compile(config_source)
 
-    # backup old config
     if File.exist? config_file_path
       File.rename(config_file_path, config_backup_file_path)
+      FilesystemEnforcer.fix_path(config_backup_file_path.to_s)
     end
 
     d = File.open(config_file_path, "w")
@@ -231,6 +215,7 @@ class Course < ApplicationRecord
     end
     d.write("end")
     d.close
+    FilesystemEnforcer.fix_path(config_file_path.to_s)
 
     load(config_file_path)
     # rubocop:disable Security/Eval
@@ -238,12 +223,9 @@ class Course < ApplicationRecord
     # rubocop:enable Security/Eval
   end
 
-  # reload_course_config
-  # Reload the course config file and extend the loaded methods
-  # to AdminsController
+  # Reload the course config file and extend the loaded methods to AdminsController
   def reload_course_config
     mod = reload_config_file
-
     AdminsController.extend(mod)
   end
 
@@ -258,11 +240,7 @@ class Course < ApplicationRecord
 
   # NOTE: Needs to be updated as new items are cached
   def invalidate_caches
-    # cgdubs
     invalidate_cgdubs
-
-    # raw_scores
-    # NOTE: keep in sync with assessment#invalidate_raw_scores
     # rubocop:disable Rails/SkipsModelValidations
     assessments.update_all(updated_at: Time.current)
     # rubocop:enable Rails/SkipsModelValidations
@@ -272,14 +250,10 @@ class Course < ApplicationRecord
     @config ||= config!
   end
 
-  # return all CUDs that are not course_assistants, instructors, or dropped
-  # TODO: should probably exclude adminstrators, but the fact that admins are in
-  #   the User model instead of CourseUserDatum makes that difficult
   def students
     course_user_data.where(course_assistant: false, instructor: false, dropped: [false, nil])
   end
 
-  # return all CUDs that are not course_assistants, instructors, or dropped
   def instructors
     course_user_data.where(instructor: true)
   end
@@ -307,26 +281,19 @@ class Course < ApplicationRecord
 
   def exclude_curr_asmts(asmts)
     date = DateTime.current
-    asmts.reject do |asmt|
-      asmt.due_at > date
-    end
+    asmts.reject { |asmt| asmt.due_at > date }
   end
 
-  # Used by manage extensions, create submission, and sudo
   def get_autocomplete_data
     users = {}
     usersEncoded = {}
     course_user_data.each do |cud|
-      # Escape once here, and another time in _autocomplete.html.erb (see comments)
       users[CGI.escapeHTML cud.full_name_with_email] = cud.id
-      # base64 to avoid issues where leading / trailing whitespaces are stripped (see #931)
-      # strict_encode64 to avoid line feeds
       usersEncoded[Base64.strict_encode64(cud.full_name_with_email.strip).strip] = cud.id
     end
     [users, usersEncoded]
   end
 
-  # To determine if a course assistant has permission to watchlist
   def watchlist_allow_ca
     return false if watchlist_configuration.nil?
 
@@ -347,10 +314,10 @@ class Course < ApplicationRecord
     begin
       tarStream = StringIO.new("")
       Gem::Package::TarWriter.new(tarStream) do |tar|
-        tar.mkdir course_dir, File.stat(base_path).mode
+        tar.mkdir course_dir, File.stat(File.join(base_path)).mode
 
         # save course.rb
-        source_file = File.open(File.join(base_path, rb_path), 'rb')
+        source_file = File.open(File.join(base_path, rb_path), "rb")
         tar.add_file File.join(course_dir, rb_path), File.stat(source_file).mode do |tar_file|
           tar_file.write(source_file.read)
         end
@@ -358,11 +325,11 @@ class Course < ApplicationRecord
 
         # save course and metrics config
         tar.add_file File.join(course_dir, config_path), mode do |tar_file|
-          tar_file.write(dump_yaml(export_configs&.include?('metrics_config')))
+          tar_file.write(dump_yaml(export_configs&.include?("metrics_config")))
         end
 
         # save assessments
-        if export_configs&.include?('assessments')
+        if export_configs&.include?("assessments")
           assessments.each do |assessment|
             asmt_dir = assessment.name
             assessment.dump_yaml
@@ -377,20 +344,20 @@ class Course < ApplicationRecord
     end
   end
 
-private
+  private
 
   def saved_change_to_grade_related_fields?
-    saved_change_to_late_slack? or saved_change_to_grace_days? or
-      saved_change_to_version_threshold? or saved_change_to_late_penalty_id? or
+    saved_change_to_late_slack? || saved_change_to_grace_days? ||
+      saved_change_to_version_threshold? || saved_change_to_late_penalty_id? ||
       saved_change_to_version_penalty_id?
   end
 
   def grace_days_or_late_slack_changed?
-    grace_days_changed? or late_slack_changed?
+    grace_days_changed? || late_slack_changed?
   end
 
   def saved_change_to_grace_days_or_late_slack?
-    saved_change_to_grace_days? or saved_change_to_late_slack?
+    saved_change_to_grace_days? || saved_change_to_late_slack?
   end
 
   def cgdub_dependencies_updated
@@ -426,8 +393,7 @@ private
       end
 
       if watchlist_configuration.present?
-        s["watchlist_configuration"] =
-          watchlist_configuration.serialize
+        s["watchlist_configuration"] = watchlist_configuration.serialize
       end
     end
     s
