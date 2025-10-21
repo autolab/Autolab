@@ -11,8 +11,18 @@
             { title: "Grant extensions to students" } %>
 |
 <%= link_to "Fill In Empty Submissions",
-            new_course_assessment_submission_path(@course, @assessment, course_user_datum_id: @missing.collect{ |u| u[:id] }.join(',')),
-            { title: "Create submissions for all of the missing students" } %>
+            "#",
+            { title: "Create submissions for all of the missing students",
+              onclick: "submitMissingIds(); return false;" } %>
+
+<script>
+    function submitMissingIds() {
+        var ids = [<%= @missing.map { |u| u[:id] }.join(',') %>];
+        var url = '<%= new_course_assessment_submission_path(@course, @assessment) %>';
+        sessionStorage.setItem('course_user_datum_ids', JSON.stringify(ids));
+        window.location.href = url;
+    }
+</script>
 
 <p>
 <%= @users %>

@@ -7,53 +7,78 @@
                           builder: FormBuilderWithDateTimeInput,
                           html: { multipart: true } do |f| %>
 
-<table class="verticalTable">
-<tr>
-  <th>User:</th>
-  <td>
-  <% if params[:course_user_datum_id].nil? then %>
+  <table class="verticalTable">
+    <tr>
+      <th>User:</th>
+      <td>
+        <% content_for :javascripts do %>
+          <% if params[:course_user_datum_id].blank? %>
+            <%= render partial: "components/autocomplete", locals: { hiddenCUDField: "#submission_course_user_datum_id" } %>
+          <% end %>
 
-  <% content_for :javascripts do %>
-    <%= render partial: "components/autocomplete", locals: { hiddenCUDField: "#submission_course_user_datum_id" } %>
-  <% end %>
+          <script>
+              document.addEventListener('DOMContentLoaded', function() {
+                  var storedIds = sessionStorage.getItem('course_user_datum_ids');
+                  if (storedIds) {
+                      sessionStorage.removeItem('course_user_datum_ids');
+                      var ids = JSON.parse(storedIds);
+                      document.querySelector('input[name="submission[course_user_datum_id]"]').value = ids.join(',');
+                      var studentSelectArea = document.getElementById('student_select_area');
+                      if (studentSelectArea) {
+                          studentSelectArea.style.display = 'none';
+                          var storedIdsArea = document.getElementById('stored_ids_area');
+                          if (storedIdsArea) {
+                              storedIdsArea.style.display = 'block';
+                          }
+                      }
+                      window.location.href = window.location.pathname + '?course_user_datum_id=' + ids.join(',');
+                  }
+              });
+          </script>
+        <% end %>
 
-  <div class="input-field">
-    <input type="text" size="3" id="student_autocomplete" class="autocomplete" autocomplete="off">
-    <label for="student_autocomplete">Start typing student name or email</label>
-  </div>
-  <%= f.hidden_field(:course_user_datum_id) %>
+        <% if params[:course_user_datum_id].nil? %>
+          <div id="student_select_area">
+            <div class="input-field">
+              <input type="text" size="3" id="student_autocomplete" class="autocomplete" autocomplete="off">
+              <label for="student_autocomplete">Start typing student name or email</label>
+            </div>
+            <%= f.hidden_field(:course_user_datum_id) %>
+          </div>
 
-  <% else %>
-    <%= @cuds.collect(&:email).join(", ") %>
-    <input type='hidden' name='submission[course_user_datum_id]' value='<%= @cuds.collect(&:id).join(',') %>'>
-  <% end %>
-  </td>
-</tr>
-<tr>
-  <th>Assessment:</th><td><%= @assessment.display_name %></td>
-  <%= f.hidden_field(:assessment_id) %>
-</tr>
-<tr>
-  <th>File:</th><td><%= f.file_field :file %></td>
-</tr>
-<tr>
-  <th>Notes:</th><td><%= f.text_area :notes, class: 'materialize-textarea', placeholder: "Notes on submission" %></td>
-</tr>
-<tr>
-  <th>Tweak:</th>
-  <td>
-  <%= f.fields_for :tweak, @submission.tweak do |t| %>
-    <%= t.text_field :value, placeholder: "Number of points or percentage" %>
-    <%= t.select :kind, options_for_select({ "points" => "points", "%" => "percent" },
-                                           selected: (@submission.tweak ? @submission.tweak.kind : "points")) %>
-  <% end %>
-  </td>
-</tr>
-<tr>
-  <td colspan=2>
-  <br>
-  <%= f.submit "Create Submission", { class: "btn primary" } %>
-  </td>
-</tr>
-</table>
+          <div id="stored_ids_area" style="display: none;">
+          </div>
+        <% else %>
+          <%= @cuds.collect(&:email).join(", ") %>
+          <input type='hidden' name='submission[course_user_datum_id]' value='<%= @cuds.collect(&:id).join(',') %>'>
+        <% end %>
+      </td>
+    </tr>
+    <tr>
+      <th>Assessment:</th><td><%= @assessment.display_name %></td>
+      <%= f.hidden_field(:assessment_id) %>
+    </tr>
+    <tr>
+      <th>File:</th><td><%= f.file_field :file %></td>
+    </tr>
+    <tr>
+      <th>Notes:</th><td><%= f.text_area :notes, class: 'materialize-textarea', placeholder: "Notes on submission" %></td>
+    </tr>
+    <tr>
+      <th>Tweak:</th>
+      <td>
+        <%= f.fields_for :tweak, @submission.tweak do |t| %>
+          <%= t.text_field :value, placeholder: "Number of points or percentage" %>
+          <%= t.select :kind, options_for_select({ "points" => "points", "%" => "percent" },
+                                                 selected: (@submission.tweak ? @submission.tweak.kind : "points")) %>
+        <% end %>
+      </td>
+    </tr>
+    <tr>
+      <td colspan=2>
+        <br>
+        <%= f.submit "Create Submission", { class: "btn primary" } %>
+      </td>
+    </tr>
+  </table>
 <% end %>
