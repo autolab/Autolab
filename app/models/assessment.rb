@@ -24,6 +24,7 @@ class Assessment < ApplicationRecord
   validates :name, format: { with: /\A[^0-9].*/, message: "can't have leading numeral" }
   validates :display_name, length: { minimum: 1 }
   validate :verify_dates_order
+  validate :verify_dates_valid_for_mysql
   validate :handin_directory_and_filename_or_disable_handins, if: :active?
   validate :handin_directory_exists_or_disable_handins, if: :active?
   validate :valid_handout
@@ -674,6 +675,21 @@ private
   def verify_dates_order
     errors.add :due_at, "must be after the start date" if start_at > due_at
     errors.add :end_at, "must be after the due date" if due_at > end_at
+  end
+
+  def verify_dates_valid_for_mysql
+    # MySQL TIMESTAMP range is 1970-01-01 00:00:01 to 2038-01-19 03:14:07
+    min_time = Time.at(1).utc # 1970-01-01 00:00:01 UTC
+    max_time = Time.at(2**31 - 1).utc # 2038-01-19 03:14:07 UTC
+    if start_at < min_time || start_at > max_time
+      errors.add :start_at, "must be between 1970-01-01 and 2038-01-19"
+    end
+    if due_at < min_time || due_at > max_time
+      errors.add :due_at, "must be between 1970-01-01 and 2038-01-19"
+    end
+    if end_at < min_time || end_at > max_time
+      errors.add :end_at, "must be between 1970-01-01 and 2038-01-19"
+    end
   end
 
   def handin_directory_and_filename_or_disable_handins
