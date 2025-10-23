@@ -157,26 +157,27 @@ module AssessmentAutogradeCore
   # Returns the Tango response
   #
   def tango_add_job(course, assessment, upload_file_list, callback_url, job_name, output_file)
-    job_properties = { "image" => @autograde_prop.autograde_image,
-                       "files" => upload_file_list.map do |f|
-                         { "localFile" => f["remoteFile"],
-                           "destFile" => Pathname.new(f["destFile"]).basename.to_s }
-                       end,
-                       "output_file" => output_file,
-                       "timeout" => @autograde_prop.autograde_timeout,
-                       "callback_url" => callback_url,
-                       "jobName" => job_name,
-                       "disable_network" => assessment.disable_network}
-    if Rails.configuration.x.ec2_ssh.present?
+    job_properties = {
+      "image" => @autograde_prop.autograde_image,
+      "files" => upload_file_list.map do |f|
+        { "localFile" => f["remoteFile"],
+          "destFile" => Pathname.new(f["destFile"]).basename.to_s }
+      end,
+      "output_file" => output_file,
+      "timeout" => @autograde_prop.autograde_timeout,
+      "callback_url" => callback_url,
+      "jobName" => job_name,
+      "disable_network" => assessment.disable_network
+    }
+    
+    if Rails.configuration.x.ec2_ssh
       job_properties["ec2Vmms"] = true
+      job_properties["instanceType"] = @autograde_prop.instance_type.presence || "t3.micro"
+      
       if @autograde_prop.use_access_key?
         job_properties["accessKey"] = @autograde_prop.access_key
         job_properties["accessKeyId"] = @autograde_prop.access_key_id
-      else
-        job_properties["accessKey"] = ""
-        job_properties["accessKeyId"] = ""
       end
-      job_properties["instanceType"] = @autograde_prop.instance_type
     end
 
     job_properties = job_properties.to_json

@@ -41,7 +41,14 @@ class AutogradersController < ApplicationController
 
   action_auth_level :update, :instructor
   def update
-    if @autograder.update(autograder_params) && @assessment.update(assessment_params)
+    # Clear secrets if use_access_key is disabled
+    params_to_update = autograder_params
+    unless params_to_update[:use_access_key]
+      params_to_update[:access_key] = nil
+      params_to_update[:access_key_id] = nil
+    end
+    
+    if @autograder.update(params_to_update) && @assessment.update(assessment_params)
       flash[:success] = "Autograder saved."
       begin
         upload
@@ -115,8 +122,10 @@ private
   end
 
   def autograder_params
-    params[:autograder].permit(:autograde_timeout, :autograde_image, :release_score, :access_key,
-                               :access_key_id, :instance_type)
+    params.require(:autograder).permit(
+      :autograde_timeout, :autograde_image, :release_score,
+      :use_access_key, :access_key, :access_key_id, :instance_type
+    )
   end
 
   def assessment_params

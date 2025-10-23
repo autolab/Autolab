@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2024_12_11_042124) do
+ActiveRecord::Schema.define(version: 2025_10_21_034813) do
 
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "name", null: false
@@ -150,9 +150,11 @@ ActiveRecord::Schema.define(version: 2024_12_11_042124) do
     t.string "autograde_image"
     t.boolean "release_score"
     t.string "instance_type", default: ""
-    t.string "access_key", default: ""
-    t.string "access_key_id", default: ""
     t.boolean "use_access_key", default: false
+    t.string "ami", default: ""
+    t.string "security_group", default: ""
+    t.text "access_key_ciphertext"
+    t.text "access_key_id_ciphertext"
   end
 
   create_table "course_user_data", id: :integer, charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
