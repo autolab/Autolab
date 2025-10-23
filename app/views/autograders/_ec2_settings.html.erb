@@ -6,14 +6,14 @@
 <%= f.check_box :use_access_key,
                 display_name: "Enable Access Key",
                 help_text: "(Optional) Use your own provided access key to authenticate to different EC2 instances than the default one on Tango" %>
-<%= f.password_field :access_key, 
-                     display_name: "Access Key", 
-                     value: nil, 
+<%= f.password_field :access_key,
+                     display_name: "Access Key",
+                     value: nil,
                      autocomplete: "new-password",
                      placeholder: "Leave blank to keep existing secret" %>
-<%= f.text_field :access_key_id, 
-                 display_name: "Access Key ID", 
-                 value: nil, 
+<%= f.text_field :access_key_id,
+                 display_name: "Access Key ID",
+                 value: nil,
                  autocomplete: "off",
                  placeholder: "Leave blank to keep existing secret" %>
 

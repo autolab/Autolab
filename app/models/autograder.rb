@@ -18,9 +18,9 @@ class Autograder < ApplicationRecord
   validates :autograde_image, length: { maximum: 64 }
 
   with_options if: :use_access_key do
-    validates :access_key_id, presence: true, format: { 
-      with: /\A[A-Z0-9]{16,24}\z/, 
-      message: "looks invalid" 
+    validates :access_key_id, presence: true, format: {
+      with: /\A[A-Z0-9]{16,24}\z/,
+      message: "looks invalid"
     }
     validates :access_key, presence: true
   end

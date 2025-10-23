@@ -47,7 +47,7 @@ class AutogradersController < ApplicationController
       params_to_update[:access_key] = nil
       params_to_update[:access_key_id] = nil
     end
-    
+
     if @autograder.update(params_to_update) && @assessment.update(assessment_params)
       flash[:success] = "Autograder saved."
       begin

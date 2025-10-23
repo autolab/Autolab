@@ -1,5 +1,6 @@
-;(function() {
-    $(document).ready(function () {
+;
+(function() {
+    $(document).ready(function() {
         function access_key_callback() {
             const checked = $(this).prop('checked');
             const $access_key_field = $('#autograder_access_key');
@@ -14,7 +15,7 @@
 
         $('#autograder_use_access_key').on('change', access_key_callback);
         access_key_callback.call($('#autograder_use_access_key'));
-        
+
         function initializeEC2Dropdown() {
             if ($.fn.tooltip) {
                 $('.browser-default[data-tooltip]').tooltip({
@@ -23,18 +24,18 @@
                     position: 'top'
                 });
             }
-            
+
             $('#autograder_instance_type option').hover(
                 function() { $(this).addClass('highlighted-option'); },
                 function() { $(this).removeClass('highlighted-option'); }
             );
-            
+
             $('#autograder_instance_type').on('change.ec2-instance', function() {
                 const selectedInstance = $(this).val();
                 console.log('Selected EC2 instance type:', selectedInstance);
-                            });
+            });
         }
-        
+
         // Initialize the EC2 dropdown functionality
         initializeEC2Dropdown();
     });
