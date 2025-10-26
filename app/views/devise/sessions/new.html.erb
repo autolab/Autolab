@@ -1,4 +1,4 @@
-<div class="sign-in-panel home">
+<div class="sign-in-panel home" lang="en">
 <br>
 
 <%= form_for(resource, as: resource_name, url: session_path(resource_name)) do |f| %>
@@ -6,8 +6,14 @@
   <img src="/images/autolab.svg" alt="" class="valign login-logo">
   <h5>Login to Autolab</h5>
 
-  <div><%= f.email_field :email, autofocus: true, placeholder: "Email Address" %></div>
-  <div><%= f.password_field :password, placeholder: "Password" %></div>
+  <div>
+    <%= f.label :email, "Email Address" %>
+    <%= f.email_field :email, autofocus: true, placeholder: "Email Address" %>
+  </div>
+  <div>
+    <%= f.label :password, "Password" %>
+    <%= f.password_field :password, placeholder: "Password" %>
+  </div>
 
   <% if devise_mapping.rememberable? -%>
   <label>
