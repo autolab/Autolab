@@ -125,7 +125,7 @@ GEM
       activerecord (>= 5.a)
       database_cleaner-core (~> 2.0.0)
     database_cleaner-core (2.0.1)
-    date (3.3.4)
+    date (3.4.1)
     debug_inspector (1.2.0)
     devise (4.9.3)
       bcrypt (~> 3.0)
@@ -234,7 +234,7 @@ GEM
     mysql2 (0.5.5)
     net-http (0.4.0)
       uri
-    net-imap (0.4.9)
+    net-imap (0.4.19)
       date
       net-protocol
     net-ldap (0.18.0)
@@ -247,11 +247,11 @@ GEM
     newrelic_rpm (9.6.0)
       base64
     nio4r (2.7.0)
-    nokogiri (1.16.8-arm64-darwin)
+    nokogiri (1.18.4-arm64-darwin)
       racc (~> 1.4)
-    nokogiri (1.16.8-x86_64-darwin)
+    nokogiri (1.18.4-x86_64-darwin)
       racc (~> 1.4)
-    nokogiri (1.16.8-x86_64-linux)
+    nokogiri (1.18.4-x86_64-linux-gnu)
       racc (~> 1.4)
     oauth2 (2.0.9)
       faraday (>= 0.17.3, < 3.0)
@@ -307,7 +307,7 @@ GEM
       stringio
     public_suffix (5.0.4)
     racc (1.8.1)
-    rack (2.2.9)
+    rack (2.2.13)
     rack-attack (6.7.0)
       rack (>= 1.0, < 4)
     rack-protection (3.2.0)
@@ -441,14 +441,14 @@ GEM
       rack (>= 1, < 3)
     thor (1.3.0)
     tilt (2.3.0)
-    timeout (0.4.1)
+    timeout (0.4.3)
     ttfunk (1.0.3)
     tzinfo (2.0.6)
       concurrent-ruby (~> 1.0)
     tzinfo-data (1.2023.4)
       tzinfo (>= 1.0.0)
     unicode-display_width (2.5.0)
-    uri (0.10.3)
+    uri (0.11.3)
     version_gem (1.1.3)
     warden (1.2.9)
       rack (>= 2.0.9)
@@ -542,7 +542,7 @@ DEPENDENCIES
   terser (>= 1.1.7)
   thin
   tzinfo-data
-  uri (= 0.10.3)
+  uri (= 0.11.3)
   webmock
   webrick (~> 1.8)
   yard
