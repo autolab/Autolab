@@ -49,35 +49,47 @@ class SubmissionsController < ApplicationController
         }
 
         order_column = columns_map[order_column_index] || 'submissions.created_at'
+
         base_query = @assessment.submissions
                                 .joins(course_user_datum: :user)
+
         if search_value.present?
           base_query = base_query.where(
             "users.email LIKE :search",
             search: "%#{search_value}%"
           )
         end
+
         total_records = @assessment.submissions.count
         filtered_records = base_query.count
-        submissions_query = base_query
-                            .includes(course_user_datum: :user)
-                            .left_joins(:scores)
-                            .select('submissions.*')
-                            .select('COALESCE(SUM(scores.score), 0) as calculated_score')
-                            .group('submissions.id')
 
-        # Apply sorting
-        submissions_query =
-          if order_column == 'calculated_score'
-            submissions_query.order("calculated_score #{order_direction}")
-          else
-            submissions_query.order("#{order_column} #{order_direction}")
+        # If sorting by score, we have to load the data into ruby b/c we don't stored
+        # final scores in our database
+        if order_column == 'calculated_score'
+          all_submissions = base_query.includes(course_user_datum: :user).to_a
+          submissions_with_scores = all_submissions.map do |submission|
+            cud = submission.course_user_datum
+            [submission, submission.final_score(cud)]
           end
-        # Apply pagination
-        submissions = submissions_query.limit(length).offset(start)
+          sorted_submissions = submissions_with_scores.sort_by { |_, score| score }
+          sorted_submissions.reverse! if order_direction == 'desc'
+          paginated_submissions = sorted_submissions[start, length] || []
 
-        data = submissions.map do |submission|
-          format_submission_for_datatable(submission)
+          data = paginated_submissions.map do |submission, score|
+            format_submission_for_datatable(submission, score)
+          end
+        else
+          submissions = base_query
+                        .includes(course_user_datum: :user)
+                        .order("#{order_column} #{order_direction}")
+                        .limit(length)
+                        .offset(start)
+
+          data = submissions.map do |submission|
+            cud = submission.course_user_datum
+            score = submission.final_score(cud)
+            format_submission_for_datatable(submission, score)
+          end
         end
 
         render json: {
@@ -91,16 +103,11 @@ class SubmissionsController < ApplicationController
   end
 
   action_auth_level :format_submission_for_datatable, :instructor
-  def format_submission_for_datatable(submission)
+  def format_submission_for_datatable(submission, score = nil)
     cud = submission.course_user_datum
     user = cud.user
     excused = @excused_cids.include?(cud.id)
-    score =
-      if submission.respond_to?(:calculated_score)
-        submission.calculated_score
-      else
-        submission.final_score(cud)
-      end
+    score ||= submission.final_score(cud)
     [
       '',
       {
