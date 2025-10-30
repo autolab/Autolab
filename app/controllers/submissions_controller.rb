@@ -95,6 +95,12 @@ class SubmissionsController < ApplicationController
     cud = submission.course_user_datum
     user = cud.user
     excused = @excused_cids.include?(cud.id)
+    score =
+      if submission.respond_to?(:calculated_score)
+        submission.calculated_score
+      else
+        submission.final_score(cud)
+      end
     [
       '',
       {
@@ -105,7 +111,7 @@ class SubmissionsController < ApplicationController
       },
       submission.version,
       {
-        score: computed_score { submission.final_score(@cud) },
+        score: computed_score { score },
         email: user.email,
         cud_id: cud.id
       },

@@ -108,9 +108,9 @@ $(document).ready(function() {
         tweaks = [];
 
         const submissions_body = data.submissions.map((submission) => {
-          const Tweak = new AutolabComponent(`tweak-value-${submission.id}`, {amount: null});
+          const Tweak = new AutolabComponent(`tweak-value-${submission.id}`, { amount: null });
           Tweak.template = function () {
-            return EditTweakButton(this.state.amount);
+            return EditTweakButton( this.state.amount );
           }
           tweaks.push({tweak: Tweak, submission_id: submission.id, submission});
 
@@ -121,10 +121,10 @@ $(document).ready(function() {
 
           // Convert to human readable date with timezone
           const human_readable_created_at =
-              moment(submission.created_at).format('MMM Do YY, h:mma z UTC Z');
+                moment(submission.created_at).format('MMM Do YY, h:mma z UTC Z');
 
           const view_button = submission.filename ?
-              `<div class="submissions-center-icons">
+                `<div class="submissions-center-icons">
                     <a href="submissions/${submission.id}/view"
                       title="View the file for this submission"
                       class="btn small">
@@ -132,10 +132,10 @@ $(document).ready(function() {
                     </a>
                     <p>View Source</p>
                   </div>`
-              : "None";
+                  : "None";
 
           const download_button =
-              /text/.test(submission.detected_mime_type) ?
+                  /text/.test(submission.detected_mime_type) ?
                   `<div class="submissions-center-icons">
                       <a href="submissions/${submission.id}/download?forceMime=text/plain"
                         title="Download as text/plain"
@@ -163,15 +163,16 @@ $(document).ready(function() {
                 <td class="submissions-td">
                   ${submission.total}
                 </td>
-                ${submission.problems.map((problem) =>
-              `<td class="submissions-td">
+                ${submission.problems.
+                    map((problem) =>
+                        `<td class="submissions-td">
                         ${data.scores[submission.id]?.[problem.id]?.['score'] !== undefined
-                  ? `<a href="viewFeedback?submission_id=${submission.id}&feedback=${problem.id}">
+                          ? `<a href="viewFeedback?submission_id=${submission.id}&feedback=${problem.id}">
                         ${data.scores[submission.id][problem.id]['score'].toFixed(1)}
                      </a>`
-                  : "-"}
+                        : "-"}
                     </td>`
-          ).join('')}
+                    ).join('')}
                 <td class="submissions-td">
                   ${submission.late_penalty}
                 </td>
@@ -187,7 +188,7 @@ $(document).ready(function() {
         }).join('');
 
         const submissions_table =
-            ` <p>Click on non-autograded problem scores to edit or leave a comment. </p>
+          ` <p>Click on non-autograded problem scores to edit or leave a comment. </p>
             <table class="prettyBorder" id="score-details-table">
               <thead>
                 <tr>
@@ -213,10 +214,10 @@ $(document).ready(function() {
           "order": [[0, "desc"]],
           "paging": false,
           "info": false,
-          "searching": false,
-        });
+          "searching": false,});
 
         return data.submissions;
+
       }).then((submissions) => {
         $('.tweak-button').on('click', selectTweak(submissions));
       }).catch((err) => {
@@ -345,17 +346,21 @@ $(document).ready(function() {
     var downloadHTML = $('#download-batch-html').html();
     var excuseHTML = $('#excuse-batch-html').html();
     $('div.selected-buttons').html(`<div id='selected-buttons'>${regradeHTML}${deleteHTML}${downloadHTML}${excuseHTML}</div>`);
+
+    // add ids to each selected button
     $('#selected-buttons > a').each(function () {
       let idText = this.title.split(' ')[0].toLowerCase() + '-selected';
       this.setAttribute('id', idText);
     });
+
     if (!is_autograded) {
       $('#regrade-selected').hide();
       $('#regrade-all-html').hide();
     }
 
+    // base URLs for selected buttons
     var baseURLs = {};
-    buttonIDs.forEach(function (id) {
+    buttonIDs.forEach(function(id) {
       baseURLs[id] = $(id).prop('href');
     });
 
@@ -418,6 +423,7 @@ $(document).ready(function() {
         }
       });
     });
+
     function changeButtonStates(state) {
       buttonIDs.forEach((id) => {
         const button = $(id);
@@ -445,7 +451,7 @@ $(document).ready(function() {
               return;
             }
             const endpoint = manage_submissions_endpoints[id.replace("#", "")];
-            const requestData = {submission_ids: selectedSubmissions};
+            const requestData = { submission_ids: selectedSubmissions };
             if (id === "#delete-selected") {
               if (!confirm("Deleting will delete all checked submissions and cannot be undone. Are you sure you want to delete these submissions?")) {
                 return;
@@ -499,8 +505,6 @@ $(document).ready(function() {
 
     // SELECTING STUDENT CHECKBOXES
     function toggleRow(submissionId, forceSelect = null) {
-      console.log('toggleRow called:', submissionId, 'forceSelect:', forceSelect);
-      console.log('selectedSubmissions before:', [...selectedSubmissions]);
       var selectedCid = submissions_to_cud[submissionId];
       const isSelected = selectedSubmissions.includes(submissionId);
       const shouldSelect = forceSelect !== null ? forceSelect : !isSelected;
@@ -533,8 +537,6 @@ $(document).ready(function() {
       $('#cbox-select-all').prop('checked', numericSelectedSubmissions.length === $('#submissions tbody .cbox').length);
       updateSelectedCount(numericSelectedSubmissions);
       changeButtonStates(disableButtons);
-      console.log('selectedSubmissions after:', [...selectedSubmissions]);
-      console.log('Checkbox state:', $('#cbox-' + submissionId).prop('checked'));
     }
 
     $('#submissions').on('click', '.exclude-click i', function (e) {
