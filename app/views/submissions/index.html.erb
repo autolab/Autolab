@@ -10,8 +10,6 @@
 <script>
   var is_autograded = <%= @autograded %>;
   var excused_cids = <%= @excused_cids %>;
-  var submissions_to_cud = <%= @submissions_to_cud.html_safe %>;
-
   // additional data for each row
   additional_data = [
       <% for s in @submissions do %>
@@ -59,7 +57,7 @@
                 new_course_assessment_submission_path(@course, @assessment),
                 { title: "Create a new submission for a student, with an option to submit a handin file on their behalf",
                   class: "btn submissions-main" } %>
-    </div>
+  </div>
 
   <div class="buttons-spacing">
     <%= link_to "<i class='material-icons left submissions-icons'>file_download</i>Download Final Submissions".html_safe,
@@ -118,146 +116,34 @@
   </div>
 </div>
 
-<div class="selected-count-placeholder" style="display: none;">
-  <span id="selected-count-html">0 submissions selected</span>
-  <span>
-    Click
-    <a href="#" id="regrade-all-trigger" class="selected-count-red" title="Regrade all submissions">
-      Regrade All
-    </a>
-    to regrade all <%= @submissions.latest.length %> latest submissions.
-  </span>
-</div>
-
 <table class="prettyBorder" id="submissions">
-  <% headers = ["Submitted By",
-                "Version",
-                "Score",
-                "Submission Date",
-                "File",
-                "Actions"] %>
+  <% headers = ["Submitted By", "Version", "Score", "Submission Date", "File", "Actions"] %>
   <thead class="float">
-    <tr>
-      <%# Select all checkbox in header row %>
-      <th class="submissions-td submissions-checkbox">
+  <tr>
+    <th class="submissions-td submissions-checkbox">
+      <div>
+        <label class="submissions-cbox-label">
+          <input class="cbox" type="checkbox" id="cbox-select-all">
+          <span></span>
+        </label>
+      </div>
+    </th>
+    <% headers.each do |header| %>
+      <th class="submissions-th sorting">
         <div>
-          <label class="submissions-cbox-label">
-            <input class="cbox" type="checkbox" id="cbox-select-all">
-            <span></span>
-          </label>
-        </div>
-      </th>
-      <%# Table headers %>
-      <% for header in headers %>
-        <th class="submissions-th sorting">
-          <div>
-            <p><%= header %></p>
-            <% if header != "File" && header != "Actions" then %>
-              <i class="material-icons tiny sort-icon sort-icon__both" aria-hidden="true">swap_vert</i>
-              <i class="material-icons tiny sort-icon sort-icon__up" aria-hidden="true">arrow_upward</i>
-              <i class="material-icons tiny sort-icon sort-icon__down" aria-hidden="true">arrow_downward</i>
-            <% end %>
-          </div>
-        </th>
-      <% end %>
-    </tr>
-  </thead>
-
-  <tbody id="submissions_table">
-  <div id="no-data-message" style="display: none;">No submissions available.</div>
-
-  <% for submission in @submissions %>
-    <tr id="row-<%= submission.id %>" class="submission-row">
-
-      <%# Checkbox %>
-      <td class="submissions-td submissions-checkbox">
-        <div>
-          <label class="submissions-cbox-label">
-            <input class="cbox" type="checkbox" id="cbox-<%= submission.id %>">
-            <span></span>
-          </label>
-        </div>
-      </td>
-
-      <%# Submitted By %>
-      <td class="submissions-td">
-        <div class="submissions-name">
-          <%= [submission.course_user_datum.first_name, submission.course_user_datum.last_name].reject(&:blank?).join(' ') %>
-          <% if @excused_cids.include? submission.course_user_datum_id %>
-            <a class="submissions-excused-label" title="Click to unexcuse this student">EXCUSED</a>
-            <div class="excused-popover">
-              <div class="excused-arrow"></div>
-            </div>
+          <p><%= header %></p>
+          <% unless ["File", "Actions"].include?(header) %>
+            <i class="material-icons tiny sort-icon sort-icon__both">swap_vert</i>
+            <i class="material-icons tiny sort-icon sort-icon__up">arrow_upward</i>
+            <i class="material-icons tiny sort-icon sort-icon__down">arrow_downward</i>
           <% end %>
         </div>
-        <%= submission.course_user_datum.email %>
-      </td>
-
-      <%# Version %>
-      <td class="submissions-td" style="<%= ignored_submission_style submission %>">
-        <%= submission.version %>
-      </td>
-
-      <%# Score %>
-      <td class="submissions-td">
-        <div class="submissions-score-align">
-          <div class="score-num"><%= computed_score { submission.final_score(@cud) } %></div>
-          <div class="score-icon">
-            <a class="modal-trigger score-details"
-              data-email="<%= submission.course_user_datum.email %>"
-              data-cuid=" <%= submission.course_user_datum.id %>">
-              <i class="material-icons submissions-score-icon">zoom_in</i>
-            </a>
-            </div>
-        </div>
-      </td>
-
-      <%# Submission Date %>
-      <td class="submissions-td">
-        <span class="moment-date-time">
-          <%= submission.created_at.in_time_zone.to_s %>
-        </span>
-      </td>
-
-      <%# File %>
-      <td class="submissions-td" style="<%= ignored_submission_style submission %>">
-        <% if submission.filename then %>
-          <div class="submissions-center-icons">
-            <%= link_to "<i class='material-icons'>zoom_in</i>".html_safe,
-                        view_course_assessment_submission_url(@course, @assessment, submission),
-                        { title: "View the file for this submission",
-                          class: "btn small" } %>
-            <p>View File</p>
-          </div>
-        <% else %>
-          None
-        <% end %>
-      </td>
-
-      <%# Actions %>
-      <td class="submissions-td" class="exclude-click">
-        <% if @autograded then %>
-          <div class="submissions-center-icons">
-            <div id="regrade-batch-html">
-              <%= link_to "<i class='material-icons'>autorenew</i>".html_safe,
-                          regradeBatch_course_assessment_path(@course, @assessment, { submission_ids: [submission.id] }),
-                          { method: :post,
-                            title: "Regrade selected submissions",
-                            class: "btn small" } %>
-            </div>
-            <p>Regrade</p>
-          </div>
-        <% end %>
-        <div class="submissions-center-icons">
-          <%= link_to "<i class='material-icons i-no-margin'>delete_outline</i>".html_safe,
-                      destroyConfirm_course_assessment_submission_path(@course, @assessment, submission),
-                      { title: "Destroy this submission forever",
-                        class: "btn small" } %>
-          <p>Delete</p>
-        </div>
-      </td>
-    </tr>
-  <% end %>
+      </th>
+    <% end %>
+  </tr>
+  </thead>
+  <tbody id="submissions_table">
+  <!-- Rows will be populated by DataTables -->
   </tbody>
 </table>
 
