@@ -25,7 +25,7 @@ echo ""
 
 # 2. Check migration
 echo "2. Checking SSH keys migration..."
-docker exec $CONTAINER_NAME bash -c "$RAILS_CMD rails runner 'require \"app/models/ssh_key\"; puts SshKey.connection.table_exists?(:ssh_keys) ? \"✓ SSH keys table exists\" : \"✗ SSH keys table missing\"'"
+docker exec $CONTAINER_NAME bash -c "$RAILS_CMD rails runner 'puts ActiveRecord::Base.connection.table_exists?(:ssh_keys) ? \"✓ SSH keys table exists\" : \"✗ SSH keys table missing\"'"
 echo ""
 
 # 3. Check system commands
@@ -35,7 +35,7 @@ echo ""
 
 # 4. Test UnixGroupManager
 echo "4. Testing UnixGroupManager system detection..."
-docker exec $CONTAINER_NAME bash -c "$RAILS_CMD rails runner 'require \"app/services/unix_group_manager\"; puts \"System commands available: #{UnixGroupManager.system_commands_available?}\"; puts \"Should skip operations: #{UnixGroupManager.should_skip_operations?}\"'"
+docker exec $CONTAINER_NAME bash -c "$RAILS_CMD rails runner 'puts \"System commands available: #{UnixGroupManager.system_commands_available?}\"; puts \"Should skip operations: #{UnixGroupManager.should_skip_operations?}\"'"
 echo ""
 
 # 5. List courses
@@ -45,7 +45,7 @@ echo ""
 
 # 6. Test course group creation
 echo "6. Testing course group creation..."
-docker exec $CONTAINER_NAME bash -c "$RAILS_CMD rails runner 'require \"app/services/unix_group_manager\"; course = Course.first; if course; group = UnixGroupManager.safe_group_name(course.name); puts \"  Course: #{course.name}\"; puts \"  → Group: #{group}\"; result = UnixGroupManager.ensure_group(group); puts \"  Group exists: #{result ? \"✓\" : \"✗\"}\"; end'"
+docker exec $CONTAINER_NAME bash -c "$RAILS_CMD rails runner 'course = Course.first; if course; group = UnixGroupManager.safe_group_name(course.name); puts \"  Course: #{course.name}\"; puts \"  → Group: #{group}\"; result = UnixGroupManager.ensure_group(group); puts \"  Group exists: #{result ? \"✓\" : \"✗\"}\"; end'"
 echo ""
 
 # 7. List Unix groups
@@ -55,7 +55,7 @@ echo ""
 
 # 8. List Unix users (staff)
 echo "8. Listing Unix users (staff)..."
-docker exec $CONTAINER_NAME bash -c "$RAILS_CMD rails runner 'require \"app/services/unix_group_manager\"; User.joins(:course_user_data).where(course_user_data: { instructor: true }).or(User.joins(:course_user_data).where(course_user_data: { course_assistant: true })).distinct.limit(5).each { |u| username = UnixGroupManager.login_from_email(u.email); puts \"  - #{u.email} → #{username}\" }'"
+docker exec $CONTAINER_NAME bash -c "$RAILS_CMD rails runner 'User.joins(:course_user_data).where(course_user_data: { instructor: true }).or(User.joins(:course_user_data).where(course_user_data: { course_assistant: true })).distinct.limit(5).each { |u| username = UnixGroupManager.login_from_email(u.email); puts \"  - #{u.email} → #{username}\" }'"
 echo ""
 
 # 9. Test SSH key creation
@@ -70,7 +70,7 @@ echo ""
 
 # 11. Test file permission enforcement
 echo "11. Testing FilesystemEnforcer..."
-docker exec $CONTAINER_NAME bash -c "$RAILS_CMD rails runner 'require \"app/services/filesystem_enforcer\"; course = Course.first; if course && Dir.exist?(course.directory_path); FilesystemEnforcer.fix_tree(course.directory_path.to_s); puts \"  ✓ Permissions fixed for #{course.name}\"; else; puts \"  ✗ Course directory not found\"; end'"
+docker exec $CONTAINER_NAME bash -c "$RAILS_CMD rails runner 'course = Course.first; if course && Dir.exist?(course.directory_path); FilesystemEnforcer.fix_tree(course.directory_path.to_s); puts \"  ✓ Permissions fixed for #{course.name}\"; else; puts \"  ✗ Course directory not found\"; end'"
 echo ""
 
 echo "========================================="

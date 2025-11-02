@@ -141,7 +141,8 @@ class UnixGroupManager
       end
 
       # Create user with home directory and bash shell, no password, disabled password login
-      cmd = ["useradd", "-m", "-s", "/bin/bash", "--disabled-password"]
+      # Use -p '*' to lock the password (works on BusyBox and GNU useradd)
+      cmd = ["useradd", "-m", "-s", "/bin/bash", "-p", "*"]
       cmd << "-c" << email if email
       cmd << username
 

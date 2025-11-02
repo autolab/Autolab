@@ -78,14 +78,22 @@ scope.find_each do |course|
     if DRY_RUN
       say "    [SYS] id -u #{username} >/dev/null 2>&1 || useradd -m -s /bin/bash -c \"#{cud.user.email}\" #{username}"
     else
-      UnixGroupManager.ensure_user(username, email: cud.user.email)
+      if UnixGroupManager.ensure_user(username, email: cud.user.email)
+        say "    ✓ User #{username} created/verified"
+      else
+        say "    ✗ Failed to create user #{username} - check logs"
+      end
     end
 
     # Add user to group
     if DRY_RUN
       say "    [SYS] usermod -a -G #{group_name} #{username}"
     else
-      UnixGroupManager.add_user_to_group(username, group_name)
+      if UnixGroupManager.add_user_to_group(username, group_name)
+        say "    ✓ Added #{username} to #{group_name}"
+      else
+        say "    ✗ Failed to add #{username} to #{group_name} - check logs"
+      end
     end
   end
 
