@@ -1,4 +1,4 @@
-require_relative "../../services/unix_group_manager"
+require_relative "../../../services/unix_group_manager"
 
 class Api::V1::CourseUserDataController < Api::V1::BaseApiController
 
