@@ -1,5 +1,6 @@
 require "association_cache"
 require "fileutils"
+require_relative "../services/unix_group_manager"
 
 class Course < ApplicationRecord
   trim_field :name, :semester, :display_name
@@ -91,6 +92,8 @@ class Course < ApplicationRecord
     end
 
     begin
+      # Create Unix group for the course
+      UnixGroupManager.setup_course_group(newCourse)
       newCourse.reload_course_config
     rescue StandardError, SyntaxError
       newCUD.destroy

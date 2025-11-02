@@ -2,6 +2,7 @@ require "fileutils"
 require "utilities"
 require "association_cache"
 require "json"
+require_relative "../services/filesystem_enforcer"
 ##
 # Submissions jointly belong to Assessments and CourseUserData
 #
@@ -82,22 +83,26 @@ class Submission < ApplicationRecord
   def save_file(upload)
     self.filename = handin_file_filename
 
+    file_path = nil
     if upload["file"]
       # Sanity!
       upload["file"].rewind
-      File.open(create_user_directory_and_return_handin_file_path, "wb") { |f|
+      file_path = create_user_directory_and_return_handin_file_path
+      File.open(file_path, "wb") { |f|
         f.write(upload["file"].read)
       }
     elsif upload["local_submit_file"]
       # local_submit_file is a path string to the temporary handin
       # directory we create for local submissions
-      File.open(create_user_directory_and_return_handin_file_path, "wb") do |f|
+      file_path = create_user_directory_and_return_handin_file_path
+      File.open(file_path, "wb") do |f|
         f.write(File.read(upload["local_submit_file"], mode: File::RDONLY | File::NOFOLLOW))
       end
     elsif upload["tar"]
       src = upload["tar"]
       # Only used for Github submissions, so this is fairly safe
-      FileUtils.mv(src, create_user_directory_and_return_handin_file_path)
+      file_path = create_user_directory_and_return_handin_file_path
+      FileUtils.mv(src, file_path)
     end
 
     if upload["file"]
@@ -113,6 +118,12 @@ class Submission < ApplicationRecord
       self.mime_type = "application/x-tgz"
     end
     save!
+
+    # Enforce permissions on uploaded file and directory
+    if file_path && File.exist?(file_path)
+      FilesystemEnforcer.fix_path(file_path)
+      FilesystemEnforcer.fix_path(File.dirname(file_path))
+    end
   end
 
   def archive_handin

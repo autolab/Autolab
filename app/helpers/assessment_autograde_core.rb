@@ -1,6 +1,7 @@
 require "uri"
 require "tango_client"
 require_relative Rails.root.join("config", "autogradeConfig.rb")
+require_relative "../services/filesystem_enforcer"
 
 module AssessmentAutogradeCore
 
@@ -367,6 +368,12 @@ module AssessmentAutogradeCore
 
       File.open(feedback_file, "w") do |f|
         f.write(feedback)
+      end
+
+      # Enforce permissions on autograde feedback file and directory
+      if feedback_file && File.exist?(feedback_file)
+        FilesystemEnforcer.fix_path(feedback_file)
+        FilesystemEnforcer.fix_path(File.dirname(feedback_file))
       end
     end
 

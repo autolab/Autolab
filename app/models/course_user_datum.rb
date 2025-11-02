@@ -1,4 +1,5 @@
 require "association_cache"
+require_relative "../services/unix_group_manager"
 
 class CourseUserDatum < ApplicationRecord
   class AuthenticationFailed < RuntimeError
@@ -33,6 +34,7 @@ class CourseUserDatum < ApplicationRecord
   validate :valid_nickname?
   validate :instructor_or_ca_not_dropped
   after_create :create_AUDs_modulo_callbacks
+  after_destroy :cleanup_unix_group_membership
 
   def self.conditions_by_like(value, *columns)
     columns = self.columns if columns.empty?
@@ -354,6 +356,15 @@ private
 
       (course.grace_days - cur_aud.global_cumulative_grace_days_used)
     end
+  end
+
+  # Cleanup Unix group membership when CUD is destroyed
+  def cleanup_unix_group_membership
+    # Only cleanup if user was staff in this course
+    return unless instructor? || course_assistant?
+
+    # Remove from course group
+    UnixGroupManager.update_course_staff_membership(course, user, is_staff: false)
   end
 
   include CUDAssociationCache

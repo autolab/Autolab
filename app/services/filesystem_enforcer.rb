@@ -1,45 +1,79 @@
 require "etc"
 require "pathname"
+require_relative "./unix_group_manager"
 
 class FilesystemEnforcer
-  GROUP     = ENV.fetch("COURSE_FS_GROUP", "autolab") # fallback
-  MODE_DIR  = 0o2775  # drwxrwsr-x (setgid)
-  MODE_FILE = 0o664   # -rw-rw-r--
+  GROUP     = ENV.fetch("COURSE_FS_GROUP", "autolab") # fallback only
+  MODE_DIR  = 0o2770  # drwxrws---
+  MODE_FILE = 0o660   # -rw-rw----
 
+  # Enforce owner-group & perms on a single path
   def self.fix_path(path)
     return unless File.exist?(path)
     grp = inferred_group(path) || GROUP
+
     begin
-      File.chown(nil, Etc.getgrnam(grp).gid, path)
+      gid = Etc.getgrnam(grp).gid
+      File.chown(nil, gid, path)           # keep owner as-is, set group
     rescue StandardError
-      # ignore chown issues, still try chmod
+      # group not present or chown failed (non-fatal)
     end
+
     begin
-      File.chmod(File.directory?(path) ? MODE_DIR : MODE_FILE, path)
+      mode = File.directory?(path) ? MODE_DIR : MODE_FILE
+      # Skip symlinks to avoid lchmod issues on some platforms
+      File.chmod(mode, path) unless File.symlink?(path)
     rescue StandardError
-      # ignore chmod issues (symlinks/special files)
+      # ignore chmod on odd/special files
     end
   end
 
+  # Enforce recursively (includes root)
   def self.fix_tree(root)
     return unless File.exist?(root)
-    Dir.glob("#{root}/**/*", File::FNM_DOTMATCH).each do |p|
-      next if %w[. ..].include?(File.basename(p))
+    # Include dotfiles, skip '.' and '..'
+    Dir.glob(File.join(root, "**", "*"), File::FNM_DOTMATCH).each do |p|
+      base = File.basename(p)
+      next if base == "." || base == ".."
       fix_path(p)
     end
-    fix_path(root) # enforce on the root itself too
+    fix_path(root)
   end
 
+  # Map filesystem path → course group (folder name under Rails.root/courses)
+  # The directory name matches the course name, and we need to find the Unix group
+  # which may be normalized via safe_group_name
   def self.inferred_group(path)
     courses_root = Rails.root.join("courses").expand_path.to_s + File::SEPARATOR
     abs = Pathname.new(path).expand_path.to_s
     return nil unless abs.start_with?(courses_root)
-    course = Pathname.new(abs).relative_path_from(Pathname.new(courses_root)).each_filename.first
-    return nil if course.nil? || course.empty?
-    Etc.getgrnam(course) # will raise if missing
-    course
-  rescue StandardError
-    nil
+
+    # Get the course directory name (first component under courses/)
+    course_dir_name = Pathname.new(abs).relative_path_from(Pathname.new(courses_root)).each_filename.first
+    return nil if course_dir_name.nil? || course_dir_name.empty?
+
+    # Try to find the Course model by directory name
+    # The directory name should match the course.name field
+    begin
+      course = Course.find_by(name: course_dir_name)
+      return nil unless course
+
+      # Get the Unix group name (normalized via safe_group_name)
+      group_name = UnixGroupManager.safe_group_name(course.name)
+      return nil unless group_name
+
+      # Verify the group actually exists
+      Etc.getgrnam(group_name) # raises if missing
+      group_name
+    rescue StandardError
+      # Fallback: try using directory name directly as group name
+      begin
+        Etc.getgrnam(course_dir_name)
+        course_dir_name
+      rescue StandardError
+        nil
+      end
+    end
   end
 
   private_class_method :inferred_group

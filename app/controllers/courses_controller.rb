@@ -3,6 +3,7 @@ require "csv"
 require "fileutils"
 require "pathname"
 require "statistics"
+require_relative "../services/unix_group_manager"
 
 class CoursesController < ApplicationController
   skip_before_action :set_course,
@@ -180,8 +181,10 @@ class CoursesController < ApplicationController
 
       if new_cud.save
         begin
+          # Create Unix group for the course
+          UnixGroupManager.setup_course_group(@newCourse)
           @newCourse.reload_course_config
-        rescue StandardError, SyntaxError
+        rescue StandardError, SyntaxError => e
           # roll back course creation and instruction creation
           new_cud.destroy
           @newCourse.destroy
@@ -279,6 +282,8 @@ class CoursesController < ApplicationController
     end
 
     begin
+      # Create Unix group for the course
+      UnixGroupManager.setup_course_group(@newCourse)
       @newCourse.reload_course_config
     rescue StandardError, SyntaxError
       # roll back course creation and instruction creation
@@ -338,7 +343,12 @@ class CoursesController < ApplicationController
       File.delete @course.config_backup_file_path
     end
 
+    # Get group name before destroying course
+    group_name = UnixGroupManager.safe_group_name(@course.name)
+
     if @course.destroy
+      # Remove Unix group if course was successfully destroyed
+      UnixGroupManager.remove_group(group_name) if group_name
       flash[:success] = "Course destroyed."
     else
       flash[:error] = "Error: Course wasn't destroyed!"
@@ -494,6 +504,12 @@ class CoursesController < ApplicationController
 
     # save all the cuds
     if @cuds.all?(&:save)
+      # Create Unix users and add to course group for staff members
+      @cuds.each do |cud|
+        if cud.instructor? || cud.course_assistant?
+          UnixGroupManager.update_course_staff_membership(@course, cud.user, is_staff: true)
+        end
+      end
       flash[:success] = "Success: Users added to course."
     else
       flash[:error] = "Error: Users could not be added to course."
@@ -883,6 +899,11 @@ private
 
           # Save without validations
           cud.save(validate: false)
+          
+          # Create Unix user and add to course group if staff
+          if cud.instructor? || cud.course_assistant?
+            UnixGroupManager.update_course_staff_membership(@course, user, is_staff: true)
+          end
         end
 
       when "red"
@@ -891,6 +912,11 @@ private
                           .where(users: { email: new_cud[:email] }).first
 
         fail "Red CUD doesn't exist in the database." if existing.nil?
+
+        # Remove from Unix group if staff
+        if existing.instructor? || existing.course_assistant?
+          UnixGroupManager.update_course_staff_membership(@course, existing.user, is_staff: false)
+        end
 
         existing.dropped = true
         existing.save(validate: false)
@@ -945,6 +971,11 @@ private
         existing.assign_attributes(params.permit(:course_number, :lecture, :section, :grade_policy))
         existing.dropped = false
         existing.save(validate: false) # Save without validations.
+        
+        # Update Unix group membership if role changed
+        if existing.instructor? || existing.course_assistant?
+          UnixGroupManager.update_course_staff_membership(@course, user, is_staff: true)
+        end
       end
       rowNum += 1
     end

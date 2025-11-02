@@ -1,3 +1,5 @@
+require_relative "../services/unix_group_manager"
+
 class UsersController < ApplicationController
   skip_before_action :set_course
   skip_before_action :authorize_user_for_course
@@ -287,7 +289,18 @@ class UsersController < ApplicationController
       redirect_to(users_path) && return
     end
 
-    # TODO: Need to cleanup user resources here
+    # Cleanup Unix user if they have a Unix account
+    # Only delete if user is no longer staff in any course
+    is_staff_anywhere = user.course_user_data.where(instructor: true)
+                            .or(user.course_user_data.where(course_assistant: true))
+                            .exists?
+    
+    unless is_staff_anywhere
+      username = UnixGroupManager.login_from_email(user.email)
+      if username
+        UnixGroupManager.delete_user(username, remove_home: true)
+      end
+    end
 
     user.destroy
     flash[:success] = "Successfully destroyed user."
@@ -473,6 +486,105 @@ class UsersController < ApplicationController
     else
       flash[:error] = @user.errors[:hover_assessment_date][0].to_s
     end
+  end
+
+  # SSH Key Management (only for instructors/TAs)
+  action_auth_level :ssh_keys, :student
+  def ssh_keys
+    user = User.find_by(id: params[:user_id] || params[:id])
+    if user.nil?
+      flash[:error] = "User not found"
+      redirect_to(users_path) && return
+    end
+
+    # Only staff (instructors/TAs) can manage SSH keys
+    unless user.staff? || current_user.administrator?
+      flash[:error] = "Permission denied: SSH key management is only available for course instructors and teaching assistants."
+      redirect_to(user_path(user)) && return
+    end
+
+    # Users can only manage their own SSH keys, or admins can manage any staff user's keys
+    if user != current_user && !current_user.administrator?
+      flash[:error] = "Permission denied: you can only manage your own SSH keys."
+      redirect_to(users_path) && return
+    end
+
+    @user = user
+    @ssh_keys = @user.ssh_keys.where(active: true).order(created_at: :desc)
+  end
+
+  action_auth_level :create_ssh_key, :student
+  def create_ssh_key
+    user = User.find_by(id: params[:user_id] || params[:id])
+    if user.nil?
+      flash[:error] = "User not found"
+      redirect_to(users_path) && return
+    end
+
+    # Only staff (instructors/TAs) can manage SSH keys
+    unless user.staff? || current_user.administrator?
+      flash[:error] = "Permission denied: SSH key management is only available for course instructors and teaching assistants."
+      redirect_to(user_path(user)) && return
+    end
+
+    # Users can only manage their own SSH keys, or admins can manage any staff user's keys
+    if user != current_user && !current_user.administrator?
+      flash[:error] = "Permission denied: you can only manage your own SSH keys."
+      redirect_to(ssh_keys_user_path(user)) && return
+    end
+
+    @user = user
+    public_key = params[:public_key]&.strip
+
+    if public_key.blank?
+      flash[:error] = "SSH public key cannot be blank"
+      redirect_to(ssh_keys_user_path(@user)) && return
+    end
+
+    @ssh_key = @user.ssh_keys.build(public_key: public_key)
+
+    if @ssh_key.save
+      flash[:success] = "SSH key added successfully. You can now SSH into the system."
+      redirect_to(ssh_keys_user_path(@user))
+    else
+      flash[:error] = @ssh_key.errors.full_messages.join(", ")
+      redirect_to(ssh_keys_user_path(@user))
+    end
+  end
+
+  action_auth_level :destroy_ssh_key, :student
+  def destroy_ssh_key
+    user = User.find_by(id: params[:user_id] || params[:id])
+    if user.nil?
+      flash[:error] = "User not found"
+      redirect_to(users_path) && return
+    end
+
+    # Only staff (instructors/TAs) can manage SSH keys
+    unless user.staff? || current_user.administrator?
+      flash[:error] = "Permission denied: SSH key management is only available for course instructors and teaching assistants."
+      redirect_to(user_path(user)) && return
+    end
+
+    # Users can only manage their own SSH keys, or admins can manage any staff user's keys
+    if user != current_user && !current_user.administrator?
+      flash[:error] = "Permission denied: you can only manage your own SSH keys."
+      redirect_to(ssh_keys_user_path(user)) && return
+    end
+
+    @ssh_key = SshKey.find_by(id: params[:ssh_key_id])
+    if @ssh_key.nil? || @ssh_key.user != user
+      flash[:error] = "SSH key not found"
+      redirect_to(ssh_keys_user_path(user)) && return
+    end
+
+    if @ssh_key.destroy
+      flash[:success] = "SSH key removed successfully"
+    else
+      flash[:error] = "Failed to remove SSH key"
+    end
+
+    redirect_to(ssh_keys_user_path(user))
   end
 
 private

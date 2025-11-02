@@ -1,3 +1,5 @@
+require_relative "../../services/unix_group_manager"
+
 class Api::V1::CourseUserDataController < Api::V1::BaseApiController
 
   before_action -> {require_privilege :instructor_all}
@@ -35,6 +37,11 @@ class Api::V1::CourseUserDataController < Api::V1::BaseApiController
       raise ApiError.new("Creation failed: " + validation_errors_for(cud), :bad_request)
     end
 
+    # Create Unix user and add to course group if staff
+    if cud.instructor? || cud.course_assistant?
+      UnixGroupManager.update_course_staff_membership(@course, @user, is_staff: true)
+    end
+
     respond_with_hash format_cud_response(cud)
   end
 
@@ -47,12 +54,25 @@ class Api::V1::CourseUserDataController < Api::V1::BaseApiController
   def update
     cud = get_user_cud
 
+    # Track role changes for Unix group management
+    was_staff = cud.instructor? || cud.course_assistant?
+
     update_cud_auth_level(cud, params[:auth_level])
 
     # the first save call is for saving the auth_level update
     # the second update call updates and saves the other params
     if not (cud.save && cud.update(update_cud_params))
       raise ApiError.new("Update failed: " + validation_errors_for(cud), :bad_request)
+    end
+
+    # Update Unix group membership based on role changes
+    is_staff = cud.instructor? || cud.course_assistant?
+    if was_staff && !is_staff
+      # Removed from staff
+      UnixGroupManager.update_course_staff_membership(@course, @user, is_staff: false)
+    elsif !was_staff && is_staff
+      # Added to staff
+      UnixGroupManager.update_course_staff_membership(@course, @user, is_staff: true)
     end
 
     respond_with_hash format_cud_response(cud)
@@ -62,6 +82,11 @@ class Api::V1::CourseUserDataController < Api::V1::BaseApiController
   # the destroy route is a shortcut for dropping a student via an update
   def destroy
     cud = get_user_cud
+
+    # Remove from Unix group if staff
+    if cud.instructor? || cud.course_assistant?
+      UnixGroupManager.update_course_staff_membership(@course, @user, is_staff: false)
+    end
 
     if not cud.update(dropped: true)
       raise ApiError.new("Update failed: " + validation_errors_for(cud), :bad_request)

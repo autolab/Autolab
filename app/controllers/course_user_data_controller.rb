@@ -1,3 +1,5 @@
+require_relative "../services/unix_group_manager"
+
 class CourseUserDataController < ApplicationController
   before_action :set_manage_course_breadcrumb
   before_action :set_manage_course_users_breadcrumb, except: %i[sudo]
@@ -65,6 +67,10 @@ class CourseUserDataController < ApplicationController
     end
 
     if @newCUD.save
+      # Update Unix group membership if user is staff
+      if @newCUD.instructor? || @newCUD.course_assistant?
+        UnixGroupManager.update_course_staff_membership(@course, user, is_staff: true)
+      end
       flash[:success] = "Success: added user #{email} in #{@course.full_name}"
       if @cud.user.administrator?
         redirect_to([:users, @course]) && return
@@ -156,11 +162,27 @@ class CourseUserDataController < ApplicationController
       params[:course_user_datum][:tweak_attributes][:_destroy] = true
     end
 
+    # Track role changes for Unix group management
+    was_staff = @editCUD.instructor? || @editCUD.course_assistant?
+    was_dropped = @editCUD.dropped?
+
     if params[:course_user_datum][:dropped] == "1" && !@editCUD.dropped?
       flash[:notice] = "You have dropped #{@editCUD.email} from the course."
     end
     # When we're finished editing, go back to the user table
     if @editCUD.update(edit_cud_params)
+      # Update Unix group membership based on role changes
+      is_staff = @editCUD.instructor? || @editCUD.course_assistant?
+      is_dropped = @editCUD.dropped?
+
+      # Remove from group if: dropped, or no longer staff
+      # Add to group if: became staff and not dropped
+      if (was_staff && (is_dropped || !is_staff)) || (!is_dropped && was_dropped && !is_staff)
+        UnixGroupManager.update_course_staff_membership(@course, @editCUD.user, is_staff: false)
+      elsif is_staff && !is_dropped && !was_staff
+        UnixGroupManager.update_course_staff_membership(@course, @editCUD.user, is_staff: true)
+      end
+
       flash[:success] = "Success: Updated user #{@editCUD.email}"
       redirect_to(course_course_user_datum_path(@course, @editCUD)) && return
     else
