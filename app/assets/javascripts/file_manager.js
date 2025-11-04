@@ -203,60 +203,6 @@ function handleSelectionChange() {
     updateButtonStatesAndStyle(deleteBtn, deleteParent);
 }
 
-function changePermissions(path, permissions) {
-    // Validate permissions format
-    if (!/^[0-7]{3,4}$/.test(permissions)) {
-        alert("Invalid permission format. Please use 3-4 digit octal format (e.g., 755, 644)");
-        return;
-    }
-
-    let rel_path = decodeURIComponent(path.split("/file_manager/")[1]);
-    $.ajax({
-        url: "/file_manager/" + rel_path + "/chmod",
-        type: "PATCH",
-        data: {
-            path: rel_path,
-            permissions: permissions
-        },
-        success: function(data) {
-            console.log(`Changed permissions for: ${rel_path} to ${permissions}`);
-            location.reload();
-        },
-        error: function(xhr, status, error) {
-            console.error("Error changing permissions:", error);
-            alert("Error changing permissions: " + (xhr.responseJSON ? xhr.responseJSON.error : error));
-        }
-    });
-}
-
-// Add keyboard support for permissions input
-function setupPermissionsKeyboardSupport() {
-    document.querySelectorAll('.permissions-input').forEach(function(input) {
-        input.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                const filePath = this.getAttribute('data-file-path');
-                changePermissions(filePath, this.value);
-            }
-        });
-
-        // Real-time validation feedback
-        input.addEventListener('input', function(e) {
-            const value = this.value;
-            if (value && !/^[0-7]{0,4}$/.test(value)) {
-                this.style.borderColor = '#dc3545';
-                this.style.backgroundColor = '#ffe6e6';
-            } else if (value && /^[0-7]{3,4}$/.test(value)) {
-                this.style.borderColor = '#28a745';
-                this.style.backgroundColor = '#e6ffe6';
-            } else {
-                this.style.borderColor = '#ddd';
-                this.style.backgroundColor = '#f9f9f9';
-            }
-        });
-    });
-}
-
 document.addEventListener('DOMContentLoaded', function() {
     const otherCheckboxes = document.querySelectorAll('.check');
     handleSelectionChange();
@@ -272,7 +218,4 @@ document.addEventListener('DOMContentLoaded', function() {
     $(".check").click(function() {
         handleSelectionChange();
     });
-
-    // Setup permissions input keyboard support
-    setupPermissionsKeyboardSupport();
 });

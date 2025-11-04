@@ -89,54 +89,8 @@
     }
 }
 
-// Permissions input styling
-input[type=text].permissions-input {
-    width: 40px;
-    text-align: center;
+.permissions-display {
     font-family: monospace;
     font-size: 12px;
-    padding: 2px 4px;
-    border: 1px solid #ddd;
-    border-radius: 3px;
-    background-color: #f9f9f9;
-    &:focus {
-        outline: none;
-        border-color: #007bff;
-        background-color: white;
-    }
-    &:invalid {
-        border-color: #dc3545;
-        background-color: #ffe6e6;
-    }
-}
-
-.permissions-button {
-    padding: 2px 4px;
-    font-size: 12px;
-    border: none;
-    background-color: #28a745;
-    color: white;
-    border-radius: 3px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 10px;
-    height: 24px;
-    &:hover {
-        background-color: #218838;
-    }
-    &:active {
-        background-color: #1e7e34;
-    }
-    .material-icons {
-        font-size: 14px;
-    }
-}
-
-.permissions-container {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    // justify-content: center;
+    color: #333;
 }

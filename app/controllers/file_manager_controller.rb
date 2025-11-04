@@ -32,78 +32,15 @@ class FileManagerController < ApplicationController
       populate_directory(absolute_path, new_url)
       render 'file_manager/index'
     elsif File.file?(absolute_path) && check_instructor(absolute_path)
-      # Check if this is a tar file and extract parameter is present
-      if params[:extract] && is_tar_file?(absolute_path)
-        # Skip extraction if the tar file itself is an executable
-        if is_likely_executable?(absolute_path, File.basename(absolute_path))
-          flash[:error] = "Cannot extract tar files that are not directories"
-          redirect_to file_manager_index_path(path: File.dirname(path))
-          return
-        end
-
+      if params[:preview] && is_tar_file?(absolute_path)
         begin
-          parent_dir = File.dirname(absolute_path)
-          # Create subdirectory for extraction based on tar filename without extension
-          base_name = File.basename(absolute_path, '.*')
-          # Remove additional extensions for files like .tar.gz
-          base_name = base_name.gsub(/\.tar$/, '')
-          extract_dir = File.join(parent_dir, base_name)
-
-          # Ensure extract directory doesn't already exist to avoid conflicts
-          counter = 1
-          original_extract_dir = extract_dir
-          while File.exist?(extract_dir)
-            extract_dir = "#{original_extract_dir}_#{counter}"
-            counter += 1
-          end
-
-          # Create the extraction directory
-          FileUtils.mkdir_p(extract_dir)
-
-          # Validate tar file before attempting extraction
-          validate_tar_file(absolute_path)
-
-          # Handle different tar formats
-          if File.extname(absolute_path).downcase.in?(['.gz', '.tgz']) ||
-             absolute_path.to_s.downcase.end_with?('.tar.gz')
-            # Handle gzipped tar files
-            require 'zlib'
-            Zlib::GzipReader.open(absolute_path) do |gz|
-              tar_extract_method = Gem::Package::TarReader.new(gz)
-              extract_tar_entries(tar_extract_method, extract_dir)
-            end
-          else
-            # Handle regular tar files - ensure proper resource management
-            File.open(absolute_path, 'rb') do |file|
-              tar_extract_method = Gem::Package::TarReader.new(file)
-              extract_tar_entries(tar_extract_method, extract_dir)
-            end
-          end
-
-          flash[:success] =
-            "Successfully extracted #{File.basename(absolute_path)} to
-              #{File.basename(extract_dir)}/"
-          redirect_to file_manager_index_path(path: File.dirname(path))
-          nil
-        rescue Gem::Package::TarInvalidError => e
-          # Clean up partially extracted directory
-          FileUtils.rm_rf(extract_dir) if File.exist?(extract_dir)
-          flash[:error] =
-            "Corrupted tar file: #{e.message}. The file appears to be damaged or invalid."
-          redirect_to file_manager_index_path(path: File.dirname(path))
-          nil
-        rescue Zlib::GzipFile::Error => e
-          # Clean up partially extracted directory
-          FileUtils.rm_rf(extract_dir) if File.exist?(extract_dir)
-          flash[:error] = "Corrupted gzip archive: #{e.message}. The compressed file is damaged."
-          redirect_to file_manager_index_path(path: File.dirname(path))
-          nil
+          @tar_contents = list_tar_contents(absolute_path)
+          @path = path
+          @tar_file_name = File.basename(absolute_path)
+          render :tar_preview, formats: :html
         rescue StandardError => e
-          # Clean up partially extracted directory
-          FileUtils.rm_rf(extract_dir) if File.exist?(extract_dir)
-          flash[:error] = "Unable to extract tar file: #{e.message}"
+          flash[:error] = "Unable to read tar file: #{e.message}"
           redirect_to file_manager_index_path(path: File.dirname(path))
-          nil
         end
       elsif File.size(absolute_path) > 1_000_000 || params[:download]
         send_file absolute_path
@@ -174,57 +111,6 @@ class FileManagerController < ApplicationController
     flash[:error] = e.message
   end
 
-  def chmod
-    absolute_path = check_path_exist(params[:path])
-    if check_instructor(absolute_path)
-      if params[:permissions].nil? || params[:permissions].empty?
-        raise ArgumentError, "Permissions not provided"
-      end
-
-      # Validate permission format (should be 3-4 digit octal)
-      unless params[:permissions].match(/\A[0-7]{3,4}\Z/)
-        raise ArgumentError,
-              "Invalid permission format. Use 3-4 digit octal format (e.g., 755, 644)"
-      end
-
-      # Convert octal string to integer
-      permission_mode = params[:permissions].to_i(8)
-
-      # Validate permission range (0000 to 7777)
-      unless permission_mode.between?(0, 0o7777)
-        raise ArgumentError, "Permission value out of range"
-      end
-
-      # Apply the permission change
-      File.chmod(permission_mode, absolute_path)
-      flash[:success] = "Successfully changed permissions to #{params[:permissions]}"
-    else
-      flash[:error] = "You are not authorized to change permissions for this path"
-      redirect_to root_path
-    end
-  rescue ArgumentError => e
-    flash[:error] = e.message
-    respond_to do |format|
-      format.html { redirect_back(fallback_location: file_manager_index_path) }
-      format.json { render json: { error: e.message }, status: :bad_request }
-    end
-  rescue Errno::EPERM, Errno::EACCES => e
-    flash[:error] = "Permission denied: #{e.message}"
-    respond_to do |format|
-      format.html { redirect_back(fallback_location: file_manager_index_path) }
-      format.json { render json: { error: "Permission denied: #{e.message}" }, status: :forbidden }
-    end
-  rescue StandardError => e
-    flash[:error] = "Error changing permissions: #{e.message}"
-    respond_to do |format|
-      format.html { redirect_back(fallback_location: file_manager_index_path) }
-      format.json {
-        render json: { error: "Error changing permissions: #{e.message}" },
-               status: :internal_server_error
-      }
-    end
-  end
-
   def find_by_directory_path(absolute_path)
     # Normalize the path to ensure consistent comparison
     normalized_path = Pathname.new(absolute_path).cleanpath.to_s
@@ -266,9 +152,9 @@ class FileManagerController < ApplicationController
         add_directory_to_tar(tar, full_path, tar_path)
       elsif File.file?(full_path)
         # Add file entry
-        File.open(full_path, 'rb') do |_file|
+        File.open(full_path, 'rb') do |file|
           tar.add_file(tar_path, mode) do |tar_file|
-            tar_file.write(_file.read)
+            tar_file.write(file.read)
           end
         end
       elsif File.symlink?(full_path)
@@ -378,6 +264,55 @@ class FileManagerController < ApplicationController
     end
   end
 
+  def view_tar_file
+    tar_path = params[:tar_path]
+    file_path = params[:file_path]
+
+    absolute_tar_path = check_path_exist(tar_path)
+
+    unless check_instructor(absolute_tar_path)
+      flash[:error] = "You are not authorized to view this path"
+      redirect_to root_path
+      return
+    end
+
+    unless is_tar_file?(absolute_tar_path)
+      flash[:error] = "Not a valid tar file"
+      redirect_to file_manager_index_path(path: File.dirname(tar_path))
+      return
+    end
+
+    begin
+      file_content = extract_single_file_from_tar(absolute_tar_path, file_path)
+
+      if file_content.nil?
+        flash[:error] = "File not found in archive"
+        redirect_to file_manager_index_path(path: "#{tar_path}?preview=true")
+        return
+      end
+
+      is_binary = file_content.bytes.take(8192).any? { |byte|
+        byte.zero? || (byte < 32 && ![9, 10, 13].include?(byte))
+      }
+
+      if is_binary || file_content.bytesize > 1_000_000
+        send_data file_content,
+                  filename: File.basename(file_path),
+                  disposition: 'attachment'
+      else
+        @tar_path = tar_path
+        @file_path = file_path
+        @file = file_content.force_encoding('UTF-8')
+        @tar_file_name = File.basename(absolute_tar_path)
+        @file_name = file_path
+        render :tar_file_view, formats: :html
+      end
+    rescue StandardError => e
+      flash[:error] = "Unable to extract file: #{e.message}"
+      redirect_to file_manager_index_path(path: "#{tar_path}?preview=true")
+    end
+  end
+
 private
 
   def populate_directory(current_directory, current_url)
@@ -475,203 +410,111 @@ private
       extension == '.gz' && path.to_s.downcase.end_with?('.tar.gz')
   end
 
-  def extract_tar_entries(tar_reader, extract_dir)
-    tar_reader.rewind
-    tar_reader.each do |entry|
-      # Skip entries with invalid names or paths that try to escape the extraction directory
-      next if entry.full_name.include?('..')
-      next if entry.full_name.start_with?('/')
+  def list_tar_contents(file_path)
+    contents = []
 
-      # Handle entries that might be at the root level or in subdirectories
-      target_path = File.join(extract_dir, entry.full_name)
-
-      if entry.directory?
-        FileUtils.mkdir_p(target_path)
-      elsif entry.file?
-        # Ensure parent directory exists (especially important for files at root level)
-        parent_dir = File.dirname(target_path)
-        FileUtils.mkdir_p(parent_dir) unless parent_dir == extract_dir
-
-        # Properly read and write file data to prevent corruption
-        File.open(target_path, 'wb') do |f|
-          # Read in chunks to handle large files properly and detect corruption
-          bytes_written = 0
-          expected_size = entry.header.size
-
-          begin
-            while (chunk = entry.read(8192))
-              break if chunk.empty?
-
-              f.write(chunk)
-              bytes_written += chunk.length
-
-              # Safety check to prevent infinite loops with corrupted entries
-              if bytes_written > expected_size + 8192
-                raise "File size mismatch: expected #{expected_size}, got #{bytes_written}+"
-              end
-            end
-          rescue StandardError => e
-            # If reading fails, try to read the entire content at once as fallback
-            Rails.logger.warn "Chunked reading failed for #{entry.full_name}:
-              #{e.message}, trying full read"
-            begin
-              entry.rewind
-              content = entry.read
-              f.rewind
-              f.truncate(0)
-              f.write(content)
-              bytes_written = content.length
-            rescue StandardError => fallback_error
-              raise "Failed to extract #{entry.full_name}: #{fallback_error.message}"
-            end
-          end
-
-          # Verify file size matches expected size
-          if expected_size > 0 && bytes_written != expected_size
-            Rails.logger.warn "Size mismatch for #{entry.full_name}:
-              expected #{expected_size}, got #{bytes_written}"
-          end
-        end
-
-        # Handle file permissions, especially for executables
-        begin
-          mode = entry.header.mode
-          if mode.is_a?(Integer) && mode > 0 && mode < 0o777777
-            # Preserve original permissions
-            File.chmod(mode, target_path)
-          elsif is_likely_executable?(target_path, entry.full_name)
-            # Determine if this should be executable based on file characteristics
-            File.chmod(0o755, target_path)
-          # Set executable permissions (owner: rwx, group: rx, other: rx)
-          else
-            # Set default readable permissions for regular files
-            File.chmod(0o644, target_path)
-          end
-        rescue StandardError => e
-          # Log the error but continue extraction
-          Rails.logger.warn "Could not set permissions for #{target_path}: #{e.message}"
-
-          # Fallback: try to determine if it should be executable
-          if is_likely_executable?(target_path, entry.full_name)
-            begin
-              File.chmod(0o755, target_path)
-            rescue StandardError
-              File.chmod(0o644, target_path)
-            end
-          else
-            File.chmod(0o644, target_path)
-          end
-        end
-      elsif entry.symlink?
-        # Handle symbolic links if present
-        begin
-          File.symlink(entry.header.linkname, target_path)
-        rescue StandardError => e
-          Rails.logger.warn "Could not create symlink #{target_path}: #{e.message}"
-        end
-      end
-    end
-  end
-
-  def is_likely_executable?(file_path, original_name)
-    # Check file extension for common executable types
-    executable_extensions = ['.exe', '.bin', '.run', '.sh', '.bash', '.zsh', '.py', '.pl', '.rb',
-                             '.jar', '.out']
-    extension = File.extname(original_name).downcase
-    return true if executable_extensions.include?(extension)
-
-    # Check for common executable names without extensions
-    executable_names = ['makefile', 'dockerfile', 'configure', 'install', 'setup', 'build',
-                        'autograde']
-    base_name = File.basename(original_name).downcase
-    # return true if any executable names is in the base_name
-    return true if executable_names.any? { |name| base_name.include?(name) }
-
-    # Check if filename has no extension and is not a common non-executable file
-    if extension.empty? && !original_name.include?('.')
-      # Common non-executable files without extensions
-      non_executable_names = ['readme', 'license', 'changelog', 'authors', 'contributors', 'todo',
-                              'news']
-      return false if non_executable_names.include?(base_name)
-
-      # If it's not a known non-executable, assume it might be executable
-      return true
-    end
-
-    # Check file content for executable signatures (if file exists and is readable)
     begin
-      if File.exist?(file_path) && File.readable?(file_path) && File.size(file_path) > 0
-        # Read first few bytes to check for executable signatures
-        first_bytes = File.read(file_path, [File.size(file_path), 16].min)
-
-        # ELF executable (Linux/Unix)
-        return true if first_bytes.start_with?("\x7fELF")
-
-        # Mach-O executable (macOS) - multiple signatures
-        return true if first_bytes.start_with?("\xfe\xed\xfa\xce") # 32-bit
-        return true if first_bytes.start_with?("\xfe\xed\xfa\xcf") # 64-bit
-        return true if first_bytes.start_with?("\xcf\xfa\xed\xfe") # reverse byte order
-
-        # PE executable (Windows)
-        return true if first_bytes.start_with?("MZ")
-
-        # Script with shebang
-        return true if first_bytes.start_with?("#!")
-
-        # Java class files
-        return true if first_bytes.start_with?("\xca\xfe\xba\xbe")
-
-        # Archive files that might contain executables
-        return true if first_bytes.start_with?("PK") && extension.empty? # ZIP-based executable
-      end
-    rescue StandardError => e
-      # If we can't read the file, fall back to name-based detection
-      Rails.logger.debug "Could not read file for executable detection: #{e.message}"
-    end
-
-    false
-  end
-
-  # Validate tar file integrity before extraction
-  def validate_tar_file(file_path)
-    # Check if file is readable and has content
-    raise "Tar file is empty or unreadable" unless File.readable?(file_path) &&
-                                                   File.size(file_path) > 0
-
-    # Validate based on file extension
-    if File.extname(file_path).downcase.in?(['.gz', '.tgz']) ||
-       file_path.to_s.downcase.end_with?('.tar.gz')
-      # Validate gzipped tar file
-      begin
+      if File.extname(file_path).downcase.in?(['.gz', '.tgz']) ||
+         file_path.to_s.downcase.end_with?('.tar.gz')
         require 'zlib'
         Zlib::GzipReader.open(file_path) do |gz|
-          # Try to read the first tar header to validate format
           tar_reader = Gem::Package::TarReader.new(gz)
           tar_reader.rewind
-          # Just peek at the first entry to validate the format
-          first_entry = tar_reader.first
-          raise "Invalid tar format: no valid entries found" if first_entry.nil?
+          tar_reader.each do |entry|
+            next if entry.full_name.include?('..')
+            next if entry.full_name.start_with?('/')
+
+            mode_str = begin
+              sprintf('%o', entry.header.mode)
+            rescue StandardError
+              '-'
+            end
+
+            mtime_val = begin
+              entry.header.mtime
+            rescue StandardError
+              nil
+            end
+
+            contents << {
+              name: entry.full_name,
+              size: entry.header.size,
+              type: if entry.directory?
+                      'directory'
+                    else
+                      (entry.file? ? 'file' : 'other')
+                    end,
+              mode: mode_str,
+              mtime: mtime_val
+            }
+          end
         end
-      rescue Zlib::GzipFile::Error => e
-        raise "Corrupted gzip file: #{e.message}"
-      rescue Gem::Package::TarInvalidError => e
-        raise "Invalid tar format: #{e.message}"
-      end
-    else
-      # Validate regular tar file
-      begin
+      else
         File.open(file_path, 'rb') do |file|
           tar_reader = Gem::Package::TarReader.new(file)
           tar_reader.rewind
-          # Just peek at the first entry to validate the format
-          first_entry = tar_reader.first
-          raise "Invalid tar format: no valid entries found" if first_entry.nil?
+          tar_reader.each do |entry|
+            next if entry.full_name.include?('..')
+            next if entry.full_name.start_with?('/')
+
+            mode_str = begin
+              sprintf('%o', entry.header.mode)
+            rescue StandardError
+              '-'
+            end
+
+            mtime_val = begin
+              entry.header.mtime
+            rescue StandardError
+              nil
+            end
+
+            contents << {
+              name: entry.full_name,
+              size: entry.header.size,
+              type: if entry.directory?
+                      'directory'
+                    else
+                      (entry.file? ? 'file' : 'other')
+                    end,
+              mode: mode_str,
+              mtime: mtime_val
+            }
+          end
         end
-      rescue Gem::Package::TarInvalidError => e
-        raise "Invalid tar format: #{e.message}"
-      rescue StandardError => e
-        raise "Error reading tar file: #{e.message}"
+      end
+    rescue StandardError => e
+      raise "Error reading tar file: #{e.message}"
+    end
+
+    contents
+  end
+
+  def extract_single_file_from_tar(tar_path, file_path)
+    if File.extname(tar_path).downcase.in?(['.gz', '.tgz']) ||
+       tar_path.to_s.downcase.end_with?('.tar.gz')
+      require 'zlib'
+      Zlib::GzipReader.open(tar_path) do |gz|
+        tar_reader = Gem::Package::TarReader.new(gz)
+        tar_reader.rewind
+        tar_reader.each do |entry|
+          if entry.full_name == file_path && entry.file?
+            return entry.read
+          end
+        end
+      end
+    else
+      File.open(tar_path, 'rb') do |file|
+        tar_reader = Gem::Package::TarReader.new(file)
+        tar_reader.rewind
+        tar_reader.each do |entry|
+          if entry.full_name == file_path && entry.file?
+            return entry.read
+          end
+        end
       end
     end
+
+    nil
   end
 end

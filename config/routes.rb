@@ -72,6 +72,8 @@ Rails.application.routes.draw do
   get "device_flow_resolve", to: "device_flow_activation#resolve"
   get "device_flow_auth_cb", to: "device_flow_activation#authorization_callback"
 
+  get 'file_manager/view_tar_file', to: 'file_manager#view_tar_file', as: :view_tar_file
+  
   resources :file_manager, param: :path, path: 'file_manager', only: [:index] do
     collection do
       post 'upload', to: 'file_manager#upload'
@@ -81,7 +83,6 @@ Rails.application.routes.draw do
       put ':path', to: 'file_manager#rename', constraints: { path: /.+/ }, as: :rename
       post ':path', to: 'file_manager#upload', constraints: { path: /.+/ }, as: :upload_path
       delete ':path', to: 'file_manager#delete', constraints: { path: /.+/ }, as: :delete
-      patch ':path/chmod', to: 'file_manager#chmod', constraints: { path: /.+/ }, as: :chmod
     end
   end
 
