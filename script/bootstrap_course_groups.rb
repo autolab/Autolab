@@ -1,7 +1,8 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 #
-# Bootstrap Course Groups - Migrate existing courses to per-course Unix group model
+# Bootstrap Course Groups - Create Unix groups for courses
+# Note: Unix users are NOT created here - they are created on-demand when staff add SSH keys via web UI
 #
 # Usage:
 #   RAILS_ENV=production bin/rails runner script/bootstrap_course_groups.rb --dry-run
@@ -37,7 +38,9 @@ def dry?
   DRY_RUN
 end
 
-say "=== BOOTSTRAP: DB → Unix groups (#{dry? ? 'dry-run' : 'real'}) ==="
+say "=== BOOTSTRAP: Create Unix groups for courses (#{dry? ? 'dry-run' : 'real'}) ==="
+say "NOTE: Unix users are created on-demand when staff add SSH keys via web UI"
+say ""
 
 scope = Course.all
 scope = scope.where(name: ONLY_COURSE) if ONLY_COURSE
@@ -74,25 +77,22 @@ scope.find_each do |course|
 
     say "  - add #{cud.user.email} → #{username} to #{group_name}"
 
-    # Create user if needed
+    # Check if user exists (users are created on-demand when SSH key is added)
     if DRY_RUN
-      say "    [SYS] id -u #{username} >/dev/null 2>&1 || useradd -m -s /bin/bash -c \"#{cud.user.email}\" #{username}"
+      say "    [SYS] id -u #{username} >/dev/null 2>&1 && usermod -a -G #{group_name} #{username}"
+      say "    [NOTE] User will be created when they add their first SSH key via web UI"
     else
-      if UnixGroupManager.ensure_user(username, email: cud.user.email)
-        say "    ✓ User #{username} created/verified"
+      stdout, stderr, status = Open3.capture3("id", "-u", username)
+      if status.success?
+        # User exists - add to group
+        if UnixGroupManager.add_user_to_group(username, group_name)
+          say "    ✓ Added existing user #{username} to #{group_name}"
+        else
+          say "    ✗ Failed to add #{username} to #{group_name} - check logs"
+        end
       else
-        say "    ✗ Failed to create user #{username} - check logs"
-      end
-    end
-
-    # Add user to group
-    if DRY_RUN
-      say "    [SYS] usermod -a -G #{group_name} #{username}"
-    else
-      if UnixGroupManager.add_user_to_group(username, group_name)
-        say "    ✓ Added #{username} to #{group_name}"
-      else
-        say "    ✗ Failed to add #{username} to #{group_name} - check logs"
+        # User doesn't exist yet - that's expected
+        say "    ℹ User #{username} will be created when they add SSH key via web UI"
       end
     end
   end

@@ -247,32 +247,22 @@ class UnixGroupManager
     end
   end
 
-  # Create group for a course and ensure all staff are members
+  # Create group for a course (do not create users - users created on-demand when SSH key is added)
   def self.setup_course_group(course)
     group_name = safe_group_name(course.name)
     return false unless group_name
 
-    # Create the group
-    return false unless ensure_group(group_name)
+    # Create the group only (no users yet)
+    ensure_group(group_name)
 
-    # Get all instructors and TAs
-    staff_cuds = course.course_user_data.where(instructor: true)
-                       .or(course.course_user_data.where(course_assistant: true))
-
-    staff_cuds.find_each do |cud|
-      username = login_from_email(cud.user.email)
-      next unless username
-
-      # Ensure user exists
-      ensure_user(username, email: cud.user.email)
-      # Add user to group
-      add_user_to_group(username, group_name)
-    end
-
+    # Note: Users are NOT created here. They are created on-demand when:
+    # 1. User adds first SSH key via web UI
+    # 2. At that point, they are added to all course groups they're staff in
     true
   end
 
   # Update group membership when staff is added/removed
+  # Note: Does NOT create Unix user - users are created on-demand when SSH key is added
   def self.update_course_staff_membership(course, user, is_staff: true)
     group_name = safe_group_name(course.name)
     return false unless group_name
@@ -283,9 +273,13 @@ class UnixGroupManager
     username = login_from_email(user.email)
     return false unless username
 
+    # Check if user exists (only add to group if user already exists)
+    # User is created on-demand when first SSH key is added
+    stdout, stderr, status = Open3.capture3("id", "-u", username)
+    return true unless status.success? # User doesn't exist yet - that's ok, will be created with SSH key
+
     if is_staff
-      # Add user to group
-      ensure_user(username, email: user.email)
+      # Add existing user to group
       add_user_to_group(username, group_name)
     else
       # Remove user from group (but don't delete user)

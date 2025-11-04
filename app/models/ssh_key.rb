@@ -43,6 +43,7 @@ class SshKey < ApplicationRecord
   end
 
   # Provision the key to the user's authorized_keys file
+  # This is where Unix users are created - on-demand when first SSH key is added
   def provision_key
     return unless active
     return unless user
@@ -50,11 +51,22 @@ class SshKey < ApplicationRecord
     username = UnixGroupManager.login_from_email(user.email)
     return unless username
 
-    # Ensure user exists and has home directory set up
+    # This is where we create the Unix user - on-demand when SSH key is added
     # This may fail silently in development (e.g., on macOS)
     begin
+      # Create Unix user (if doesn't exist) - this is the ONLY place users are created
       UnixGroupManager.ensure_user(username, email: user.email)
+      
+      # Provision SSH key
       UnixGroupManager.provision_ssh_key(username, public_key, user.email)
+      
+      # Add user to all course groups they're staff in (now that user exists)
+      user.course_user_data.where(instructor: true)
+          .or(user.course_user_data.where(course_assistant: true))
+          .includes(:course).find_each do |cud|
+        course = cud.course
+        UnixGroupManager.update_course_staff_membership(course, user, is_staff: true)
+      end
     rescue StandardError => e
       # Log but don't fail - in development, Unix ops might not be available
       Rails.logger.warn("Could not provision SSH key for #{username}: #{e.message}")
