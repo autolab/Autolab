@@ -13,6 +13,7 @@ RSpec.describe FileManagerController, type: :controller do
       doc = Nokogiri::HTML(response.body)
       expect(doc).to have_selector("th", text: "Filename")
       expect(doc).to have_selector("th", text: "Bytes")
+      expect(doc).to have_selector("th", text: "Permissions")
       expect(doc).to have_selector("th", text: "Date")
       expect(doc).to have_selector("th", text: "Rename")
       expect(doc).to have_selector("th", text: "Delete")
