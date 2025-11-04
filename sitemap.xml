@@ -1,135 +1,135 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
-         <loc>https://docs.autolabproject.com/</loc>
+         <loc>http://localhost:8000/</loc>
          <lastmod>2025-11-04</lastmod>
     </url>
     <url>
-         <loc>https://docs.autolabproject.com/api-interface/</loc>
+         <loc>http://localhost:8000/api-interface/</loc>
          <lastmod>2025-11-04</lastmod>
     </url>
     <url>
-         <loc>https://docs.autolabproject.com/api-managing-authorized-apps/</loc>
+         <loc>http://localhost:8000/api-managing-authorized-apps/</loc>
          <lastmod>2025-11-04</lastmod>
     </url>
     <url>
-         <loc>https://docs.autolabproject.com/api-overview/</loc>
+         <loc>http://localhost:8000/api-overview/</loc>
          <lastmod>2025-11-04</lastmod>
     </url>
     <url>
-         <loc>https://docs.autolabproject.com/command-line-interface/</loc>
+         <loc>http://localhost:8000/command-line-interface/</loc>
          <lastmod>2025-11-04</lastmod>
     </url>
     <url>
-         <loc>https://docs.autolabproject.com/instructors/</loc>
+         <loc>http://localhost:8000/instructors/</loc>
          <lastmod>2025-11-04</lastmod>
     </url>
     <url>
-         <loc>https://docs.autolabproject.com/lab-hooks/</loc>
+         <loc>http://localhost:8000/lab-hooks/</loc>
          <lastmod>2025-11-04</lastmod>
     </url>
     <url>
-         <loc>https://docs.autolabproject.com/lab/</loc>
+         <loc>http://localhost:8000/lab/</loc>
          <lastmod>2025-11-04</lastmod>
     </url>
     <url>
-         <loc>https://docs.autolabproject.com/reference/</loc>
+         <loc>http://localhost:8000/reference/</loc>
          <lastmod>2025-11-04</lastmod>
     </url>
     <url>
-         <loc>https://docs.autolabproject.com/tango-cli/</loc>
+         <loc>http://localhost:8000/tango-cli/</loc>
          <lastmod>2025-11-04</lastmod>
     </url>
     <url>
-         <loc>https://docs.autolabproject.com/tango-rest/</loc>
+         <loc>http://localhost:8000/tango-rest/</loc>
          <lastmod>2025-11-04</lastmod>
     </url>
     <url>
-         <loc>https://docs.autolabproject.com/tango-vmms/</loc>
+         <loc>http://localhost:8000/tango-vmms/</loc>
          <lastmod>2025-11-04</lastmod>
     </url>
     <url>
-         <loc>https://docs.autolabproject.com/features/admin-features/</loc>
+         <loc>http://localhost:8000/features/admin-features/</loc>
          <lastmod>2025-11-04</lastmod>
     </url>
     <url>
-         <loc>https://docs.autolabproject.com/features/annotations/</loc>
+         <loc>http://localhost:8000/features/annotations/</loc>
          <lastmod>2025-11-04</lastmod>
     </url>
     <url>
-         <loc>https://docs.autolabproject.com/features/embedded-forms/</loc>
+         <loc>http://localhost:8000/features/embedded-forms/</loc>
          <lastmod>2025-11-04</lastmod>
     </url>
     <url>
-         <loc>https://docs.autolabproject.com/features/formatted-feedback/</loc>
+         <loc>http://localhost:8000/features/formatted-feedback/</loc>
          <lastmod>2025-11-04</lastmod>
     </url>
     <url>
-         <loc>https://docs.autolabproject.com/features/git-submission/</loc>
+         <loc>http://localhost:8000/features/git-submission/</loc>
          <lastmod>2025-11-04</lastmod>
     </url>
     <url>
-         <loc>https://docs.autolabproject.com/features/lti-course-integration/</loc>
+         <loc>http://localhost:8000/features/lti-course-integration/</loc>
          <lastmod>2025-11-04</lastmod>
     </url>
     <url>
-         <loc>https://docs.autolabproject.com/features/metrics/</loc>
+         <loc>http://localhost:8000/features/metrics/</loc>
          <lastmod>2025-11-04</lastmod>
     </url>
     <url>
-         <loc>https://docs.autolabproject.com/features/moss/</loc>
+         <loc>http://localhost:8000/features/moss/</loc>
          <lastmod>2025-11-04</lastmod>
     </url>
     <url>
-         <loc>https://docs.autolabproject.com/features/schedulers/</loc>
+         <loc>http://localhost:8000/features/schedulers/</loc>
          <lastmod>2025-11-04</lastmod>
     </url>
     <url>
-         <loc>https://docs.autolabproject.com/features/scoreboards/</loc>
+         <loc>http://localhost:8000/features/scoreboards/</loc>
          <lastmod>2025-11-04</lastmod>
     </url>
     <url>
-         <loc>https://docs.autolabproject.com/installation/aws/</loc>
+         <loc>http://localhost:8000/installation/aws/</loc>
          <lastmod>2025-11-04</lastmod>
     </url>
     <url>
-         <loc>https://docs.autolabproject.com/installation/docker-compose/</loc>
+         <loc>http://localhost:8000/installation/docker-compose/</loc>
          <lastmod>2025-11-04</lastmod>
     </url>
     <url>
-         <loc>https://docs.autolabproject.com/installation/github_integration/</loc>
+         <loc>http://localhost:8000/installation/github_integration/</loc>
          <lastmod>2025-11-04</lastmod>
     </url>
     <url>
-         <loc>https://docs.autolabproject.com/installation/lti_integration/</loc>
+         <loc>http://localhost:8000/installation/lti_integration/</loc>
          <lastmod>2025-11-04</lastmod>
     </url>
     <url>
-         <loc>https://docs.autolabproject.com/installation/mailing/</loc>
+         <loc>http://localhost:8000/installation/mailing/</loc>
          <lastmod>2025-11-04</lastmod>
     </url>
     <url>
-         <loc>https://docs.autolabproject.com/installation/osx/</loc>
+         <loc>http://localhost:8000/installation/osx/</loc>
          <lastmod>2025-11-04</lastmod>
     </url>
     <url>
-         <loc>https://docs.autolabproject.com/installation/overview/</loc>
+         <loc>http://localhost:8000/installation/overview/</loc>
          <lastmod>2025-11-04</lastmod>
     </url>
     <url>
-         <loc>https://docs.autolabproject.com/installation/tango-troubleshoot/</loc>
+         <loc>http://localhost:8000/installation/tango-troubleshoot/</loc>
          <lastmod>2025-11-04</lastmod>
     </url>
     <url>
-         <loc>https://docs.autolabproject.com/installation/tango/</loc>
+         <loc>http://localhost:8000/installation/tango/</loc>
          <lastmod>2025-11-04</lastmod>
     </url>
     <url>
-         <loc>https://docs.autolabproject.com/installation/troubleshoot/</loc>
+         <loc>http://localhost:8000/installation/troubleshoot/</loc>
          <lastmod>2025-11-04</lastmod>
     </url>
     <url>
-         <loc>https://docs.autolabproject.com/installation/ubuntu/</loc>
+         <loc>http://localhost:8000/installation/ubuntu/</loc>
          <lastmod>2025-11-04</lastmod>
     </url>
 </urlset>
