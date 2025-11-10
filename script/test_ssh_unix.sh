@@ -1,9 +1,11 @@
 #!/bin/bash
 # Quick testing script for SSH keys and Unix user/group management
-# Usage: ./script/test_ssh_unix.sh [container-name]
-# Default container name: autolab
+# Usage: ./script/test_ssh_unix.sh [autolab-container]
+# Environment:
+#   UNIX_OPS_HELPER_CONTAINER=unixops   # override helper container name
 
-CONTAINER_NAME="autolab"
+CONTAINER_NAME="${1:-autolab}"
+HELPER_CONTAINER="${UNIX_OPS_HELPER_CONTAINER:-unixops}"
 RAILS_CMD="cd /home/app/webapp && RAILS_ENV=production bundle exec"
 
 echo "========================================="
@@ -29,8 +31,8 @@ docker exec $CONTAINER_NAME bash -c "$RAILS_CMD rails runner 'puts ActiveRecord:
 echo ""
 
 # 3. Check system commands
-echo "3. Checking system commands..."
-docker exec $CONTAINER_NAME bash -c "which useradd && which groupadd && echo '✓ Unix commands available' || echo '✗ Unix commands unavailable'"
+echo "3. Checking Unix delegation..."
+docker exec $CONTAINER_NAME bash -c "$RAILS_CMD rails runner 'puts \"Delegate enabled: #{UnixGroupManager.delegate_enabled?}\"; puts \"Delegate URL: #{ENV[\"UNIX_OPS_DELEGATE_URL\"] || \"(not set)\"}'"
 echo ""
 
 # 4. Test UnixGroupManager
@@ -49,8 +51,12 @@ docker exec $CONTAINER_NAME bash -c "$RAILS_CMD rails runner 'course = Course.fi
 echo ""
 
 # 7. List Unix groups
-echo "7. Listing Unix groups (first 10)..."
-docker exec $CONTAINER_NAME bash -c "getent group | grep -E '^grp-|^[a-z0-9-]+:' | head -10 | cut -d: -f1 | sed 's/^/  - /'"
+echo "7. Listing Unix groups from helper (first 10)..."
+if docker ps --format '{{.Names}}' | grep -q "^${HELPER_CONTAINER}$"; then
+    docker exec $HELPER_CONTAINER bash -c "getent group | head -10 | cut -d: -f1 | sed 's/^/  - /'"
+else
+    echo "  ✗ Helper container '${HELPER_CONTAINER}' not found"
+fi
 echo ""
 
 # 8. List Unix users (staff)

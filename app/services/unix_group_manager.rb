@@ -1,6 +1,9 @@
 require "open3"
 require "fileutils"
 require "etc"
+require "net/http"
+require "uri"
+require "json"
 
 ##
 # UnixGroupManager - Manages Unix groups and users for course filesystem permissions
@@ -28,11 +31,85 @@ class UnixGroupManager
 
   # Check if we should skip Unix operations (e.g., development on macOS)
   def self.should_skip_operations?
+    return false if delegate_enabled?
     return true unless system_commands_available?
     return true if Rails.env.development? && !ENV["ENABLE_UNIX_OPS"]
     return false
   rescue StandardError
     true
+  end
+
+  def self.delegate_enabled?
+    url = ENV["UNIX_OPS_DELEGATE_URL"]
+    url && !url.strip.empty?
+  end
+
+  def self.delegate_secret
+    secret = ENV["UNIX_OPS_SHARED_SECRET"]
+    secret&.strip
+  end
+
+  def self.delegate_timeout
+    (ENV["UNIX_OPS_DELEGATE_TIMEOUT"] || 10).to_i
+  end
+
+  def self.call_delegate(action, payload = {})
+    return [false, {}] unless delegate_enabled?
+    begin
+      base_uri = URI.parse(ENV["UNIX_OPS_DELEGATE_URL"])
+      jobs_uri = base_uri.dup
+      if jobs_uri.path.nil? || jobs_uri.path.empty? || jobs_uri.path == "/"
+        jobs_uri.path = "/jobs"
+      end
+
+      request = Net::HTTP::Post.new(jobs_uri)
+      request["Content-Type"] = "application/json"
+      if delegate_secret && !delegate_secret.empty?
+        request["Authorization"] = "Bearer #{delegate_secret}"
+      end
+      request.body = JSON.dump(action: action, payload: payload)
+
+      http = Net::HTTP.new(jobs_uri.host, jobs_uri.port)
+      http.use_ssl = jobs_uri.scheme == "https"
+      http.open_timeout = delegate_timeout
+      http.read_timeout = delegate_timeout
+
+      response = http.request(request)
+      body = response.body.to_s
+      parsed = body.empty? ? {} : JSON.parse(body)
+      success = response.code.to_i.between?(200, 299) && parsed.fetch("success", true)
+      Rails.logger.warn("UnixGroupManager delegate #{action} failed: #{response.code} #{body}") unless success
+      [success, parsed]
+    rescue StandardError => e
+      Rails.logger.warn("UnixGroupManager delegate #{action} error: #{e.message}")
+      [false, {}]
+    end
+  end
+
+  def self.delegate_action(action, payload = {})
+    success, _parsed = call_delegate(action, payload)
+    success
+  end
+
+  def self.delegate_query(action, payload = {})
+    success, parsed = call_delegate(action, payload)
+    return nil unless success
+    parsed["data"]
+  end
+
+  def self.user_exists?(username)
+    return false if username.nil? || username.empty?
+
+    if delegate_enabled?
+      data = delegate_query("user_exists", username: username)
+      return data["value"] if data.is_a?(Hash) && data.key?("value")
+      return data == true
+    end
+
+    stdout, _stderr, status = Open3.capture3("id", "-u", username)
+    status.success?
+  rescue StandardError
+    false
   end
   # Extract a safe Unix group name from course name
   def self.safe_group_name(course_name)
@@ -66,6 +143,9 @@ class UnixGroupManager
   # Ensure a Unix group exists, creating it if necessary
   def self.ensure_group(group_name)
     return false if group_name.nil? || group_name.empty?
+    if delegate_enabled?
+      return delegate_action("ensure_group", group_name: group_name)
+    end
     return true if should_skip_operations? # Skip on non-Linux systems
 
     begin
@@ -91,6 +171,9 @@ class UnixGroupManager
   # Remove a Unix group if it exists and has no members (optional: force delete)
   def self.remove_group(group_name, force: false)
     return false if group_name.nil? || group_name.empty?
+    if delegate_enabled?
+      return delegate_action("remove_group", group_name: group_name, force: force)
+    end
 
     # Check if group exists
     stdout, stderr, status = Open3.capture3("getent", "group", group_name)
@@ -129,6 +212,9 @@ class UnixGroupManager
   # Ensure a Unix user exists, creating it if necessary
   def self.ensure_user(username, email: nil)
     return false if username.nil? || username.empty?
+    if delegate_enabled?
+      return delegate_action("ensure_user", username: username, email: email)
+    end
     return true if should_skip_operations? # Skip on non-Linux systems
 
     begin
@@ -169,6 +255,9 @@ class UnixGroupManager
   # Set up user's home directory with .ssh directory and proper permissions
   def self.setup_user_home(username)
     return false if username.nil? || username.empty?
+    if delegate_enabled?
+      return delegate_action("setup_user_home", username: username)
+    end
     return true if should_skip_operations? # Skip on non-Linux systems
 
     begin
@@ -213,6 +302,9 @@ class UnixGroupManager
   def self.add_user_to_group(username, group_name)
     return false if username.nil? || group_name.nil?
     return false if username.empty? || group_name.empty?
+    if delegate_enabled?
+      return delegate_action("add_user_to_group", username: username, group_name: group_name)
+    end
 
     # Check if user is already in group
     stdout, stderr, status = Open3.capture3("id", "-nG", username)
@@ -235,6 +327,9 @@ class UnixGroupManager
   def self.remove_user_from_group(username, group_name)
     return false if username.nil? || group_name.nil?
     return false if username.empty? || group_name.empty?
+    if delegate_enabled?
+      return delegate_action("remove_user_from_group", username: username, group_name: group_name)
+    end
 
     # Remove user from group using gpasswd
     stdout, stderr, status = Open3.capture3("gpasswd", "-d", username, group_name)
@@ -275,8 +370,7 @@ class UnixGroupManager
 
     # Check if user exists (only add to group if user already exists)
     # User is created on-demand when first SSH key is added
-    stdout, stderr, status = Open3.capture3("id", "-u", username)
-    return true unless status.success? # User doesn't exist yet - that's ok, will be created with SSH key
+    return true unless user_exists?(username) # User doesn't exist yet - that's ok
 
     if is_staff
       # Add existing user to group
@@ -292,6 +386,9 @@ class UnixGroupManager
   # Provision SSH public key to user's authorized_keys file
   def self.provision_ssh_key(username, public_key, email: nil)
     return false if username.nil? || username.empty? || public_key.nil? || public_key.empty?
+    if delegate_enabled?
+      return delegate_action("provision_ssh_key", username: username, public_key: public_key, email: email)
+    end
     
     # In development or when system commands aren't available, just log and succeed
     if should_skip_operations?
@@ -340,6 +437,9 @@ class UnixGroupManager
   # Remove SSH key from authorized_keys by fingerprint
   def self.deprovision_ssh_key(username, fingerprint)
     return false if username.nil? || username.empty? || fingerprint.nil? || fingerprint.empty?
+    if delegate_enabled?
+      return delegate_action("deprovision_ssh_key", username: username, fingerprint: fingerprint)
+    end
 
     # Get home directory
     stdout, stderr, status = Open3.capture3("getent", "passwd", username)
@@ -389,6 +489,9 @@ class UnixGroupManager
   # Provision multiple SSH keys (replaces all keys)
   def self.provision_ssh_keys(username, public_keys, email: nil)
     return false if username.nil? || username.empty?
+    if delegate_enabled?
+      return delegate_action("provision_ssh_keys", username: username, public_keys: public_keys, email: email)
+    end
 
     # Ensure user exists and home is set up
     ensure_user(username, email: email)
@@ -424,6 +527,9 @@ class UnixGroupManager
   # Delete a Unix user (removes home directory and all data)
   def self.delete_user(username, remove_home: true)
     return false if username.nil? || username.empty?
+    if delegate_enabled?
+      return delegate_action("delete_user", username: username, remove_home: remove_home)
+    end
 
     # Check if user exists
     stdout, stderr, status = Open3.capture3("id", "-u", username)

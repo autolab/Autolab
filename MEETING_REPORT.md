@@ -173,32 +173,46 @@ We've successfully implemented a comprehensive file system permission and SSH ke
 
 ### Configuration
 
-To ensure Unix users/groups are created on the **HOST** (not container), bind mount host system files:
+Unix operations now run in a dedicated sidecar (`unixops`) so the main Rails container stays unprivileged. Example `docker-compose.yml` excerpt:
 
 ```yaml
 services:
   autolab:
-    volumes:
-      # ... existing volumes ...
-      
-      # Bind mount host system files so operations affect HOST
-      - /etc/passwd:/etc/passwd:ro          # Host user database
-      - /etc/group:/etc/group:rw            # Host group database
-      - /etc/shadow:/etc/shadow:ro          # Host password file
-      - /etc/gshadow:/etc/gshadow:rw        # Host group shadow
-      - /home:/home:rw                      # Host home directories
-      
+    environment:
+      - UNIX_OPS_DELEGATE_URL=http://unixops:4000
+      - UNIX_OPS_SHARED_SECRET=${UNIX_OPS_SHARED_SECRET?err}
+
+  unixops:
+    build: ./Autolab
+    command: bundle exec ruby script/unix_ops_daemon.rb
+    environment:
+      - RAILS_ENV=production
+      - UNIX_OPS_SHARED_SECRET=${UNIX_OPS_SHARED_SECRET?err}
+    user: "0:0"
     cap_add:
-      - SYS_ADMIN
+      - CHOWN
+      - DAC_OVERRIDE
+      - FOWNER
+      - SETGID
+      - SETUID
+    volumes:
+      - ./Autolab:/home/app/webapp                      # access to Rails codebase
+      - /etc/passwd:/etc/passwd:rw                      # host user database
+      - /etc/group:/etc/group:rw                        # host group database
+      - /etc/shadow:/etc/shadow:rw                      # host password hashes
+      - /etc/gshadow:/etc/gshadow:rw                    # host group shadow
+      - /home:/home:rw                                  # host home directories
 ```
 
 ### How It Works
 
-**Bind mounts share the same inodes** between host and container:
-- When container runs `useradd`, it modifies host's `/etc/passwd` (via bind mount)
-- When container runs `File.chown`, it modifies host's inode (via bind mount)
-- Permission changes **persist** on host even after container stops
-- Users/groups exist on **host** where files and SSH are
+**Bind mounts on the `unixops` sidecar** expose real host inodes to the daemon:
+- When the daemon runs `useradd`, it edits the host's `/etc/passwd`
+- When it updates permissions with `File.chown`, the host inode changes immediately
+- SSH keys written to `/home/<user>/.ssh/authorized_keys` live on the host
+- The Rails container delegates work via `UNIX_OPS_DELEGATE_URL` → `unixops` handles it
+
+Because bind mounts share inodes, changes survive container restarts and remain on the host.
 
 ### Verification
 
@@ -209,6 +223,9 @@ After setup, verify users/groups exist on **HOST**:
 id haoyuy              # Should work - user exists on host
 getent group 15-122    # Should work - group exists on host
 ls -la /home/haoyuy/   # Should show home directory on host
+
+# Check helper health (inside docker network)
+curl -sf http://unixops:4000/health
 ```
 
 ---
@@ -239,7 +256,8 @@ ls -la /home/haoyuy/   # Should show home directory on host
 ✅ **Group Isolation**: Instructors only access courses they're staff in  
 ✅ **File Permissions**: Enforced via Unix groups and setgid bit  
 ✅ **On-Demand Users**: No unused Unix accounts  
-✅ **Cross-Platform Safe**: Gracefully handles macOS development
+✅ **Cross-Platform Safe**: Gracefully handles macOS development  
+✅ **Delegated Unix Ops**: Web container remains unprivileged; helper handles root actions
 
 ---
 
@@ -289,6 +307,7 @@ ls -lad /home/autolab/Autolab/courses/15-122/
 - `script/setup_host_system_user.sh`
 - `script/create_host_instructor_users.sh`
 - `script/test_ssh_unix.sh`
+- `script/unix_ops_daemon.rb`
 
 ### Modified Files
 - `app/models/user.rb` (added `has_many :ssh_keys`, `staff?`, `course_assistant?`)
@@ -322,17 +341,34 @@ ls -lad /home/autolab/Autolab/courses/15-122/
    chown -R autolab:autolab /home/autolab/Autolab
    ```
 
-3. ✅ Configure `docker-compose.yml` with bind mounts
+3. ✅ Enable Unix ops delegation in `docker-compose.yml`
    ```yaml
-   volumes:
-     # ... existing volumes ...
-     - /etc/passwd:/etc/passwd:ro
-     - /etc/group:/etc/group:rw
-     - /etc/shadow:/etc/shadow:ro
-     - /etc/gshadow:/etc/gshadow:rw
-     - /home:/home:rw
-   cap_add:
-     - SYS_ADMIN
+   services:
+     autolab:
+       environment:
+         - UNIX_OPS_DELEGATE_URL=http://unixops:4000
+         - UNIX_OPS_SHARED_SECRET=${UNIX_OPS_SHARED_SECRET?err}
+
+     unixops:
+       build: ./Autolab
+       command: bundle exec ruby script/unix_ops_daemon.rb
+       environment:
+         - RAILS_ENV=production
+         - UNIX_OPS_SHARED_SECRET=${UNIX_OPS_SHARED_SECRET?err}
+       user: "0:0"
+       cap_add:
+         - CHOWN
+         - DAC_OVERRIDE
+         - FOWNER
+         - SETGID
+         - SETUID
+       volumes:
+         - ./Autolab:/home/app/webapp
+         - /etc/passwd:/etc/passwd:rw
+         - /etc/group:/etc/group:rw
+         - /etc/shadow:/etc/shadow:rw
+         - /etc/gshadow:/etc/gshadow:rw
+         - /home:/home:rw
    ```
 
 4. ✅ Run migrations
