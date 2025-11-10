@@ -279,13 +279,13 @@ class UnixGroupManager
       # Get user info - handle case where user might not exist yet
       begin
         user_info = Etc.getpwnam(username)
-        File.chown(nil, user_info.uid, ssh_dir)
+        File.chown(user_info.uid, user_info.gid, ssh_dir)
 
         # Create authorized_keys file if it doesn't exist (600)
         authorized_keys = File.join(ssh_dir, "authorized_keys")
         FileUtils.touch(authorized_keys) unless File.exist?(authorized_keys)
         File.chmod(0o600, authorized_keys)
-        File.chown(nil, user_info.uid, authorized_keys)
+        File.chown(user_info.uid, user_info.gid, authorized_keys)
       rescue ArgumentError
         # User doesn't exist in passwd - that's ok, skip ownership changes
         Rails.logger.warn("User #{username} not found in passwd, skipping ownership changes")
@@ -423,8 +423,8 @@ class UnixGroupManager
         f.puts key_line
       end
       File.chmod(0o600, authorized_keys)
-      uid = Etc.getpwnam(username).uid
-      File.chown(nil, uid, authorized_keys)
+      user_info = Etc.getpwnam(username)
+      File.chown(user_info.uid, user_info.gid, authorized_keys)
       Rails.logger.info("Added SSH key for #{username}")
     end
 
@@ -476,8 +476,8 @@ class UnixGroupManager
       filtered_keys.each { |key| f.puts key }
     end
     File.chmod(0o600, authorized_keys)
-    uid = Etc.getpwnam(username).uid
-    File.chown(nil, uid, authorized_keys)
+    user_info = Etc.getpwnam(username)
+    File.chown(user_info.uid, user_info.gid, authorized_keys)
 
     Rails.logger.info("Removed SSH key for #{username}")
     true
@@ -514,8 +514,8 @@ class UnixGroupManager
       end
     end
     File.chmod(0o600, authorized_keys)
-    uid = Etc.getpwnam(username).uid
-    File.chown(nil, uid, authorized_keys)
+    user_info = Etc.getpwnam(username)
+    File.chown(user_info.uid, user_info.gid, authorized_keys)
 
     Rails.logger.info("Provisioned #{public_keys.length} SSH keys for #{username}")
     true
