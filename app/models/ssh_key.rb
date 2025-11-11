@@ -58,7 +58,7 @@ class SshKey < ApplicationRecord
       UnixGroupManager.ensure_user(username, email: user.email)
       
       # Provision SSH key
-      UnixGroupManager.provision_ssh_key(username, public_key, user.email)
+      UnixGroupManager.provision_ssh_key(username, public_key, email: user.email)
       
       # Add user to all course groups they're staff in (now that user exists)
       user.course_user_data.where(instructor: true)
@@ -87,7 +87,7 @@ class SshKey < ApplicationRecord
     remaining_keys = user.ssh_keys.where(active: true).where.not(id: id)
     if remaining_keys.any?
       keys_data = remaining_keys.pluck(:public_key)
-      UnixGroupManager.provision_ssh_keys(username, keys_data, user.email)
+      UnixGroupManager.provision_ssh_keys(username, keys_data, email: user.email)
     end
   end
 
@@ -103,7 +103,7 @@ class SshKey < ApplicationRecord
 
     active_keys = where(user: user, active: true)
     keys_data = active_keys.pluck(:public_key)
-    UnixGroupManager.provision_ssh_keys(username, keys_data, user.email)
+    UnixGroupManager.provision_ssh_keys(username, keys_data, email: user.email)
   end
 
 private
