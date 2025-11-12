@@ -111,6 +111,27 @@ class UnixGroupManager
   rescue StandardError
     false
   end
+
+  def self.ensure_courses_symlink(home_dir)
+    target = "/home/autolab/autolab-docker/Autolab/courses"
+    return unless Dir.exist?(target)
+
+    link_path = File.join(home_dir, "courses")
+    begin
+      if File.symlink?(link_path)
+        current_target = File.readlink(link_path) rescue nil
+        return if current_target == target
+        File.delete(link_path)
+      elsif File.exist?(link_path)
+        # Avoid overwriting an existing directory/file
+        return
+      end
+
+      File.symlink(target, link_path)
+    rescue StandardError => e
+      Rails.logger.warn("Failed to create courses symlink at #{link_path}: #{e.message}")
+    end
+  end
   # Extract a safe Unix group name from course name
   def self.safe_group_name(course_name)
     return nil if course_name.nil? || course_name.empty?
@@ -290,6 +311,8 @@ class UnixGroupManager
         # User doesn't exist in passwd - that's ok, skip ownership changes
         Rails.logger.warn("User #{username} not found in passwd, skipping ownership changes")
       end
+
+      ensure_courses_symlink(home_dir)
 
       true
     rescue StandardError => e

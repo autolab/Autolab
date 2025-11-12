@@ -25,9 +25,11 @@
       <p>If you don’t already have an SSH key, run these commands on your computer:</p>
       <pre style="margin-bottom: 0;">
 ssh-keygen -t ed25519 -C "<%= @user.email %>"
-cat ~/.ssh/id_ed25519.pub
+# or, if you prefer RSA (longer key):
+ssh-keygen -t rsa -b 4096 -C "<%= @user.email %>"
+cat ~/.ssh/id_ed25519.pub   # or cat ~/.ssh/id_rsa.pub
       </pre>
-      <p>Copy the output of the second command and paste it into the form below.</p>
+      <p>Copy the output of the last command and paste it into the form below.</p>
     </div>
   <% end %>
 <% end %>

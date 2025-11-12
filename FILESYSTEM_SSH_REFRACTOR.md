@@ -70,6 +70,7 @@ services:
     environment:
       - UNIX_OPS_DELEGATE_URL=http://unixops:4000
       - UNIX_OPS_SHARED_SECRET=${UNIX_OPS_SHARED_SECRET?err}
+      - HOST_COURSES_PATH=/home/autolab/autolab-docker/Autolab/courses
       # ... existing env vars ...
     volumes:
       # Specific sub-directory mounts (database.yml, courses/, etc.) as before
@@ -78,11 +79,13 @@ services:
       - ./nginx/no-ssl-app.conf:/etc/nginx/sites-enabled/webapp.conf
 
   unixops:
+    container_name: unixops
     build: ./Autolab
     command: bundle exec ruby script/unix_ops_daemon.rb -p 4000
     environment:
       - RAILS_ENV=production
       - UNIX_OPS_SHARED_SECRET=${UNIX_OPS_SHARED_SECRET?err}
+      - HOST_COURSES_PATH=/home/autolab/autolab-docker/Autolab/courses
     user: "0:0"
     privileged: true
     cap_add:
@@ -162,6 +165,8 @@ docker compose exec autolab bash -lc \
 getent group 15-122
 id haoyuy
 cat /home/haoyuy/.ssh/authorized_keys
+ls -lad /home/haoyuy/courses
+ls -lad /home/haoyuy/courses/15-122
 ssh haoyuy@<host-ip>
 ```
 
@@ -209,7 +214,7 @@ ssh haoyuy@<host-ip>
 
 ## 8. Known Behaviors & Notes
 
-- **Instructor landing directory**: Instructors log in to their home (`/home/<user>`). They must navigate to `/home/autolab/.../courses/<course>`; this is expected given our centralized course storage.
+- **Instructor landing directory**: Instructors log in to their home (`/home/<user>`). A symlink `~/courses → /home/autolab/autolab-docker/Autolab/courses` is created automatically, so `cd ~/courses/<course>` takes them straight to their course materials.
 - **Development mode**: Without `ENABLE_UNIX_OPS`, provisioning is skipped; logs warn but key still persists in DB.
 - **MacOS / non-Linux dev**: operations short-circuit gracefully.
 - **Security**: The helper runs privileged—limit access to trusted networks, and log/audit operations.
