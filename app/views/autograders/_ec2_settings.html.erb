@@ -52,6 +52,14 @@
   ]
 %>
 
+<%
+  selected_instance_type = @autograder.instance_type
+  valid_instance_types = ec2_instance_options.flat_map { |_group, instances| instances.map(&:last) }
+  if selected_instance_type.present? && !valid_instance_types.include?(selected_instance_type)
+    raise ArgumentError, "Invalid EC2 instance type: #{selected_instance_type}"
+  end
+%>
+
 <div style="margin-bottom: 5px;"><strong>EC2 Instance Type</strong></div>
 
 <%= f.select :instance_type,
