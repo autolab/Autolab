@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2025_10_21_034813) do
+ActiveRecord::Schema.define(version: 2025_11_02_150304) do
 
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "name", null: false
@@ -151,8 +151,6 @@ ActiveRecord::Schema.define(version: 2025_10_21_034813) do
     t.boolean "release_score"
     t.string "instance_type", default: ""
     t.boolean "use_access_key", default: false
-    t.string "ami", default: ""
-    t.string "security_group", default: ""
     t.text "access_key_ciphertext"
     t.text "access_key_id_ciphertext"
   end
@@ -365,6 +363,20 @@ ActiveRecord::Schema.define(version: 2025_10_21_034813) do
     t.index ["submission_id"], name: "index_scores_on_submission_id"
   end
 
+  create_table "ssh_keys", id: :integer, charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.integer "user_id", null: false
+    t.text "public_key", null: false
+    t.string "comment"
+    t.string "key_type"
+    t.string "fingerprint"
+    t.boolean "active", default: true, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["active"], name: "index_ssh_keys_on_active"
+    t.index ["fingerprint"], name: "index_ssh_keys_on_fingerprint", unique: true
+    t.index ["user_id"], name: "index_ssh_keys_on_user_id"
+  end
+
   create_table "submissions", id: :integer, charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.integer "version"
     t.integer "course_user_datum_id"
@@ -450,4 +462,5 @@ ActiveRecord::Schema.define(version: 2025_10_21_034813) do
   add_foreign_key "oauth_access_grants", "oauth_applications", column: "application_id"
   add_foreign_key "oauth_access_tokens", "oauth_applications", column: "application_id"
   add_foreign_key "oauth_device_flow_requests", "oauth_applications", column: "application_id"
+  add_foreign_key "ssh_keys", "users"
 end
