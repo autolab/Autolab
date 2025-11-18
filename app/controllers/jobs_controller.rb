@@ -247,15 +247,12 @@ protected
                     else
                       "Running"
                     end
-    else
-      # For testing that changes in Tango still always result in one of the 2 known termination states
-      if rjob["trace"][-1].include?("Autodriver returned normally")
+    elsif rjob["trace"][-1].include?("Autodriver returned normally")
         job[:state] = "Succeeded"
-      elsif rjob["trace"][-1].split("|")[1].include? "Error"
-        job[:state] = "Failed"
-      else
-        job[:state] = "Unknown State"
-      end
+    elsif rjob["trace"][-1].split("|")[1].include? "Error"
+      job[:state] = "Failed"
+    else
+      job[:state] = "Unknown State"
     end
 
     job
