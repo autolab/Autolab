@@ -39,7 +39,8 @@ class SubmissionsController < ApplicationController
         length = params[:length].to_i
         search_value = params.dig(:search, :value)
         order_column_index = params.dig(:order, '0', :column).to_i
-        order_direction = params.dig(:order, '0', :dir) || 'desc'
+        direction_param = params.dig(:order, '0', :dir).to_s.downcase
+        order_direction = %w[asc desc].include?(direction_param) ? direction_param : 'desc'
 
         columns_map = {
           1 => 'users.email',
