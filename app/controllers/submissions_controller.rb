@@ -17,29 +17,124 @@ class SubmissionsController < ApplicationController
 
   action_auth_level :index, :instructor
   def index
-    # cache ids instead of entire entries
-    submission_ids = Rails.cache.fetch(["submission_ids", @assessment.id], expires_in: 1.day) do
-      @assessment.submissions.order("created_at DESC").pluck(:id)
-    end
-    @submissions = Submission.where(id: submission_ids).includes({ course_user_datum: :user })
     @autograded = @assessment.has_autograder?
+    @problems = @assessment.problems.to_a
+    @excused_cids = AssessmentUserDatum
+                    .where(assessment_id: @assessment.id, grade_type: AssessmentUserDatum::EXCUSED)
+                    .pluck(:course_user_datum_id)
 
-    @submissions_to_cud =
-      Rails.cache.fetch(["submissions_to_cud", @assessment.id], expires_in: 1.day) do
-        submissions_to_cud = {}
-        @submissions.each do |submission|
-          submissions_to_cud[submission.id] = submission.course_user_datum_id
-        end
-        submissions_to_cud.to_json
+    respond_to do |format|
+      format.html do
+        @submissions = @assessment.submissions
+                                  .includes(course_user_datum: :user)
+                                  .order(created_at: :desc)
+                                  .limit(100)
+
+        @submissions_to_cud = @submissions.pluck(:id, :course_user_datum_id).to_h
       end
 
-    @excused_cids = []
-    excused_students = AssessmentUserDatum.where(
-      assessment_id: @assessment.id,
-      grade_type: AssessmentUserDatum::EXCUSED
-    )
-    @excused_cids = excused_students.pluck(:course_user_datum_id)
-    @problems = @assessment.problems.to_a
+      format.json do
+        draw = params[:draw].to_i
+        start = params[:start].to_i
+        length = params[:length].to_i
+        search_value = params.dig(:search, :value)
+        order_column_index = params.dig(:order, '0', :column).to_i
+        direction_param = params.dig(:order, '0', :dir).to_s.downcase
+        order_direction = %w[asc desc].include?(direction_param) ? direction_param : 'desc'
+
+        columns_map = {
+          1 => 'users.email',
+          2 => 'submissions.version',
+          3 => 'calculated_score',
+          4 => 'submissions.created_at',
+        }
+
+        order_column = columns_map[order_column_index] || 'submissions.created_at'
+
+        base_query = @assessment.submissions
+                                .joins(course_user_datum: :user)
+
+        if search_value.present?
+          base_query = base_query.where(
+            "users.email LIKE :search",
+            search: "%#{search_value}%"
+          )
+        end
+
+        total_records = @assessment.submissions.count
+        filtered_records = base_query.count
+
+        # If sorting by score, we have to load the data into ruby b/c we don't stored
+        # final scores in our database
+        if order_column == 'calculated_score'
+          all_submissions = base_query.includes(course_user_datum: :user).to_a
+          submissions_with_scores = all_submissions.map do |submission|
+            cud = submission.course_user_datum
+            [submission, submission.final_score(cud)]
+          end
+          sorted_submissions = submissions_with_scores.sort_by { |_, score| score }
+          sorted_submissions.reverse! if order_direction == 'desc'
+          paginated_submissions = sorted_submissions[start, length] || []
+
+          data = paginated_submissions.map do |submission, score|
+            format_submission_for_datatable(submission, score)
+          end
+        else
+          submissions = base_query
+                        .includes(course_user_datum: :user)
+                        .order("#{order_column} #{order_direction}")
+                        .limit(length)
+                        .offset(start)
+
+          data = submissions.map do |submission|
+            cud = submission.course_user_datum
+            score = submission.final_score(cud)
+            format_submission_for_datatable(submission, score)
+          end
+        end
+
+        render json: {
+          draw:,
+          recordsTotal: total_records,
+          recordsFiltered: filtered_records,
+          data:,
+        }
+      end
+    end
+  end
+
+  action_auth_level :format_submission_for_datatable, :instructor
+  def format_submission_for_datatable(submission, score = nil)
+    cud = submission.course_user_datum
+    user = cud.user
+    excused = @excused_cids.include?(cud.id)
+    score ||= submission.final_score(cud)
+    [
+      '',
+      {
+        name: [user.first_name, user.last_name].reject(&:blank?).join(' '),
+        email: user.email,
+        excused:,
+        cud_id: cud.id
+      },
+      submission.version,
+      {
+        score: computed_score { score },
+        email: user.email,
+        cud_id: cud.id
+      },
+      submission.created_at.in_time_zone.to_s,
+      {
+        has_file: submission.filename.present?,
+        submission_id: submission.id
+      },
+      {
+        submission_id: submission.id,
+        is_autograded: @autograded
+      },
+      submission.id,
+      cud.id
+    ]
   end
 
   action_auth_level :score_details, :instructor

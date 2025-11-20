@@ -11,7 +11,10 @@ const buttonIDs = ['#regrade-selected', '#delete-selected', '#download-selected'
 let tweaks = [];
 let currentPage = 0;
 $(document).ready(function() {
-  var submission_info = {}
+  var submission_info = {};
+  var selectedStudentCids = [];
+  var selectedSubmissions = [];
+  var submissions_to_cud = {}; // Build dynamically from server data
   const EditTweakButton = (totalSum) => {
     if (totalSum == null) {
       return `
@@ -70,7 +73,7 @@ $(document).ready(function() {
   $(document).ready(function () {
     $('.modal').modal();
 
-    $('.score-details').on('click', function () {
+    $(document).on('click', '.score-details', function () {
       // Get the email
       const course_user_datum_id = $(this).data('cuid');
       const email = $(this).data('email');
@@ -229,47 +232,93 @@ $(document).ready(function() {
       });
     });
 
-    var selectedStudentCids = [];
-    var selectedSubmissions = [];
-
+    // Initialize DataTable with server-side processing
     var table = $('#submissions').DataTable({
-      'dom': 'f<"selected-buttons">rtip', // show buttons, search, table
-      'paging': true,
-      'createdRow': completeRow,
-      'sPaginationType': 'full_numbers',
-      'pageLength': 100,
-      'info': true,
-      'deferRender': true,
+      dom: 'f<"selected-buttons">rtip',
+      processing: true,
+      serverSide: true,
+      ajax: {
+        url: window.location.pathname + '.json',
+        type: 'GET',
+        dataSrc: function (json) {
+          json.data.forEach(row => {
+            submissions_to_cud[row[7]] = row[8];
+          });
+          return json.data;
+        },
+        error: function (xhr, error, code) {
+          console.error('DataTables error:', error, code);
+        }
+      },
+      columns: [
+        {
+          data: null, orderable: false, className: 'submissions-td submissions-checkbox',
+          render: function (data, type, row, meta) {
+            return `<div><label class="submissions-cbox-label"><input class="cbox" type="checkbox" id="cbox-${row[7]}"><span></span></label></div>`;
+          }
+        },
+        {
+          data: 1, className: 'submissions-td',
+          render: function (data, type, row, meta) {
+            var excusedLabel = data.excused ? '<a class="submissions-excused-label" title="Click to unexcuse this student">EXCUSED</a>' : '';
+            return `<div class="submissions-name">${data.name || ''}${excusedLabel}</div>${data.email}`;
+          }
+        },
+        {data: 2, className: 'submissions-td'},
+        {
+          data: 3, className: 'submissions-td',
+          render: function (data, type, row, meta) {
+            var score = data.score != null ? data.score : '-';
+            return `<div class="submissions-score-align"><div class="score-num">${score}</div><div class="score-icon"><a class="modal-trigger score-details" data-email="${data.email}" data-cuid="${data.cud_id}"><i class="material-icons submissions-score-icon">zoom_in</i></a></div></div>`;
+          }
+        },
+        {data: 4, className: 'submissions-td', render: d => `<span class="moment-date-time">${d}</span>`},
+        {
+          data: 5,
+          orderable: false,
+          className: 'submissions-td',
+          render: d => d.has_file ? `<div class="submissions-center-icons"><a href="submissions/${d.submission_id}/view" title="View the file for this submission" class="btn small"><i class='material-icons'>zoom_in</i></a><p>View File</p></div>` : 'None'
+        },
+        {
+          data: 6, orderable: false, className: 'submissions-td exclude-click', render: function (data, row) {
+            var regradeBtn = data.is_autograded ? `<div class="submissions-center-icons"><a href="regradeBatch?submission_ids[]=${data.submission_id}" data-method="post" title="Regrade this submission" class="btn small"><i class='material-icons'>autorenew</i></a><p>Regrade</p></div>` : '';
+            return `${regradeBtn}<div class="submissions-center-icons"><a href="submissions/${data.submission_id}/destroyConfirm" title="Destroy this submission forever" class="btn small"><i class='material-icons'>delete_outline</i></a><p>Delete</p></div>`;
+          }
+        },
+        {data: 7, visible: false},
+        {data: 8, visible: false}
+      ],
+      pageLength: 100,
+      lengthMenu: [[25, 50, 100, 200], [25, 50, 100, 200]],
+      order: [[4, 'desc']],
+      createdRow: function (row, data) {
+        var submissionId = data[7];
+        $(row).attr('id', 'row-' + submissionId).attr('data-submission-id', submissionId).addClass('submission-row');
+      },
+      drawCallback: function () {
+        $('#submissions tbody .cbox').each(function () {
+          var submissionId = parseInt($(this).attr('id').replace('cbox-', ''), 10);
+          $(this).prop('checked', selectedSubmissions.includes(submissionId));
+          if (selectedSubmissions.includes(submissionId)) $(this).closest('tr').addClass('selected');
+        });
+        updateSelectAllCheckbox();
+      }
     });
 
-    // Check if the table is empty
-    if (table.data().count() === 0) {
-      $('#submissions').closest('.dataTables_wrapper').hide(); // Hide the table and its controls
-      $('#no-data-message').show(); // Optionally show a custom message
-    } else {
-      $('#no-data-message').hide(); // Hide custom message when there is data
-    }
-
-    function completeRow(row, data, index) {
-      var submission = additional_data[index];
-      $(row).attr('data-submission-id', submission['submission-id']);
-    }
-
-    $('thead').on('click', function(e) {
-      if (currentPage < 0) {
-        currentPage = 0
-      }
-      if (currentPage > table.page.info().pages) {
-        currentPage = table.page.info().pages - 1
-      }
-      table.page(currentPage).draw(false);
-    })
 
     // Listen for select-all checkbox click
     $('#cbox-select-all').on('click', async function(e) {
       var selectAll = $(this).is(':checked');
       await toggleAllRows(selectAll);
     });
+
+    function updateSelectAllCheckbox() {
+      var allChecked = true, anyChecked = false;
+      $('#submissions tbody .cbox').each(function () {
+        if ($(this).prop('checked')) anyChecked = true; else allChecked = false;
+      });
+      $('#cbox-select-all').prop('checked', allChecked && anyChecked);
+    }
 
     // Function to toggle all checkboxes
     function toggleAllRows(selectAll) {
@@ -396,7 +445,6 @@ $(document).ready(function() {
             return;
           }
           $(document).off("click", id).on("click", id, function (event) {
-            console.log(`${id} button clicked`);
             event.preventDefault();
             if (selectedSubmissions.length === 0) {
               alert("No submissions selected.");
