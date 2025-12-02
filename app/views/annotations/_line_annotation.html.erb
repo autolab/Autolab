@@ -1,0 +1,25 @@
+<div class="descript" id="li-annotation-<%= annotation.id %>">
+  <%= link_to(
+        url_for([:view, @course, @assessment, @submission, { header_position: annotation.position.nil? ? 0 : annotation.position, line: annotation.line.nil? ? 1 : annotation.line + 1 }]),
+        class: 'descript-link',
+        "data-header_position": annotation.position.nil? ? 0 : annotation.position,
+        "data-line": annotation.line.nil? ? 1 : annotation.line + 1,
+        remote: true,
+      ) do %>
+      <div class="annotation-badge">
+        <span class="point_badge <%= if annotation.value > 0
+                                       "positive"
+                                     else
+                                       annotation.value < 0 ? "negative" : "neutral"
+                                     end %>">
+          <% unless annotation.line.nil? %>
+            <span class="line_number">Line <%= annotation.line + 1 %>:</span>
+          <% end %>
+          <%= plus_fix(annotation.value) %>
+        </span>
+      </div>
+      <div class="annotation-description">
+        <span><%= annotation.comment %></span>
+      </div>
+  <% end %>
+</div>

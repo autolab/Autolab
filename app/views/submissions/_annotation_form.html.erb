@@ -38,11 +38,22 @@
         </div>
 
         <div class="input-field col s6 no-padding-bottom">
-          <select class="browser-default problem-id">
+          <select class="browser-default problem-id" id="annotation-problem-id" name="annotation[problem_id]">
           </select>
         </div>
       <% end %>
     </div>
+
+    <% unless global %>
+      <div class="row rubric-item-row">
+        <div class="input-field col s12 no-padding-bottom">
+          <select class="browser-default rubric-item-id" id="annotation-rubric-item-id" name="annotation[rubric_item_id]">
+            <option value="">-- Select a problem first --</option>
+          </select>
+          <small class="helper-text">Optionally associate this annotation with a rubric item</small>
+        </div>
+      </div>
+    <% end %>
 
     <div class="row">
       <div class="input-field col s12 no-padding-bottom">

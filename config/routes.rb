@@ -155,7 +155,12 @@ Rails.application.routes.draw do
 
         post "import", on: :collection
       end
-      resources :problems, except: [:index, :show]
+      # resources :problems, except: [:index, :show]
+      resources :problems, except: [:index, :show] do
+        resources :rubric_items, except: [:index, :show] do
+          patch :toggle_assignment, on: :member
+        end
+      end
       resource :scoreboard, except: [:new]
       resources :submissions, except: [:show] do
         resources :annotations, only: [:create, :update, :destroy] do
@@ -166,6 +171,10 @@ Rails.application.routes.draw do
 
         resources :scores, only: [:create, :show, :update]
 
+        resources :rubric_items do
+          post :toggle, on: :member
+        end
+
         member do
           get "destroyConfirm"
           get "download"
@@ -173,6 +182,7 @@ Rails.application.routes.draw do
           post "release_student_grade"
           post "unrelease_student_grade"
           get "tweak_total"
+          get "rubric_items"
         end
 
         collection do

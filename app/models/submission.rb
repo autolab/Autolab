@@ -18,6 +18,11 @@ class Submission < ApplicationRecord
   accepts_nested_attributes_for :tweak, allow_destroy: true
   has_one :assessment_user_datum, foreign_key: "latest_submission_id"
 
+  has_many :rubric_item_assignments, dependent: :destroy
+  has_many :assigned_rubric_items, -> { where(rubric_item_assignments: { assigned: true }) },
+           through: :rubric_item_assignments,
+           source: :rubric_item
+
   validate :allowed?, on: :create
   validates_associated :assessment
   validate :user_and_assessment_in_same_course

@@ -27,13 +27,13 @@ $(window).on('resize', function () {
 function getSharedCommentsForProblem(problem_id) {
   return localCache['shared_comments'][problem_id]?.map(
     (annotation) => {
-      return {label: annotation.comment ?? annotation, value: annotation}
+      return { label: annotation.comment ?? annotation, value: annotation }
     }
   )
 }
 
 const selectAnnotation = box => (e, ui) => {
-  const {label, value} = ui.item;
+  const { label, value } = ui.item;
 
   const score = value.value ?? 0;
   box.find('#comment-score').val(score);
@@ -44,7 +44,7 @@ const selectAnnotation = box => (e, ui) => {
   return false;
 }
 
-function focusAnnotation( event, ui ) {
+function focusAnnotation(event, ui) {
   $(this).val(ui.item.label);
   return false;
 }
@@ -191,7 +191,7 @@ function plusFix(n) {
 function fillAnnotationBox() {
   retrieveSharedComments();
   $('#loadScreen').css('display', 'flex');
-  $.get(document.URL, function(data) {
+  $.get(document.URL, function (data) {
     const $page = $('<div />').html(data);
     $('.problemGrades').html($page.find('.problemGrades'));
     $('#annotationPane').html($page.find(' #annotationPane'));
@@ -382,7 +382,7 @@ function attachEvents() {
       $('.code-table').scrollTo($annotationLine.children().last(), { duration: "fast" });
       refreshAnnotations();
     } else {
-      M.toast({html: 'Only one annotation can be created per line at a time!'});
+      M.toast({ html: 'Only one annotation can be created per line at a time!' });
     }
   });
 }
@@ -461,7 +461,7 @@ function attachAnnotationPaneEvents() {
   });
 
   // Chevron events (collapse / show problem)
-  $('.collapsible-header-controls .collapse-icon, .collapsible-header-controls .expand-icon').on('click', function(e) {
+  $('.collapsible-header-controls .collapse-icon, .collapsible-header-controls .expand-icon').on('click', function (e) {
     e.preventDefault();
     if ($('#loadScreen').css('display') === 'flex') return;
     $(e.target).closest(".collapsible-header-wrap").find(".collapsible-header").click();
@@ -545,23 +545,31 @@ function newAnnotationFormCode() {
     problemGraderId[score.problem_id] = score.grader_id;
   });
 
+  // Clear any existing options from the problem dropdown
+  var $problemSelect = box.find('select.problem-id');
+  $problemSelect.empty();
+
+  // Add a default select option
+  $problemSelect.append($('<option value="">-- Select Problem --</option>'));
+
+  // Add problems to the dropdown
   var processStarred = false;
   _.each(problems, function (problem) {
     if (problemGraderId[problem.id] !== 0) { // Because grader == 0 is autograder
-      if(problem.starred && !processStarred){
-        box.find('select').append(
-            $('<option disabled></option>').text('Starred Problems')
+      if (problem.starred && !processStarred) {
+        box.find('select.problem-id').append(
+          $('<option disabled></option>').text('Starred Problems')
         );
-        processStarred=true;
+        processStarred = true;
       }
-      if(!problem.starred && processStarred){
-        box.find('select').append(
-            $('<option disabled></option>').text('-------------------')
+      if (!problem.starred && processStarred) {
+        box.find('select.problem-id').append(
+          $('<option disabled></option>').text('-------------------')
         );
-        processStarred=false;
+        processStarred = false;
       }
-      box.find("select").append(
-          $("<option />").val(problem.id).text(problem.name)
+      box.find("select.problem-id").append(
+        $("<option />").val(problem.id).text(problem.name)
       );
     }
   });
@@ -571,13 +579,14 @@ function newAnnotationFormCode() {
     e.preventDefault();
     $(this).parents(".annotation-form").parent().remove();
     refreshAnnotations();
-  })
+  });
 
+  // Setup autocomplete for the comment field
   box.find('#comment-textarea').autocomplete({
     appendTo: box.find('#comment-textarea').parent(),
-    source: getSharedCommentsForProblem(box.find("select").val()) || [],
     minLength: 0,
     delay: 0,
+    source: getSharedCommentsForProblem(box.find("select.problem-id").val()) || [],
     select: selectAnnotation(box),
     focus: focusAnnotation
   }).focus(function () {
@@ -585,16 +594,65 @@ function newAnnotationFormCode() {
     $(this).autocomplete('search', $(this).val())
   });
 
-  box.tooltip();
+  // Handle problem selection change - update rubric items dropdown
+  box.find("select.problem-id").on('change', function () {
+    var problem_id = $(this).val();
+    var $rubricSelect = box.find('select.rubric-item-id');
+    var $rubricContainer = $rubricSelect.closest('.row');
 
-  box.find("select").on('change', function () {
-    const problem_id = $(this).val();
+    // Clear existing options
+    $rubricSelect.empty();
 
-    // Update autocomplete to display shared comments for selected problem
-    box.find("#comment-textarea").autocomplete({
-        source: getSharedCommentsForProblem(problem_id) || []
+    // If no problem selected, hide the rubric dropdown
+    if (!problem_id) {
+      $rubricContainer.hide();
+      return;
+    }
+
+    // Check if selected problem has any rubric items
+    var rubricItems = rubricItemsByProblem[problem_id] || [];
+    if (rubricItems.length === 0) {
+      // No rubric items for this problem, hide the dropdown
+      $rubricContainer.hide();
+      return;
+    }
+
+    // Problem has rubric items, show the dropdown
+    $rubricContainer.show();
+    $rubricSelect.prop('disabled', false);
+
+    // Add "No Rubric" option
+    $rubricSelect.append($('<option value="">-- No Rubric Item --</option>'));
+
+    // Add rubric items for the selected problem
+    rubricItems.forEach(function (item) {
+      $rubricSelect.append(
+        $('<option />')
+          .val(item.id)
+          .text(item.description + " (" + plusFix(item.points) + " points)")
+      );
+    });
+
+    // Update autocomplete for the selected problem
+    box.find('#comment-textarea').autocomplete({
+      source: getSharedCommentsForProblem(problem_id) || [],
     });
   });
+
+  // Initial state: hide rubric items dropdown until a problem with rubric items is selected
+  box.find('select.rubric-item-id').closest('.row').hide();
+
+  // Setup event for rubric item selection
+  box.find('.rubric-item-id').on('change', function () {
+    const selectedRubricId = $(this).val();
+    if (selectedRubricId) {
+      const problem_id = box.find('select.problem-id').val();
+      const rubricItems = rubricItemsByProblem[problem_id] || [];
+      const rubricItem = rubricItems.find(function (item) { return item.id == selectedRubricId; });
+    }
+  });
+
+  box.tooltip();
 
   box.find('.annotation-form').submit(function (e) {
     e.preventDefault();
@@ -602,6 +660,7 @@ function newAnnotationFormCode() {
     var shared_comment = $(this).find("#shared-comment").is(":checked");
     var score = $(this).find(".score").val();
     var problem_id = $(this).find(".problem-id").val();
+    var rubric_item_id = $(this).find(".rubric-item-id").val() || null;
     var line = $(this).parent().parent().data("lineId");
 
     if (comment === undefined || comment === "") {
@@ -622,8 +681,7 @@ function newAnnotationFormCode() {
       return;
     }
 
-
-    submitNewAnnotation(comment, shared_comment, false, score, problem_id, line, $(this));
+    submitNewAnnotation(comment, shared_comment, false, score, problem_id, line, $(this), rubric_item_id);
   });
 
   return box;
@@ -723,20 +781,20 @@ function initializeBoxForm(box, annotation) {
   var processStarred = false;
   _.each(problems, function (problem) {
     if (problemGraderId[problem.id] !== 0) { // Because grader == 0 is autograder
-      if(problem.starred && !processStarred){
+      if (problem.starred && !processStarred) {
         box.find('select').append(
-            $('<option disabled></option>').text('Starred Problems')
+          $('<option disabled></option>').text('Starred Problems')
         );
-        processStarred=true;
+        processStarred = true;
       }
-      if(!problem.starred && processStarred){
+      if (!problem.starred && processStarred) {
         box.find('select').append(
-            $('<option disabled></option>').text('-------------------')
+          $('<option disabled></option>').text('-------------------')
         );
-        processStarred=false;
+        processStarred = false;
       }
       box.find("select").append(
-          $("<option />").val(problem.id).text(problem.name)
+        $("<option />").val(problem.id).text(problem.name)
       );
     }
   });
@@ -815,7 +873,7 @@ function newAnnotationBox(annotation) {
     e.preventDefault();
     box.find('.annotation-box').hide();
     box.find('.annotation-form').show().css('width', '100%');
-    
+
     M.textareaAutoResize(box.find('#comment-textarea'));
 
     box.find('#comment-textarea').autocomplete({
@@ -830,7 +888,7 @@ function newAnnotationBox(annotation) {
       $(this).autocomplete('search', $(this).val())
     });
     box.tooltip();
-    
+
     refreshAnnotations();
   });
 
@@ -839,7 +897,7 @@ function newAnnotationBox(annotation) {
 
     // Update autocomplete to display shared comments for selected problem
     box.find("#comment-textarea").autocomplete({
-        source: getSharedCommentsForProblem(problem_id) || [],
+      source: getSharedCommentsForProblem(problem_id) || [],
     });
   });
 
@@ -1318,9 +1376,18 @@ var submitNewPDFAnnotation = function (comment, value, problem_id, pageInd, xRat
 }
 
 /* sets up and calls $.ajax to submit an annotation */
-var submitNewAnnotation = function (comment, shared_comment, global_comment, value, problem_id, lineInd, form) {
+var submitNewAnnotation = function (comment, shared_comment, global_comment, value, problem_id, lineInd, form, rubric_item_id) {
   var newAnnotation = createAnnotation();
-  Object.assign(newAnnotation, { line: parseInt(lineInd), comment, value, problem_id, filename: fileNameStr, shared_comment, global_comment });
+  Object.assign(newAnnotation, {
+    line: parseInt(lineInd),
+    comment,
+    value,
+    problem_id,
+    filename: fileNameStr,
+    shared_comment,
+    global_comment,
+    rubric_item_id  // Add this parameter
+  });
 
   if (comment === undefined || comment === "") {
     $(form).find('.error').text("Could not save annotation. Please refresh the page and try again.").show();
