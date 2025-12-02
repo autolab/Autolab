@@ -74,3 +74,21 @@ table.prettyBorder tr:hover {
 .i-no-margin {
   margin-left: 0;
 }
+
+.loading-icon {
+  animation: spin 1.5s linear infinite;
+  display: inline-block;
+}
+
+.disabled-link {
+  pointer-events: none;
+  color: gray !important;
+  opacity: 0.6;
+  text-decoration: none;
+  cursor: default;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
