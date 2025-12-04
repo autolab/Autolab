@@ -128,6 +128,18 @@ Rails.application.routes.draw do
       post "uploadDockerImage"
     end
 
+    resources :ami_images, only: [:index, :new, :edit] do
+      member do
+        get "new_package"
+        post "add_package"
+        post "delete_package"
+      end
+
+      collection do
+        post "create_ami"
+      end
+    end
+
     resources :jobs, only: :index do
       get "getjob", on: :member
 
@@ -283,6 +295,10 @@ Rails.application.routes.draw do
     get "get_repositories"
     get "get_branches"
     get "get_commits"
+  end
+
+  resource :package, only: [] do
+    get "search"
   end
 
   get "/404", to: "home#error_404"

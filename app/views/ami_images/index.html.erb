@@ -1,0 +1,32 @@
+<% @title = "Manage AMI Images" %>
+
+<h4>Manage AMI Images</h4>
+
+<%= link_to 'New AMI Image', new_course_ami_image_path(@course), { class: "btn" } %>
+<table class="prettyBorder">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+  <% if @ami_images.empty? %>
+    <tr>
+      <td colspan="2">There are currently no AMI images</td>
+    </tr>
+  <% else %>
+    <% @ami_images.each do |image| %>
+      <tr>
+        <td><%= image.name %></td>
+        <td>
+          <%= link_to "<i class='material-icons'>edit</i>".html_safe, edit_course_ami_image_path(@course, image.id),
+                      { title: "View this AMI image", class: "btn" } %>
+        </td>
+      </tr>
+    <% end %>
+  <% end %>
+  </tbody>
+</table>
+
+<br>
