@@ -156,33 +156,45 @@ class Course < ApplicationRecord
           Rails.logger.error("Current process: uid=#{Process.uid}, euid=#{Process.euid}, gid=#{Process.gid}, egid=#{Process.egid}")
         end
       rescue ArgumentError => e
-        # Group doesn't exist - try to create it now as a fallback
-        Rails.logger.warn("Group #{group_name} does not exist. Attempting to create it...")
-        if UnixGroupManager.ensure_group(group_name)
-          # Wait a moment and verify it was created
-          sleep(0.1) # Brief pause to let system catch up
+        # Group doesn't exist in container's namespace
+        # If using delegate, the group was created on host - use chgrp command
+        if UnixGroupManager.delegate_enabled?
+          Rails.logger.info("Group #{group_name} not in container namespace, but delegate enabled. Using chgrp command to set group on host filesystem.")
           begin
-            group_info = Etc.getgrnam(group_name)
-            gid = group_info.gid
-            File.chown(nil, gid, dir_path.to_s)
-            Rails.logger.info("Created group #{group_name} (gid #{gid}) and set it on #{dir_path}")
-          rescue ArgumentError => e2
-            Rails.logger.error("Group #{group_name} still does not exist after ensure_group returned true. Error: #{e2.message}")
-            Rails.logger.error("Unix operations may be skipped (should_skip_operations?=#{UnixGroupManager.should_skip_operations?})")
-            # Fall back to default group or log warning
-            default_group = ENV.fetch("COURSE_FS_GROUP", "autolab")
-            begin
-              default_gid = Etc.getgrnam(default_group).gid
-              File.chown(nil, default_gid, dir_path.to_s)
-              Rails.logger.warn("Using fallback group #{default_group} for #{dir_path}")
-            rescue StandardError
-              Rails.logger.error("Could not set any group on #{dir_path}. Permissions will be incorrect.")
+            require "open3"
+            stdout, stderr, status = Open3.capture3("chgrp", group_name, dir_path.to_s)
+            if status.success?
+              Rails.logger.info("Successfully set group #{group_name} on #{dir_path} via chgrp")
+            else
+              Rails.logger.error("Failed to chgrp #{group_name} on #{dir_path}: #{stderr}")
+              # Try to create group again via delegate
+              if UnixGroupManager.ensure_group(group_name)
+                sleep(0.2) # Wait for group creation
+                stdout2, stderr2, status2 = Open3.capture3("chgrp", group_name, dir_path.to_s)
+                if status2.success?
+                  Rails.logger.info("Successfully set group #{group_name} after re-creating")
+                else
+                  Rails.logger.error("Still failed after re-creating group: #{stderr2}")
+                end
+              end
             end
           rescue StandardError => e2
-            Rails.logger.error("Error setting group after creation: #{e2.message}")
+            Rails.logger.error("Error running chgrp: #{e2.message}")
           end
         else
-          Rails.logger.error("Failed to create group #{group_name}. ensure_group returned false.")
+          # Not using delegate - try to create group locally
+          Rails.logger.warn("Group #{group_name} does not exist. Attempting to create it...")
+          if UnixGroupManager.ensure_group(group_name)
+            sleep(0.1) # Brief pause to let system catch up
+            begin
+              group_info = Etc.getgrnam(group_name)
+              gid = group_info.gid
+              File.chown(nil, gid, dir_path.to_s)
+              Rails.logger.info("Created group #{group_name} (gid #{gid}) and set it on #{dir_path}")
+            rescue ArgumentError => e2
+              Rails.logger.error("Group #{group_name} still does not exist after ensure_group returned true. Error: #{e2.message}")
+            end
+          end
         end
       rescue StandardError => e
         Rails.logger.error("Could not set group #{group_name} on #{dir_path}: #{e.message} (#{e.class})")
@@ -466,14 +478,24 @@ class Course < ApplicationRecord
     # Ensure group is created
     success = UnixGroupManager.ensure_group(group_name)
     
-    # Verify the group actually exists (even if ensure_group returned true)
-    begin
-      Etc.getgrnam(group_name)
-      Rails.logger.info("Verified Unix group #{group_name} exists for course #{name}")
-    rescue ArgumentError => e
-      # Group doesn't exist - this is a problem
-      Rails.logger.error("Unix group #{group_name} does not exist for course #{name} even though ensure_group returned #{success}. Error: #{e.message}")
-      Rails.logger.error("This will cause permission issues. Check if Unix operations are being skipped (should_skip_operations?=#{UnixGroupManager.should_skip_operations?})")
+    if UnixGroupManager.delegate_enabled?
+      # When using delegate, trust the response - verification happens on host side
+      if success
+        Rails.logger.info("Unix group #{group_name} creation delegated for course #{name}")
+      else
+        Rails.logger.error("Failed to create Unix group #{group_name} via delegate for course #{name}")
+      end
+    else
+      # When not using delegate, verify the group exists locally
+      begin
+        Etc.getgrnam(group_name)
+        Rails.logger.info("Verified Unix group #{group_name} exists for course #{name}")
+      rescue ArgumentError => e
+        # Group doesn't exist - this is a problem
+        Rails.logger.error("Unix group #{group_name} does not exist for course #{name} even though ensure_group returned #{success}. Error: #{e.message}")
+        Rails.logger.error("This will cause permission issues. Check if Unix operations are being skipped (should_skip_operations?=#{UnixGroupManager.should_skip_operations?})")
+        Rails.logger.error("If using Docker, ensure UNIX_OPS_DELEGATE_URL is set to delegate operations to host")
+      end
     end
   end
 
