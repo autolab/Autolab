@@ -38,19 +38,17 @@ class FilesystemEnforcer
     begin
       mode = File.directory?(path) ? MODE_DIR : MODE_FILE
       # Skip symlinks to avoid lchmod issues on some platforms
-      if File.symlink?(path)
-        next
-      end
-      
-      # When using delegate, use delegate chmod (runs on host with proper privileges)
-      # The Rails container might not have permission to chmod files owned by root
-      if UnixGroupManager.delegate_enabled?
-        unless UnixGroupManager.chmod_path(path, mode)
-          Rails.logger.warn("FilesystemEnforcer: Delegate chmod failed for mode #{mode.to_s(8)} on #{path}") if Rails.logger
+      unless File.symlink?(path)
+        # When using delegate, use delegate chmod (runs on host with proper privileges)
+        # The Rails container might not have permission to chmod files owned by root
+        if UnixGroupManager.delegate_enabled?
+          unless UnixGroupManager.chmod_path(path, mode)
+            Rails.logger.warn("FilesystemEnforcer: Delegate chmod failed for mode #{mode.to_s(8)} on #{path}") if Rails.logger
+          end
+        else
+          # Not using delegate - do it locally (only works if process has permission)
+          File.chmod(mode, path)
         end
-      else
-        # Not using delegate - do it locally (only works if process has permission)
-        File.chmod(mode, path)
       end
     rescue StandardError => e
       # ignore chmod on odd/special files, but log it
