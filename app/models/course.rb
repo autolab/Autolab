@@ -129,7 +129,14 @@ class Course < ApplicationRecord
       Rails.logger.warn("Could not get current ownership of #{dir_path}: #{e.message}")
     end
     
-    # Set group ownership immediately after directory creation
+    # Create initial files BEFORE setting strict ownership/permissions
+    # This allows the Rails process to create files, then we fix ownership afterwards
+    FileUtils.touch File.join(dir_path, "autolab.log")
+    course_rb = File.join(dir_path, "course.rb")
+    default_course_rb = Rails.root.join("lib", "__defaultCourse.rb") # rubocop:disable Rails/FilePath
+    FileUtils.cp default_course_rb, course_rb
+    
+    # Now set group ownership and permissions
     # When using delegate, get GID from delegate and use it directly
     if group_name
       if UnixGroupManager.delegate_enabled?
@@ -174,12 +181,6 @@ class Course < ApplicationRecord
     FilesystemEnforcer.fix_path(dir_path.to_s, group_name: group_name)
     FilesystemEnforcer.fix_path(Rails.root.join("assessmentConfig").to_s)
     FilesystemEnforcer.fix_path(Rails.root.join("courseConfig").to_s)
-
-    # Touch log and copy default course.rb
-    FileUtils.touch File.join(dir_path, "autolab.log")
-    course_rb = File.join(dir_path, "course.rb")
-    default_course_rb = Rails.root.join("lib", "__defaultCourse.rb") # rubocop:disable Rails/FilePath
-    FileUtils.cp default_course_rb, course_rb
 
     # Sweep perms/ownership on created trees (with explicit group_name)
     if group_name
