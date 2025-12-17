@@ -34,6 +34,8 @@ class CourseUserDatum < ApplicationRecord
   validate :valid_nickname?
   validate :instructor_or_ca_not_dropped
   after_create :create_AUDs_modulo_callbacks
+  after_create :setup_unix_group_membership
+  after_update :update_unix_group_and_fix_permissions
   after_destroy :cleanup_unix_group_membership
 
   def self.conditions_by_like(value, *columns)
@@ -355,6 +357,48 @@ private
       return course.grace_days if cur_aud.nil?
 
       (course.grace_days - cur_aud.global_cumulative_grace_days_used)
+    end
+  end
+
+  # Setup Unix group membership when CUD is created (if user is staff)
+  def setup_unix_group_membership
+    return unless instructor? || course_assistant?
+    return if dropped?
+
+    # Add user to course group if they already have Unix user (SSH key exists)
+    UnixGroupManager.update_course_staff_membership(course, user, is_staff: true)
+    
+    # Fix course directory permissions
+    if course && course.directory_path && Dir.exist?(course.directory_path)
+      require_relative "../services/filesystem_enforcer"
+      group_name = UnixGroupManager.safe_group_name(course.name)
+      if group_name
+        FilesystemEnforcer.fix_tree(course.directory_path.to_s)
+        Rails.logger.info("Fixed permissions for course directory #{course.directory_path} after adding staff member")
+      end
+    end
+  end
+
+  # Update Unix group membership and fix course directory permissions when staff status changes
+  def update_unix_group_and_fix_permissions
+    # Check if staff status changed (instructor, course_assistant, or dropped status)
+    staff_status_changed = saved_change_to_instructor? || saved_change_to_course_assistant? || saved_change_to_dropped?
+    
+    # Only process if staff status changed or if user is currently staff
+    return unless staff_status_changed || (instructor? || course_assistant?)
+
+    # Update Unix group membership (will add user to group if they exist, or just track in DB if not)
+    is_staff = (instructor? || course_assistant?) && !dropped?
+    UnixGroupManager.update_course_staff_membership(course, user, is_staff: is_staff)
+    
+    # Fix course directory permissions (ensure group ownership is correct)
+    if course && course.directory_path && Dir.exist?(course.directory_path)
+      require_relative "../services/filesystem_enforcer"
+      group_name = UnixGroupManager.safe_group_name(course.name)
+      if group_name
+        FilesystemEnforcer.fix_tree(course.directory_path.to_s)
+        Rails.logger.info("Fixed permissions for course directory #{course.directory_path} after staff status change")
+      end
     end
   end
 

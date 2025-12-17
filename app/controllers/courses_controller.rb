@@ -182,6 +182,7 @@ class CoursesController < ApplicationController
       if new_cud.save
         begin
           # Unix group was already created in before_create callback
+          # Staff membership and directory permissions are handled by after_create callback in CourseUserDatum
           # But ensure permissions are correct after all setup
           FilesystemEnforcer.fix_tree(@newCourse.directory_path.to_s)
           @newCourse.reload_course_config
@@ -284,6 +285,7 @@ class CoursesController < ApplicationController
 
     begin
       # Unix group was already created in before_create callback
+      # Staff membership and directory permissions are handled by after_create callback in CourseUserDatum
       # But ensure permissions are correct after all setup
       FilesystemEnforcer.fix_tree(@newCourse.directory_path.to_s)
       @newCourse.reload_course_config
