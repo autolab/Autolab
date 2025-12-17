@@ -117,27 +117,75 @@ class Course < ApplicationRecord
     FileUtils.mkdir_p Rails.root.join("assessmentConfig")
     FileUtils.mkdir_p Rails.root.join("courseConfig")
     
+    # Log current ownership after creation
+    begin
+      stat = File.stat(dir_path)
+      current_uid = stat.uid
+      current_gid = stat.gid
+      current_user = Etc.getpwuid(current_uid).name rescue "uid:#{current_uid}"
+      current_group = Etc.getgrgid(current_gid).name rescue "gid:#{current_gid}"
+      Rails.logger.info("Course directory #{dir_path} created with ownership: #{current_user}:#{current_group} (uid:#{current_uid}, gid:#{current_gid})")
+    rescue StandardError => e
+      Rails.logger.warn("Could not get current ownership of #{dir_path}: #{e.message}")
+    end
+    
     # Set group ownership immediately if group exists
     # Pass group_name explicitly to avoid database lookup issues
     if group_name
       begin
-        gid = Etc.getgrnam(group_name).gid
+        # Verify group exists before trying to use it
+        group_info = Etc.getgrnam(group_name)
+        gid = group_info.gid
+        
+        # Log what we're trying to do
+        begin
+          stat_before = File.stat(dir_path)
+          Rails.logger.info("Attempting to chown #{dir_path} from gid #{stat_before.gid} to gid #{gid} (#{group_name})")
+        rescue StandardError
+        end
+        
+        # Change group ownership
         File.chown(nil, gid, dir_path.to_s)
-        Rails.logger.info("Set group #{group_name} (gid #{gid}) on course directory #{dir_path}")
-      rescue ArgumentError, Errno::ENOENT => e
-        Rails.logger.error("Could not set group #{group_name} on #{dir_path}: Group does not exist. Error: #{e.message}")
+        
+        # Verify it worked
+        stat_after = File.stat(dir_path)
+        if stat_after.gid == gid
+          Rails.logger.info("Successfully set group #{group_name} (gid #{gid}) on course directory #{dir_path}")
+        else
+          Rails.logger.error("FAILED: Group ownership is #{stat_after.gid} (expected #{gid} for #{group_name}) on #{dir_path}")
+          Rails.logger.error("Current process: uid=#{Process.uid}, euid=#{Process.euid}, gid=#{Process.gid}, egid=#{Process.egid}")
+        end
+      rescue ArgumentError => e
         # Group doesn't exist - try to create it now as a fallback
+        Rails.logger.warn("Group #{group_name} does not exist. Attempting to create it...")
         if UnixGroupManager.ensure_group(group_name)
+          # Wait a moment and verify it was created
+          sleep(0.1) # Brief pause to let system catch up
           begin
-            gid = Etc.getgrnam(group_name).gid
+            group_info = Etc.getgrnam(group_name)
+            gid = group_info.gid
             File.chown(nil, gid, dir_path.to_s)
-            Rails.logger.info("Created group #{group_name} and set it on #{dir_path}")
+            Rails.logger.info("Created group #{group_name} (gid #{gid}) and set it on #{dir_path}")
+          rescue ArgumentError => e2
+            Rails.logger.error("Group #{group_name} still does not exist after ensure_group returned true. Error: #{e2.message}")
+            Rails.logger.error("Unix operations may be skipped (should_skip_operations?=#{UnixGroupManager.should_skip_operations?})")
+            # Fall back to default group or log warning
+            default_group = ENV.fetch("COURSE_FS_GROUP", "autolab")
+            begin
+              default_gid = Etc.getgrnam(default_group).gid
+              File.chown(nil, default_gid, dir_path.to_s)
+              Rails.logger.warn("Using fallback group #{default_group} for #{dir_path}")
+            rescue StandardError
+              Rails.logger.error("Could not set any group on #{dir_path}. Permissions will be incorrect.")
+            end
           rescue StandardError => e2
-            Rails.logger.error("Still could not set group after creating it: #{e2.message}")
+            Rails.logger.error("Error setting group after creation: #{e2.message}")
           end
+        else
+          Rails.logger.error("Failed to create group #{group_name}. ensure_group returned false.")
         end
       rescue StandardError => e
-        Rails.logger.warn("Could not set group #{group_name} on #{dir_path}: #{e.message}")
+        Rails.logger.error("Could not set group #{group_name} on #{dir_path}: #{e.message} (#{e.class})")
       end
     end
     
@@ -415,11 +463,17 @@ class Course < ApplicationRecord
     group_name = UnixGroupManager.safe_group_name(name)
     return unless group_name
     
-    # Ensure group is created - raise error if it fails (don't fail silently)
-    unless UnixGroupManager.ensure_group(group_name)
-      Rails.logger.error("Failed to create Unix group #{group_name} for course #{name}")
-      # Don't raise an error here - let course creation continue, but log it
-      # The bootstrap script can fix permissions later
+    # Ensure group is created
+    success = UnixGroupManager.ensure_group(group_name)
+    
+    # Verify the group actually exists (even if ensure_group returned true)
+    begin
+      Etc.getgrnam(group_name)
+      Rails.logger.info("Verified Unix group #{group_name} exists for course #{name}")
+    rescue ArgumentError => e
+      # Group doesn't exist - this is a problem
+      Rails.logger.error("Unix group #{group_name} does not exist for course #{name} even though ensure_group returned #{success}. Error: #{e.message}")
+      Rails.logger.error("This will cause permission issues. Check if Unix operations are being skipped (should_skip_operations?=#{UnixGroupManager.should_skip_operations?})")
     end
   end
 
