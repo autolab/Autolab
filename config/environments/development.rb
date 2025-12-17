@@ -74,6 +74,8 @@ Rails.application.configure do
   # Feature flag for docker image upload
   config.x.docker_image_upload_enabled = true
 
+  # Feature flag for EC2 SSH Autograders
+  config.x.ec2_ssh = true
   # Uncomment if you wish to allow Action Cable access from any origin.
   # config.action_cable.disable_request_forgery_protection = true
 

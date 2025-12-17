@@ -1,0 +1,11 @@
+<h4>EC2 Settings</h4>
+<% if Rails.configuration.x.ec2_ssh.presence %>
+  <%= f.text_field :access_key, display_name: "Access Key (Currently unused)" %>
+  <%= f.text_field :access_key_id, display_name: "Access Key ID (Currently unused)" %>
+  <%= f.text_field :instance_type, display_name: "EC2 Instance Type" %>
+<% end %>
+<%= f.submit "Save Settings" %>
+
+<%= link_to "Delete Autograder", course_assessment_autograder_path(@course, @assessment),
+            method: :delete, class: "btn danger",
+            data: { confirm: "Are you sure you want to delete the Autograder for this assesssment?" } %>
