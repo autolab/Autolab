@@ -14,21 +14,19 @@ class FilesystemEnforcer
     grp = group_name || inferred_group(path) || GROUP
 
     begin
-      # When using delegate, get GID from host (where groups actually exist)
+      # When using delegate, always use delegate chgrp (runs on host with proper privileges)
+      # The Rails container doesn't have permission to chown files
+      # Set owner to root for directories to ensure consistent ownership
       if UnixGroupManager.delegate_enabled?
-        gid = UnixGroupManager.get_group_gid(grp)
-        if gid
-          File.chown(nil, gid, path)
+        owner = File.directory?(path) ? "root" : nil  # Set root owner for directories, keep current for files
+        if UnixGroupManager.chgrp_path(path, grp, owner: owner)
+          # Success via delegate
         else
-          # Try using delegate chgrp as fallback
-          if UnixGroupManager.chgrp_path(path, grp)
-            # Success via delegate
-          else
-            raise "Could not get GID or chgrp via delegate for group #{grp}"
-          end
+          # Log but don't raise - FilesystemEnforcer should be non-fatal
+          Rails.logger.warn("FilesystemEnforcer: Delegate chgrp failed for #{grp} on #{path}") if Rails.logger
         end
       else
-        # Not using delegate - look up locally
+        # Not using delegate - look up locally and chown (only works if process has permission)
         gid = Etc.getgrnam(grp).gid
         File.chown(nil, gid, path)
       end
@@ -40,7 +38,20 @@ class FilesystemEnforcer
     begin
       mode = File.directory?(path) ? MODE_DIR : MODE_FILE
       # Skip symlinks to avoid lchmod issues on some platforms
-      File.chmod(mode, path) unless File.symlink?(path)
+      if File.symlink?(path)
+        next
+      end
+      
+      # When using delegate, use delegate chmod (runs on host with proper privileges)
+      # The Rails container might not have permission to chmod files owned by root
+      if UnixGroupManager.delegate_enabled?
+        unless UnixGroupManager.chmod_path(path, mode)
+          Rails.logger.warn("FilesystemEnforcer: Delegate chmod failed for mode #{mode.to_s(8)} on #{path}") if Rails.logger
+        end
+      else
+        # Not using delegate - do it locally (only works if process has permission)
+        File.chmod(mode, path)
+      end
     rescue StandardError => e
       # ignore chmod on odd/special files, but log it
       Rails.logger.warn("FilesystemEnforcer: Could not chmod #{path}: #{e.message}") if Rails.logger

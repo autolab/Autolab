@@ -125,12 +125,49 @@ module UnixOps
           require "fileutils"
           group_name = payload["group_name"]
           path = payload["path"]
+          owner = payload["owner"] || "root"  # Default to root if not specified
           require "etc"
           group_info = Etc.getgrnam(group_name)
-          File.chown(nil, group_info.gid, path)
-          [true, "chgrp", { path: path, group_name: group_name, gid: group_info.gid }]
+          
+          # Get owner UID if specified
+          owner_uid = nil
+          if owner && owner != ""
+            begin
+              owner_uid = Etc.getpwnam(owner).uid
+            rescue ArgumentError
+              # Owner doesn't exist, use nil to keep current owner
+              owner_uid = nil
+            end
+          end
+          
+          File.chown(owner_uid, group_info.gid, path)
+          [true, "chgrp", { path: path, group_name: group_name, gid: group_info.gid, owner: owner || "unchanged" }]
         rescue ArgumentError
           [false, "group_or_file_not_found", nil]
+        rescue StandardError => e
+          [false, e.message, nil]
+        end
+      when "chmod"
+        begin
+          path = payload["path"]
+          mode = payload["mode"]
+          # Skip symlinks to avoid lchmod issues
+          if File.symlink?(path)
+            [true, "chmod", { path: path, mode: mode, skipped: "symlink" }]
+          else
+            File.chmod(mode, path)
+            [true, "chmod", { path: path, mode: mode.to_s(8) }]
+          end
+        rescue StandardError => e
+          [false, e.message, nil]
+        end
+      when "get_user_uid"
+        begin
+          require "etc"
+          user_info = Etc.getpwnam(payload["username"])
+          [true, "get_user_uid", { uid: user_info.uid, username: user_info.name }]
+        rescue ArgumentError
+          [false, "user_not_found", nil]
         rescue StandardError => e
           [false, e.message, nil]
         end

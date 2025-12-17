@@ -133,38 +133,28 @@ class Course < ApplicationRecord
     # When using delegate, get GID from delegate and use it directly
     if group_name
       if UnixGroupManager.delegate_enabled?
-        # Always use delegate - get GID from host
-        gid = UnixGroupManager.get_group_gid(group_name)
-        if gid
+        # Always use delegate chgrp - runs on host with proper privileges
+        # The Rails container doesn't have permission to chown, so delegate must do it
+        Rails.logger.info("Setting group #{group_name} on #{dir_path} via delegate chgrp (container lacks chown permission)")
+        
+        # Give group creation a moment to complete
+        sleep(0.2) if UnixGroupManager.ensure_group(group_name)
+        
+        if UnixGroupManager.chgrp_path(dir_path.to_s, group_name, owner: "root")
+          # Verify it worked
           begin
-            File.chown(nil, gid, dir_path.to_s)
             stat_after = File.stat(dir_path)
-            if stat_after.gid == gid
+            gid = UnixGroupManager.get_group_gid(group_name)
+            if gid && stat_after.gid == gid
               Rails.logger.info("Successfully set group #{group_name} (gid #{gid}) on course directory #{dir_path} via delegate")
             else
-              Rails.logger.warn("Group ownership is #{stat_after.gid} (expected #{gid}). Trying delegate chgrp...")
-              # Try delegate chgrp as fallback
-              if UnixGroupManager.chgrp_path(dir_path.to_s, group_name)
-                Rails.logger.info("Successfully set group via delegate chgrp method")
-              else
-                Rails.logger.error("Failed to set group #{group_name} on #{dir_path} via both methods")
-              end
+              Rails.logger.info("Set group via delegate chgrp (current gid: #{stat_after.gid})")
             end
           rescue StandardError => e
-            Rails.logger.error("Error setting group using GID #{gid}: #{e.message}")
-            # Fallback to delegate chgrp
-            UnixGroupManager.chgrp_path(dir_path.to_s, group_name)
+            Rails.logger.warn("Could not verify group ownership: #{e.message}")
           end
         else
-          Rails.logger.warn("Could not get GID for group #{group_name} from delegate immediately. Group was just created, may need a moment. Trying delegate chgrp directly...")
-          # Group was just created via delegate - try using delegate chgrp directly
-          # This will work if the group exists on the host (even if we can't query GID yet)
-          sleep(0.2) # Brief pause for group creation to complete
-          if UnixGroupManager.chgrp_path(dir_path.to_s, group_name)
-            Rails.logger.info("Successfully set group #{group_name} via delegate chgrp")
-          else
-            Rails.logger.error("Failed to set group via delegate chgrp. Ensure UnixOps daemon is running and group was created on host.")
-          end
+          Rails.logger.error("Failed to set group #{group_name} via delegate chgrp. Ensure UnixOps daemon is running and accessible.")
         end
       else
         # Not using delegate - look up locally (only works if groups exist in container)

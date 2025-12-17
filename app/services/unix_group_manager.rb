@@ -116,22 +116,61 @@ class UnixGroupManager
   end
 
   # Set group ownership on a file/directory via delegate
-  def self.chgrp_path(path, group_name)
+  # Optionally set owner as well (defaults to root)
+  def self.chgrp_path(path, group_name, owner: "root")
     return false if path.nil? || group_name.nil? || group_name.empty?
     
     if delegate_enabled?
-      success, _parsed = call_delegate("chgrp", path: path, group_name: group_name)
+      success, _parsed = call_delegate("chgrp", path: path, group_name: group_name, owner: owner)
       return success
     end
     
     # Not using delegate - do it locally
     begin
       group_info = Etc.getgrnam(group_name)
-      File.chown(nil, group_info.gid, path)
+      owner_uid = owner ? Etc.getpwnam(owner).uid : nil
+      File.chown(owner_uid, group_info.gid, path)
       true
     rescue StandardError => e
       Rails.logger.error("Failed to chgrp #{path} to #{group_name}: #{e.message}")
       false
+    end
+  end
+
+  # Set file permissions via delegate
+  def self.chmod_path(path, mode)
+    return false if path.nil?
+    
+    if delegate_enabled?
+      success, _parsed = call_delegate("chmod", path: path, mode: mode)
+      return success
+    end
+    
+    # Not using delegate - do it locally
+    begin
+      File.chmod(mode, path) unless File.symlink?(path)
+      true
+    rescue StandardError => e
+      Rails.logger.error("Failed to chmod #{path} to #{mode.to_s(8)}: #{e.message}")
+      false
+    end
+  end
+
+  # Get UID for a username via delegate
+  def self.get_user_uid(username)
+    return nil if username.nil? || username.empty?
+    
+    if delegate_enabled?
+      data = delegate_query("get_user_uid", username: username)
+      return data["uid"] if data.is_a?(Hash) && data.key?("uid")
+      return nil
+    end
+    
+    # Not using delegate - get locally
+    begin
+      Etc.getpwnam(username).uid
+    rescue ArgumentError
+      nil
     end
   end
 
