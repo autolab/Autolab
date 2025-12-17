@@ -181,8 +181,9 @@ class CoursesController < ApplicationController
 
       if new_cud.save
         begin
-          # Create Unix group for the course
-          UnixGroupManager.setup_course_group(@newCourse)
+          # Unix group was already created in before_create callback
+          # But ensure permissions are correct after all setup
+          FilesystemEnforcer.fix_tree(@newCourse.directory_path.to_s)
           @newCourse.reload_course_config
         rescue StandardError, SyntaxError => e
           # roll back course creation and instruction creation
@@ -282,8 +283,9 @@ class CoursesController < ApplicationController
     end
 
     begin
-      # Create Unix group for the course
-      UnixGroupManager.setup_course_group(@newCourse)
+      # Unix group was already created in before_create callback
+      # But ensure permissions are correct after all setup
+      FilesystemEnforcer.fix_tree(@newCourse.directory_path.to_s)
       @newCourse.reload_course_config
     rescue StandardError, SyntaxError
       # roll back course creation and instruction creation

@@ -8,23 +8,26 @@ class FilesystemEnforcer
   MODE_FILE = 0o660   # -rw-rw----
 
   # Enforce owner-group & perms on a single path
-  def self.fix_path(path)
+  # Optionally pass group_name to avoid database lookup
+  def self.fix_path(path, group_name: nil)
     return unless File.exist?(path)
-    grp = inferred_group(path) || GROUP
+    grp = group_name || inferred_group(path) || GROUP
 
     begin
       gid = Etc.getgrnam(grp).gid
       File.chown(nil, gid, path)           # keep owner as-is, set group
-    rescue StandardError
-      # group not present or chown failed (non-fatal)
+    rescue StandardError => e
+      # group not present or chown failed (non-fatal, but log it)
+      Rails.logger.warn("FilesystemEnforcer: Could not set group #{grp} on #{path}: #{e.message}") if Rails.logger
     end
 
     begin
       mode = File.directory?(path) ? MODE_DIR : MODE_FILE
       # Skip symlinks to avoid lchmod issues on some platforms
       File.chmod(mode, path) unless File.symlink?(path)
-    rescue StandardError
-      # ignore chmod on odd/special files
+    rescue StandardError => e
+      # ignore chmod on odd/special files, but log it
+      Rails.logger.warn("FilesystemEnforcer: Could not chmod #{path}: #{e.message}") if Rails.logger
     end
   end
 

@@ -1,6 +1,8 @@
 require "association_cache"
 require "fileutils"
+require "etc"
 require_relative "../services/unix_group_manager"
+require_relative "../services/filesystem_enforcer"
 
 class Course < ApplicationRecord
   trim_field :name, :semester, :display_name
@@ -32,6 +34,7 @@ class Course < ApplicationRecord
   # Callbacks
   before_save :cgdub_dependencies_updated, if: :grace_days_or_late_slack_changed?
   before_create :cgdub_dependencies_updated
+  before_create :ensure_unix_group_exists
   after_create :init_course_folder
 
   # Constants
@@ -92,8 +95,9 @@ class Course < ApplicationRecord
     end
 
     begin
-      # Create Unix group for the course
-      UnixGroupManager.setup_course_group(newCourse)
+      # Unix group was already created in before_create callback
+      # But ensure permissions are correct after all setup
+      FilesystemEnforcer.fix_tree(newCourse.directory_path.to_s)
       newCourse.reload_course_config
     rescue StandardError, SyntaxError
       newCUD.destroy
@@ -106,12 +110,40 @@ class Course < ApplicationRecord
   # generate course folder
   def init_course_folder
     dir_path = directory_path
+    group_name = UnixGroupManager.safe_group_name(name)
 
-    # Ensure base dirs exist first, then normalize
+    # Ensure base dirs exist first
     FileUtils.mkdir_p dir_path
     FileUtils.mkdir_p Rails.root.join("assessmentConfig")
     FileUtils.mkdir_p Rails.root.join("courseConfig")
-    FilesystemEnforcer.fix_path(dir_path.to_s)
+    
+    # Set group ownership immediately if group exists
+    # Pass group_name explicitly to avoid database lookup issues
+    if group_name
+      begin
+        gid = Etc.getgrnam(group_name).gid
+        File.chown(nil, gid, dir_path.to_s)
+        Rails.logger.info("Set group #{group_name} (gid #{gid}) on course directory #{dir_path}")
+      rescue ArgumentError, Errno::ENOENT => e
+        Rails.logger.error("Could not set group #{group_name} on #{dir_path}: Group does not exist. Error: #{e.message}")
+        # Group doesn't exist - try to create it now as a fallback
+        if UnixGroupManager.ensure_group(group_name)
+          begin
+            gid = Etc.getgrnam(group_name).gid
+            File.chown(nil, gid, dir_path.to_s)
+            Rails.logger.info("Created group #{group_name} and set it on #{dir_path}")
+          rescue StandardError => e2
+            Rails.logger.error("Still could not set group after creating it: #{e2.message}")
+          end
+        end
+      rescue StandardError => e
+        Rails.logger.warn("Could not set group #{group_name} on #{dir_path}: #{e.message}")
+      end
+    end
+    
+    # Use FilesystemEnforcer to ensure correct permissions
+    # Pass group_name explicitly to avoid database lookup
+    FilesystemEnforcer.fix_path(dir_path.to_s, group_name: group_name)
     FilesystemEnforcer.fix_path(Rails.root.join("assessmentConfig").to_s)
     FilesystemEnforcer.fix_path(Rails.root.join("courseConfig").to_s)
 
@@ -121,8 +153,18 @@ class Course < ApplicationRecord
     default_course_rb = Rails.root.join("lib", "__defaultCourse.rb") # rubocop:disable Rails/FilePath
     FileUtils.cp default_course_rb, course_rb
 
-    # Sweep perms/ownership on created trees
-    FilesystemEnforcer.fix_tree(dir_path.to_s)
+    # Sweep perms/ownership on created trees (with explicit group_name)
+    if group_name
+      # Fix each file/dir with explicit group
+      Dir.glob(File.join(dir_path, "**", "*"), File::FNM_DOTMATCH).each do |p|
+        base = File.basename(p)
+        next if base == "." || base == ".."
+        FilesystemEnforcer.fix_path(p, group_name: group_name)
+      end
+      FilesystemEnforcer.fix_path(dir_path.to_s, group_name: group_name)
+    else
+      FilesystemEnforcer.fix_tree(dir_path.to_s)
+    end
     FilesystemEnforcer.fix_tree(Rails.root.join("assessmentConfig").to_s)
     FilesystemEnforcer.fix_tree(Rails.root.join("courseConfig").to_s)
   end
@@ -365,6 +407,20 @@ class Course < ApplicationRecord
 
   def cgdub_dependencies_updated
     self.cgdub_dependencies_updated_at = Time.current
+  end
+
+  # Ensure Unix group exists before course is created
+  # This allows init_course_folder to set correct permissions
+  def ensure_unix_group_exists
+    group_name = UnixGroupManager.safe_group_name(name)
+    return unless group_name
+    
+    # Ensure group is created - raise error if it fails (don't fail silently)
+    unless UnixGroupManager.ensure_group(group_name)
+      Rails.logger.error("Failed to create Unix group #{group_name} for course #{name}")
+      # Don't raise an error here - let course creation continue, but log it
+      # The bootstrap script can fix permissions later
+    end
   end
 
   def config!
