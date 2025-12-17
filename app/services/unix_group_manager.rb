@@ -97,6 +97,44 @@ class UnixGroupManager
     parsed["data"]
   end
 
+  # Get GID for a group name via delegate
+  def self.get_group_gid(group_name)
+    return nil if group_name.nil? || group_name.empty?
+    
+    if delegate_enabled?
+      data = delegate_query("get_group_gid", group_name: group_name)
+      return data["gid"] if data.is_a?(Hash) && data.key?("gid")
+      return nil
+    end
+    
+    # Not using delegate - get locally
+    begin
+      Etc.getgrnam(group_name).gid
+    rescue ArgumentError
+      nil
+    end
+  end
+
+  # Set group ownership on a file/directory via delegate
+  def self.chgrp_path(path, group_name)
+    return false if path.nil? || group_name.nil? || group_name.empty?
+    
+    if delegate_enabled?
+      success, _parsed = call_delegate("chgrp", path: path, group_name: group_name)
+      return success
+    end
+    
+    # Not using delegate - do it locally
+    begin
+      group_info = Etc.getgrnam(group_name)
+      File.chown(nil, group_info.gid, path)
+      true
+    rescue StandardError => e
+      Rails.logger.error("Failed to chgrp #{path} to #{group_name}: #{e.message}")
+      false
+    end
+  end
+
   def self.user_exists?(username)
     return false if username.nil? || username.empty?
 

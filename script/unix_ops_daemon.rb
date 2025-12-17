@@ -110,6 +110,30 @@ module UnixOps
       when "user_exists"
         success = UnixGroupManager.user_exists?(payload["username"])
         [true, "user_exists", { value: success }]
+      when "get_group_gid"
+        begin
+          require "etc"
+          group_info = Etc.getgrnam(payload["group_name"])
+          [true, "get_group_gid", { gid: group_info.gid, group_name: group_info.name }]
+        rescue ArgumentError
+          [false, "group_not_found", nil]
+        rescue StandardError => e
+          [false, e.message, nil]
+        end
+      when "chgrp"
+        begin
+          require "fileutils"
+          group_name = payload["group_name"]
+          path = payload["path"]
+          require "etc"
+          group_info = Etc.getgrnam(group_name)
+          File.chown(nil, group_info.gid, path)
+          [true, "chgrp", { path: path, group_name: group_name, gid: group_info.gid }]
+        rescue ArgumentError
+          [false, "group_or_file_not_found", nil]
+        rescue StandardError => e
+          [false, e.message, nil]
+        end
       else
         [false, "unknown_action", nil]
       end

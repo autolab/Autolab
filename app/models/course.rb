@@ -129,75 +129,53 @@ class Course < ApplicationRecord
       Rails.logger.warn("Could not get current ownership of #{dir_path}: #{e.message}")
     end
     
-    # Set group ownership immediately if group exists
-    # Pass group_name explicitly to avoid database lookup issues
+    # Set group ownership immediately after directory creation
+    # When using delegate, get GID from delegate and use it directly
     if group_name
-      begin
-        # Verify group exists before trying to use it
-        group_info = Etc.getgrnam(group_name)
-        gid = group_info.gid
-        
-        # Log what we're trying to do
-        begin
-          stat_before = File.stat(dir_path)
-          Rails.logger.info("Attempting to chown #{dir_path} from gid #{stat_before.gid} to gid #{gid} (#{group_name})")
-        rescue StandardError
-        end
-        
-        # Change group ownership
-        File.chown(nil, gid, dir_path.to_s)
-        
-        # Verify it worked
-        stat_after = File.stat(dir_path)
-        if stat_after.gid == gid
-          Rails.logger.info("Successfully set group #{group_name} (gid #{gid}) on course directory #{dir_path}")
-        else
-          Rails.logger.error("FAILED: Group ownership is #{stat_after.gid} (expected #{gid} for #{group_name}) on #{dir_path}")
-          Rails.logger.error("Current process: uid=#{Process.uid}, euid=#{Process.euid}, gid=#{Process.gid}, egid=#{Process.egid}")
-        end
-      rescue ArgumentError => e
-        # Group doesn't exist in container's namespace
-        # If using delegate, the group was created on host - use chgrp command
-        if UnixGroupManager.delegate_enabled?
-          Rails.logger.info("Group #{group_name} not in container namespace, but delegate enabled. Using chgrp command to set group on host filesystem.")
+      if UnixGroupManager.delegate_enabled?
+        # Always use delegate - get GID from host
+        gid = UnixGroupManager.get_group_gid(group_name)
+        if gid
           begin
-            require "open3"
-            stdout, stderr, status = Open3.capture3("chgrp", group_name, dir_path.to_s)
-            if status.success?
-              Rails.logger.info("Successfully set group #{group_name} on #{dir_path} via chgrp")
+            File.chown(nil, gid, dir_path.to_s)
+            stat_after = File.stat(dir_path)
+            if stat_after.gid == gid
+              Rails.logger.info("Successfully set group #{group_name} (gid #{gid}) on course directory #{dir_path} via delegate")
             else
-              Rails.logger.error("Failed to chgrp #{group_name} on #{dir_path}: #{stderr}")
-              # Try to create group again via delegate
-              if UnixGroupManager.ensure_group(group_name)
-                sleep(0.2) # Wait for group creation
-                stdout2, stderr2, status2 = Open3.capture3("chgrp", group_name, dir_path.to_s)
-                if status2.success?
-                  Rails.logger.info("Successfully set group #{group_name} after re-creating")
-                else
-                  Rails.logger.error("Still failed after re-creating group: #{stderr2}")
-                end
+              Rails.logger.warn("Group ownership is #{stat_after.gid} (expected #{gid}). Trying delegate chgrp...")
+              # Try delegate chgrp as fallback
+              if UnixGroupManager.chgrp_path(dir_path.to_s, group_name)
+                Rails.logger.info("Successfully set group via delegate chgrp method")
+              else
+                Rails.logger.error("Failed to set group #{group_name} on #{dir_path} via both methods")
               end
             end
-          rescue StandardError => e2
-            Rails.logger.error("Error running chgrp: #{e2.message}")
+          rescue StandardError => e
+            Rails.logger.error("Error setting group using GID #{gid}: #{e.message}")
+            # Fallback to delegate chgrp
+            UnixGroupManager.chgrp_path(dir_path.to_s, group_name)
           end
         else
-          # Not using delegate - try to create group locally
-          Rails.logger.warn("Group #{group_name} does not exist. Attempting to create it...")
-          if UnixGroupManager.ensure_group(group_name)
-            sleep(0.1) # Brief pause to let system catch up
-            begin
-              group_info = Etc.getgrnam(group_name)
-              gid = group_info.gid
-              File.chown(nil, gid, dir_path.to_s)
-              Rails.logger.info("Created group #{group_name} (gid #{gid}) and set it on #{dir_path}")
-            rescue ArgumentError => e2
-              Rails.logger.error("Group #{group_name} still does not exist after ensure_group returned true. Error: #{e2.message}")
-            end
+          Rails.logger.warn("Could not get GID for group #{group_name} from delegate immediately. Group was just created, may need a moment. Trying delegate chgrp directly...")
+          # Group was just created via delegate - try using delegate chgrp directly
+          # This will work if the group exists on the host (even if we can't query GID yet)
+          sleep(0.2) # Brief pause for group creation to complete
+          if UnixGroupManager.chgrp_path(dir_path.to_s, group_name)
+            Rails.logger.info("Successfully set group #{group_name} via delegate chgrp")
+          else
+            Rails.logger.error("Failed to set group via delegate chgrp. Ensure UnixOps daemon is running and group was created on host.")
           end
         end
-      rescue StandardError => e
-        Rails.logger.error("Could not set group #{group_name} on #{dir_path}: #{e.message} (#{e.class})")
+      else
+        # Not using delegate - look up locally (only works if groups exist in container)
+        begin
+          group_info = Etc.getgrnam(group_name)
+          gid = group_info.gid
+          File.chown(nil, gid, dir_path.to_s)
+          Rails.logger.info("Successfully set group #{group_name} (gid #{gid}) on course directory #{dir_path}")
+        rescue ArgumentError => e
+          Rails.logger.error("Group #{group_name} not found locally. Delegate is not enabled, so local lookup is required.")
+        end
       end
     end
     
@@ -223,7 +201,7 @@ class Course < ApplicationRecord
       end
       FilesystemEnforcer.fix_path(dir_path.to_s, group_name: group_name)
     else
-      FilesystemEnforcer.fix_tree(dir_path.to_s)
+    FilesystemEnforcer.fix_tree(dir_path.to_s)
     end
     FilesystemEnforcer.fix_tree(Rails.root.join("assessmentConfig").to_s)
     FilesystemEnforcer.fix_tree(Rails.root.join("courseConfig").to_s)
@@ -475,27 +453,15 @@ class Course < ApplicationRecord
     group_name = UnixGroupManager.safe_group_name(name)
     return unless group_name
     
-    # Ensure group is created
+    # Ensure group is created via delegate (UnixOps daemon)
+    # When using delegate, we trust the delegate - no local verification needed
     success = UnixGroupManager.ensure_group(group_name)
     
-    if UnixGroupManager.delegate_enabled?
-      # When using delegate, trust the response - verification happens on host side
-      if success
-        Rails.logger.info("Unix group #{group_name} creation delegated for course #{name}")
-      else
-        Rails.logger.error("Failed to create Unix group #{group_name} via delegate for course #{name}")
-      end
+    if success
+      Rails.logger.info("Unix group #{group_name} creation delegated for course #{name}")
     else
-      # When not using delegate, verify the group exists locally
-      begin
-        Etc.getgrnam(group_name)
-        Rails.logger.info("Verified Unix group #{group_name} exists for course #{name}")
-      rescue ArgumentError => e
-        # Group doesn't exist - this is a problem
-        Rails.logger.error("Unix group #{group_name} does not exist for course #{name} even though ensure_group returned #{success}. Error: #{e.message}")
-        Rails.logger.error("This will cause permission issues. Check if Unix operations are being skipped (should_skip_operations?=#{UnixGroupManager.should_skip_operations?})")
-        Rails.logger.error("If using Docker, ensure UNIX_OPS_DELEGATE_URL is set to delegate operations to host")
-      end
+      Rails.logger.error("Failed to create Unix group #{group_name} via delegate for course #{name}")
+      Rails.logger.error("Check that UnixOps daemon is running and accessible at #{ENV['UNIX_OPS_DELEGATE_URL']}")
     end
   end
 

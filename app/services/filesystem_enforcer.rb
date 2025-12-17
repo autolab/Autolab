@@ -14,8 +14,24 @@ class FilesystemEnforcer
     grp = group_name || inferred_group(path) || GROUP
 
     begin
-      gid = Etc.getgrnam(grp).gid
-      File.chown(nil, gid, path)           # keep owner as-is, set group
+      # When using delegate, get GID from host (where groups actually exist)
+      if UnixGroupManager.delegate_enabled?
+        gid = UnixGroupManager.get_group_gid(grp)
+        if gid
+          File.chown(nil, gid, path)
+        else
+          # Try using delegate chgrp as fallback
+          if UnixGroupManager.chgrp_path(path, grp)
+            # Success via delegate
+          else
+            raise "Could not get GID or chgrp via delegate for group #{grp}"
+          end
+        end
+      else
+        # Not using delegate - look up locally
+        gid = Etc.getgrnam(grp).gid
+        File.chown(nil, gid, path)
+      end
     rescue StandardError => e
       # group not present or chown failed (non-fatal, but log it)
       Rails.logger.warn("FilesystemEnforcer: Could not set group #{grp} on #{path}: #{e.message}") if Rails.logger
@@ -66,16 +82,29 @@ class FilesystemEnforcer
       return nil unless group_name
 
       # Verify the group actually exists
-      Etc.getgrnam(group_name) # raises if missing
-      group_name
+      # When using delegate, check via delegate; otherwise check locally
+      if UnixGroupManager.delegate_enabled?
+        gid = UnixGroupManager.get_group_gid(group_name)
+        return group_name if gid # Group exists on host
+      else
+        Etc.getgrnam(group_name) # raises if missing
+        return group_name
+      end
+      nil
     rescue StandardError
       # Fallback: try using directory name directly as group name
-      begin
-        Etc.getgrnam(course_dir_name)
-        course_dir_name
-      rescue StandardError
-        nil
+      if UnixGroupManager.delegate_enabled?
+        gid = UnixGroupManager.get_group_gid(course_dir_name)
+        return course_dir_name if gid
+      else
+        begin
+          Etc.getgrnam(course_dir_name)
+          return course_dir_name
+        rescue StandardError
+          nil
+        end
       end
+      nil
     end
   end
 
