@@ -306,21 +306,59 @@ class Course < ApplicationRecord
     
     # Ensure courseConfig and assessmentConfig directories exist and are accessible
     # These are shared directories, so they should be writable by the Rails process
-    # We only fix ownership/group, not strict permissions (they should remain writable)
+    # We set group ownership but keep permissive permissions so Rails can write config files
     course_config_dir = Rails.root.join("courseConfig").to_s
     assessment_config_dir = Rails.root.join("assessmentConfig").to_s
     
-    # Just ensure they exist - don't lock them down (Rails needs to write config files)
+    # Just ensure they exist
     FileUtils.mkdir_p(course_config_dir) unless Dir.exist?(course_config_dir)
     FileUtils.mkdir_p(assessment_config_dir) unless Dir.exist?(assessment_config_dir)
     
-    # Only fix ownership/group if using delegate (to ensure proper group ownership)
-    # But don't use FilesystemEnforcer.fix_path which sets strict permissions
-    if UnixGroupManager.delegate_enabled? && group_name
-      autolab_group = ENV.fetch("COURSE_FS_GROUP", "autolab")
-      # Set group ownership to autolab group (shared directory), keep permissive permissions
-      UnixGroupManager.chgrp_path(course_config_dir, autolab_group, owner: nil) if Dir.exist?(course_config_dir)
-      UnixGroupManager.chgrp_path(assessment_config_dir, autolab_group, owner: nil) if Dir.exist?(assessment_config_dir)
+    Rails.logger.info("Ensuring courseConfig and assessmentConfig are writable by Rails process")
+    
+    # Set group ownership and permissive permissions for shared directories
+    # Rails process needs to write config files here during course creation
+    autolab_group = ENV.fetch("COURSE_FS_GROUP", "autolab")
+    
+    [course_config_dir, assessment_config_dir].each do |dir|
+      next unless Dir.exist?(dir)
+      
+      begin
+        stat_before = File.stat(dir)
+        Rails.logger.info("Before fixing #{dir}: uid=#{stat_before.uid}, gid=#{stat_before.gid}, mode=#{stat_before.mode.to_s(8)}")
+      rescue StandardError => e
+        Rails.logger.warn("Could not stat #{dir}: #{e.message}")
+      end
+      
+      if UnixGroupManager.delegate_enabled?
+        # Set group to autolab, but keep owner as Rails process (don't set to root)
+        # This allows Rails to write while maintaining group ownership
+        UnixGroupManager.chgrp_path(dir, autolab_group, owner: nil)
+        
+        # Set permissive permissions (drwxrwxr-x = 0775) so Rails can write
+        # Note: We use 0775 instead of 2770 because we want owner (Rails process) to be able to write
+        UnixGroupManager.chmod_path(dir, 0o775)
+        
+        Rails.logger.info("Set group #{autolab_group} and mode 775 on #{dir} via delegate")
+      else
+        # Not using delegate - set locally
+        begin
+          gid = Etc.getgrnam(autolab_group).gid
+          File.chown(nil, gid, dir)
+          File.chmod(0o775, dir)
+          Rails.logger.info("Set group #{autolab_group} and mode 775 on #{dir} locally")
+        rescue StandardError => e
+          Rails.logger.warn("Could not set group/permissions on #{dir}: #{e.message}")
+        end
+      end
+      
+      begin
+        stat_after = File.stat(dir)
+        Rails.logger.info("After fixing #{dir}: uid=#{stat_after.uid}, gid=#{stat_after.gid}, mode=#{stat_after.mode.to_s(8)}")
+        Rails.logger.info("#{dir} writable by current process? #{File.writable?(dir)}")
+      rescue StandardError => e
+        Rails.logger.warn("Could not verify stats for #{dir}: #{e.message}")
+      end
     end
   end
 
@@ -421,9 +459,9 @@ class Course < ApplicationRecord
     # Read source config file
     Rails.logger.info("Attempting to open and read source config file...")
     begin
-      s = File.open(source_config_file_path, "r")
-      lines = s.readlines
-      s.close
+    s = File.open(source_config_file_path, "r")
+    lines = s.readlines
+    s.close
       Rails.logger.info("Successfully read #{lines.length} lines from source config file")
     rescue Errno::EACCES => e
       error_msg = "Permission denied reading #{source_config_file_path}: #{e.message}. Check file permissions and directory permissions."
@@ -454,7 +492,7 @@ class Course < ApplicationRecord
     rescue StandardError => e
       Rails.logger.warn("Could not stat courseConfig directory: #{e.message}")
     end
-    
+
     if File.exist? config_file_path
       Rails.logger.info("Backing up existing config file...")
       File.rename(config_file_path, config_backup_file_path)
@@ -464,19 +502,19 @@ class Course < ApplicationRecord
     # Write processed config file
     Rails.logger.info("Writing processed config file to #{config_file_path}...")
     begin
-      d = File.open(config_file_path, "w")
-      d.write("require 'CourseBase.rb'\n\n")
-      d.write("module #{config_module_name}\n")
-      d.write("\tinclude CourseBase\n\n")
-      lines.each do |line|
-        if !line.empty?
-          d.write("\t#{line}")
-        else
-          d.write(line)
-        end
+    d = File.open(config_file_path, "w")
+    d.write("require 'CourseBase.rb'\n\n")
+    d.write("module #{config_module_name}\n")
+    d.write("\tinclude CourseBase\n\n")
+    lines.each do |line|
+      if !line.empty?
+        d.write("\t#{line}")
+      else
+        d.write(line)
       end
-      d.write("end")
-      d.close
+    end
+    d.write("end")
+    d.close
       Rails.logger.info("Successfully wrote processed config file")
     rescue Errno::EACCES => e
       error_msg = "Permission denied writing to #{config_file_path}: #{e.message}. Check courseConfig directory permissions."
