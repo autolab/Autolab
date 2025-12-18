@@ -368,13 +368,21 @@ private
     # Add user to course group if they already have Unix user (SSH key exists)
     UnixGroupManager.update_course_staff_membership(course, user, is_staff: true)
     
-    # Fix course directory permissions
+    # Fix course directory permissions, but skip during course creation
+    # (during course creation, permissions are fixed by controller after reload_course_config)
+    # We can detect course creation by checking if the course was just created (within last few seconds)
     if course && course.directory_path && Dir.exist?(course.directory_path)
-      require_relative "../services/filesystem_enforcer"
-      group_name = UnixGroupManager.safe_group_name(course.name)
-      if group_name
-        FilesystemEnforcer.fix_tree(course.directory_path.to_s)
-        Rails.logger.info("Fixed permissions for course directory #{course.directory_path} after adding staff member")
+      # Skip fixing permissions if course was just created (to allow reload_course_config to work)
+      # Check if course was created very recently (within last 5 seconds)
+      skip_permission_fix = course.created_at && (Time.current - course.created_at) < 5.seconds
+      
+      unless skip_permission_fix
+        require_relative "../services/filesystem_enforcer"
+        group_name = UnixGroupManager.safe_group_name(course.name)
+        if group_name
+          FilesystemEnforcer.fix_tree(course.directory_path.to_s)
+          Rails.logger.info("Fixed permissions for course directory #{course.directory_path} after adding staff member")
+        end
       end
     end
   end
