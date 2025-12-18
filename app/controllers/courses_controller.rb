@@ -291,14 +291,36 @@ class CoursesController < ApplicationController
       # IMPORTANT: Reload course config BEFORE fixing directory permissions
       # because reload_course_config needs to read course.rb, and fix_tree
       # sets directory to drwxrws--- which would block access
+      Rails.logger.info("About to reload course config for #{@newCourse.name}")
+      Rails.logger.info("Source config path: #{@newCourse.source_config_file_path}")
+      Rails.logger.info("Process uid: #{Process.uid}, gid: #{Process.gid}")
+      
+      # Verify directory and file are accessible before trying to reload
+      dir_path = @newCourse.directory_path
+      source_config = @newCourse.source_config_file_path
+      begin
+        dir_stat = File.stat(dir_path) if Dir.exist?(dir_path)
+        file_stat = File.stat(source_config) if File.exist?(source_config)
+        Rails.logger.info("Before reload_config - Directory: readable=#{File.readable?(dir_path)}, executable=#{File.executable?(dir_path)}, uid=#{dir_stat.uid}, gid=#{dir_stat.gid}, mode=#{dir_stat.mode.to_s(8)}") if dir_stat
+        Rails.logger.info("Before reload_config - File: readable=#{File.readable?(source_config)}, uid=#{file_stat.uid}, gid=#{file_stat.gid}, mode=#{file_stat.mode.to_s(8)}") if file_stat
+      rescue StandardError => e
+        Rails.logger.warn("Could not check directory/file stats before reload: #{e.message}")
+      end
+      
       @newCourse.reload_course_config
+      Rails.logger.info("Successfully reloaded course config for #{@newCourse.name}")
+      
       # Now that config is loaded, lock down directory permissions
+      Rails.logger.info("Locking down directory permissions for #{@newCourse.name}")
       FilesystemEnforcer.fix_tree(@newCourse.directory_path.to_s)
-    rescue StandardError, SyntaxError
+      Rails.logger.info("Successfully locked down directory permissions")
+    rescue StandardError, SyntaxError => e
+      Rails.logger.error("Failed to reload course config for #{@newCourse.name}: #{e.class} - #{e.message}")
+      Rails.logger.error("Backtrace: #{e.backtrace.first(10).join("\n")}")
       # roll back course creation and instruction creation
       new_cud.destroy
       @newCourse.destroy
-      flash[:error] = "Can't load course config for #{@newCourse.name}."
+      flash[:error] = "Can't load course config for #{@newCourse.name}: #{e.message}"
       render(action: "new") && return
     else
       flash[:success] = "New Course #{@newCourse.name} successfully created!"

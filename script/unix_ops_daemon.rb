@@ -125,11 +125,13 @@ module UnixOps
           require "fileutils"
           group_name = payload["group_name"]
           path = payload["path"]
-          owner = payload["owner"] || "root"  # Default to root if not specified
+          # If owner is explicitly nil or empty string, keep current owner
+          # If owner is not specified in payload, default to root
+          owner = payload.key?("owner") ? payload["owner"] : "root"
           require "etc"
           group_info = Etc.getgrnam(group_name)
           
-          # Get owner UID if specified
+          # Get owner UID if specified (non-nil and non-empty)
           owner_uid = nil
           if owner && owner != ""
             begin
@@ -139,9 +141,11 @@ module UnixOps
               owner_uid = nil
             end
           end
+          # If owner was nil or empty string, owner_uid remains nil, which keeps current owner
           
           File.chown(owner_uid, group_info.gid, path)
-          [true, "chgrp", { path: path, group_name: group_name, gid: group_info.gid, owner: owner || "unchanged" }]
+          owner_desc = owner_uid ? owner : "unchanged"
+          [true, "chgrp", { path: path, group_name: group_name, gid: group_info.gid, owner: owner_desc }]
         rescue ArgumentError
           [false, "group_or_file_not_found", nil]
         rescue StandardError => e

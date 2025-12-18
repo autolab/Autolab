@@ -62,6 +62,9 @@ class UnixGroupManager
         jobs_uri.path = "/jobs"
       end
 
+      Rails.logger.info("UnixGroupManager.call_delegate: action=#{action}, payload=#{payload.inspect}")
+      Rails.logger.info("UnixGroupManager.call_delegate: URL=#{jobs_uri}")
+
       request = Net::HTTP::Post.new(jobs_uri)
       request["Content-Type"] = "application/json"
       if delegate_secret && !delegate_secret.empty?
@@ -74,14 +77,24 @@ class UnixGroupManager
       http.open_timeout = delegate_timeout
       http.read_timeout = delegate_timeout
 
+      Rails.logger.info("UnixGroupManager.call_delegate: Sending request to delegate...")
       response = http.request(request)
       body = response.body.to_s
+      Rails.logger.info("UnixGroupManager.call_delegate: Response code=#{response.code}, body=#{body}")
+      
       parsed = body.empty? ? {} : JSON.parse(body)
       success = response.code.to_i.between?(200, 299) && parsed.fetch("success", true)
-      Rails.logger.warn("UnixGroupManager delegate #{action} failed: #{response.code} #{body}") unless success
+      
+      if success
+        Rails.logger.info("UnixGroupManager.call_delegate: SUCCESS for action=#{action}")
+      else
+        Rails.logger.warn("UnixGroupManager delegate #{action} failed: #{response.code} #{body}")
+      end
+      
       [success, parsed]
     rescue StandardError => e
-      Rails.logger.warn("UnixGroupManager delegate #{action} error: #{e.message}")
+      Rails.logger.error("UnixGroupManager delegate #{action} error: #{e.class} - #{e.message}")
+      Rails.logger.error("UnixGroupManager delegate #{action} backtrace: #{e.backtrace.first(5).join("\n")}")
       [false, {}]
     end
   end
@@ -121,7 +134,13 @@ class UnixGroupManager
     return false if path.nil? || group_name.nil? || group_name.empty?
     
     if delegate_enabled?
-      success, _parsed = call_delegate("chgrp", path: path, group_name: group_name, owner: owner)
+      Rails.logger.info("UnixGroupManager.chgrp_path: path=#{path}, group=#{group_name}, owner=#{owner || 'nil (keep current)'}")
+      success, parsed = call_delegate("chgrp", path: path, group_name: group_name, owner: owner)
+      if success
+        Rails.logger.info("UnixGroupManager.chgrp_path: SUCCESS for #{path}")
+      else
+        Rails.logger.error("UnixGroupManager.chgrp_path: FAILED for #{path}, response: #{parsed.inspect}")
+      end
       return success
     end
     
@@ -142,7 +161,13 @@ class UnixGroupManager
     return false if path.nil?
     
     if delegate_enabled?
-      success, _parsed = call_delegate("chmod", path: path, mode: mode)
+      Rails.logger.info("UnixGroupManager.chmod_path: path=#{path}, mode=#{mode.to_s(8)} (#{mode})")
+      success, parsed = call_delegate("chmod", path: path, mode: mode)
+      if success
+        Rails.logger.info("UnixGroupManager.chmod_path: SUCCESS for #{path}")
+      else
+        Rails.logger.error("UnixGroupManager.chmod_path: FAILED for #{path}, response: #{parsed.inspect}")
+      end
       return success
     end
     
