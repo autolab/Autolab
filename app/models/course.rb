@@ -431,12 +431,24 @@ class Course < ApplicationRecord
     end
     
     # Read source config file
+    # If directory is locked down (2770), use delegate to read file with root privileges
     Rails.logger.info("Attempting to open and read source config file...")
     begin
-    s = File.open(source_config_file_path, "r")
-    lines = s.readlines
-    s.close
-      Rails.logger.info("Successfully read #{lines.length} lines from source config file")
+      # Check if we can read the file directly
+      if File.readable?(source_config_file_path)
+        s = File.open(source_config_file_path, "r")
+        lines = s.readlines
+        s.close
+        Rails.logger.info("Successfully read #{lines.length} lines from source config file directly")
+      elsif UnixGroupManager.delegate_enabled?
+        # Directory is locked down, use delegate to read file
+        Rails.logger.info("File not readable, using delegate to read with root privileges")
+        content = UnixGroupManager.read_file_via_delegate(source_config_file_path)
+        lines = content.split("\n")
+        Rails.logger.info("Successfully read #{lines.length} lines from source config file via delegate")
+      else
+        raise "Cannot read #{source_config_file_path} - permission denied and delegate not available"
+      end
     rescue Errno::EACCES => e
       error_msg = "Permission denied reading #{source_config_file_path}: #{e.message}. Check file permissions and directory permissions."
       Rails.logger.error(error_msg)
@@ -450,7 +462,14 @@ class Course < ApplicationRecord
     end
 
     Rails.logger.info("Compiling config source...")
-    config_source = File.open(source_config_file_path, "r", &:read)
+    # Read config source - use delegate if needed
+    if File.readable?(source_config_file_path)
+      config_source = File.open(source_config_file_path, "r", &:read)
+    elsif UnixGroupManager.delegate_enabled?
+      config_source = UnixGroupManager.read_file_via_delegate(source_config_file_path)
+    else
+      raise "Cannot read #{source_config_file_path} for compilation"
+    end
     RubyVM::InstructionSequence.compile(config_source)
     Rails.logger.info("Config source compiled successfully")
 
@@ -503,6 +522,14 @@ class Course < ApplicationRecord
     
     # Don't apply FilesystemEnforcer to config files - they're in shared courseConfig directory
     # FilesystemEnforcer should only touch files in courses/ folder, not shared config directories
+    
+    # Ensure config file is readable
+    begin
+      File.chmod(0o644, config_file_path) if File.exist?(config_file_path)
+      Rails.logger.info("Ensured config file is readable: #{config_file_path}")
+    rescue StandardError => e
+      Rails.logger.warn("Could not set config file permissions: #{e.message}")
+    end
 
     Rails.logger.info("Loading config file...")
     load(config_file_path)

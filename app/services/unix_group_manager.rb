@@ -156,6 +156,26 @@ class UnixGroupManager
     end
   end
 
+  # Read file contents via delegate (useful when file/directory is locked down)
+  def self.read_file_via_delegate(path)
+    return nil if path.nil?
+    
+    if delegate_enabled?
+      Rails.logger.info("UnixGroupManager.read_file_via_delegate: path=#{path}")
+      success, parsed = call_delegate("read_file", path: path)
+      if success && parsed && parsed["content"]
+        Rails.logger.info("UnixGroupManager.read_file_via_delegate: SUCCESS for #{path} (#{parsed['size']} bytes)")
+        return parsed["content"]
+      else
+        Rails.logger.error("UnixGroupManager.read_file_via_delegate: FAILED for #{path}, response: #{parsed.inspect}")
+        return nil
+      end
+    end
+    
+    # Not using delegate - try to read directly
+    File.read(path) if File.readable?(path)
+  end
+
   # Set file permissions via delegate
   def self.chmod_path(path, mode)
     return false if path.nil?

@@ -180,6 +180,18 @@ module UnixOps
         rescue StandardError => e
           [false, e.message, nil]
         end
+      when "read_file"
+        begin
+          path = payload["path"]
+          unless File.exist?(path)
+            [false, "file_not_found", nil]
+          else
+            content = File.read(path)
+            [true, "read_file", { path: path, content: content, size: content.bytesize }]
+          end
+        rescue StandardError => e
+          [false, e.message, nil]
+        end
       else
         [false, "unknown_action", nil]
       end

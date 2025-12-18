@@ -368,25 +368,22 @@ private
     # Add user to course group if they already have Unix user (SSH key exists)
     UnixGroupManager.update_course_staff_membership(course, user, is_staff: true)
     
-    # Skip fixing permissions during course creation
-    # The controller will handle permission fixing after reload_course_config succeeds
-    # We detect course creation by checking if the course directory was just initialized
-    # (if course.rb exists but config file doesn't, we're likely in the creation phase)
+    # Fix course directory permissions after staff member is added
+    # Set to strict permissions (2770 = drwxrws---) with root:<course-group> ownership
+    # This ensures only root and course group members can access
     if course && course.directory_path && Dir.exist?(course.directory_path)
-      source_config = course.source_config_file_path
       config_file = course.config_file_path
       
-      # If source config exists but processed config doesn't, we're in creation phase
-      # Also check if course was just saved (has an id but config hasn't been loaded yet)
-      skip_permission_fix = File.exist?(source_config) && !File.exist?(config_file)
-      
-      unless skip_permission_fix
+      # Only fix permissions if config file exists (course is fully set up)
+      if File.exist?(config_file)
         require_relative "../services/filesystem_enforcer"
         group_name = UnixGroupManager.safe_group_name(course.name)
         if group_name
           FilesystemEnforcer.fix_tree(course.directory_path.to_s)
-          Rails.logger.info("Fixed permissions for course directory #{course.directory_path} after adding staff member")
+          Rails.logger.info("Fixed permissions for course directory #{course.directory_path} after adding staff member #{user.email}")
         end
+      else
+        Rails.logger.info("Skipping permission fix for #{course.directory_path} - config file not yet created")
       end
     end
   end

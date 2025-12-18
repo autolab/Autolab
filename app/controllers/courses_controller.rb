@@ -183,12 +183,10 @@ class CoursesController < ApplicationController
         begin
           # Unix group was already created in before_create callback
           # Staff membership is handled by after_create callback in CourseUserDatum
-          # IMPORTANT: Reload course config BEFORE fixing directory permissions
-          # because reload_course_config needs to read course.rb, and fix_tree
-          # sets directory to drwxrws--- which would block access
+          # IMPORTANT: Reload course config
+          # Directory permissions will be locked down by CourseUserDatum callback
+          # after staff members are added to the course group
           @newCourse.reload_course_config
-          # Now that config is loaded, lock down directory permissions
-          FilesystemEnforcer.fix_tree(@newCourse.directory_path.to_s)
         rescue StandardError, SyntaxError => e
           # roll back course creation and instruction creation
           new_cud.destroy
@@ -310,10 +308,12 @@ class CoursesController < ApplicationController
       @newCourse.reload_course_config
       Rails.logger.info("Successfully reloaded course config for #{@newCourse.name}")
       
-      # Now that config is loaded, lock down directory permissions
+      # Lock down directory permissions now that config is loaded
+      # Directory will be root:<course-group> with 2770 (drwxrws---) permissions
+      # Rails will use delegate (with root privileges) to access files when needed
       Rails.logger.info("Locking down directory permissions for #{@newCourse.name}")
       FilesystemEnforcer.fix_tree(@newCourse.directory_path.to_s)
-      Rails.logger.info("Successfully locked down directory permissions")
+      Rails.logger.info("Successfully locked down directory permissions to 2770")
     rescue StandardError, SyntaxError => e
       Rails.logger.error("Failed to reload course config for #{@newCourse.name}: #{e.class} - #{e.message}")
       Rails.logger.error("Backtrace: #{e.backtrace.first(10).join("\n")}")
