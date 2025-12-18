@@ -134,17 +134,22 @@ module UnixOps
           # Get owner UID if specified (non-nil and non-empty)
           owner_uid = nil
           if owner && owner != ""
-            begin
-              owner_uid = Etc.getpwnam(owner).uid
-            rescue ArgumentError
-              # Owner doesn't exist, use nil to keep current owner
-              owner_uid = nil
+            # Check if owner is a numeric UID (as string or integer)
+            if owner.to_s.match?(/^\d+$/)
+              owner_uid = owner.to_i
+            else
+              begin
+                owner_uid = Etc.getpwnam(owner.to_s).uid
+              rescue ArgumentError
+                # Owner doesn't exist, use nil to keep current owner
+                owner_uid = nil
+              end
             end
           end
           # If owner was nil or empty string, owner_uid remains nil, which keeps current owner
           
           File.chown(owner_uid, group_info.gid, path)
-          owner_desc = owner_uid ? owner : "unchanged"
+          owner_desc = owner_uid ? (owner.to_s.match?(/^\d+$/) ? "uid:#{owner_uid}" : owner) : "unchanged"
           [true, "chgrp", { path: path, group_name: group_name, gid: group_info.gid, owner: owner_desc }]
         rescue ArgumentError
           [false, "group_or_file_not_found", nil]

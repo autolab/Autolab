@@ -9,8 +9,19 @@ class FilesystemEnforcer
 
   # Enforce owner-group & perms on a single path
   # Optionally pass group_name to avoid database lookup
+  # Only operates on paths under courses/ folder - shared directories like courseConfig/assessmentConfig are excluded
   def self.fix_path(path, group_name: nil)
     return unless File.exist?(path)
+    
+    # Safety guard: FilesystemEnforcer should only touch files in courses/ folder
+    # Shared directories like courseConfig/assessmentConfig need different permissions
+    abs_path = Pathname.new(path).expand_path.to_s
+    courses_root = Rails.root.join("courses").expand_path.to_s + File::SEPARATOR
+    unless abs_path.start_with?(courses_root)
+      Rails.logger.warn("FilesystemEnforcer: Skipping #{path} - only files under courses/ should be enforced") if Rails.logger
+      return
+    end
+    
     grp = group_name || inferred_group(path) || GROUP
 
     begin

@@ -305,61 +305,35 @@ class Course < ApplicationRecord
     # which is called from courses_controller after reload_course_config succeeds
     
     # Ensure courseConfig and assessmentConfig directories exist and are accessible
-    # These are shared directories, so they should be writable by the Rails process
-    # We set group ownership but keep permissive permissions so Rails can write config files
+    # These are shared directories that Rails needs to write to for config files
+    # Delegate handles all permission setting since it has root privileges
     course_config_dir = Rails.root.join("courseConfig").to_s
     assessment_config_dir = Rails.root.join("assessmentConfig").to_s
     
-    # Just ensure they exist
+    # Just ensure they exist - delegate will set permissions
     FileUtils.mkdir_p(course_config_dir) unless Dir.exist?(course_config_dir)
     FileUtils.mkdir_p(assessment_config_dir) unless Dir.exist?(assessment_config_dir)
     
-    Rails.logger.info("Ensuring courseConfig and assessmentConfig are writable by Rails process")
-    
-    # Set group ownership and permissive permissions for shared directories
-    # Rails process needs to write config files here during course creation
-    autolab_group = ENV.fetch("COURSE_FS_GROUP", "autolab")
-    
-    [course_config_dir, assessment_config_dir].each do |dir|
-      next unless Dir.exist?(dir)
+    # Use delegate to set correct ownership and permissions (delegate has root privileges)
+    # These directories need to be writable by Rails process permanently, not just temporarily
+    if UnixGroupManager.delegate_enabled?
+      autolab_group = ENV.fetch("COURSE_FS_GROUP", "autolab")
+      rails_uid = Process.uid
       
-      begin
-        stat_before = File.stat(dir)
-        Rails.logger.info("Before fixing #{dir}: uid=#{stat_before.uid}, gid=#{stat_before.gid}, mode=#{stat_before.mode.to_s(8)}")
-      rescue StandardError => e
-        Rails.logger.warn("Could not stat #{dir}: #{e.message}")
-      end
+      Rails.logger.info("Ensuring courseConfig and assessmentConfig are writable via delegate (Rails uid=#{rails_uid}, group=#{autolab_group})")
       
-      if UnixGroupManager.delegate_enabled?
-        # Set group to autolab, but keep owner as Rails process (don't set to root)
-        # This allows Rails to write while maintaining group ownership
-        UnixGroupManager.chgrp_path(dir, autolab_group, owner: nil)
+      [course_config_dir, assessment_config_dir].each do |dir|
+        next unless Dir.exist?(dir)
         
-        # Set permissive permissions (drwxrwxr-x = 0775) so Rails can write
-        # Note: We use 0775 instead of 2770 because we want owner (Rails process) to be able to write
+        # Delegate sets owner to Rails process, group to autolab, permissive permissions (775)
+        # This allows Rails to write config files while maintaining group ownership
+        UnixGroupManager.chgrp_path(dir, autolab_group, owner: rails_uid.to_s)
         UnixGroupManager.chmod_path(dir, 0o775)
         
-        Rails.logger.info("Set group #{autolab_group} and mode 775 on #{dir} via delegate")
-      else
-        # Not using delegate - set locally
-        begin
-          gid = Etc.getgrnam(autolab_group).gid
-          File.chown(nil, gid, dir)
-          File.chmod(0o775, dir)
-          Rails.logger.info("Set group #{autolab_group} and mode 775 on #{dir} locally")
-        rescue StandardError => e
-          Rails.logger.warn("Could not set group/permissions on #{dir}: #{e.message}")
-        end
-      end
-      
-      begin
-        stat_after = File.stat(dir)
-        Rails.logger.info("After fixing #{dir}: uid=#{stat_after.uid}, gid=#{stat_after.gid}, mode=#{stat_after.mode.to_s(8)}")
-        Rails.logger.info("#{dir} writable by current process? #{File.writable?(dir)}")
-      rescue StandardError => e
-        Rails.logger.warn("Could not verify stats for #{dir}: #{e.message}")
+        Rails.logger.info("Set #{dir} via delegate: owner=#{rails_uid}, group=#{autolab_group}, mode=775")
       end
     end
+    # If delegate not enabled, Rails process must have permission to set these itself
   end
 
   def order_of_dates
@@ -496,7 +470,8 @@ class Course < ApplicationRecord
     if File.exist? config_file_path
       Rails.logger.info("Backing up existing config file...")
       File.rename(config_file_path, config_backup_file_path)
-      FilesystemEnforcer.fix_path(config_backup_file_path.to_s)
+      # Don't apply FilesystemEnforcer to config files - they're in shared courseConfig directory
+      # and need to remain writable by Rails process
     end
 
     # Write processed config file
@@ -526,8 +501,8 @@ class Course < ApplicationRecord
       raise error_msg
     end
     
-    Rails.logger.info("Applying FilesystemEnforcer to config file...")
-    FilesystemEnforcer.fix_path(config_file_path.to_s)
+    # Don't apply FilesystemEnforcer to config files - they're in shared courseConfig directory
+    # FilesystemEnforcer should only touch files in courses/ folder, not shared config directories
 
     Rails.logger.info("Loading config file...")
     load(config_file_path)

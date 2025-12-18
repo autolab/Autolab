@@ -3458,8 +3458,8 @@ class Course < ApplicationRecord
     FileUtils.mkdir_p Rails.root.join("assessmentConfig")
     FileUtils.mkdir_p Rails.root.join("courseConfig")
     FilesystemEnforcer.fix_path(dir_path.to_s)
-    FilesystemEnforcer.fix_path(Rails.root.join("assessmentConfig").to_s)
-    FilesystemEnforcer.fix_path(Rails.root.join("courseConfig").to_s)
+    # Don't apply FilesystemEnforcer to courseConfig/assessmentConfig - they're shared directories
+    # that Rails needs to write to. FilesystemEnforcer should only touch files in courses/ folder.
 
     # Touch log and copy default course.rb
     FileUtils.touch File.join(dir_path, "autolab.log")
@@ -3467,10 +3467,10 @@ class Course < ApplicationRecord
     default_course_rb = Rails.root.join("lib", "__defaultCourse.rb") # rubocop:disable Rails/FilePath
     FileUtils.cp default_course_rb, course_rb
 
-    # Sweep perms/ownership on created trees
+    # Sweep perms/ownership on created trees (only for course directory, not shared config dirs)
     FilesystemEnforcer.fix_tree(dir_path.to_s)
-    FilesystemEnforcer.fix_tree(Rails.root.join("assessmentConfig").to_s)
-    FilesystemEnforcer.fix_tree(Rails.root.join("courseConfig").to_s)
+    # Don't apply FilesystemEnforcer to courseConfig/assessmentConfig - they're shared directories
+    # that Rails needs to write to. FilesystemEnforcer should only touch files in courses/ folder.
   end
 
   def order_of_dates
