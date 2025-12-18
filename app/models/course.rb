@@ -131,24 +131,32 @@ class Course < ApplicationRecord
     
     # Create initial files BEFORE setting strict ownership/permissions
     # This allows the Rails process to create files, then we fix ownership afterwards
-    FileUtils.touch File.join(dir_path, "autolab.log")
-    course_rb = File.join(dir_path, "course.rb")
+    autolab_log_path = File.join(dir_path, "autolab.log")
+    FileUtils.touch autolab_log_path
+    course_rb_path = File.join(dir_path, "course.rb")
     default_course_rb = Rails.root.join("lib", "__defaultCourse.rb") # rubocop:disable Rails/FilePath
-    FileUtils.cp default_course_rb, course_rb
+    FileUtils.cp default_course_rb, course_rb_path
     
-    # Now set group ownership and permissions
+    # Now set ownership on directory and files via delegate
     # When using delegate, get GID from delegate and use it directly
     if group_name
       if UnixGroupManager.delegate_enabled?
         # Always use delegate chgrp - runs on host with proper privileges
         # The Rails container doesn't have permission to chown, so delegate must do it
-        Rails.logger.info("Setting group #{group_name} on #{dir_path} via delegate chgrp (container lacks chown permission)")
+        Rails.logger.info("Setting group #{group_name} on #{dir_path} and files via delegate chgrp")
         
         # Give group creation a moment to complete
         sleep(0.2) if UnixGroupManager.ensure_group(group_name)
         
+        # Set ownership on directory first
         if UnixGroupManager.chgrp_path(dir_path.to_s, group_name, owner: "root")
-          # Verify it worked
+          # Set ownership on the files we just created (so Rails can read them later)
+          # Note: We set owner to nil (keep current owner) for files so Rails process can still access them
+          # The directory being root:<course-group> with setgid will ensure new files inherit the group
+          UnixGroupManager.chgrp_path(autolab_log_path, group_name, owner: nil) if File.exist?(autolab_log_path)
+          UnixGroupManager.chgrp_path(course_rb_path, group_name, owner: nil) if File.exist?(course_rb_path)
+          
+          # Verify directory ownership worked
           begin
             stat_after = File.stat(dir_path)
             gid = UnixGroupManager.get_group_gid(group_name)
@@ -169,6 +177,8 @@ class Course < ApplicationRecord
           group_info = Etc.getgrnam(group_name)
           gid = group_info.gid
           File.chown(nil, gid, dir_path.to_s)
+          File.chown(nil, gid, autolab_log_path) if File.exist?(autolab_log_path)
+          File.chown(nil, gid, course_rb_path) if File.exist?(course_rb_path)
           Rails.logger.info("Successfully set group #{group_name} (gid #{gid}) on course directory #{dir_path}")
         rescue ArgumentError => e
           Rails.logger.error("Group #{group_name} not found locally. Delegate is not enabled, so local lookup is required.")
@@ -176,26 +186,27 @@ class Course < ApplicationRecord
       end
     end
     
-    # Use FilesystemEnforcer to ensure correct permissions
-    # Pass group_name explicitly to avoid database lookup
-    FilesystemEnforcer.fix_path(dir_path.to_s, group_name: group_name)
+    # Set directory group ownership but keep permissions permissive temporarily
+    # This allows the Rails process to read course.rb during reload_course_config
+    # Strict permissions will be set later by FilesystemEnforcer.fix_tree (called from controller)
+    
+    # Set file permissions to ensure files are readable/writable by owner
+    # Files are set to -rw-rw---- which allows owner (Rails process) and group to read/write
+    if File.exist?(autolab_log_path)
+      FilesystemEnforcer.fix_path(autolab_log_path, group_name: group_name)
+    end
+    if File.exist?(course_rb_path)
+      FilesystemEnforcer.fix_path(course_rb_path, group_name: group_name)
+    end
+    
+    # Note: We intentionally do NOT set strict directory permissions (drwxrws---) here
+    # because the Rails process needs to access the directory to read course.rb during reload_course_config
+    # The directory permissions will be properly locked down by FilesystemEnforcer.fix_tree
+    # which is called from courses_controller after reload_course_config succeeds
+    
+    # However, we should ensure courseConfig directory exists and is accessible
     FilesystemEnforcer.fix_path(Rails.root.join("assessmentConfig").to_s)
     FilesystemEnforcer.fix_path(Rails.root.join("courseConfig").to_s)
-
-    # Sweep perms/ownership on created trees (with explicit group_name)
-    if group_name
-      # Fix each file/dir with explicit group
-      Dir.glob(File.join(dir_path, "**", "*"), File::FNM_DOTMATCH).each do |p|
-        base = File.basename(p)
-        next if base == "." || base == ".."
-        FilesystemEnforcer.fix_path(p, group_name: group_name)
-      end
-      FilesystemEnforcer.fix_path(dir_path.to_s, group_name: group_name)
-    else
-    FilesystemEnforcer.fix_tree(dir_path.to_s)
-    end
-    FilesystemEnforcer.fix_tree(Rails.root.join("assessmentConfig").to_s)
-    FilesystemEnforcer.fix_tree(Rails.root.join("courseConfig").to_s)
   end
 
   def order_of_dates
