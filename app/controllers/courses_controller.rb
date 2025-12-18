@@ -284,52 +284,106 @@ class CoursesController < ApplicationController
       render(action: "new") && return
     end
 
+    Rails.logger.info("=== COURSE CREATION: Starting config reload and permission setup for #{@newCourse.name} ===")
     begin
       # Unix group was already created in before_create callback
       # IMPORTANT: Reload course config BEFORE fixing directory permissions
       # because reload_course_config needs to read course.rb, and fix_tree
       # sets directory to drwxrws--- which would block access
-      Rails.logger.info("About to reload course config for #{@newCourse.name}")
+      Rails.logger.info("Step 1: Preparing to reload course config for #{@newCourse.name}")
       Rails.logger.info("Source config path: #{@newCourse.source_config_file_path}")
-      Rails.logger.info("Process uid: #{Process.uid}, gid: #{Process.gid}")
+      Rails.logger.info("Process uid: #{Process.uid}, gid: #{Process.gid}, euid: #{Process.euid}, egid: #{Process.egid}")
       
       # Verify directory and file are accessible before trying to reload
       dir_path = @newCourse.directory_path
       source_config = @newCourse.source_config_file_path
+      Rails.logger.info("Verifying directory and file accessibility...")
       begin
-        dir_stat = File.stat(dir_path) if Dir.exist?(dir_path)
-        file_stat = File.stat(source_config) if File.exist?(source_config)
-        Rails.logger.info("Before reload_config - Directory: readable=#{File.readable?(dir_path)}, executable=#{File.executable?(dir_path)}, uid=#{dir_stat.uid}, gid=#{dir_stat.gid}, mode=#{dir_stat.mode.to_s(8)}") if dir_stat
-        Rails.logger.info("Before reload_config - File: readable=#{File.readable?(source_config)}, uid=#{file_stat.uid}, gid=#{file_stat.gid}, mode=#{file_stat.mode.to_s(8)}") if file_stat
+        dir_exists = Dir.exist?(dir_path)
+        file_exists = File.exist?(source_config)
+        Rails.logger.info("Directory exists: #{dir_exists}, File exists: #{file_exists}")
+        
+        if dir_exists
+          dir_stat = File.stat(dir_path)
+          Rails.logger.info("Directory stats: uid=#{dir_stat.uid}, gid=#{dir_stat.gid}, mode=#{dir_stat.mode.to_s(8)}, readable=#{File.readable?(dir_path)}, executable=#{File.executable?(dir_path)}")
+        else
+          Rails.logger.error("Directory does not exist: #{dir_path}")
+        end
+        
+        if file_exists
+          file_stat = File.stat(source_config)
+          Rails.logger.info("File stats: uid=#{file_stat.uid}, gid=#{file_stat.gid}, mode=#{file_stat.mode.to_s(8)}, readable=#{File.readable?(source_config)}")
+        else
+          Rails.logger.error("Source config file does not exist: #{source_config}")
+        end
       rescue StandardError => e
-        Rails.logger.warn("Could not check directory/file stats before reload: #{e.message}")
+        Rails.logger.error("Error checking directory/file stats: #{e.class} - #{e.message}")
+        Rails.logger.error("Backtrace: #{e.backtrace.first(5).join("\n")}")
       end
       
-      @newCourse.reload_course_config
-      Rails.logger.info("Successfully reloaded course config for #{@newCourse.name}")
+      Rails.logger.info("Step 2: Calling @newCourse.reload_course_config...")
+      begin
+        @newCourse.reload_course_config
+        Rails.logger.info("Step 2 complete: Successfully reloaded course config for #{@newCourse.name}")
+      rescue StandardError, SyntaxError => e
+        Rails.logger.error("Step 2 FAILED: reload_course_config raised exception")
+        Rails.logger.error("Exception: #{e.class} - #{e.message}")
+        Rails.logger.error("Backtrace:\n#{e.backtrace.join("\n")}")
+        raise
+      end
       
       # Lock down directory permissions now that config is loaded
       # Directory will be root:<course-group> with 2770 (drwxrws---) permissions
       # Rails will use delegate (with root privileges) to access files when needed
-      Rails.logger.info("Locking down directory permissions for #{@newCourse.name}")
+      Rails.logger.info("Step 3: Locking down directory permissions for #{@newCourse.name}")
+      Rails.logger.info("Directory path: #{@newCourse.directory_path}")
       begin
         FilesystemEnforcer.fix_tree(@newCourse.directory_path.to_s)
-        Rails.logger.info("Successfully locked down directory permissions to 2770")
+        
+        # Verify the permissions were actually set
+        begin
+          final_stat = File.stat(@newCourse.directory_path)
+          expected_mode = 0o2770
+          actual_mode = final_stat.mode & 0o7777
+          Rails.logger.info("After fix_tree - Directory stats: uid=#{final_stat.uid}, gid=#{final_stat.gid}, mode=#{actual_mode.to_s(8)} (expected #{expected_mode.to_s(8)})")
+          if actual_mode == expected_mode
+            Rails.logger.info("Step 3 complete: Successfully locked down directory permissions to 2770")
+          else
+            Rails.logger.warn("Step 3 WARNING: Directory mode is #{actual_mode.to_s(8)}, expected #{expected_mode.to_s(8)}")
+          end
+        rescue StandardError => e
+          Rails.logger.warn("Could not verify final directory permissions: #{e.message}")
+        end
       rescue StandardError => e
-        Rails.logger.error("Failed to lock down directory permissions: #{e.class} - #{e.message}")
+        Rails.logger.error("Step 3 FAILED: Failed to lock down directory permissions: #{e.class} - #{e.message}")
         Rails.logger.error("Backtrace: #{e.backtrace.first(10).join("\n")}")
         # Don't fail course creation if permission locking fails - log and continue
         Rails.logger.warn("Continuing with course creation despite permission fix failure")
       end
+      
+      Rails.logger.info("=== COURSE CREATION: Config reload and permission setup COMPLETED for #{@newCourse.name} ===")
     rescue StandardError, SyntaxError => e
-      Rails.logger.error("Failed to reload course config for #{@newCourse.name}: #{e.class} - #{e.message}")
-      Rails.logger.error("Backtrace: #{e.backtrace.first(10).join("\n")}")
+      Rails.logger.error("=== COURSE CREATION: Config reload FAILED for #{@newCourse.name} ===")
+      Rails.logger.error("Exception: #{e.class} - #{e.message}")
+      Rails.logger.error("Full backtrace:\n#{e.backtrace.join("\n")}")
       # roll back course creation and instruction creation
-      new_cud.destroy
-      @newCourse.destroy
+      Rails.logger.info("Rolling back course creation...")
+      begin
+        new_cud.destroy
+        Rails.logger.info("Destroyed CourseUserDatum")
+      rescue StandardError => e2
+        Rails.logger.error("Failed to destroy CourseUserDatum: #{e2.message}")
+      end
+      begin
+        @newCourse.destroy
+        Rails.logger.info("Destroyed Course")
+      rescue StandardError => e2
+        Rails.logger.error("Failed to destroy Course: #{e2.message}")
+      end
       flash[:error] = "Can't load course config for #{@newCourse.name}: #{e.message}"
       render(action: "new") && return
     else
+      Rails.logger.info("=== COURSE CREATION: SUCCESS - Course #{@newCourse.name} created successfully! ===")
       flash[:success] = "New Course #{@newCourse.name} successfully created!"
       redirect_to(course_onboard_install_asmt_course_assessments_path(@newCourse)) && return
     end

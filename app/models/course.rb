@@ -531,27 +531,92 @@ class Course < ApplicationRecord
       Rails.logger.warn("Could not set config file permissions: #{e.message}")
     end
 
-    Rails.logger.info("Loading config file...")
-    load(config_file_path)
-    Rails.logger.info("Evaluating config module: #{config_module_name}")
+    Rails.logger.info("Loading config file from: #{config_file_path}")
+    begin
+      load(config_file_path)
+      Rails.logger.info("Successfully loaded config file")
+    rescue StandardError => e
+      Rails.logger.error("Failed to load config file: #{e.class} - #{e.message}")
+      raise
+    end
+    
+    Rails.logger.info("Getting config module: #{config_module_name}")
     # rubocop:disable Security/Eval
-    eval(config_module_name)
+    # Evaluate the module name to get the actual Module object
+    begin
+      eval_result = eval(config_module_name)
+      Rails.logger.info("eval(#{config_module_name}) returned: #{eval_result.class} - #{eval_result.inspect[0..100]}")
+    rescue StandardError => e
+      Rails.logger.error("eval(#{config_module_name}) failed: #{e.class} - #{e.message}")
+      raise
+    end
+    
+    # Ensure we're returning a Module, not the result of the last statement
+    if eval_result.is_a?(Module)
+      mod = eval_result
+      Rails.logger.info("eval returned a Module directly: #{mod}")
+    else
+      Rails.logger.info("eval returned #{eval_result.class}, trying Object.const_get(#{config_module_name})")
+      begin
+        mod = Object.const_get(config_module_name)
+        Rails.logger.info("Object.const_get succeeded, got module: #{mod.class}")
+      rescue NameError => e
+        Rails.logger.error("Object.const_get(#{config_module_name}) failed: #{e.class} - #{e.message}")
+        Rails.logger.error("Module #{config_module_name} not found in Object constants")
+        raise "Module #{config_module_name} not found after loading config file"
+      rescue StandardError => e
+        Rails.logger.error("Object.const_get(#{config_module_name}) failed: #{e.class} - #{e.message}")
+        raise
+      end
+    end
+    
+    unless mod.is_a?(Module)
+      error_msg = "Expected Module but got #{mod.class}: #{mod.inspect[0..200]}"
+      Rails.logger.error(error_msg)
+      raise TypeError, error_msg
+    end
     # rubocop:enable Security/Eval
-    Rails.logger.info("=== Successfully completed reload_config_file for course: #{name} ===")
+    Rails.logger.info("=== Successfully completed reload_config_file for course: #{name}, returning module: #{mod.class} (#{mod}) ===")
+    mod
   end
 
   # Reload the course config file and extend the loaded methods to AdminsController
   def reload_course_config
-    Rails.logger.info("Starting reload_course_config (calls reload_config_file then extends AdminsController)")
-    mod = reload_config_file
-    Rails.logger.info("reload_config_file returned module, extending AdminsController...")
-    AdminsController.extend(mod)
-    Rails.logger.info("Successfully extended AdminsController with config module")
-    mod
-  rescue StandardError => e
-    Rails.logger.error("Error in reload_course_config: #{e.class} - #{e.message}")
-    Rails.logger.error("Backtrace: #{e.backtrace.first(10).join("\n")}")
-    raise
+    Rails.logger.info("=== STARTING reload_course_config for course: #{name} ===")
+    Rails.logger.info("This will call reload_config_file, then extend AdminsController with the module")
+    begin
+      Rails.logger.info("Step 1: Calling reload_config_file...")
+      mod = reload_config_file
+      Rails.logger.info("Step 1 complete: reload_config_file returned: #{mod.class}")
+      Rails.logger.info("Module details: name=#{mod.name rescue 'no name'}, class=#{mod.class}, instance_of?(Module)=#{mod.is_a?(Module)}")
+      
+      unless mod.is_a?(Module)
+        error_msg = "reload_config_file did not return a Module, got: #{mod.class} - #{mod.inspect[0..200]}"
+        Rails.logger.error(error_msg)
+        raise TypeError, error_msg
+      end
+      
+      Rails.logger.info("Step 2: Extending AdminsController with module #{mod}...")
+      Rails.logger.info("AdminsController class before extend: #{AdminsController.class}")
+      begin
+        AdminsController.extend(mod)
+        Rails.logger.info("Step 2 complete: Successfully extended AdminsController")
+        Rails.logger.info("AdminsController class after extend: #{AdminsController.class}")
+        Rails.logger.info("=== SUCCESS: reload_course_config completed for course: #{name} ===")
+      rescue StandardError => e
+        Rails.logger.error("Failed to extend AdminsController: #{e.class} - #{e.message}")
+        Rails.logger.error("Module was: #{mod.class} (#{mod})")
+        Rails.logger.error("Backtrace: #{e.backtrace.first(10).join("\n")}")
+        raise
+      end
+      
+      mod
+    rescue StandardError => e
+      Rails.logger.error("=== FAILED: reload_course_config for course: #{name} ===")
+      Rails.logger.error("Error: #{e.class} - #{e.message}")
+      Rails.logger.error("Full backtrace:\n#{e.backtrace.join("\n")}")
+      raise
+    end
   end
 
   def sanitized_name

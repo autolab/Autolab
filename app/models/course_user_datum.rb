@@ -368,24 +368,11 @@ private
     # Add user to course group if they already have Unix user (SSH key exists)
     UnixGroupManager.update_course_staff_membership(course, user, is_staff: true)
     
-    # Fix course directory permissions after staff member is added
-    # Set to strict permissions (2770 = drwxrws---) with root:<course-group> ownership
-    # This ensures only root and course group members can access
-    if course && course.directory_path && Dir.exist?(course.directory_path)
-      config_file = course.config_file_path
-      
-      # Only fix permissions if config file exists (course is fully set up)
-      if File.exist?(config_file)
-        require_relative "../services/filesystem_enforcer"
-        group_name = UnixGroupManager.safe_group_name(course.name)
-        if group_name
-          FilesystemEnforcer.fix_tree(course.directory_path.to_s)
-          Rails.logger.info("Fixed permissions for course directory #{course.directory_path} after adding staff member #{user.email}")
-        end
-      else
-        Rails.logger.info("Skipping permission fix for #{course.directory_path} - config file not yet created")
-      end
-    end
+    # DON'T lock down permissions here - the controller will do it after reload_course_config
+    # Locking down permissions here (in the after_create callback) happens BEFORE reload_course_config
+    # runs in the controller, which would prevent Rails from reading course.rb
+    # The controller will lock down permissions after the config is successfully loaded
+    Rails.logger.info("Staff member #{user.email} added to course group for #{course.name} - permissions will be locked down by controller after config loads")
   end
 
   # Update Unix group membership and fix course directory permissions when staff status changes

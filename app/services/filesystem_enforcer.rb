@@ -70,13 +70,17 @@ class FilesystemEnforcer
   # Enforce recursively (includes root)
   def self.fix_tree(root)
     return unless File.exist?(root)
+    Rails.logger.info("FilesystemEnforcer.fix_tree: Starting on #{root}") if Rails.logger
     # Include dotfiles, skip '.' and '..'
     Dir.glob(File.join(root, "**", "*"), File::FNM_DOTMATCH).each do |p|
       base = File.basename(p)
       next if base == "." || base == ".."
       fix_path(p)
     end
+    # Fix root directory last (this sets it to root:<group> with 2770)
+    Rails.logger.info("FilesystemEnforcer.fix_tree: Fixing root directory #{root}") if Rails.logger
     fix_path(root)
+    Rails.logger.info("FilesystemEnforcer.fix_tree: Completed on #{root}") if Rails.logger
   end
 
   # Map filesystem path → course group (folder name under Rails.root/courses)
