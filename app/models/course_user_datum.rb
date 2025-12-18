@@ -368,13 +368,17 @@ private
     # Add user to course group if they already have Unix user (SSH key exists)
     UnixGroupManager.update_course_staff_membership(course, user, is_staff: true)
     
-    # Fix course directory permissions, but skip during course creation
-    # (during course creation, permissions are fixed by controller after reload_course_config)
-    # We can detect course creation by checking if the course was just created (within last few seconds)
+    # Skip fixing permissions during course creation
+    # The controller will handle permission fixing after reload_course_config succeeds
+    # We detect course creation by checking if the course directory was just initialized
+    # (if course.rb exists but config file doesn't, we're likely in the creation phase)
     if course && course.directory_path && Dir.exist?(course.directory_path)
-      # Skip fixing permissions if course was just created (to allow reload_course_config to work)
-      # Check if course was created very recently (within last 5 seconds)
-      skip_permission_fix = course.created_at && (Time.current - course.created_at) < 5.seconds
+      source_config = course.source_config_file_path
+      config_file = course.config_file_path
+      
+      # If source config exists but processed config doesn't, we're in creation phase
+      # Also check if course was just saved (has an id but config hasn't been loaded yet)
+      skip_permission_fix = File.exist?(source_config) && !File.exist?(config_file)
       
       unless skip_permission_fix
         require_relative "../services/filesystem_enforcer"
