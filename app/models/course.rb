@@ -151,27 +151,30 @@ class Course < ApplicationRecord
         # Give group creation a moment to complete
         sleep(0.2) if UnixGroupManager.ensure_group(group_name)
         
-        # Set ownership on directory first
-        if UnixGroupManager.chgrp_path(dir_path.to_s, group_name, owner: "root")
-          # Set permissive directory permissions temporarily (drwxrwxr-x = 0775)
-          # This allows the Rails process (user9999) to access the directory during reload_course_config
-          # Permissions will be locked down to drwxrws--- (2770) after config is loaded
+        # During course creation, we keep directory owned by Rails process temporarily
+        # so it can read course.rb during reload_course_config. Ownership will be
+        # changed to root:<course-group> after config loads (by FilesystemEnforcer.fix_tree)
+        
+        # Set group ownership on directory (keep current owner = Rails process)
+        # This allows Rails to access the directory, but sets the group correctly
+        if UnixGroupManager.chgrp_path(dir_path.to_s, group_name, owner: nil)
+          # Set permissive directory permissions (drwxrwxr-x = 0775)
+          # This ensures the Rails process can read files during reload_course_config
           UnixGroupManager.chmod_path(dir_path.to_s, 0o775)
           
-          # Set ownership on the files we just created (so Rails can read them later)
-          # Note: We set owner to nil (keep current owner) for files so Rails process can still access them
-          # The directory being root:<course-group> with setgid will ensure new files inherit the group
+          # Set group ownership on files (keep current owner = Rails process)
+          # This allows Rails to read the files, but sets the group correctly
           UnixGroupManager.chgrp_path(autolab_log_path, group_name, owner: nil) if File.exist?(autolab_log_path)
           UnixGroupManager.chgrp_path(course_rb_path, group_name, owner: nil) if File.exist?(course_rb_path)
           
-          # Verify directory ownership worked
+          # Verify directory group ownership worked
           begin
             stat_after = File.stat(dir_path)
             gid = UnixGroupManager.get_group_gid(group_name)
             if gid && stat_after.gid == gid
-              Rails.logger.info("Successfully set group #{group_name} (gid #{gid}) on course directory #{dir_path} via delegate")
+              Rails.logger.info("Successfully set group #{group_name} (gid #{gid}) on course directory #{dir_path} via delegate (owner remains Rails process for now)")
             else
-              Rails.logger.info("Set group via delegate chgrp (current gid: #{stat_after.gid})")
+              Rails.logger.info("Set group via delegate chgrp (current gid: #{stat_after.gid}, owner will be set to root later)")
             end
           rescue StandardError => e
             Rails.logger.warn("Could not verify group ownership: #{e.message}")
