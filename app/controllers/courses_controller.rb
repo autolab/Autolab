@@ -312,8 +312,15 @@ class CoursesController < ApplicationController
       # Directory will be root:<course-group> with 2770 (drwxrws---) permissions
       # Rails will use delegate (with root privileges) to access files when needed
       Rails.logger.info("Locking down directory permissions for #{@newCourse.name}")
-      FilesystemEnforcer.fix_tree(@newCourse.directory_path.to_s)
-      Rails.logger.info("Successfully locked down directory permissions to 2770")
+      begin
+        FilesystemEnforcer.fix_tree(@newCourse.directory_path.to_s)
+        Rails.logger.info("Successfully locked down directory permissions to 2770")
+      rescue StandardError => e
+        Rails.logger.error("Failed to lock down directory permissions: #{e.class} - #{e.message}")
+        Rails.logger.error("Backtrace: #{e.backtrace.first(10).join("\n")}")
+        # Don't fail course creation if permission locking fails - log and continue
+        Rails.logger.warn("Continuing with course creation despite permission fix failure")
+      end
     rescue StandardError, SyntaxError => e
       Rails.logger.error("Failed to reload course config for #{@newCourse.name}: #{e.class} - #{e.message}")
       Rails.logger.error("Backtrace: #{e.backtrace.first(10).join("\n")}")

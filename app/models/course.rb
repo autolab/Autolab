@@ -542,8 +542,16 @@ class Course < ApplicationRecord
 
   # Reload the course config file and extend the loaded methods to AdminsController
   def reload_course_config
+    Rails.logger.info("Starting reload_course_config (calls reload_config_file then extends AdminsController)")
     mod = reload_config_file
+    Rails.logger.info("reload_config_file returned module, extending AdminsController...")
     AdminsController.extend(mod)
+    Rails.logger.info("Successfully extended AdminsController with config module")
+    mod
+  rescue StandardError => e
+    Rails.logger.error("Error in reload_course_config: #{e.class} - #{e.message}")
+    Rails.logger.error("Backtrace: #{e.backtrace.first(10).join("\n")}")
+    raise
   end
 
   def sanitized_name
