@@ -183,17 +183,47 @@ class CoursesController < ApplicationController
         begin
           # Unix group was already created in before_create callback
           # Staff membership is handled by after_create callback in CourseUserDatum
-          # IMPORTANT: Reload course config
-          # Directory permissions will be locked down by CourseUserDatum callback
-          # after staff members are added to the course group
+          # IMPORTANT: Reload course config BEFORE fixing directory permissions
+          Rails.logger.info("=== COURSE CREATION: Reloading config for #{@newCourse.name} ===")
           @newCourse.reload_course_config
+          Rails.logger.info("Successfully reloaded course config for #{@newCourse.name}")
+          
+          # Lock down directory permissions now that config is loaded
+          # Directory will be root:<course-group> with 2770 (drwxrws---) permissions
+          Rails.logger.info("Locking down directory permissions for #{@newCourse.name}")
+          begin
+            FilesystemEnforcer.fix_tree(@newCourse.directory_path.to_s)
+            
+            # Verify the permissions were actually set
+            begin
+              final_stat = File.stat(@newCourse.directory_path)
+              expected_mode = 0o2770
+              actual_mode = final_stat.mode & 0o7777
+              Rails.logger.info("After fix_tree - Directory: uid=#{final_stat.uid}, gid=#{final_stat.gid}, mode=#{actual_mode.to_s(8)} (expected #{expected_mode.to_s(8)})")
+              if actual_mode == expected_mode && final_stat.uid == 0
+                Rails.logger.info("Successfully locked down directory permissions to 2770 with root ownership")
+              else
+                Rails.logger.warn("Directory permissions not set correctly: mode=#{actual_mode.to_s(8)}, uid=#{final_stat.uid}")
+              end
+            rescue StandardError => e
+              Rails.logger.warn("Could not verify final directory permissions: #{e.message}")
+            end
+          rescue StandardError => e
+            Rails.logger.error("Failed to lock down directory permissions: #{e.class} - #{e.message}")
+            Rails.logger.error("Backtrace: #{e.backtrace.first(10).join("\n")}")
+            # Don't fail course creation if permission locking fails - log and continue
+            Rails.logger.warn("Continuing with course creation despite permission fix failure")
+          end
         rescue StandardError, SyntaxError => e
+          Rails.logger.error("Failed to reload course config for #{@newCourse.name}: #{e.class} - #{e.message}")
+          Rails.logger.error("Backtrace: #{e.backtrace.first(10).join("\n")}")
           # roll back course creation and instruction creation
           new_cud.destroy
           @newCourse.destroy
-          flash.now[:error] = "Can't load course config for #{@newCourse.name}."
+          flash.now[:error] = "Can't load course config for #{@newCourse.name}: #{e.message}"
           render(action: "new") && return
         else
+          Rails.logger.info("=== COURSE CREATION: SUCCESS - Course #{@newCourse.name} created! ===")
           flash[:success] = "New Course #{@newCourse.name} successfully created!"
           redirect_to(edit_course_path(@newCourse)) && return
         end
