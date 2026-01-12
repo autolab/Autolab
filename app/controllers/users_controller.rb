@@ -2,8 +2,7 @@ class UsersController < ApplicationController
   skip_before_action :set_course
   skip_before_action :authorize_user_for_course
   skip_before_action :authenticate_for_action,
-                     except: [:change_password_for_user, :update_password_for_user,
-                              :lti_launch_link_course]
+                     except: [:change_password_for_user, :update_password_for_user]
   skip_before_action :update_persistent_announcements
   before_action :set_gh_oauth_client, only: [:github_oauth, :github_oauth_callback]
   before_action :set_user,
@@ -330,15 +329,22 @@ class UsersController < ApplicationController
                                               :bad_request)
     end
 
+    # Verify user is instructor for the target course (security check)
+    course = Course.find(params[:course_id])
+    cud = CourseUserDatum.find_cud_for_course(course, current_user.id)
+    unless cud&.has_auth_level?(:instructor)
+      flash[:error] = "Permission denied: you must be an instructor for this course."
+      redirect_to(root_path) && return
+    end
+
     LtiCourseDatum.create(
-      course_id: params[:course_id],
+      course_id: course.id,
       context_id: params[:context_id],
       membership_url: params[:course_memberships_url],
       platform: params[:platform],
       last_synced: DateTime.current
     )
 
-    course = Course.find(params[:course_id])
     flash[:success] = "#{course.name} successfully linked."
     redirect_to(course)
   end
