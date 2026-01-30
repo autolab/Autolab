@@ -2,7 +2,7 @@
 
 <div class="section">
   <h4>AMI Builder</h4>
-  <%= form_with url: { action: :create_ami }, builder: FormBuilderWithDateTimeInput do |f| %>
+  <%= form_with url: { action: :init_ami }, builder: FormBuilderWithDateTimeInput do |f| %>
     <%= f.text_field :image_name,
                      pattern: "^[a-z0-9](_{0,2}[a-z0-9])*(/[a-z0-9](_{0,2}[a-z0-9])*)?$",
                      help_text: "Name of AMI image. Any existing image with the same name will be overwritten." %>

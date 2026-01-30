@@ -26,7 +26,7 @@ class AmiImagesController < ApplicationController
   action_auth_level :add_package, :instructor
   def add_package;
     @ami_image = AmiImage.find(params[:id])
-    @ami_image.packages << if params[:package_version]
+    @ami_image.packages << if !params[:package_version].empty?
                              "#{params[:package_name]}=#{params[:package_version]}"
                            else
                              params[:package_name]
@@ -35,11 +35,25 @@ class AmiImagesController < ApplicationController
     redirect_to edit_course_ami_image_path(@course, @ami_image)
   end
 
-  action_auth_level :create_ami, :instructor
-  def create_ami;
+  action_auth_level :init_ami, :instructor
+  def init_ami;
     image_name = params[:image_name]
     packages = []
     new_ami = AmiImage.create!(name: image_name, packages: packages)
     redirect_to edit_course_ami_image_path(@course, new_ami)
+  end
+
+  action_auth_level :create_ami, :instructor
+  def create_ami;
+    @ami_image = AmiImage.find(params[:id])
+    begin
+      TangoClient.create_ami(@ami_image.name, @ami_image.packages)
+      flash[:success] = "Successfully started AMI process"
+    rescue TangoClient::TangoException => e
+      flash[:error] = "Error while setting AMI process: #{e.message}"
+    rescue StandardError => e
+      flash[:error] = "Unexpected error occurred: #{e.message}"
+    end
+    redirect_to course_ami_images_path(@course)
   end
 end

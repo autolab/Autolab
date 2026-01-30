@@ -133,10 +133,11 @@ Rails.application.routes.draw do
         get "new_package"
         post "add_package"
         post "delete_package"
+        post "create_ami"
       end
 
       collection do
-        post "create_ami"
+        post "init_ami"
       end
     end
 
