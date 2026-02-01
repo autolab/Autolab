@@ -11,15 +11,15 @@
 
 <div class="section">
   <h4>AMI Builder</h4>
-  <%= form_with url: { action: :add_package }, builder: FormBuilderWithDateTimeInput do |f| %>
-    <%= f.text_field :package_name,
+  <%= form_with model: [@course, @ami_image, @ami_package], url: { action: :update }, builder: FormBuilderWithDateTimeInput do |f| %>
+    <%= f.text_field :name,
                      id: 'package-name-input',
                      autocomplete: 'off',
                      placeholder: 'Start typing a package name...' %>
     <ul id="package-suggestions" class="select-dropdown"></ul>
-    <%= f.text_field :package_version,
+    <%= f.text_field :version,
                      help_text: "Version of the package. Leave empty for latest version.",
                      placeholder: "Latest Version"%>
-    <%= f.submit "Add Package" %>
+    <%= f.submit "Save Package" %>
   <% end %>
 </div>

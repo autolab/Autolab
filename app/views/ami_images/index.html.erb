@@ -43,9 +43,9 @@
           </div>
         </td>
         <td>
-          <% image.packages.each do |package| %>
+          <% image.ami_packages.each do |package| %>
             <span class="pkg-chip">
-              <%= image.parse_package(package)[:name] %>
+              <%= package.name %>
             </span>
           <% end %>
         </td>
@@ -77,8 +77,8 @@
             Edit
           </div>
           <div>
-            <%= link_to "<i class='material-icons'>delete</i>".html_safe, edit_course_ami_image_path(@course, image.id),
-                        { title: "Delete this AMI image", class: "btn small" } %>
+            <%= link_to "<i class='material-icons'>delete</i>".html_safe, course_ami_image_path(@course, image.id),
+                        { method: :delete, title: "Delete this AMI image", class: "btn small" } %>
             Delete
           </div>
         </td>

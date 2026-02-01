@@ -9,35 +9,48 @@
                      help_text: "Name of AMI image. Any existing image with the same name will be overwritten." %>
     <h5>Packages</h5>
     <table class="bordered responsive-table">
+      <colgroup>
+        <col style="width: 25%">
+        <col style="width: 25%">
+        <col>
+        <col style="width: 180px">
+      </colgroup>
       <thead>
       <tr>
         <th data-field="package-name">Name</th>
-        <th data-field="package-version">Version</th>
+        <th data-field="package-version">Version (optional)</th>
+        <th data-field="package-source">Source</th>
         <th data-field="options">Options</th>
       </tr>
       </thead>
       <tbody>
-      <% for package in @ami_image.packages do %>
-        <% parsed = @ami_image.parse_package(package) %>
+      <% @ami_image.ami_packages.each do |package| %>
         <tr>
+          <td><%= package.name %></td>
+          <td><%= package.version  %></td>
           <td>
-            <%= parsed[:name] %>
+            Ubuntu APT
           </td>
-          <td><%= parsed[:version]  %></td>
           <td>
-            Todo
-            <%#= link_to "<i class=\"material-icons left\">delete</i>".html_safe, [@course, @assessment, problem], method: :delete, class: "small", data: { confirm: "Deleting will delete all associated problem data (such as scores and annotations) and cannot be undone. Are you sure you want to delete this problem?" } %>
+            <%= link_to "<i class='material-icons'>edit</i>".html_safe,
+                        edit_course_ami_image_ami_package_path(@course, @ami_image.id, package.id),
+                        { title: "View this AMI image", class: "btn small" } %>
+            <%= link_to "<i class='material-icons'>delete</i>".html_safe,
+                        course_ami_image_ami_package_path(@course, @ami_image.id, package.id),
+                { method: :delete,
+                  title: "Delete this AMI package",
+                  class: "btn small" } %>
           </td>
         </tr>
       <% end %>
       <tr>
-        <%= link_to "Add Package".html_safe, new_package_course_ami_image_path(@course, @ami_image), { class: "btn" } %>
+        <%= link_to "Add Package".html_safe, new_course_ami_image_ami_package_path(@course, @ami_image), { class: "btn" } %>
       </tr>
       </tbody>
     </table>
     <br>
     <div class="action_buttons">
-      <%= f.submit "Create AMI" %>
+      <%= f.submit "Build AMI" %>
     </div>
   <% end %>
 </div>

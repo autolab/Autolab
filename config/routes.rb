@@ -128,13 +128,13 @@ Rails.application.routes.draw do
       post "uploadDockerImage"
     end
 
-    resources :ami_images, only: [:index, :new, :edit] do
+    resources :ami_images, only: [:index, :new, :edit, :destroy] do
       member do
-        get "new_package"
-        post "add_package"
-        post "delete_package"
         post "create_ami"
       end
+
+      resources :ami_packages, only: [:new, :create, :edit, :update, :destroy]
+      resources :ami_package_sources, only: [:new, :edit, :update, :destroy]
 
       collection do
         post "init_ami"

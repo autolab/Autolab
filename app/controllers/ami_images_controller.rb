@@ -18,21 +18,11 @@ class AmiImagesController < ApplicationController
     @ami_image = AmiImage.find(params[:id])
   end
 
-  action_auth_level :new_package, :instructor
-  def new_package;
+  action_auth_level :destroy, :instructor
+  def destroy
     @ami_image = AmiImage.find(params[:id])
-  end
-
-  action_auth_level :add_package, :instructor
-  def add_package;
-    @ami_image = AmiImage.find(params[:id])
-    @ami_image.packages << if !params[:package_version].empty?
-                             "#{params[:package_name]}=#{params[:package_version]}"
-                           else
-                             params[:package_name]
-                           end
-    @ami_image.save
-    redirect_to edit_course_ami_image_path(@course, @ami_image)
+    @ami_image.destroy
+    redirect_to course_ami_images_path(@course)
   end
 
   action_auth_level :init_ami, :instructor

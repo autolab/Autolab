@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2026_01_30_202515) do
+ActiveRecord::Schema.define(version: 2026_02_01_212533) do
 
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
@@ -48,6 +48,31 @@ ActiveRecord::Schema.define(version: 2026_01_30_202515) do
     t.integer "status", default: 0, null: false
     t.string "ami_id"
     t.index ["ami_id"], name: "index_ami_images_on_ami_id", unique: true
+  end
+
+  create_table "ami_package_sources", force: :cascade do |t|
+    t.integer "ami_image_id", null: false
+    t.integer "source_type", default: 0, null: false
+    t.string "name"
+    t.string "deb_url"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["ami_image_id"], name: "index_ami_package_sources_on_ami_image_id"
+  end
+
+  create_table "ami_packages", force: :cascade do |t|
+    t.integer "ami_image_id", null: false
+    t.string "name", null: false
+    t.string "version"
+    t.integer "install_type", default: 0
+    t.integer "ami_package_source_id"
+    t.boolean "validated", default: false
+    t.text "validation_error"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["ami_image_id", "name"], name: "index_ami_packages_on_ami_image_id_and_name"
+    t.index ["ami_image_id"], name: "index_ami_packages_on_ami_image_id"
+    t.index ["ami_package_source_id"], name: "index_ami_packages_on_ami_package_source_id"
   end
 
   create_table "annotations", force: :cascade do |t|
@@ -451,4 +476,7 @@ ActiveRecord::Schema.define(version: 2026_01_30_202515) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "ami_package_sources", "ami_images"
+  add_foreign_key "ami_packages", "ami_images"
+  add_foreign_key "ami_packages", "ami_package_sources"
 end
