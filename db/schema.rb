@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2025_11_17_001039) do
+ActiveRecord::Schema.define(version: 2026_01_30_202515) do
 
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
@@ -45,6 +45,9 @@ ActiveRecord::Schema.define(version: 2025_11_17_001039) do
     t.json "packages", default: []
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.integer "status", default: 0, null: false
+    t.string "ami_id"
+    t.index ["ami_id"], name: "index_ami_images_on_ami_id", unique: true
   end
 
   create_table "annotations", force: :cascade do |t|

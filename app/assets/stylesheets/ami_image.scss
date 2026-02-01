@@ -1,0 +1,83 @@
+#package-suggestions {
+  border: 1px solid #ccc;
+  max-height: 200px;
+  overflow-y: auto;
+  margin-top: -32px;
+  position: absolute;
+  background: white;
+  list-style-type: none;
+  padding-left: 0;
+  z-index: 100;
+}
+
+#package-suggestions li {
+  padding: 6px;
+  cursor: pointer;
+}
+
+#package-suggestions li:hover {
+  background: #eee;
+}
+
+.pkg-chip {
+  display: inline-block;
+  background: #eef2f7;
+  color: #333;
+  border-radius: 2px;
+  padding: 2px 8px;
+  font-size: 15px;
+  font-weight: bolder;
+  margin-right: 6px;
+}
+
+.actions-row {
+  display: flex;
+}
+
+.actions-btn {
+  display: flex;
+  width: 48px;
+  height: 48px;
+  font-size: 24px;
+  color: #ffffff;
+  background-color: rgba(153, 0, 0, 0.9);
+  justify-content: center;
+  align-content: center;
+}
+
+.ami-name {
+  font-size: 18px;
+}
+
+.status-cell {
+  font-size: 18px;
+}
+
+.material-icons.status-icon {
+  font-size: 36px;
+}
+
+.center-column {
+  height: 100%;
+  border: 0;
+  outline: 0;
+  display: flex;
+  justify-content: center;
+  align-content: center;
+}
+
+.error-icon {
+  color: red;
+}
+
+.hourglass-icon {
+  color: lightgray;
+}
+
+.building-icon {
+  color: gray;
+}
+
+.success-icon {
+  color: limegreen;
+}

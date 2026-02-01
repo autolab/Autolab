@@ -1,12 +1,28 @@
 <% @title = "Manage AMI Images" %>
 
-<h4>Manage AMI Images</h4>
+<% content_for :stylesheets do %>
+  <%= stylesheet_link_tag "ami_image" %>
+  <%= stylesheet_link_tag "style" %>
+<% end %>
 
-<%= link_to 'New AMI Image', new_course_ami_image_path(@course), { class: "btn" } %>
+<h3>Manage AMI Images</h3>
+<hr>
+
+<div class="row buttons-row">
+  <%= link_to 'New AMI Image', new_course_ami_image_path(@course), { class: "btn" } %>
+</div>
 <table class="prettyBorder">
+  <colgroup>
+    <col style="width: 20%">
+    <col >
+    <col style="width: 80px">
+    <col style="width: 180px">
+  </colgroup>
   <thead>
     <tr>
       <th>Name</th>
+      <th>Packages</th>
+      <th class="center-column">Status</th>
       <th>Actions</th>
     </tr>
   </thead>
@@ -18,10 +34,53 @@
   <% else %>
     <% @ami_images.each do |image| %>
       <tr>
-        <td><%= image.name %></td>
         <td>
-          <%= link_to "<i class='material-icons'>edit</i>".html_safe, edit_course_ami_image_path(@course, image.id),
-                      { title: "View this AMI image", class: "btn" } %>
+          <div>
+            <div class="ami-name"><%= image.name %></div>
+            <div class="ami-id">
+              <%= if image.ami_id.nil? then "Wait for AMI Build" else image.ami_id end%>
+            </div>
+          </div>
+        </td>
+        <td>
+          <% image.packages.each do |package| %>
+            <span class="pkg-chip">
+              <%= image.parse_package(package)[:name] %>
+            </span>
+          <% end %>
+        </td>
+        <td class="status-cell">
+          <div class="center-column">
+            <% if image.status == 1 %>
+              <div class="hourglass-icon">
+                <i class="material-icons status-icon">hourglass_bottom</i>
+              </div>
+            <% elsif image.status == 2%>
+              <div class="building-icon">
+                <i class="material-icons status-icon">construction</i>
+              </div>
+            <% elsif image.status == 0 %>
+              <div class="success-icon">
+                <i class="material-icons status-icon">done_all</i>
+              </div>
+            <% else %>
+              <div class="error-icon">
+                <i class="material-icons status-icon">error_outline</i>
+              </div>
+            <% end %>
+          </div>
+        </td>
+        <td class="actions-cell">
+          <div>
+            <%= link_to "<i class='material-icons'>edit</i>".html_safe, edit_course_ami_image_path(@course, image.id),
+                        { title: "View this AMI image", class: "btn small" } %>
+            Edit
+          </div>
+          <div>
+            <%= link_to "<i class='material-icons'>delete</i>".html_safe, edit_course_ami_image_path(@course, image.id),
+                        { title: "Delete this AMI image", class: "btn small" } %>
+            Delete
+          </div>
         </td>
       </tr>
     <% end %>
