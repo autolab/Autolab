@@ -49,4 +49,24 @@ class AmiImagesController < ApplicationController
     end
     redirect_to course_ami_images_path(@course)
   end
+
+  action_auth_level :refresh_status, :instructor
+  def refresh_status;
+    begin
+      resp = TangoClient.refresh_ami_status(AmiImage.emit_arn)
+      resp.each do |ami|
+        ami_image = AmiImage.find(ami["id"])
+        ami_image.update!(
+          status: ami["status"],
+          ami_id: ami["ami_id"],
+        )
+      end
+      flash[:notice] = 'Updated AMI status'
+    rescue TangoClient::TangoException => e
+      flash[:error] = "Error while refreshing status: #{e.message}"
+    rescue StandardError => e
+      flash[:error] = "Unexpected error occurred: #{e.message}"
+    end
+    redirect_to course_ami_images_path(@course)
+  end
 end

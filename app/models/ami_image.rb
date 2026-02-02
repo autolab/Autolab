@@ -9,7 +9,7 @@ class AmiImage < ApplicationRecord
   has_many :ami_package_sources, dependent: :destroy
 
   def emit_packages
-    result = ami_packages.map do |package|
+    ami_packages.map do |package|
       deb_url = if package.install_type == "deb"
                   package.ami_package_source.deb_url
                 else
@@ -22,7 +22,14 @@ class AmiImage < ApplicationRecord
         deb_url: deb_url
       }
     end
+  end
 
-    p result
+  def self.emit_arn
+    AmiImage.all.map do |image|
+      {
+        id: image.id,
+        execution_arn: image.execution_arn,
+      }
+    end
   end
 end

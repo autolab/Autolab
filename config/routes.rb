@@ -142,6 +142,7 @@ Rails.application.routes.draw do
 
       collection do
         post "init_ami"
+        post "refresh_status"
       end
     end
 

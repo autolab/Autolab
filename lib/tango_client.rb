@@ -141,6 +141,17 @@ module TangoClient
     }
   end
 
+  def self.refresh_ami_status(images)
+    resp = handle_exceptions do
+      url = "/refreshAmiStatus/#{api_key}/"
+      options = {
+        "amis" => images
+      }
+      ClientObj.post(url, headers: { "Content-Type" => "application/json" }, body: options.to_json)
+    end
+    resp.parsed_response["amis"]
+  end
+
   def self.api_key
     RESTFUL_KEY
   end

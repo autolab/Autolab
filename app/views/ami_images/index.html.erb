@@ -9,7 +9,9 @@
 <hr>
 
 <div class="row buttons-row">
-  <%= link_to 'New AMI Image', new_course_ami_image_path(@course), { class: "btn" } %>
+  <%= link_to 'New AMI Image', new_course_ami_image_path(@course), { class: "btn mr-8" } %>
+  <%= link_to 'Refresh AMI Status', refresh_status_course_ami_images_path(@course),
+              { method: :post, class: "btn" } %>
 </div>
 <table class="prettyBorder">
   <colgroup>
