@@ -1,0 +1,27 @@
+<% content_for :javascripts do %>
+  <%= javascript_include_tag "ami_image_new_package.js" %>
+<% end %>
+
+<% content_for :stylesheets do %>
+  <%= stylesheet_link_tag "ami_image" %>
+  <%= stylesheet_link_tag "style" %>
+<% end %>
+
+<% @title = "AMI Builder" %>
+
+<div class="section">
+  <h4>AMI Builder</h4>
+  <%= form_with url: { action: :create }, builder: FormBuilderWithDateTimeInput do |f| %>
+    <%= f.text_field :package_name,
+                     id: 'package-name-input',
+                     autocomplete: 'off',
+                     placeholder: 'Type a package name...' %>
+    <%= f.text_field :deb_url,
+                     id: 'source-deb-url',
+                     autocomplete: 'off',
+                     help_text: "Debian package URL.",
+                     placeholder: "Type URL..."%>
+    <ul id="version-suggestions" class="select-dropdown"></ul>
+    <%= f.submit "Add Package" %>
+  <% end %>
+</div>

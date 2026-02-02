@@ -12,14 +12,28 @@
 <div class="section">
   <h4>AMI Builder</h4>
   <%= form_with url: { action: :create }, builder: FormBuilderWithDateTimeInput do |f| %>
+    <div class="input-field">
+      <%= f.label :ami_package_source_id, "Source", {class: "control-label active"}%>
+      <%= f.collection_select :ami_package_source_id,
+                              @sources,
+                              :id, :name, { include_blank: "Ubuntu (default)"},
+                              {id: "package-source-select"}
+                               %>
+      <p id="source-help" class="help-text">
+        Select a custom source only if this package is not in Ubuntu’s default repositories.
+      </p>
+    </div>
     <%= f.text_field :package_name,
                      id: 'package-name-input',
                      autocomplete: 'off',
                      placeholder: 'Start typing a package name...' %>
     <ul id="package-suggestions" class="select-dropdown"></ul>
     <%= f.text_field :package_version,
+                     id: 'package-version-input',
+                     autocomplete: 'off',
                      help_text: "Version of the package. Leave empty for latest version.",
                      placeholder: "Latest Version"%>
+    <ul id="version-suggestions" class="select-dropdown"></ul>
     <%= f.submit "Add Package" %>
   <% end %>
 </div>

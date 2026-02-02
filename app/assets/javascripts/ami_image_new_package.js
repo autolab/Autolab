@@ -1,8 +1,15 @@
 document.addEventListener("DOMContentLoaded", function() {
     const input = document.getElementById("package-name-input");
     const list  = document.getElementById("package-suggestions");
+
+    const ver_input = document.getElementById("package-version-input");
+    const ver_list  = document.getElementById("version-suggestions");
+
     list.style.display = "none";
     list.style.width = input.getBoundingClientRect().width + "px";
+
+    ver_list.style.display = "none";
+    ver_list.style.width = ver_input.getBoundingClientRect().width + "px";
 
     let lastQuery = "";
 
@@ -39,13 +46,49 @@ document.addEventListener("DOMContentLoaded", function() {
         if (list.childElementCount > 0)
             list.style.display = "block";
     })
+
+    const input_listener = function() {
+        const query = ver_input.value.trim();
+        const pkg_name = input.value.trim();
+        if (pkg_name.length === 0) return;
+
+        fetch(`/package/version_search?package=${encodeURIComponent(pkg_name)}&query=${encodeURIComponent(query)}`)
+            .then(response => response.json())
+            .then(packages => {
+                console.log("fetched!");
+                ver_list.style.display = "block";
+                ver_list.innerHTML = "";
+
+                packages = ["latest"].concat(packages);
+
+                packages.forEach(pkg => {
+                    const item = document.createElement("li");
+                    item.textContent = pkg;
+                    item.addEventListener("click", () => {
+                        ver_input.value = pkg;
+                        ver_list.innerHTML = "";
+                        ver_list.style.display = "none";
+                    });
+                    ver_list.appendChild(item);
+                });
+            });
+    }
+
+    ver_input.addEventListener("input", input_listener);
+
+    ver_input.addEventListener("focus", function () {
+        if (ver_list.childElementCount > 0)
+            ver_list.style.display = "block";
+        input_listener();
+    })
 });
 
 window.addEventListener("resize", function () {
-    console.log("resize");
-
     const input = document.getElementById("package-name-input");
     const list  = document.getElementById("package-suggestions");
+    const ver_input = document.getElementById("package-version-input");
+    const ver_list  = document.getElementById("version-suggestions");
 
     list.style.width = input.getBoundingClientRect().width + "px";
+    ver_list.style.width = ver_input.getBoundingClientRect().width + "px";
 })

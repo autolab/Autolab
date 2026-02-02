@@ -6,7 +6,7 @@ class AmiImage < ApplicationRecord
 
   validates :name, presence: true, uniqueness: { case_sensitive: false }
   has_many :ami_packages, dependent: :destroy
-  has_many :ami_package_sources, through: :ami_packages
+  has_many :ami_package_sources, dependent: :destroy
 
   def parse_package(pkg)
     name, version = pkg.split("=", 2)

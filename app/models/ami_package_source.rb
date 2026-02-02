@@ -11,4 +11,11 @@ class AmiPackageSource < ApplicationRecord
   validates :source_type, presence: true
 
   validates :deb_url, presence: true, if: :deb_url?
+
+  def self.source_type_options
+    {
+      "APT repository" => "apt_repo",
+      "DEB package URL" => "deb_url",
+    }
+  end
 end

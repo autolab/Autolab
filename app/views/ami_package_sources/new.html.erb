@@ -1,0 +1,34 @@
+<% content_for :javascripts do %>
+  <%= javascript_include_tag "ami_image_new_package.js" %>
+<% end %>
+
+<% content_for :stylesheets do %>
+  <%= stylesheet_link_tag "ami_image" %>
+  <%= stylesheet_link_tag "style" %>
+<% end %>
+
+<% @title = "AMI Builder" %>
+
+<div class="section">
+  <h4>AMI Builder</h4>
+  <%= form_with url: { action: :create }, builder: FormBuilderWithDateTimeInput do |f| %>
+    <%= f.text_field :name,
+                     id: 'source-name-input',
+                     autocomplete: 'off',
+                     placeholder: 'Start typing a source name...' %>
+    <div class="input-field">
+      <%= f.label :source_type, "Source Type", {class: "control-label active"}%>
+      <%= f.select :source_type, AmiPackageSource.source_type_options %>
+      <p id="source-help" class="help-text">
+        Select a custom source only if this package is not in Ubuntu’s default repositories.
+      </p>
+    </div>
+    <%= f.text_field :deb_url,
+                     id: 'source-deb-url',
+                     autocomplete: 'off',
+                     help_text: "Debian package URL.",
+                     placeholder: "Type URL..."%>
+    <ul id="version-suggestions" class="select-dropdown"></ul>
+    <%= f.submit "Add Package Source" %>
+  <% end %>
+</div>

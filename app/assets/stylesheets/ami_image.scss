@@ -19,6 +19,27 @@
   background: #eee;
 }
 
+#version-suggestions {
+  border: 1px solid #ccc;
+  max-height: 200px;
+  overflow-y: auto;
+  margin-top: -64px;
+  position: absolute;
+  background: white;
+  list-style-type: none;
+  padding-left: 0;
+  z-index: 100;
+}
+
+#version-suggestions li {
+  padding: 6px;
+  cursor: pointer;
+}
+
+#version-suggestions li:hover {
+  background: #eee;
+}
+
 .pkg-chip {
   display: inline-block;
   background: #eef2f7;
@@ -80,4 +101,12 @@
 
 .success-icon {
   color: limegreen;
+}
+
+.source-table {
+  margin-bottom: 36px;
+}
+
+.mr-8 {
+  margin-right: 8px;
 }

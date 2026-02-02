@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2026_02_01_212533) do
+ActiveRecord::Schema.define(version: 2026_02_02_152322) do
 
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
@@ -42,12 +42,16 @@ ActiveRecord::Schema.define(version: 2026_02_01_212533) do
 
   create_table "ami_images", force: :cascade do |t|
     t.string "name"
-    t.json "packages", default: []
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.integer "status", default: 0, null: false
     t.string "ami_id"
+    t.string "execution_arn"
+    t.string "pipeline_arn"
+    t.string "recipe_arn"
+    t.string "component_arn"
     t.index ["ami_id"], name: "index_ami_images_on_ami_id", unique: true
+    t.index ["execution_arn"], name: "index_ami_images_on_execution_arn"
   end
 
   create_table "ami_package_sources", force: :cascade do |t|
@@ -70,6 +74,7 @@ ActiveRecord::Schema.define(version: 2026_02_01_212533) do
     t.text "validation_error"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.index "\"deb_url\"", name: "index_ami_packages_on_deb_url"
     t.index ["ami_image_id", "name"], name: "index_ami_packages_on_ami_image_id_and_name"
     t.index ["ami_image_id"], name: "index_ami_packages_on_ami_image_id"
     t.index ["ami_package_source_id"], name: "index_ami_packages_on_ami_package_source_id"

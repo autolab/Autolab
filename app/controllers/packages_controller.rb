@@ -1,3 +1,5 @@
+require "shellwords"
+
 class PackagesController < ApplicationController
   skip_before_action :set_course
   skip_before_action :authorize_user_for_course
@@ -11,8 +13,18 @@ class PackagesController < ApplicationController
 
     packages_names = results.map { |line| line.split.first }.uniq
 
-    p packages_names
-
     render json: packages_names.take(25)
+  end
+
+  def version_search;
+    package = params[:package].to_s.strip
+
+    results = `apt-cache madison #{Shellwords.escape(package)}`.lines
+
+    versions = results.map do |line|
+      line.split('|')[1]&.strip
+    end.compact.uniq
+
+    render json: versions.take(25)
   end
 end

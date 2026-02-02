@@ -133,8 +133,12 @@ Rails.application.routes.draw do
         post "create_ami"
       end
 
-      resources :ami_packages, only: [:new, :create, :edit, :update, :destroy]
-      resources :ami_package_sources, only: [:new, :edit, :update, :destroy]
+      resources :ami_packages, only: [:new, :create, :edit, :update, :destroy] do
+        collection do
+          get "deb_new"
+        end
+      end
+      resources :ami_package_sources, only: [:new, :create, :edit, :update, :destroy]
 
       collection do
         post "init_ami"
@@ -300,6 +304,7 @@ Rails.application.routes.draw do
 
   resource :package, only: [] do
     get "search"
+    get "version_search"
   end
 
   get "/404", to: "home#error_404"

@@ -1,3 +1,8 @@
+<% content_for :stylesheets do %>
+  <%= stylesheet_link_tag "ami_image" %>
+  <%= stylesheet_link_tag "style" %>
+<% end %>
+
 <% @title = "AMI Builder" %>
 
 <div class="section">
@@ -8,7 +13,7 @@
                      pattern: "^[a-z0-9](_{0,2}[a-z0-9])*(/[a-z0-9](_{0,2}[a-z0-9])*)?$",
                      help_text: "Name of AMI image. Any existing image with the same name will be overwritten." %>
     <h5>Packages</h5>
-    <table class="bordered responsive-table">
+    <table class="bordered responsive-table source-table">
       <colgroup>
         <col style="width: 25%">
         <col style="width: 25%">
@@ -29,25 +34,87 @@
           <td><%= package.name %></td>
           <td><%= package.version  %></td>
           <td>
-            Ubuntu APT
+            <% if package.ami_package_source_id.nil? %>
+              Ubuntu APT (default)
+            <% else %>
+              <%= package.ami_package_source.name %>
+            <% end %>
           </td>
           <td>
             <%= link_to "<i class='material-icons'>edit</i>".html_safe,
                         edit_course_ami_image_ami_package_path(@course, @ami_image.id, package.id),
-                        { title: "View this AMI image", class: "btn small" } %>
+                        { title: "View this AMI image", class: "small" } %>
             <%= link_to "<i class='material-icons'>delete</i>".html_safe,
                         course_ami_image_ami_package_path(@course, @ami_image.id, package.id),
-                { method: :delete,
-                  title: "Delete this AMI package",
-                  class: "btn small" } %>
+                        { method: :delete,
+                          title: "Delete this AMI package",
+                          class: "small" } %>
           </td>
         </tr>
       <% end %>
       <tr>
-        <%= link_to "Add Package".html_safe, new_course_ami_image_ami_package_path(@course, @ami_image), { class: "btn" } %>
+        <%= link_to "Add APT Package".html_safe, new_course_ami_image_ami_package_path(@course, @ami_image), { class: "btn mr-8" } %>
+        <%= link_to "Add DEB Package".html_safe, deb_new_course_ami_image_ami_packages_path(@course, @ami_image), { class: "btn" } %>
       </tr>
       </tbody>
     </table>
+
+    <h5>Package Sources</h5>
+    <table class="bordered responsive-table">
+      <colgroup>
+        <col style="width: 25%">
+        <col style="width: 25%">
+        <col>
+        <col style="width: 180px">
+      </colgroup>
+      <thead>
+      <tr>
+        <th data-field="source-name">Name</th>
+        <th data-field="source-type">Type</th>
+        <th data-field="source-url">URL</th>
+        <th data-field="options">Options</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr>
+        <td>Default</td>
+        <td>APT</td>
+        <td>
+          None
+        </td>
+        <td></td>
+      </tr>
+      <% @ami_image.ami_package_sources.each do |source| %>
+        <tr>
+          <td><%= source.name %></td>
+          <td><%= source.source_type  %></td>
+          <td>
+            <% if source.source_type == 0 %>
+              None
+            <% elsif source.source_type == "apt_repo" %>
+              None
+            <% elsif source.source_type == "deb_url" %>
+              <%= source.deb_url %>
+            <% end %>
+          </td>
+          <td>
+            <%= link_to "<i class='material-icons'>edit</i>".html_safe,
+                        edit_course_ami_image_ami_package_source_path(@course, @ami_image.id, source.id),
+                        { title: "View this AMI image", class: "small" } %>
+            <%= link_to "<i class='material-icons'>delete</i>".html_safe,
+                        course_ami_image_ami_package_source_path(@course, @ami_image.id, source.id),
+                        { method: :delete,
+                          title: "Delete this AMI package",
+                          class: "small" } %>
+          </td>
+        </tr>
+      <% end %>
+      <tr>
+        <%= link_to "Add Source".html_safe, new_course_ami_image_ami_package_source_path(@course, @ami_image), { class: "btn" } %>
+      </tr>
+      </tbody>
+    </table>
+
     <br>
     <div class="action_buttons">
       <%= f.submit "Build AMI" %>
