@@ -28,8 +28,7 @@ class AmiImagesController < ApplicationController
   action_auth_level :init_ami, :instructor
   def init_ami;
     image_name = params[:image_name]
-    packages = []
-    new_ami = AmiImage.create!(name: image_name, packages: packages)
+    new_ami = AmiImage.create!(name: image_name)
     redirect_to edit_course_ami_image_path(@course, new_ami)
   end
 
@@ -37,8 +36,12 @@ class AmiImagesController < ApplicationController
   def create_ami;
     @ami_image = AmiImage.find(params[:id])
     begin
-      TangoClient.create_ami(@ami_image.name, @ami_image.packages)
-      flash[:success] = "Successfully started AMI process"
+      resp = TangoClient.create_ami(@ami_image.name, @ami_image.emit_packages)
+      if @ami_image.update(resp)
+        flash[:success] = "Successfully started AMI process"
+      else
+        flash[:error] = "Successfully started AMI process, failed to write to DB"
+      end
     rescue TangoClient::TangoException => e
       flash[:error] = "Error while setting AMI process: #{e.message}"
     rescue StandardError => e

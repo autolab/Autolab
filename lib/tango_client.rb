@@ -124,7 +124,7 @@ module TangoClient
   end
 
   def self.create_ami(username, packages)
-    handle_exceptions do
+    resp = handle_exceptions do
       url = "/createAmi/#{api_key}/"
       options = {
         "username" => username,
@@ -132,6 +132,13 @@ module TangoClient
       }
       ClientObj.post(url, headers: { "Content-Type" => "application/json" }, body: options.to_json)
     end
+    parsed = resp.parsed_response
+    {
+      "execution_arn" => parsed["execution_arn"],
+      "pipeline_arn" => parsed["pipeline_arn"],
+      "recipe_arn" => parsed["recipe_arn"],
+      "component_arn" => parsed["component_arn"],
+    }
   end
 
   def self.api_key
