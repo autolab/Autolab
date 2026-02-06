@@ -267,6 +267,19 @@ class UnixGroupManager
     safe
   end
 
+  # Determine the Unix account that the Rails process is running under.
+  # Allows overriding via AUTOLAB_SERVICE_USER for deployments where the
+  # service user differs from the container login.
+  def self.service_username
+    env_user = ENV.fetch("AUTOLAB_SERVICE_USER", "").strip
+    return env_user unless env_user.empty?
+
+    Etc.getpwuid(Process.uid).name
+  rescue StandardError => e
+    Rails.logger.warn("UnixGroupManager.service_username failed: #{e.class} - #{e.message}")
+    nil
+  end
+
   # Extract a safe Unix username from email
   def self.login_from_email(email)
     return nil if email.nil? || email.empty?
