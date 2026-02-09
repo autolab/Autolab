@@ -1232,40 +1232,9 @@ private
                 "does not have permission to access the course directory. Check server logs for details."
       flash.now[:warning] = warning
     end
-    dir_path = @course.directory_path
-    @unused_config_files = []
-    Dir.foreach(dir_path) do |filename|
-      # skip if not directory in folder
-      next if !File.directory?(File.join(dir_path,
-                                         filename)) || (filename == "..") || (filename == ".")
-
-      # assessment names must be only lowercase letters and digits
-      if filename !~ Assessment::VALID_NAME_REGEX
-        # add line break if adding to existing error message
-        flash.now[:error] = flash.now[:error] ? "#{flash.now[:error]} <br>" : ""
-        flash.now[:error] += "An error occurred while trying to display an existing assessment " \
-            "from file directory #{filename}: Invalid assessment name. "\
-            "Find more information on valid assessment names "\
-            '<a href="https://docs.autolabproject.com/lab/#assessment-naming-rules">here</a><br>'
-        flash.now[:html_safe] = true
-        next
-      end
-
-      # each assessment must have an associated yaml file,
-      # and it must have a name field that matches its filename
-      unless File.exist?(File.join(dir_path, filename, "#{filename}.yml"))
-        flash.now[:error] = flash.now[:error] ? "#{flash.now[:error]} <br>" : ""
-        flash.now[:error] += "An error occurred while trying to display an existing assessment " \
-          "from file directory #{filename}: #{filename}.yml does not exist"
-        flash.now[:html_safe] = true
-        next
-      end
-
-      # Only list assessments that aren't installed yet
-      assessment_exists = @course.assessments.exists?(name: filename)
-      @unused_config_files << filename unless assessment_exists
-    end
-    @unused_config_files.sort!
+    scan = scan_assessment_install_directory
+    @unused_config_files = scan[:unused_config_files]
+    apply_scan_errors(scan[:errors])
   end
 
   def scoreHashFromScores(scores)
@@ -1279,5 +1248,57 @@ private
 
     @breadcrumbs << (view_context.link_to "Install Assessment",
                                           install_assessment_course_assessments_path(@course))
+  end
+
+  def scan_assessment_install_directory
+    delegate_result = UnixGroupManager.scan_assessment_install(@course)
+    return normalize_scan_result(delegate_result) if delegate_result
+
+    local_result = AssessmentInstallScanner.scan(course: @course)
+    normalize_scan_result(local_result.to_h)
+  rescue Errno::EACCES => e
+    message = "Autolab does not have permission to read #{@course.directory_path}. " \
+              "Ensure the service user has access to this course directory. (#{e.message})"
+    append_flash_error(message, html_safe: false)
+    { unused_config_files: [], errors: [] }
+  end
+
+  def apply_scan_errors(errors)
+    errors = Array(errors)
+    return if errors.empty?
+
+    html_safe = flash.now[:html_safe] || errors.any? { |err| truthy_html_flag?(err) }
+    messages = errors.map { |err| extract_error_message(err) }.reject(&:blank?)
+    append_flash_error(messages.join("<br>"), html_safe: html_safe)
+  end
+
+  def append_flash_error(message, html_safe: false)
+    return if message.blank?
+
+    if flash.now[:error].present?
+      flash.now[:error] = "#{flash.now[:error]}<br>#{message}"
+    else
+      flash.now[:error] = message
+    end
+    flash.now[:html_safe] = true if html_safe
+  end
+
+  def normalize_scan_result(data)
+    return { unused_config_files: [], errors: [] } unless data
+    unused = data[:unused_config_files] || data["unused_config_files"] || []
+    errors = data[:errors] || data["errors"] || []
+    { unused_config_files: unused, errors: errors }
+  end
+
+  def truthy_html_flag?(error_hash)
+    return false unless error_hash.is_a?(Hash)
+    value = error_hash[:html_safe]
+    value = error_hash["html_safe"] if value.nil?
+    !!value
+  end
+
+  def extract_error_message(error_hash)
+    return error_hash unless error_hash.is_a?(Hash)
+    error_hash[:message] || error_hash["message"]
   end
 end
