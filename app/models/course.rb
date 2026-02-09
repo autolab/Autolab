@@ -36,7 +36,7 @@ class Course < ApplicationRecord
   before_create :cgdub_dependencies_updated
   before_create :ensure_unix_group_exists
   after_create :init_course_folder
-  after_create :ensure_service_user_group_membership!
+  after_create :ensure_service_user_group_membership
 
   # Constants
   VALID_CODE_REGEX = /\A[A-Z0-9]{6}\z/
@@ -335,41 +335,6 @@ class Course < ApplicationRecord
       end
     end
     # If delegate not enabled, Rails process must have permission to set these itself
-  end
-
-  # Ensure the process user that runs Rails has membership in the course's Unix
-  # group so it can traverse and manage files after FilesystemEnforcer locks the
-  # directory down to drwxrws---.
-  def ensure_service_user_group_membership!
-    group_name = UnixGroupManager.safe_group_name(name)
-    return false unless group_name
-
-    service_user = UnixGroupManager.service_username
-    if service_user.nil? || service_user.empty?
-      Rails.logger.warn("Course #{name}: unable to determine service user for filesystem permissions")
-      return false
-    end
-
-    unless UnixGroupManager.ensure_group(group_name)
-      Rails.logger.error("Course #{name}: cannot ensure group #{group_name} exists before adding service user #{service_user}")
-      return false
-    end
-
-    remote_success = UnixGroupManager.add_user_to_group(service_user, group_name)
-    local_success = true
-
-    if UnixGroupManager.delegate_enabled?
-      gid_hint = UnixGroupManager.get_group_gid(group_name)
-      local_success = UnixGroupManager.ensure_local_group_membership(service_user, group_name, gid_hint: gid_hint)
-    end
-
-    if remote_success || local_success
-      Rails.logger.info("Course #{name}: ensured service user #{service_user} is in group #{group_name}")
-      true
-    else
-      Rails.logger.warn("Course #{name}: failed to add service user #{service_user} to group #{group_name}")
-      false
-    end
   end
 
   def order_of_dates
@@ -805,6 +770,28 @@ class Course < ApplicationRecord
     else
       Rails.logger.error("Failed to create Unix group #{group_name} via delegate for course #{name}")
       Rails.logger.error("Check that UnixOps daemon is running and accessible at #{ENV['UNIX_OPS_DELEGATE_URL']}")
+    end
+  end
+
+  def ensure_service_user_group_membership
+    group_name = UnixGroupManager.safe_group_name(name)
+    return unless group_name
+
+    service_user = UnixGroupManager.service_username
+    if service_user.nil? || service_user.empty?
+      Rails.logger.warn("Course #{name}: unable to determine service user for filesystem permissions")
+      return
+    end
+
+    unless UnixGroupManager.ensure_group(group_name)
+      Rails.logger.error("Course #{name}: cannot ensure group #{group_name} exists before adding service user #{service_user}")
+      return
+    end
+
+    if UnixGroupManager.add_user_to_group(service_user, group_name)
+      Rails.logger.info("Course #{name}: ensured service user #{service_user} is in group #{group_name}")
+    else
+      Rails.logger.warn("Course #{name}: failed to add service user #{service_user} to group #{group_name}")
     end
   end
 
