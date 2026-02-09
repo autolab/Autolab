@@ -180,6 +180,7 @@ class CoursesController < ApplicationController
       new_cud.instructor = true
 
       if new_cud.save
+        @newCourse.ensure_default_group_instructor!
         begin
           # Unix group was already created in before_create callback
           # Staff membership is handled by after_create callback in CourseUserDatum
@@ -313,6 +314,8 @@ class CoursesController < ApplicationController
       flash[:error] = "Can't create instructor for the course."
       render(action: "new") && return
     end
+
+    @newCourse.ensure_default_group_instructor!
 
     Rails.logger.info("=== COURSE CREATION: Starting config reload and permission setup for #{@newCourse.name} ===")
     begin

