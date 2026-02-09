@@ -1225,6 +1225,13 @@ private
   end
 
   def get_unimported_asmts_from_dir
+    unless @course.ensure_service_user_group_membership!
+      group_name = UnixGroupManager.safe_group_name(@course.name) || @course.name
+      service_user = UnixGroupManager.service_username || "Autolab service user"
+      warning = "Warning: Course group #{group_name} may not exist or #{service_user} " \
+                "does not have permission to access the course directory. Check server logs for details."
+      flash.now[:warning] = warning
+    end
     dir_path = @course.directory_path
     @unused_config_files = []
     Dir.foreach(dir_path) do |filename|
