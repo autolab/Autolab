@@ -110,12 +110,6 @@ class AssessmentsController < ApplicationController
   action_auth_level :import_asmt_from_tar, :instructor
 
   def import_asmt_from_tar
-    unless ensure_course_filesystem_access!(flash_target: flash)
-      flash[:error] = "Autolab cannot access the course directory because the service user " \
-                      "lacks membership in the course's Unix group. Please fix the server " \
-                      "permissions and try again."
-      redirect_to(action: "install_assessment") && return
-    end
     tarFile = params["tarFile"]
     if tarFile.nil?
       flash[:error] = "Please select an assessment tarball for uploading."
@@ -216,10 +210,6 @@ class AssessmentsController < ApplicationController
   # from file system, returning results of each import
   action_auth_level :import_assessments, :instructor
   def import_assessments
-    unless ensure_course_filesystem_access!(flash_target: flash)
-      render json: { error: "Service user lacks access to course directory" }, status: :forbidden
-      return
-    end
     if params[:assessment_names].nil? || !params[:assessment_names].is_a?(Array)
       render json: { error: "Did not receive array of assessment names" }, status: :bad_request
       return
@@ -250,9 +240,6 @@ class AssessmentsController < ApplicationController
   # import_assessment - Imports an existing assessment from local file system
   action_auth_level :import_assessment, :instructor
   def import_assessment
-    unless ensure_course_filesystem_access!(flash_target: flash)
-      redirect_to(install_assessment_course_assessments_path(@course)) && return
-    end
     if params[:assessment_name].blank?
       flash[:error] = "No assessment name specified."
       redirect_to(install_assessment_course_assessments_path(@course))
@@ -1238,7 +1225,13 @@ private
   end
 
   def get_unimported_asmts_from_dir
-    ensure_course_filesystem_access!(flash_target: flash.now)
+    unless @course.ensure_service_user_group_membership!
+      group_name = UnixGroupManager.safe_group_name(@course.name) || @course.name
+      service_user = UnixGroupManager.service_username || "Autolab service user"
+      warning = "Warning: Course group #{group_name} may not exist or #{service_user} " \
+                "does not have permission to access the course directory. Check server logs for details."
+      flash.now[:warning] = warning
+    end
     scan = scan_assessment_install_directory
     @unused_config_files = scan[:unused_config_files]
     apply_scan_errors(scan[:errors])
@@ -1307,16 +1300,5 @@ private
   def extract_error_message(error_hash)
     return error_hash unless error_hash.is_a?(Hash)
     error_hash[:message] || error_hash["message"]
-  end
-
-  def ensure_course_filesystem_access!(flash_target: flash)
-    return true if @course.ensure_service_user_group_membership!
-
-    group_name = UnixGroupManager.safe_group_name(@course.name) || @course.name
-    service_user = UnixGroupManager.service_username || "Autolab service user"
-    message = "Warning: Course group #{group_name} may not exist or #{service_user} does not " \
-              "have permission to access the course directory. Check server logs for details."
-    flash_target[:warning] = message
-    false
   end
 end
