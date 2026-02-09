@@ -176,24 +176,6 @@ class UnixGroupManager
     File.read(path) if File.readable?(path)
   end
 
-  def self.scan_assessment_install(course)
-    return nil unless course
-    return nil unless delegate_enabled?
-
-    payload = { course_id: course.id, course_name: course.name }
-    data = delegate_query("scan_assessment_install", payload)
-    return nil unless data.is_a?(Hash)
-
-    {
-      unused_config_files: Array(data["unused_config_files"] || data[:unused_config_files]),
-      errors: Array(data["errors"] || data[:errors]).map do |err|
-        message = err.is_a?(Hash) ? (err["message"] || err[:message]) : err.to_s
-        html_safe = err.is_a?(Hash) ? (err["html_safe"] || err[:html_safe]) : false
-        { message: message, html_safe: !!html_safe }
-      end
-    }
-  end
-
   # Set file permissions via delegate
   def self.chmod_path(path, mode)
     return false if path.nil?

@@ -16,7 +16,6 @@ require "webrick"
 require "active_support/security_utils"
 require_relative "../config/environment"
 require_relative "../app/services/unix_group_manager"
-require_relative "../app/services/assessment_install_scanner"
 
 module UnixOps
   class Server
@@ -193,14 +192,6 @@ module UnixOps
         rescue StandardError => e
           [false, e.message, nil]
         end
-      when "scan_assessment_install"
-        course = find_course(payload)
-        if course.nil?
-          [false, "course_not_found", nil]
-        else
-          result = AssessmentInstallScanner.scan(course: course)
-          [true, "scan_assessment_install", result.to_h]
-        end
       else
         [false, "unknown_action", nil]
       end
@@ -214,12 +205,6 @@ module UnixOps
       res.status = status
       res["Content-Type"] = "application/json"
       res.body = JSON.dump(body.merge(data ? { data: data } : {}))
-    end
-
-    def find_course(payload)
-      course_id = payload["course_id"] || payload[:course_id]
-      course_name = payload["course_name"] || payload[:course_name]
-      Course.find_by(id: course_id) || Course.find_by(name: course_name)
     end
 
     def shutdown
