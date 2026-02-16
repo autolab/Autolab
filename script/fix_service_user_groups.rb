@@ -93,26 +93,45 @@ scope.find_each do |course|
   local_before = UnixGroupManager.local_group_member?(SERVICE_USER, group_name)
   local_after = local_before
 
-  if local_before
-    say "  [LOCAL] #{SERVICE_USER} already in #{group_name}"
-  else
-    gid = UnixGroupManager.get_group_gid(group_name)
+  # if local_before
+  #   say "  [LOCAL] #{SERVICE_USER} already in #{group_name}"
+  # else
+  #   gid = UnixGroupManager.get_group_gid(group_name)
 
-    if gid.nil?
-      say "  [ERROR] missing GID for #{group_name}; cannot ensure local membership"
-      group_failed = true
-    elsif dry?
-      say "  [DRY] would ensure local membership for #{SERVICE_USER} in #{group_name} (gid #{gid})"
+  #   if gid.nil?
+  #     say "  [ERROR] missing GID for #{group_name}; cannot ensure local membership"
+  #     group_failed = true
+  #   elsif dry?
+  #     say "  [DRY] would ensure local membership for #{SERVICE_USER} in #{group_name} (gid #{gid})"
+  #     group_updated = true
+  #   else
+  #     if UnixGroupManager.ensure_local_group_membership(SERVICE_USER, group_name, gid_hint: gid)
+  #       say "  [LOCAL] added #{SERVICE_USER} to local group #{group_name} (gid #{gid})"
+  #       local_after = true
+  #       group_updated = true
+  #     else
+  #       say "  [ERROR] failed to ensure local membership for #{SERVICE_USER} in #{group_name}"
+  #       group_failed = true
+  #     end
+  #   end
+  # end
+
+  gid = UnixGroupManager.get_group_gid(group_name)
+
+  if gid.nil?
+    say "  [ERROR] missing GID for #{group_name}; cannot ensure local membership"
+    group_failed = true
+  elsif dry?
+    say "  [DRY] would ensure local membership for #{SERVICE_USER} in #{group_name} (gid #{gid})"
+    group_updated = true
+  else
+    if UnixGroupManager.ensure_local_group_membership(SERVICE_USER, group_name, gid_hint: gid)
+      say "  [LOCAL] added #{SERVICE_USER} to local group #{group_name} (gid #{gid})"
+      local_after = true
       group_updated = true
     else
-      if UnixGroupManager.ensure_local_group_membership(SERVICE_USER, group_name, gid_hint: gid)
-        say "  [LOCAL] added #{SERVICE_USER} to local group #{group_name} (gid #{gid})"
-        local_after = true
-        group_updated = true
-      else
-        say "  [ERROR] failed to ensure local membership for #{SERVICE_USER} in #{group_name}"
-        group_failed = true
-      end
+      say "  [ERROR] failed to ensure local membership for #{SERVICE_USER} in #{group_name}"
+      group_failed = true
     end
   end
 
