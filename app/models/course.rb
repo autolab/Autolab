@@ -36,7 +36,7 @@ class Course < ApplicationRecord
   before_create :cgdub_dependencies_updated
   before_create :ensure_unix_group_exists
   after_create :init_course_folder
-  after_create :ensure_service_user_group_membership
+  after_create :ensure_service_user_group_membership!
 
   # Constants
   VALID_CODE_REGEX = /\A[A-Z0-9]{6}\z/
@@ -99,6 +99,8 @@ class Course < ApplicationRecord
     end
 
     newCourse.ensure_default_group_instructor!
+    # Ensure app user (9999) has access before we lock down the directory
+    newCourse.ensure_service_user_group_membership!
 
     begin
       # Unix group was already created in before_create callback
@@ -823,25 +825,39 @@ class Course < ApplicationRecord
     end
   end
 
-  def ensure_service_user_group_membership
+  def ensure_service_user_group_membership!
     group_name = UnixGroupManager.safe_group_name(name)
-    return unless group_name
+    return false unless group_name
 
     service_user = UnixGroupManager.service_username
     if service_user.nil? || service_user.empty?
       Rails.logger.warn("Course #{name}: unable to determine service user for filesystem permissions")
-      return
+      return false
     end
 
+    # 1. Ensure the group exists on the AWS Host (via Daemon)
     unless UnixGroupManager.ensure_group(group_name)
-      Rails.logger.error("Course #{name}: cannot ensure group #{group_name} exists before adding service user #{service_user}")
-      return
+      Rails.logger.error("Course #{name}: cannot ensure group #{group_name} exists on host")
+      return false
     end
 
-    if UnixGroupManager.add_user_to_group(service_user, group_name)
-      Rails.logger.info("Course #{name}: ensured service user #{service_user} is in group #{group_name}")
+    # 2. Add user to group on the Host (Remote Sync)
+    remote_success = UnixGroupManager.add_user_to_group(service_user, group_name)
+
+    # 3. Add user to group inside the Container (Local Sync)
+    # This stops the 500 errors immediately without a Docker restart
+    gid = UnixGroupManager.get_group_gid(group_name)
+    local_success = UnixGroupManager.ensure_local_group_membership(service_user,
+                                                                   group_name, gid_hint: gid)
+
+    if remote_success && local_success
+      Rails.logger.info("Course #{name}: dual-synced service user #{service_user} in
+         group #{group_name}")
+      true
     else
-      Rails.logger.warn("Course #{name}: failed to add service user #{service_user} to group #{group_name}")
+      Rails.logger.warn("Course #{name}: failed to fully sync group membership
+         (Remote:#{remote_success}, Local:#{local_success})")
+      false
     end
   end
 

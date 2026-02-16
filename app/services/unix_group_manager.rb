@@ -706,5 +706,54 @@ class UnixGroupManager
       false
     end
   end
+
+  # Check if a user is a member of a group inside the container's local /etc/group
+  def self.local_group_member?(username, group_name)
+    return false if username.blank? || group_name.blank?
+
+    # We check the local /etc/group file directly
+    stdout, _, status = Open3.capture3("grep", "^#{group_name}:", "/etc/group")
+    return false unless status.success?
+
+    # Check if the username is in the comma-separated list at the end of the line
+    members = stdout.strip.split(":")[3]
+    members&.split(",")&.include?(username) || false
+  rescue StandardError
+    false
+  end
+
+  # Force the container to recognize a group membership without a restart
+  def self.ensure_local_group_membership(username, group_name, gid_hint: nil)
+    return true if local_group_member?(username, group_name)
+
+    # Use the provided GID or look it up via the delegate
+    gid = gid_hint || get_group_gid(group_name)
+    unless gid
+      Rails.logger.error("UnixGroupManager.ensure_local_group_membership: Could not find GID
+         for #{group_name}")
+      return false
+    end
+
+    Rails.logger.info("UnixGroupManager: Syncing #{username} to local group #{group_name}
+         (GID: #{gid})")
+
+    begin
+      # 1. If group doesn't exist locally, create the line
+      if system("grep -q '^#{group_name}:' /etc/group")
+        # 2. Group exists, but user is missing - append user to the end of the line
+        # Uses sed to find the line starting with group_name and append the username
+        Open3.capture3("sed", "-i", "/^#{group_name}:/ s/$/#{username}/", "/etc/group")
+      else
+        # Direct append to /etc/group (Requires Rails to have write access to /etc/group)
+        Open3.capture3("sh", "-c", "echo '#{group_name}:x:#{gid}:#{username}' >> /etc/group")
+      end
+
+      # Verify the change worked
+      local_group_member?(username, group_name)
+    rescue StandardError => e
+      Rails.logger.error("UnixGroupManager.ensure_local_group_membership failed: #{e.message}")
+      false
+    end
+  end
 end
 
