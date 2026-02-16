@@ -1,5 +1,5 @@
 <% @title = "Manage Course" %>
-
+    <% start_time = Time.current %>
 <% content_for :stylesheets do %>
   <%= stylesheet_link_tag "student_gradebook" %>
 <% end %>
@@ -160,4 +160,6 @@
       </table>
     </div>
   </div>
+<h3>rendered in <%= ((Time.current - start_time) * 1000).round(2) %> ms</h3>
+
 </div>

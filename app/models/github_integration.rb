@@ -163,6 +163,9 @@ class GithubIntegration < ApplicationRecord
   ##
   # Returns whether Autolab is connected to Github
   def self.connected
+    return false if Rails.configuration.x.github.client_id.blank? or
+                     Rails.configuration.x.github.client_secret.blank?
+
     check_github_authorization.limit > 1000
   end
 

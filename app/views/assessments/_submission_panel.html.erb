@@ -43,6 +43,8 @@
       </div>
     </div>
   </div>
+
+
   <div class="ui tab" data-tab="github" id="github_tab">
     <% if GithubIntegration.find_by_user_id(@cud.user.id)&.is_connected %>
       <% if repos.present? %>
@@ -74,6 +76,6 @@
         <label> Click below to connect your Github account </label> <br>
         <%= link_to raw('<span class="btn primary">Connect</span>'), github_oauth_user_path(@cud.user) %> <br>
     </div>
-  <% end %>
+    <% end %>
 </div>
 </div>
