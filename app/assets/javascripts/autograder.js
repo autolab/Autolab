@@ -16,6 +16,22 @@
         $('#autograder_use_access_key').on('change', access_key_callback);
         access_key_callback.call($('#autograder_use_access_key'));
 
+        function use_ami_callback() {
+            const checked = $(this).prop('checked');
+            const $disabled_ami_image_id_field = $('#disabled-ami-select');
+            const $enabled_ami_image_id_field = $('#enabled-ami-select');
+            if (checked) {
+                $disabled_ami_image_id_field.hide();
+                $enabled_ami_image_id_field.show();
+            } else {
+                $disabled_ami_image_id_field.show();
+                $enabled_ami_image_id_field.hide();
+            }
+        }
+
+        $('#autograder_use_ami_image').on('change', use_ami_callback);
+        use_ami_callback.call($('#autograder_use_ami_image'));
+
         function initializeEC2Dropdown() {
             if ($.fn.tooltip) {
                 $('.browser-default[data-tooltip]').tooltip({

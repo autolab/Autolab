@@ -74,6 +74,9 @@ Rails.application.configure do
   # Feature flag for docker image upload
   config.x.docker_image_upload_enabled = true
 
+  # Feature flag for managing ami images
+  config.x.manage_ami_image_enabled = true
+
   # Feature flag for EC2 autograder
   config.x.ec2_ssh = true
 

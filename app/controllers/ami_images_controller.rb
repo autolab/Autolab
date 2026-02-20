@@ -5,7 +5,7 @@ class AmiImagesController < ApplicationController
 
   action_auth_level :index, :instructor
   def index;
-    @ami_images = AmiImage.all
+    @ami_images = @course.ami_images
   end
 
   action_auth_level :new, :instructor
@@ -28,7 +28,7 @@ class AmiImagesController < ApplicationController
   action_auth_level :init_ami, :instructor
   def init_ami;
     image_name = params[:image_name]
-    new_ami = AmiImage.create!(name: image_name)
+    new_ami = @course.ami_images.create!(name: image_name)
     redirect_to edit_course_ami_image_path(@course, new_ami)
   end
 

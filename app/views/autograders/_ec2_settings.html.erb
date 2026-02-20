@@ -3,6 +3,34 @@
 <% end %>
 
 <h4>EC2 Settings</h4>
+<%= f.check_box :use_ami_image,
+                display_name: "Use AMI image"%>
+<%= f.label :autograde_image, "AMI image", {class: "control-label active"}%>
+<div id="disabled-ami-select">
+  <%= f.select :ami_image_id,
+               options_from_collection_for_select(
+                 @ami_images,
+                 :id,
+                 :name,
+                 @autograder.ami_image_id
+               ),
+               { include_blank: "Select AMI Image" },
+               { disabled: true } %>
+</div>
+<div id="enabled-ami-select">
+  <%= f.select :ami_image_id,
+               options_from_collection_for_select(
+                 @ami_images,
+                 :id,
+                 :name,
+                 @autograder.ami_image_id
+               ),
+               { include_blank: "Select AMI Image" },
+               { disabled: false } %>
+</div>
+<p class="help-text">
+  If you see no AMI images showing up, please create an image <%= link_to 'here', course_ami_images_path %>
+</p>
 <%= f.check_box :use_access_key,
                 display_name: "Enable Access Key",
                 help_text: "(Optional) Use your own provided access key to authenticate to different EC2 instances than the default one on Tango" %>

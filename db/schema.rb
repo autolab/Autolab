@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2026_02_02_152322) do
+ActiveRecord::Schema.define(version: 2026_02_19_181259) do
 
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
@@ -50,8 +50,12 @@ ActiveRecord::Schema.define(version: 2026_02_02_152322) do
     t.string "pipeline_arn"
     t.string "recipe_arn"
     t.string "component_arn"
+    t.integer "course_id"
+    t.boolean "is_public", default: false, null: false
     t.index ["ami_id"], name: "index_ami_images_on_ami_id", unique: true
+    t.index ["course_id"], name: "index_ami_images_on_course_id"
     t.index ["execution_arn"], name: "index_ami_images_on_execution_arn"
+    t.index ["is_public"], name: "index_ami_images_on_is_public"
   end
 
   create_table "ami_package_sources", force: :cascade do |t|
@@ -193,6 +197,9 @@ ActiveRecord::Schema.define(version: 2026_02_02_152322) do
     t.boolean "use_access_key", default: false
     t.text "access_key_ciphertext"
     t.text "access_key_id_ciphertext"
+    t.boolean "use_ami_image", default: false, null: false
+    t.integer "ami_image_id"
+    t.index ["ami_image_id"], name: "index_autograders_on_ami_image_id"
   end
 
   create_table "course_user_data", force: :cascade do |t|
@@ -481,7 +488,9 @@ ActiveRecord::Schema.define(version: 2026_02_02_152322) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "ami_images", "courses"
   add_foreign_key "ami_package_sources", "ami_images"
   add_foreign_key "ami_packages", "ami_images"
   add_foreign_key "ami_packages", "ami_package_sources"
+  add_foreign_key "autograders", "ami_images"
 end

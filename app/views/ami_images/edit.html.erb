@@ -12,6 +12,9 @@
                      value: @ami_image.name,
                      pattern: "^[a-z0-9](_{0,2}[a-z0-9])*(/[a-z0-9](_{0,2}[a-z0-9])*)?$",
                      help_text: "Name of AMI image. Any existing image with the same name will be overwritten." %>
+    <%= f.check_box :is_public,
+                    display_name: "Allow other courses to use this AMI image",
+                    help_text: "By making this course public, other courses/instructors can use your AMI without permission."%>
     <h5>Packages</h5>
     <table class="bordered responsive-table source-table">
       <colgroup>

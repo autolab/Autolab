@@ -172,6 +172,11 @@ module AssessmentAutogradeCore
     
     if Rails.configuration.x.ec2_ssh
       job_properties["ec2Vmms"] = true
+      unless @autograde_prop.ami_image.nil?
+        if @autograde_prop.use_ami_image?
+          job_properties["image"] = @autograde_prop.ami_image.ami_id
+        end
+      end
       job_properties["instanceType"] = @autograde_prop.instance_type.presence || "t3.micro"
       
       if @autograde_prop.use_access_key?

@@ -4,6 +4,7 @@
 #
 class Autograder < ApplicationRecord
   belongs_to :assessment
+  belongs_to :ami_image, optional: true
 
   # Encryption for AWS credentials
   has_encrypted :access_key

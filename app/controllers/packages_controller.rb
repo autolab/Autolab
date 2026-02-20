@@ -13,7 +13,7 @@ class PackagesController < ApplicationController
 
     packages_names = results.map { |line| line.split.first }.uniq
 
-    render json: packages_names.take(25)
+    render json: packages_names.take(100)
   end
 
   def version_search;
@@ -25,6 +25,6 @@ class PackagesController < ApplicationController
       line.split('|')[1]&.strip
     end.compact.uniq
 
-    render json: versions.take(25)
+    render json: versions.take(100)
   end
 end

@@ -58,6 +58,12 @@
                             { title: "Upload docker image for autograding assessments" } %>
               </li>
             <% end %>
+            <% if Rails.configuration.x.manage_ami_image_enabled.presence %>
+              <li>
+                <%= link_to "Manage AMI Images", course_ami_images_path(@course),
+                            { title: "Manage AMI Images for autograding assessments" } %>
+              </li>
+            <% end %>
             <li>
               <%= link_to "Export course", export_course_path(@course),
                           { title: "Export course configurations and assessments" } %>

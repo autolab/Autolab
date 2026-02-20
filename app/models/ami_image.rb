@@ -7,6 +7,9 @@ class AmiImage < ApplicationRecord
   validates :name, presence: true, uniqueness: { case_sensitive: false }
   has_many :ami_packages, dependent: :destroy
   has_many :ami_package_sources, dependent: :destroy
+  has_many :autograders
+
+  belongs_to :course
 
   def emit_packages
     ami_packages.map do |package|
