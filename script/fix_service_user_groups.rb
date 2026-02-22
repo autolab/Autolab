@@ -8,7 +8,6 @@
 #   RAILS_ENV=production bin/rails runner script/fix_service_user_groups.rb
 #   RAILS_ENV=production bin/rails runner script/fix_service_user_groups.rb --dry-run
 #
-require "open3"
 require_relative "../config/environment"
 require_relative "../app/services/unix_group_manager"
 
@@ -25,22 +24,12 @@ def dry?
   DRY_RUN
 end
 
-# Best-effort check if the user is already in the group on the host
-# (delegated environments may not reflect accurately, but good enough for logging)
-def remote_group_member?(username, group_name)
-  stdout, _stderr, status = Open3.capture3("id", "-nG", username)
-  status.success? && stdout.split.include?(group_name)
-rescue StandardError
-  false
-end
-
 say "=== FIX SERVICE USER GROUPS (#{dry? ? 'dry-run' : 'apply'}) ==="
 
 scope = Course.all
 
 total_groups = 0
 updated_groups = 0
-already_correct = 0
 failures = 0
 
 scope.find_each do |course|
@@ -56,7 +45,6 @@ scope.find_each do |course|
   say "\n[COURSE] #{course.name} → group=#{group_name}"
 
   group_failed = false
-  group_updated = false
 
   # Ensure the group exists on the host
   if dry?
@@ -69,66 +57,35 @@ scope.find_each do |course|
     end
   end
 
-  # Remote (host) membership
-  remote_before = remote_group_member?(SERVICE_USER, group_name)
-  remote_after = remote_before
-
-  if remote_before
-    say "  [REMOTE] #{SERVICE_USER} already in #{group_name}"
-  elsif dry?
+  # 2. Add user to group on the Host (Remote Sync)
+  if dry?
     say "  [DRY] would add #{SERVICE_USER} to host group #{group_name}"
-    group_updated = true
+    remote_success = true
   else
-    if UnixGroupManager.add_user_to_group(SERVICE_USER, group_name)
-      say "  [REMOTE] added #{SERVICE_USER} to #{group_name}"
-      remote_after = true
-      group_updated = true
+    remote_success = UnixGroupManager.add_user_to_group(SERVICE_USER, group_name)
+    if remote_success
+      say "  [REMOTE] added/verified #{SERVICE_USER} in #{group_name}"
     else
       say "  [ERROR] failed to add #{SERVICE_USER} to #{group_name} on host"
       group_failed = true
     end
   end
 
-  # Local (container) membership
-  local_before = UnixGroupManager.local_group_member?(SERVICE_USER, group_name)
-  local_after = local_before
-
-  # if local_before
-  #   say "  [LOCAL] #{SERVICE_USER} already in #{group_name}"
-  # else
-  #   gid = UnixGroupManager.get_group_gid(group_name)
-
-  #   if gid.nil?
-  #     say "  [ERROR] missing GID for #{group_name}; cannot ensure local membership"
-  #     group_failed = true
-  #   elsif dry?
-  #     say "  [DRY] would ensure local membership for #{SERVICE_USER} in #{group_name} (gid #{gid})"
-  #     group_updated = true
-  #   else
-  #     if UnixGroupManager.ensure_local_group_membership(SERVICE_USER, group_name, gid_hint: gid)
-  #       say "  [LOCAL] added #{SERVICE_USER} to local group #{group_name} (gid #{gid})"
-  #       local_after = true
-  #       group_updated = true
-  #     else
-  #       say "  [ERROR] failed to ensure local membership for #{SERVICE_USER} in #{group_name}"
-  #       group_failed = true
-  #     end
-  #   end
-  # end
-
+  # 3. Add user to group inside the Container (Local Sync)
+  # This stops the 500 errors immediately without a Docker restart
   gid = UnixGroupManager.get_group_gid(group_name)
 
   if gid.nil?
     say "  [ERROR] missing GID for #{group_name}; cannot ensure local membership"
+    local_success = false
     group_failed = true
   elsif dry?
     say "  [DRY] would ensure local membership for #{SERVICE_USER} in #{group_name} (gid #{gid})"
-    group_updated = true
+    local_success = true
   else
-    if UnixGroupManager.ensure_local_group_membership(SERVICE_USER, group_name, gid_hint: gid)
-      say "  [LOCAL] added #{SERVICE_USER} to local group #{group_name} (gid #{gid})"
-      local_after = true
-      group_updated = true
+    local_success = UnixGroupManager.ensure_local_group_membership(SERVICE_USER, group_name, gid_hint: gid)
+    if local_success
+      say "  [LOCAL] added/verified #{SERVICE_USER} in local group #{group_name} (gid #{gid})"
     else
       say "  [ERROR] failed to ensure local membership for #{SERVICE_USER} in #{group_name}"
       group_failed = true
@@ -138,9 +95,7 @@ scope.find_each do |course|
   # Summary bookkeeping per group
   if group_failed
     failures += 1
-  elsif remote_after && local_after && !group_updated
-    already_correct += 1
-  elsif group_updated
+  elsif remote_success && local_success
     updated_groups += 1
   end
 rescue StandardError => e
@@ -151,7 +106,6 @@ end
 
 say "\n=== Summary ==="
 say "Total groups checked: #{total_groups}"
-say "Updated (remote and/or local): #{updated_groups}"
-say "Already correct: #{already_correct}"
+say "Dual-synced (host + container): #{updated_groups}"
 say "Failures: #{failures}"
 say "Mode: #{dry? ? 'dry-run (no changes made)' : 'applied'}"
