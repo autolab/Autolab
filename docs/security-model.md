@@ -319,7 +319,7 @@ Example: course `15-122 Principles` → group `15-122-Principles` (truncated if 
 | Rails service user  | ✅ Yes                 | Added via `ensure_service_user_group_membership!` after course creation |
 | `root`              | N/A                    | Owns course dirs; bypasses group check via uid 0 |
 
-Only **instructors** (not course assistants) are granted Unix group membership. This means only instructors can SSH into the server or have SSH keys registered. Staff membership is updated whenever an instructor CUD is saved (`after_update :update_unix_group_and_fix_permissions`) or destroyed (`after_destroy :cleanup_unix_group_membership`). If an instructor's Unix user does not yet exist (no SSH key registered), the group membership record is deferred until the key is added.
+When assigning permissions, we follow the **Principle of Least Privilege**, or the minimum permissions necessary for a process to perform its job. Only **instructors** (not course assistants) are granted Unix group membership. This means only instructors can SSH into the server or have SSH keys registered. Staff membership is updated whenever an instructor CUD is saved (`after_update :update_unix_group_and_fix_permissions`) or destroyed (`after_destroy :cleanup_unix_group_membership`). If an instructor's Unix user does not yet exist (no SSH key registered), the group membership record is deferred until the key is added.
 
 ### Privilege Delegation (UnixOps Daemon)
 
