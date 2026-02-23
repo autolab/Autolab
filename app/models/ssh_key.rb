@@ -56,13 +56,12 @@ class SshKey < ApplicationRecord
     begin
       # Create Unix user (if doesn't exist) - this is the ONLY place users are created
       UnixGroupManager.ensure_user(username, email: user.email)
-      
+
       # Provision SSH key
       UnixGroupManager.provision_ssh_key(username, public_key, email: user.email)
-      
-      # Add user to all course groups they're staff in (now that user exists)
+
+      # Add user to all course groups where they are an instructor (now that user exists)
       user.course_user_data.where(instructor: true)
-          .or(user.course_user_data.where(course_assistant: true))
           .includes(:course).find_each do |cud|
         course = cud.course
         UnixGroupManager.update_course_staff_membership(course, user, is_staff: true)
@@ -82,13 +81,13 @@ class SshKey < ApplicationRecord
     return unless username
 
     UnixGroupManager.deprovision_ssh_key(username, fingerprint)
-    
+
     # Re-provision remaining active keys
-    remaining_keys = user.ssh_keys.where(active: true).where.not(id: id)
-    if remaining_keys.any?
-      keys_data = remaining_keys.pluck(:public_key)
-      UnixGroupManager.provision_ssh_keys(username, keys_data, email: user.email)
-    end
+    remaining_keys = user.ssh_keys.where(active: true).where.not(id:)
+    return unless remaining_keys.any?
+
+    keys_data = remaining_keys.pluck(:public_key)
+    UnixGroupManager.provision_ssh_keys(username, keys_data, email: user.email)
   end
 
   # Re-provision all active keys for a user
@@ -101,7 +100,7 @@ class SshKey < ApplicationRecord
     # Ensure user exists and has home directory set up
     UnixGroupManager.ensure_user(username, email: user.email)
 
-    active_keys = where(user: user, active: true)
+    active_keys = where(user:, active: true)
     keys_data = active_keys.pluck(:public_key)
     UnixGroupManager.provision_ssh_keys(username, keys_data, email: user.email)
   end
@@ -112,7 +111,8 @@ private
     return if public_key.blank?
 
     # Basic validation: should start with key type
-    valid_types = %w[ssh-rsa ssh-ed25519 ecdsa-sha2-nistp256 ecdsa-sha2-nistp384 ecdsa-sha2-nistp521 ssh-dss]
+    valid_types = %w[ssh-rsa ssh-ed25519 ecdsa-sha2-nistp256 ecdsa-sha2-nistp384
+                     ecdsa-sha2-nistp521 ssh-dss]
     parts = public_key.strip.split(/\s+/, 2)
 
     unless valid_types.include?(parts[0])
@@ -142,9 +142,9 @@ private
     fingerprint = calculate_fingerprint
     return unless fingerprint
 
-    existing = SshKey.where(user_id: user_id, fingerprint: fingerprint)
-                    .where.not(id: id)
-                    .exists?
+    existing = SshKey.where(user_id:, fingerprint:)
+                     .where.not(id:)
+                     .exists?
 
     errors.add(:public_key, "already exists for this user") if existing
   end

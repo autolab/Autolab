@@ -294,7 +294,7 @@ class UsersController < ApplicationController
     is_staff_anywhere = user.course_user_data.where(instructor: true)
                             .or(user.course_user_data.where(course_assistant: true))
                             .exists?
-    
+
     unless is_staff_anywhere
       username = UnixGroupManager.login_from_email(user.email)
       if username
@@ -497,13 +497,14 @@ class UsersController < ApplicationController
       redirect_to(users_path) && return
     end
 
-    # Only staff (instructors/TAs) can manage SSH keys
-    unless user.staff? || current_user.administrator?
-      flash[:error] = "Permission denied: SSH key management is only available for course instructors and teaching assistants."
+    # Only instructors can manage SSH keys
+    unless user.instructor? || current_user.administrator?
+      flash[:error] =
+        "Permission denied: SSH key management is only available for course instructors."
       redirect_to(user_path(user)) && return
     end
 
-    # Users can only manage their own SSH keys, or admins can manage any staff user's keys
+    # Users can only manage their own SSH keys, or admins can manage any instructor's keys
     if user != current_user && !current_user.administrator?
       flash[:error] = "Permission denied: you can only manage your own SSH keys."
       redirect_to(users_path) && return
@@ -521,13 +522,14 @@ class UsersController < ApplicationController
       redirect_to(users_path) && return
     end
 
-    # Only staff (instructors/TAs) can manage SSH keys
-    unless user.staff? || current_user.administrator?
-      flash[:error] = "Permission denied: SSH key management is only available for course instructors and teaching assistants."
+    # Only instructors can manage SSH keys
+    unless user.instructor? || current_user.administrator?
+      flash[:error] =
+        "Permission denied: SSH key management is only available for course instructors."
       redirect_to(user_path(user)) && return
     end
 
-    # Users can only manage their own SSH keys, or admins can manage any staff user's keys
+    # Users can only manage their own SSH keys, or admins can manage any instructor's keys
     if user != current_user && !current_user.administrator?
       flash[:error] = "Permission denied: you can only manage your own SSH keys."
       redirect_to(ssh_keys_user_path(user)) && return
@@ -541,7 +543,7 @@ class UsersController < ApplicationController
       redirect_to(ssh_keys_user_path(@user)) && return
     end
 
-    @ssh_key = @user.ssh_keys.build(public_key: public_key)
+    @ssh_key = @user.ssh_keys.build(public_key:)
 
     if @ssh_key.save
       flash[:success] = "SSH key added successfully. You can now SSH into the system."
@@ -560,13 +562,14 @@ class UsersController < ApplicationController
       redirect_to(users_path) && return
     end
 
-    # Only staff (instructors/TAs) can manage SSH keys
-    unless user.staff? || current_user.administrator?
-      flash[:error] = "Permission denied: SSH key management is only available for course instructors and teaching assistants."
+    # Only instructors can manage SSH keys
+    unless user.instructor? || current_user.administrator?
+      flash[:error] =
+        "Permission denied: SSH key management is only available for course instructors."
       redirect_to(user_path(user)) && return
     end
 
-    # Users can only manage their own SSH keys, or admins can manage any staff user's keys
+    # Users can only manage their own SSH keys, or admins can manage any instructor's keys
     if user != current_user && !current_user.administrator?
       flash[:error] = "Permission denied: you can only manage your own SSH keys."
       redirect_to(ssh_keys_user_path(user)) && return

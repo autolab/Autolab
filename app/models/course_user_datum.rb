@@ -360,48 +360,48 @@ private
     end
   end
 
-  # Setup Unix group membership when CUD is created (if user is staff)
+  # Setup Unix group membership when CUD is created (instructors only)
   def setup_unix_group_membership
-    return unless instructor? || course_assistant?
+    return unless instructor?
     return if dropped?
 
     # Add user to course group if they already have Unix user (SSH key exists)
     UnixGroupManager.update_course_staff_membership(course, user, is_staff: true)
-    
+
     # DON'T lock down permissions here - the controller will do it after reload_course_config
     # Locking down permissions here (in the after_create callback) happens BEFORE reload_course_config
     # runs in the controller, which would prevent Rails from reading course.rb
     # The controller will lock down permissions after the config is successfully loaded
-    Rails.logger.info("Staff member #{user.email} added to course group for #{course.name} - permissions will be locked down by controller after config loads")
+    Rails.logger.info("Instructor #{user.email} added to course group for #{course.name} - permissions will be locked down by controller after config loads")
   end
 
   # Update Unix group membership and fix course directory permissions when staff status changes
   def update_unix_group_and_fix_permissions
-    # Check if staff status changed (instructor, course_assistant, or dropped status)
-    staff_status_changed = saved_change_to_instructor? || saved_change_to_course_assistant? || saved_change_to_dropped?
-    
-    # Only process if staff status changed or if user is currently staff
-    return unless staff_status_changed || (instructor? || course_assistant?)
+    # Check if instructor status changed (or dropped status)
+    staff_status_changed = saved_change_to_instructor? || saved_change_to_dropped?
+
+    # Only process if instructor status changed or if user is currently an instructor
+    return unless staff_status_changed || instructor?
 
     # Update Unix group membership (will add user to group if they exist, or just track in DB if not)
-    is_staff = (instructor? || course_assistant?) && !dropped?
-    UnixGroupManager.update_course_staff_membership(course, user, is_staff: is_staff)
-    
+    is_staff = instructor? && !dropped?
+    UnixGroupManager.update_course_staff_membership(course, user, is_staff:)
+
     # Fix course directory permissions (ensure group ownership is correct)
-    if course && course.directory_path && Dir.exist?(course.directory_path)
-      require_relative "../services/filesystem_enforcer"
-      group_name = UnixGroupManager.safe_group_name(course.name)
-      if group_name
-        FilesystemEnforcer.fix_tree(course.directory_path.to_s)
-        Rails.logger.info("Fixed permissions for course directory #{course.directory_path} after staff status change")
-      end
-    end
+    return unless course && course.directory_path && Dir.exist?(course.directory_path)
+
+    require_relative "../services/filesystem_enforcer"
+    group_name = UnixGroupManager.safe_group_name(course.name)
+    return unless group_name
+
+    FilesystemEnforcer.fix_tree(course.directory_path.to_s)
+    Rails.logger.info("Fixed permissions for course directory #{course.directory_path} after staff status change")
   end
 
   # Cleanup Unix group membership when CUD is destroyed
   def cleanup_unix_group_membership
-    # Only cleanup if user was staff in this course
-    return unless instructor? || course_assistant?
+    # Only cleanup if user was an instructor in this course
+    return unless instructor?
 
     # Remove from course group
     UnixGroupManager.update_course_staff_membership(course, user, is_staff: false)

@@ -3,10 +3,10 @@
 <h4>SSH Key Management</h4>
 <p>Manage SSH public keys for user: <strong><%= @user.display_name %></strong> (<%= @user.email %>)</p>
 
-<% unless @user.staff? || current_user.administrator? %>
+<% unless @user.instructor? || current_user.administrator? %>
   <div class="error" style="padding: 1em; margin: 1em 0;">
-    <p><strong>Access Restricted:</strong> SSH key management is only available for course instructors and teaching assistants.</p>
-    <p>Only users who are instructors or TAs in at least one course can add SSH keys to access the system.</p>
+    <p><strong>Access Restricted:</strong> SSH key management is only available for course instructors.</p>
+    <p>Only users who are instructors in at least one course can add SSH keys to access the system.</p>
   </div>
 <% else %>
   <% if @user == current_user || current_user.administrator? %>
@@ -36,7 +36,7 @@ cat ~/.ssh/id_rsa-autolab.pub
   <% end %>
 <% end %>
 
-<% if @user.staff? || current_user.administrator? %>
+<% if @user.instructor? || current_user.administrator? %>
   <hr>
 
   <h5>Add New SSH Key</h5>
