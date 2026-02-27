@@ -13,6 +13,7 @@ class Autograder < ApplicationRecord
     t3.micro t3.small t3.medium t3.large
     c5.large c5.xlarge c5.2xlarge
     r5.large r5.xlarge r5.2xlarge
+    g4dn.xlarge g4dn.2xlarge g5.xlarge
   ].freeze
 
   trim_field :autograde_image
