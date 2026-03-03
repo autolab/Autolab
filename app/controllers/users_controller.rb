@@ -215,10 +215,10 @@ class UsersController < ApplicationController
 
         # Find unique file name for assignment to be saved as
         final_entry_path = File.join(assignment_directory, original_entry_name)
-        # If file name duplicate exists, add "_ver#" suffix
-        version_counter = 1
+        # If file name duplicate exists, add "_#" suffix
+        version_counter = 2
         while used_paths.include?(final_entry_path)
-          new_entry_name = "#{basename}_ver#{version_counter}#{extname}"
+          new_entry_name = "#{basename}_#{version_counter}#{extname}"
           final_entry_path = File.join(assignment_directory, new_entry_name)
           version_counter += 1
         end
