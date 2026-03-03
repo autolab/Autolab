@@ -170,16 +170,20 @@ class UsersController < ApplicationController
       flash[:error] = "Permission denied: You are not allowed to download submissions of this user."
       redirect_to(user_path(current_user)) && return
     end
+
     submissions = if params[:final]
                     Submission.latest.where(course_user_datum: CourseUserDatum.where(user_id: user))
                   else
                     Submission.where(course_user_datum: CourseUserDatum.where(user_id: user))
                   end
+
+    # filter out invalid submissions
     submissions = submissions.select do |s|
       p = s.handin_file_path
       is_disabled = s.course_user_datum.course.is_disabled?
       !p.nil? && File.exist?(p) && File.readable?(p) && !is_disabled
     end
+
     if submissions.empty?
       flash[:error] = "There are no submissions to download."
       redirect_to(user_path(user)) && return
@@ -194,38 +198,34 @@ class UsersController < ApplicationController
 
     temp_file = Tempfile.new("autolab_submissions.zip")
     Zip::File.open(temp_file.path, Zip::File::CREATE) do |zipfile|
-      # track counts of each file name
-      track_duplicate_counts = Hash.new(0)
-      submissions.each do |s|
-        p = s.handin_file_path
-        course_name = s.course_user_datum.course.name
-        assignment_name = s.assessment.name
-        course_directory = "#{filename}/#{course_name}"
-        assignment_directory = "#{course_directory}/#{assignment_name}"
-        entry_name = download_filename(p, assignment_name)
-        final_path = "#{assignment_directory}/#{entry_name}"
-        track_duplicate_counts[final_path] += 1
-      end
+      # Track paths already added to zip file
+      used_paths = Set.new
 
-      # track which version is being processed (for naming purposes)
-      filename_counts = Hash.new(0)
       submissions.each do |s|
         p = s.handin_file_path
         course_name = s.course_user_datum.course.name
         assignment_name = s.assessment.name
-        course_directory = "#{filename}/#{course_name}"
-        assignment_directory = "#{course_directory}/#{assignment_name}"
-        entry_name = download_filename(p, assignment_name)
-        final_path = "#{assignment_directory}/#{entry_name}"
-        filename_counts[final_path] += 1
-        # append version number to submission if more than one of same name
-        if track_duplicate_counts[final_path] > 1
-          version_suffix = "_ver#{filename_counts[final_path]}"
-          extname = File.extname(entry_name)
-          basename = File.basename(entry_name, extname)
-          entry_name = "#{basename}#{version_suffix}#{extname}"
+
+        # Define the directory structure in zip file
+        assignment_directory = "#{filename}/#{course_name}/#{assignment_name}"
+        original_entry_name = download_filename(p, assignment_name)
+
+        extname = File.extname(original_entry_name)
+        basename = File.basename(original_entry_name, extname)
+
+        # Find unique file name for assignment to be saved as
+        final_entry_path = File.join(assignment_directory, original_entry_name)
+        # If file name duplicate exists, add "_#" suffix
+        version_counter = 2
+        while used_paths.include?(final_entry_path)
+          new_entry_name = "#{basename}_#{version_counter}#{extname}"
+          final_entry_path = File.join(assignment_directory, new_entry_name)
+          version_counter += 1
         end
-        zipfile.add(File.join(assignment_directory, entry_name), p)
+
+        # Add to zip and list of already used file names
+        used_paths.add(final_entry_path)
+        zipfile.add(final_entry_path, p)
       end
     end
 
