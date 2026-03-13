@@ -113,7 +113,7 @@
     <% end %>
     <% if @user.staff? %>
       <p style="font-size: 0.9em; color: #666;">
-        As a course instructor or TA, you can add SSH keys to access the system via SSH.
+        As a course instructor, you can add SSH keys to access the system via SSH.
         Your Unix username is: <code><%= UnixGroupManager.login_from_email(@user.email) || "(not yet created)" %></code>
       </p>
     <% end %>

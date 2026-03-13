@@ -14,8 +14,14 @@
     <% if username %>
       <p><strong>Unix Username:</strong> <code><%= username %></code></p>
       <% hostname = request.host || "autolab.example.com" %>
-      <p>After adding an SSH key, you can SSH into the system using:<br>
-         <code>ssh <%= username %>@<%= hostname %></code></p>
+      <p>After adding an SSH key, you can SSH into the system using<br>
+        <code>ssh -i ~/.ssh/id_ed25519_autolab.pub <%= username %>@<%= hostname %></code>
+        <br>
+        or
+        <br>
+        <code>ssh -i ~/.ssh/id_rsa_autolab.pub <%= username %>@<%= hostname %></code>
+        <br>
+        depending on the name of the file the SSH key information is saved in. </p>
     <% else %>
       <p class="warning">Unix user account not yet created. It will be created automatically when you add your first SSH key or when you are added as staff to a course.</p>
     <% end %>
@@ -24,12 +30,12 @@
       <strong>Need to generate a key?</strong>
       <p>If you don’t already have an SSH key, run these commands on your computer:</p>
       <pre style="margin-bottom: 0;">
-ssh-keygen -t ed25519-autolab -C "<%= @user.email %>"
-cat ~/.ssh/id_ed25519-autolab.pub
+ssh-keygen -t ed25519 -f ~/.ssh/id_ed25519_autolab -C "<%= @user.email %>"
+cat ~/.ssh/id_ed25519_autolab.pub
 
 # or, if you prefer RSA (longer key):
-ssh-keygen -t rsa-autolab -b 4096 -C "<%= @user.email %>"
-cat ~/.ssh/id_rsa-autolab.pub
+ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa_autolab -C "<%= @user.email %>"
+cat ~/.ssh/id_rsa_autolab.pub
       </pre>
       <p>Copy the output of the last command and paste it into the form below.</p>
     </div>
@@ -42,9 +48,9 @@ cat ~/.ssh/id_rsa-autolab.pub
   <h5>Add New SSH Key</h5>
   <%= form_with url: create_ssh_key_user_path(@user), method: :post, local: true do |f| %>
     <div class="input-field">
-      <%= f.text_area :public_key, class: "materialize-textarea", 
-                      placeholder: "ssh-rsa AAAA... your-email@example.com\n\nPaste your SSH public key here. It should start with 'ssh-rsa', 'ssh-ed25519', or 'ecdsa-sha2-nistp256'.", 
-                      rows: 5, required: true %>
+      <%= f.text_area :public_key, class: "materialize-textarea",
+                                   placeholder: "ssh-rsa AAAA... your-email@example.com\n\nPaste your SSH public key here. It should start with 'ssh-rsa', 'ssh-ed25519', or 'ecdsa-sha2-nistp256'.",
+                                   rows: 5, required: true %>
       <label for="public_key">SSH Public Key</label>
     </div>
     <%= f.submit "Add SSH Key", class: "btn primary" %>
@@ -74,8 +80,8 @@ cat ~/.ssh/id_rsa-autolab.pub
           <td><code style="font-size: 0.85em;"><%= ssh_key.fingerprint&.first(16) %>...</code></td>
           <td><%= ssh_key.created_at.strftime("%Y-%m-%d %H:%M") %></td>
           <td>
-            <%= link_to destroy_ssh_key_user_path(@user, ssh_key_id: ssh_key.id), 
-                        method: :delete, 
+            <%= link_to destroy_ssh_key_user_path(@user, ssh_key_id: ssh_key.id),
+                        method: :delete,
                         data: { confirm: "Are you sure you want to remove this SSH key?" },
                         class: "btn-small" do %>
               Remove
