@@ -4,6 +4,8 @@
 require_relative "../services/unix_group_manager"
 
 class SshKey < ApplicationRecord
+  class ProvisioningError < StandardError; end
+
   belongs_to :user
 
   validates :public_key, presence: true
@@ -12,8 +14,6 @@ class SshKey < ApplicationRecord
   validate :unique_key_per_user
 
   before_save :parse_key_metadata
-  after_save :provision_key
-  after_destroy :deprovision_key
 
   # Parse SSH key to extract type, comment, and fingerprint
   def parse_key_metadata
@@ -42,67 +42,28 @@ class SshKey < ApplicationRecord
     nil
   end
 
-  # Provision the key to the user's authorized_keys file
-  # This is where Unix users are created - on-demand when first SSH key is added
-  def provision_key
-    return unless active
-    return unless user
-
-    username = UnixGroupManager.login_from_email(user.email)
-    return unless username
-
-    # This is where we create the Unix user - on-demand when SSH key is added
-    # This may fail silently in development (e.g., on macOS)
-    begin
-      # Create Unix user (if doesn't exist) - this is the ONLY place users are created
-      UnixGroupManager.ensure_user(username, email: user.email)
-
-      # Provision SSH key
-      UnixGroupManager.provision_ssh_key(username, public_key, email: user.email)
-
-      # Add user to all course groups where they are an instructor (now that user exists)
-      user.course_user_data.where(instructor: true)
-          .includes(:course).find_each do |cud|
-        course = cud.course
-        UnixGroupManager.update_course_staff_membership(course, user, is_staff: true)
-      end
-    rescue StandardError => e
-      # Log but don't fail - in development, Unix ops might not be available
-      Rails.logger.warn("Could not provision SSH key for #{username}: #{e.message}")
-      # Still mark as saved in DB even if Unix provisioning failed
-    end
-  end
-
-  # Remove the key from authorized_keys
-  def deprovision_key
-    return unless user
-
-    username = UnixGroupManager.login_from_email(user.email)
-    return unless username
-
-    UnixGroupManager.deprovision_ssh_key(username, fingerprint)
-
-    # Re-provision remaining active keys
-    remaining_keys = user.ssh_keys.where(active: true).where.not(id:)
-    return unless remaining_keys.any?
-
-    keys_data = remaining_keys.pluck(:public_key)
-    UnixGroupManager.provision_ssh_keys(username, keys_data, email: user.email)
-  end
-
-  # Re-provision all active keys for a user
+  # Re-provision all active keys for a user, raising if Unix sync fails
   def self.provision_all_for_user(user)
-    return unless user
+    raise ProvisioningError, "User is required" unless user
 
-    username = UnixGroupManager.login_from_email(user.email)
-    return unless username
+    username = ensure_unix_username!(user)
 
-    # Ensure user exists and has home directory set up
-    UnixGroupManager.ensure_user(username, email: user.email)
+    return true if UnixGroupManager.should_skip_operations?
+
+    unless UnixGroupManager.ensure_user(username, email: user.email)
+      raise ProvisioningError, "Failed to ensure Unix account for #{username}"
+    end
+
+    sync_course_memberships!(user)
 
     active_keys = where(user:, active: true)
     keys_data = active_keys.pluck(:public_key)
-    UnixGroupManager.provision_ssh_keys(username, keys_data, email: user.email)
+
+    unless UnixGroupManager.provision_ssh_keys(username, keys_data, email: user.email)
+      raise ProvisioningError, "Failed to update authorized_keys for #{username}"
+    end
+
+    true
   end
 
 private
@@ -148,4 +109,22 @@ private
 
     errors.add(:public_key, "already exists for this user") if existing
   end
+
+  def self.ensure_unix_username!(user)
+    username = UnixGroupManager.login_from_email(user.email)
+    raise ProvisioningError, "Unable to derive Unix username for #{user.email}" unless username
+
+    username
+  end
+
+  def self.sync_course_memberships!(user)
+    user.course_user_data.where(instructor: true)
+        .includes(:course).find_each do |cud|
+      next if UnixGroupManager.update_course_staff_membership(cud.course, user, is_staff: true)
+
+      raise ProvisioningError, "Failed to sync Unix group for #{cud.course.name}"
+    end
+  end
+
+  private_class_method :ensure_unix_username!, :sync_course_memberships!
 end

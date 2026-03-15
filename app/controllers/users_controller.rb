@@ -545,13 +545,19 @@ class UsersController < ApplicationController
 
     @ssh_key = @user.ssh_keys.build(public_key:)
 
-    if @ssh_key.save
+    begin
+      SshKey.transaction do
+        @ssh_key.save!
+        SshKey.provision_all_for_user(@user)
+      end
       flash[:success] = "SSH key added successfully. You can now SSH into the system."
-      redirect_to(ssh_keys_user_path(@user))
-    else
-      flash[:error] = @ssh_key.errors.full_messages.join(", ")
-      redirect_to(ssh_keys_user_path(@user))
+    rescue SshKey::ProvisioningError => e
+      flash[:error] = "Failed to add SSH key: #{e.message}"
+    rescue ActiveRecord::RecordInvalid => e
+      flash[:error] = e.record.errors.full_messages.join(", ")
     end
+
+    redirect_to(ssh_keys_user_path(@user))
   end
 
   action_auth_level :destroy_ssh_key, :student
@@ -581,10 +587,18 @@ class UsersController < ApplicationController
       redirect_to(ssh_keys_user_path(user)) && return
     end
 
-    if @ssh_key.destroy
+    key_owner = user
+
+    begin
+      SshKey.transaction do
+        @ssh_key.destroy!
+        SshKey.provision_all_for_user(key_owner)
+      end
       flash[:success] = "SSH key removed successfully"
-    else
-      flash[:error] = "Failed to remove SSH key"
+    rescue SshKey::ProvisioningError => e
+      flash[:error] = "Failed to remove SSH key: #{e.message}"
+    rescue ActiveRecord::RecordNotDestroyed => e
+      flash[:error] = e.record.errors.full_messages.join(", ")
     end
 
     redirect_to(ssh_keys_user_path(user))
