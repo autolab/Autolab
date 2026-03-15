@@ -21,7 +21,8 @@ class UnixGroupManager
   def self.system_commands_available?
     @system_commands_available ||= begin
       # Check if useradd and groupadd exist
-      [Open3.capture3("which", "useradd"), Open3.capture3("which", "groupadd")].all? do |stdout, stderr, status|
+      [Open3.capture3("which", "useradd"),
+       Open3.capture3("which", "groupadd")].all? do |_stdout, _stderr, status|
         status.success?
       end
     rescue StandardError
@@ -34,7 +35,8 @@ class UnixGroupManager
     return false if delegate_enabled?
     return true unless system_commands_available?
     return true if Rails.env.development? && !ENV["ENABLE_UNIX_OPS"]
-    return false
+
+    false
   rescue StandardError
     true
   end
@@ -55,6 +57,7 @@ class UnixGroupManager
 
   def self.call_delegate(action, payload = {})
     return [false, {}] unless delegate_enabled?
+
     begin
       base_uri = URI.parse(ENV["UNIX_OPS_DELEGATE_URL"])
       jobs_uri = base_uri.dup
@@ -67,10 +70,10 @@ class UnixGroupManager
 
       request = Net::HTTP::Post.new(jobs_uri)
       request["Content-Type"] = "application/json"
-      if delegate_secret && !delegate_secret.empty?
+      if delegate_secret.present?
         request["Authorization"] = "Bearer #{delegate_secret}"
       end
-      request.body = JSON.dump(action: action, payload: payload)
+      request.body = JSON.dump(action:, payload:)
 
       http = Net::HTTP.new(jobs_uri.host, jobs_uri.port)
       http.use_ssl = jobs_uri.scheme == "https"
@@ -81,16 +84,16 @@ class UnixGroupManager
       response = http.request(request)
       body = response.body.to_s
       Rails.logger.info("UnixGroupManager.call_delegate: Response code=#{response.code}, body=#{body}")
-      
+
       parsed = body.empty? ? {} : JSON.parse(body)
       success = response.code.to_i.between?(200, 299) && parsed.fetch("success", true)
-      
+
       if success
         Rails.logger.info("UnixGroupManager.call_delegate: SUCCESS for action=#{action}")
       else
         Rails.logger.warn("UnixGroupManager delegate #{action} failed: #{response.code} #{body}")
       end
-      
+
       [success, parsed]
     rescue StandardError => e
       Rails.logger.error("UnixGroupManager delegate #{action} error: #{e.class} - #{e.message}")
@@ -107,19 +110,21 @@ class UnixGroupManager
   def self.delegate_query(action, payload = {})
     success, parsed = call_delegate(action, payload)
     return nil unless success
+
     parsed["data"]
   end
 
   # Get GID for a group name via delegate
   def self.get_group_gid(group_name)
     return nil if group_name.nil? || group_name.empty?
-    
+
     if delegate_enabled?
-      data = delegate_query("get_group_gid", group_name: group_name)
+      data = delegate_query("get_group_gid", group_name:)
       return data["gid"] if data.is_a?(Hash) && data.key?("gid")
+
       return nil
     end
-    
+
     # Not using delegate - get locally
     begin
       Etc.getgrnam(group_name).gid
@@ -132,10 +137,10 @@ class UnixGroupManager
   # Optionally set owner as well (defaults to root)
   def self.chgrp_path(path, group_name, owner: "root")
     return false if path.nil? || group_name.nil? || group_name.empty?
-    
+
     if delegate_enabled?
       Rails.logger.info("UnixGroupManager.chgrp_path: path=#{path}, group=#{group_name}, owner=#{owner || 'nil (keep current)'}")
-      success, parsed = call_delegate("chgrp", path: path, group_name: group_name, owner: owner)
+      success, parsed = call_delegate("chgrp", path:, group_name:, owner:)
       if success
         Rails.logger.info("UnixGroupManager.chgrp_path: SUCCESS for #{path}")
       else
@@ -143,7 +148,7 @@ class UnixGroupManager
       end
       return success
     end
-    
+
     # Not using delegate - do it locally
     begin
       group_info = Etc.getgrnam(group_name)
@@ -159,10 +164,10 @@ class UnixGroupManager
   # Read file contents via delegate (useful when file/directory is locked down)
   def self.read_file_via_delegate(path)
     return nil if path.nil?
-    
+
     if delegate_enabled?
       Rails.logger.info("UnixGroupManager.read_file_via_delegate: path=#{path}")
-      success, parsed = call_delegate("read_file", path: path)
+      success, parsed = call_delegate("read_file", path:)
       if success && parsed && parsed["content"]
         Rails.logger.info("UnixGroupManager.read_file_via_delegate: SUCCESS for #{path} (#{parsed['size']} bytes)")
         return parsed["content"]
@@ -171,7 +176,7 @@ class UnixGroupManager
         return nil
       end
     end
-    
+
     # Not using delegate - try to read directly
     File.read(path) if File.readable?(path)
   end
@@ -179,10 +184,10 @@ class UnixGroupManager
   # Set file permissions via delegate
   def self.chmod_path(path, mode)
     return false if path.nil?
-    
+
     if delegate_enabled?
       Rails.logger.info("UnixGroupManager.chmod_path: path=#{path}, mode=#{mode.to_s(8)} (#{mode})")
-      success, parsed = call_delegate("chmod", path: path, mode: mode)
+      success, parsed = call_delegate("chmod", path:, mode:)
       if success
         Rails.logger.info("UnixGroupManager.chmod_path: SUCCESS for #{path}")
       else
@@ -190,7 +195,7 @@ class UnixGroupManager
       end
       return success
     end
-    
+
     # Not using delegate - do it locally
     begin
       File.chmod(mode, path) unless File.symlink?(path)
@@ -204,13 +209,14 @@ class UnixGroupManager
   # Get UID for a username via delegate
   def self.get_user_uid(username)
     return nil if username.nil? || username.empty?
-    
+
     if delegate_enabled?
-      data = delegate_query("get_user_uid", username: username)
+      data = delegate_query("get_user_uid", username:)
       return data["uid"] if data.is_a?(Hash) && data.key?("uid")
+
       return nil
     end
-    
+
     # Not using delegate - get locally
     begin
       Etc.getpwnam(username).uid
@@ -223,8 +229,9 @@ class UnixGroupManager
     return false if username.nil? || username.empty?
 
     if delegate_enabled?
-      data = delegate_query("user_exists", username: username)
+      data = delegate_query("user_exists", username:)
       return data["value"] if data.is_a?(Hash) && data.key?("value")
+
       return data == true
     end
 
@@ -241,8 +248,13 @@ class UnixGroupManager
     link_path = File.join(home_dir, "courses")
     begin
       if File.symlink?(link_path)
-        current_target = File.readlink(link_path) rescue nil
+        current_target = begin
+          File.readlink(link_path)
+        rescue StandardError
+          nil
+        end
         return if current_target == target
+
         File.delete(link_path)
       elsif File.exist?(link_path)
         # Avoid overwriting an existing directory/file
@@ -254,6 +266,7 @@ class UnixGroupManager
       Rails.logger.warn("Failed to create courses symlink at #{link_path}: #{e.message}")
     end
   end
+
   # Extract a safe Unix group name from course name
   def self.safe_group_name(course_name)
     return nil if course_name.nil? || course_name.empty?
@@ -300,7 +313,7 @@ class UnixGroupManager
   def self.ensure_group(group_name)
     return false if group_name.nil? || group_name.empty?
     if delegate_enabled?
-      return delegate_action("ensure_group", group_name: group_name)
+      return delegate_action("ensure_group", group_name:)
     end
     return true if should_skip_operations? # Skip on non-Linux systems
 
@@ -328,7 +341,7 @@ class UnixGroupManager
   def self.remove_group(group_name, force: false)
     return false if group_name.nil? || group_name.empty?
     if delegate_enabled?
-      return delegate_action("remove_group", group_name: group_name, force: force)
+      return delegate_action("remove_group", group_name:, force:)
     end
 
     # Check if group exists
@@ -369,7 +382,7 @@ class UnixGroupManager
   def self.ensure_user(username, email: nil)
     return false if username.nil? || username.empty?
     if delegate_enabled?
-      return delegate_action("ensure_user", username: username, email: email)
+      return delegate_action("ensure_user", username:, email:)
     end
     return true if should_skip_operations? # Skip on non-Linux systems
 
@@ -382,9 +395,19 @@ class UnixGroupManager
         return true
       end
 
+      # Determine whether a primary group with the same name already exists so we can re-use it
+      group_exists = false
+      begin
+        _, _, group_status = Open3.capture3("getent", "group", username)
+        group_exists = group_status.success?
+      rescue StandardError => e
+        Rails.logger.warn("Unable to check existing group for #{username}: #{e.message}")
+      end
+
       # Create user with home directory and bash shell, no password, disabled password login
       # Use -p '*' to lock the password (works on BusyBox and GNU useradd)
       cmd = ["useradd", "-m", "-s", "/bin/bash", "-p", "*"]
+      cmd += ["-g", username] if group_exists
       cmd << "-c" << email if email
       cmd << username
 
@@ -412,7 +435,7 @@ class UnixGroupManager
   def self.setup_user_home(username)
     return false if username.nil? || username.empty?
     if delegate_enabled?
-      return delegate_action("setup_user_home", username: username)
+      return delegate_action("setup_user_home", username:)
     end
     return true if should_skip_operations? # Skip on non-Linux systems
 
@@ -431,7 +454,7 @@ class UnixGroupManager
       ssh_dir = File.join(home_dir, ".ssh")
       FileUtils.mkdir_p(ssh_dir) unless Dir.exist?(ssh_dir)
       File.chmod(0o700, ssh_dir)
-      
+
       # Get user info - handle case where user might not exist yet
       begin
         user_info = Etc.getpwnam(username)
@@ -461,7 +484,7 @@ class UnixGroupManager
     return false if username.nil? || group_name.nil?
     return false if username.empty? || group_name.empty?
     if delegate_enabled?
-      return delegate_action("add_user_to_group", username: username, group_name: group_name)
+      return delegate_action("add_user_to_group", username:, group_name:)
     end
 
     # Check if user is already in group
@@ -486,7 +509,7 @@ class UnixGroupManager
     return false if username.nil? || group_name.nil?
     return false if username.empty? || group_name.empty?
     if delegate_enabled?
-      return delegate_action("remove_user_from_group", username: username, group_name: group_name)
+      return delegate_action("remove_user_from_group", username:, group_name:)
     end
 
     # Remove user from group using gpasswd
@@ -544,10 +567,12 @@ class UnixGroupManager
   # Provision SSH public key to user's authorized_keys file
   def self.provision_ssh_key(username, public_key, email: nil)
     return false if username.nil? || username.empty? || public_key.nil? || public_key.empty?
+
     if delegate_enabled?
-      return delegate_action("provision_ssh_key", username: username, public_key: public_key, email: email)
+      return delegate_action("provision_ssh_key", username:, public_key:,
+                                                  email:)
     end
-    
+
     # In development or when system commands aren't available, just log and succeed
     if should_skip_operations?
       Rails.logger.info("Skipping SSH key provisioning for #{username} (development mode or system commands unavailable)")
@@ -555,7 +580,7 @@ class UnixGroupManager
     end
 
     # Ensure user exists and home is set up
-    ensure_user(username, email: email)
+    ensure_user(username, email:)
     setup_user_home(username)
 
     # Get home directory
@@ -596,7 +621,7 @@ class UnixGroupManager
   def self.deprovision_ssh_key(username, fingerprint)
     return false if username.nil? || username.empty? || fingerprint.nil? || fingerprint.empty?
     if delegate_enabled?
-      return delegate_action("deprovision_ssh_key", username: username, fingerprint: fingerprint)
+      return delegate_action("deprovision_ssh_key", username:, fingerprint:)
     end
 
     # Get home directory
@@ -611,14 +636,14 @@ class UnixGroupManager
 
     # Read existing keys and filter out the one with matching fingerprint
     existing_keys = File.readlines(authorized_keys).map(&:strip).reject(&:empty?)
-    
+
     # Find key with matching fingerprint
     require "digest"
     require "base64"
     filtered_keys = existing_keys.reject do |key_line|
       parts = key_line.split(/\s+/, 3)
       next false if parts.length < 2
-      
+
       begin
         key_data = parts[1]
         decoded = Base64.decode64(key_data)
@@ -647,12 +672,14 @@ class UnixGroupManager
   # Provision multiple SSH keys (replaces all keys)
   def self.provision_ssh_keys(username, public_keys, email: nil)
     return false if username.nil? || username.empty?
+
     if delegate_enabled?
-      return delegate_action("provision_ssh_keys", username: username, public_keys: public_keys, email: email)
+      return delegate_action("provision_ssh_keys", username:, public_keys:,
+                                                   email:)
     end
 
     # Ensure user exists and home is set up
-    ensure_user(username, email: email)
+    ensure_user(username, email:)
     setup_user_home(username)
 
     # Get home directory
@@ -686,7 +713,7 @@ class UnixGroupManager
   def self.delete_user(username, remove_home: true)
     return false if username.nil? || username.empty?
     if delegate_enabled?
-      return delegate_action("delete_user", username: username, remove_home: remove_home)
+      return delegate_action("delete_user", username:, remove_home:)
     end
 
     # Check if user exists
@@ -756,4 +783,3 @@ class UnixGroupManager
     end
   end
 end
-
