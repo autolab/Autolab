@@ -188,13 +188,13 @@ class CoursesController < ApplicationController
           Rails.logger.info("=== COURSE CREATION: Reloading config for #{@newCourse.name} ===")
           @newCourse.reload_course_config
           Rails.logger.info("Successfully reloaded course config for #{@newCourse.name}")
-          
+
           # Lock down directory permissions now that config is loaded
           # Directory will be root:<course-group> with 2770 (drwxrws---) permissions
           Rails.logger.info("Locking down directory permissions for #{@newCourse.name}")
           begin
             FilesystemEnforcer.fix_tree(@newCourse.directory_path.to_s)
-            
+
             # Verify the permissions were actually set
             begin
               final_stat = File.stat(@newCourse.directory_path)
@@ -326,7 +326,7 @@ class CoursesController < ApplicationController
       Rails.logger.info("Step 1: Preparing to reload course config for #{@newCourse.name}")
       Rails.logger.info("Source config path: #{@newCourse.source_config_file_path}")
       Rails.logger.info("Process uid: #{Process.uid}, gid: #{Process.gid}, euid: #{Process.euid}, egid: #{Process.egid}")
-      
+
       # Verify directory and file are accessible before trying to reload
       dir_path = @newCourse.directory_path
       source_config = @newCourse.source_config_file_path
@@ -335,14 +335,14 @@ class CoursesController < ApplicationController
         dir_exists = Dir.exist?(dir_path)
         file_exists = File.exist?(source_config)
         Rails.logger.info("Directory exists: #{dir_exists}, File exists: #{file_exists}")
-        
+
         if dir_exists
           dir_stat = File.stat(dir_path)
           Rails.logger.info("Directory stats: uid=#{dir_stat.uid}, gid=#{dir_stat.gid}, mode=#{dir_stat.mode.to_s(8)}, readable=#{File.readable?(dir_path)}, executable=#{File.executable?(dir_path)}")
         else
           Rails.logger.error("Directory does not exist: #{dir_path}")
         end
-        
+
         if file_exists
           file_stat = File.stat(source_config)
           Rails.logger.info("File stats: uid=#{file_stat.uid}, gid=#{file_stat.gid}, mode=#{file_stat.mode.to_s(8)}, readable=#{File.readable?(source_config)}")
@@ -353,7 +353,7 @@ class CoursesController < ApplicationController
         Rails.logger.error("Error checking directory/file stats: #{e.class} - #{e.message}")
         Rails.logger.error("Backtrace: #{e.backtrace.first(5).join("\n")}")
       end
-      
+
       Rails.logger.info("Step 2: Calling @newCourse.reload_course_config...")
       begin
         @newCourse.reload_course_config
@@ -364,7 +364,7 @@ class CoursesController < ApplicationController
         Rails.logger.error("Backtrace:\n#{e.backtrace.join("\n")}")
         raise
       end
-      
+
       # Lock down directory permissions now that config is loaded
       # Directory will be root:<course-group> with 2770 (drwxrws---) permissions
       # Rails will use delegate (with root privileges) to access files when needed
@@ -372,7 +372,7 @@ class CoursesController < ApplicationController
       Rails.logger.info("Directory path: #{@newCourse.directory_path}")
       begin
         FilesystemEnforcer.fix_tree(@newCourse.directory_path.to_s)
-        
+
         # Verify the permissions were actually set
         begin
           final_stat = File.stat(@newCourse.directory_path)
@@ -393,7 +393,7 @@ class CoursesController < ApplicationController
         # Don't fail course creation if permission locking fails - log and continue
         Rails.logger.warn("Continuing with course creation despite permission fix failure")
       end
-      
+
       Rails.logger.info("=== COURSE CREATION: Config reload and permission setup COMPLETED for #{@newCourse.name} ===")
     rescue StandardError, SyntaxError => e
       Rails.logger.error("=== COURSE CREATION: Config reload FAILED for #{@newCourse.name} ===")
@@ -629,11 +629,11 @@ class CoursesController < ApplicationController
 
     # save all the cuds
     if @cuds.all?(&:save)
-      # Create Unix users and add to course group for staff members
+      # Create Unix users and add to course group for instructors only
       @cuds.each do |cud|
-        if cud.instructor? || cud.course_assistant?
-          UnixGroupManager.update_course_staff_membership(@course, cud.user, is_staff: true)
-        end
+        next unless cud.instructor? && !cud.dropped?
+
+        UnixGroupManager.update_course_staff_membership(@course, cud.user, is_staff: true)
       end
       flash[:success] = "Success: Users added to course."
     else
@@ -1024,9 +1024,9 @@ private
 
           # Save without validations
           cud.save(validate: false)
-          
-          # Create Unix user and add to course group if staff
-          if cud.instructor? || cud.course_assistant?
+
+          # Create Unix user and add to course group for instructors only
+          if cud.instructor? && !cud.dropped?
             UnixGroupManager.update_course_staff_membership(@course, user, is_staff: true)
           end
         end
@@ -1038,8 +1038,8 @@ private
 
         fail "Red CUD doesn't exist in the database." if existing.nil?
 
-        # Remove from Unix group if staff
-        if existing.instructor? || existing.course_assistant?
+        # Remove from Unix group if active instructor loses access
+        if existing.instructor? && !existing.dropped?
           UnixGroupManager.update_course_staff_membership(@course, existing.user, is_staff: false)
         end
 
@@ -1096,9 +1096,9 @@ private
         existing.assign_attributes(params.permit(:course_number, :lecture, :section, :grade_policy))
         existing.dropped = false
         existing.save(validate: false) # Save without validations.
-        
-        # Update Unix group membership if role changed
-        if existing.instructor? || existing.course_assistant?
+
+        # Update Unix group membership if user is currently an instructor
+        if existing.instructor? && !existing.dropped?
           UnixGroupManager.update_course_staff_membership(@course, user, is_staff: true)
         end
       end

@@ -67,8 +67,8 @@ class CourseUserDataController < ApplicationController
     end
 
     if @newCUD.save
-      # Update Unix group membership if user is staff
-      if @newCUD.instructor? || @newCUD.course_assistant?
+      # Update Unix group membership for active instructors only
+      if @newCUD.instructor? && !@newCUD.dropped?
         UnixGroupManager.update_course_staff_membership(@course, user, is_staff: true)
       end
       flash[:success] = "Success: added user #{email} in #{@course.full_name}"
@@ -162,8 +162,8 @@ class CourseUserDataController < ApplicationController
       params[:course_user_datum][:tweak_attributes][:_destroy] = true
     end
 
-    # Track role changes for Unix group management
-    was_staff = @editCUD.instructor? || @editCUD.course_assistant?
+    # Track instructor role/dropped state for Unix group management
+    was_instructor = @editCUD.instructor?
     was_dropped = @editCUD.dropped?
 
     if params[:course_user_datum][:dropped] == "1" && !@editCUD.dropped?
@@ -171,15 +171,15 @@ class CourseUserDataController < ApplicationController
     end
     # When we're finished editing, go back to the user table
     if @editCUD.update(edit_cud_params)
-      # Update Unix group membership based on role changes
-      is_staff = @editCUD.instructor? || @editCUD.course_assistant?
+      # Update Unix group membership based on instructor role changes
+      is_instructor = @editCUD.instructor?
       is_dropped = @editCUD.dropped?
+      previously_active_instructor = was_instructor && !was_dropped
+      currently_active_instructor = is_instructor && !is_dropped
 
-      # Remove from group if: dropped, or no longer staff
-      # Add to group if: became staff and not dropped
-      if (was_staff && (is_dropped || !is_staff)) || (!is_dropped && was_dropped && !is_staff)
+      if previously_active_instructor && !currently_active_instructor
         UnixGroupManager.update_course_staff_membership(@course, @editCUD.user, is_staff: false)
-      elsif is_staff && !is_dropped && !was_staff
+      elsif !previously_active_instructor && currently_active_instructor
         UnixGroupManager.update_course_staff_membership(@course, @editCUD.user, is_staff: true)
       end
 
