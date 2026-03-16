@@ -36,7 +36,9 @@ class AssessmentsController < ApplicationController
   # We have to do this here, because the modules don't inherit ApplicationController.
 
   # Grading
+  action_auth_level :bulkExport, :course_assistant
   action_auth_level :bulkGrade, :course_assistant
+  action_auth_level :bulkGrade_complete, :course_assistant
   action_auth_level :quickSetScore, :course_assistant
   action_auth_level :quickSetScoreDetails, :course_assistant
   action_auth_level :submission_popover, :course_assistant
@@ -58,6 +60,7 @@ class AssessmentsController < ApplicationController
   action_no_auth :autograde_done
   action_auth_level :regrade, :instructor
   action_auth_level :regradeAll, :instructor
+  action_auth_level :regradeBatch, :instructor
   action_no_auth :log_submit
   action_no_auth :local_submit
 
@@ -1113,7 +1116,14 @@ private
       ass[:version_threshold] = ""
     end
 
+    # Extra precaution: remove parameters that we don't want users to modify
+    ass.delete(:id)
     ass.delete(:name)
+    ass.delete(:created_at)
+    ass.delete(:updated_at)
+    ass.delete(:course_id)
+    ass.delete(:late_penalty_id)
+    ass.delete(:version_penalty_id)
     ass.delete(:config_file)
     ass.delete(:embedded_quiz_form)
 

@@ -164,8 +164,6 @@ Rails.application.routes.draw do
           end
         end
 
-        resources :scores, only: [:create, :show, :update]
-
         member do
           get "destroyConfirm"
           get "download"
