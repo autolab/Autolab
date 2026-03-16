@@ -15,11 +15,11 @@
       <p><strong>Unix Username:</strong> <code><%= username %></code></p>
       <% hostname = request.host || "autolab.example.com" %>
       <p>After adding an SSH key, you can SSH into the system using<br>
-        <code>ssh -i ~/.ssh/id_ed25519_autolab.pub <%= username %>@<%= hostname %></code>
+        <code>ssh -i ~/.ssh/id_ed25519_autolab <%= username %>@<%= hostname %></code>
         <br>
         or
         <br>
-        <code>ssh -i ~/.ssh/id_rsa_autolab.pub <%= username %>@<%= hostname %></code>
+        <code>ssh -i ~/.ssh/id_rsa_autolab <%= username %>@<%= hostname %></code>
         <br>
         depending on the name of the file the SSH key information is saved in. </p>
     <% else %>
