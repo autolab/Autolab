@@ -1,92 +1,174 @@
 
-<h1>Contact Autolab</h1>
+<div class="contact-page">
+  <div class="row">
+    <div class="col s12">
+      <h1>Contact Autolab</h1>
+      <p class="lead">
+        Get the right help faster by choosing the section that matches your role.
+        Each section lists the best channel for the types of requests we see most often.
+      </p>
+    </div>
+  </div>
 
-<p class="lead">
-Hey there! We're committed to doing the absolute best job we can to make your
-experience on Autolab amazing. Here are some frequently asked questions:
-</p>
+  <div class="row">
+    <div class="col s12 m6">
+      <div class="card contact-card">
+        <div class="card-content">
+          <span class="card-title">
+            <i class="material-icons contact-icon">school</i>
+            Students
+          </span>
+          <p>
+            Reach out to your course staff for anything tied to a specific class.
+            They control grades, deadlines, roster changes, and extensions.
+          </p>
+          <ul class="contact-topics">
+            <li>Regrade or rubric questions</li>
+            <li>Enrollment or section changes</li>
+            <li>Submission troubleshooting for a course</li>
+          </ul>
+        </div>
+        <div class="card-action">
+          <% if @student_course_contacts.present? %>
+            <p class="support-label">Choose a course to email its instructors:</p>
+            <ul class="collection">
+              <% @student_course_contacts.each do |contact| %>
+                <% course = contact[:course] %>
+                <% instructors = contact[:instructors] %>
+                <% subject = "[Autolab] #{course.display_name || course.name} question" %>
+                <li class="collection-item">
+                  <div class="contact-course">
+                    <strong><%= course.display_name || course.name %></strong>
+                    <%= mail_to instructors.join(","),
+                              "Email instructors",
+                              subject: subject,
+                              class: "btn-flat waves-effect contact-mailto" %>
+                  </div>
+                </li>
+              <% end %>
+            </ul>
+          <% else %>
+            <p class="grey-text text-darken-1">
+              Log in and enroll in a course to unlock instructor email shortcuts, or contact your
+              professor directly using the syllabus information for your class.
+            </p>
+          <% end %>
+        </div>
+      </div>
+    </div>
 
-<div class="row">
-  <div class="col l6">
-    <h3>I have an issue with the way my assignment was graded.</h3>
-    <p>
-    That's not exactly a question, but you should probably check with your
-    professor. They're the ones who can help with regrades, getting grading
-    feedback, questions about due dates, and other class-specific details.
-    </p>
+    <% if @show_staff_cta %>
+      <div class="col s12 m6">
+        <div class="card contact-card">
+          <div class="card-content">
+            <span class="card-title">
+              <i class="material-icons contact-icon">people</i>
+              TAs &amp; Instructors
+            </span>
+            <p>
+              Instance managers can help with Autolab infrastructure questions:
+              setting up new courses, roster sync issues, or isolated platform bugs.
+            </p>
+            <ul class="contact-topics">
+              <li>Provisioning new courses or semesters</li>
+              <li>Roster uploads, LMS/LTI sync, or section mismatches</li>
+              <li>Autograder crashes impacting multiple students</li>
+            </ul>
+          </div>
+          <div class="card-action">
+            <% if @instance_manager_email.present? %>
+              <%= mail_to @instance_manager_email,
+                          "Email instance manager",
+                          subject: "[Autolab] Staff request",
+                          class: "btn waves-effect waves-light" %>
+            <% else %>
+              <p class="red-text text-darken-2">
+                Configure <code>instance_manager_email</code> in <code>config/school.yml</code> to enable this shortcut.
+              </p>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    <% end %>
   </div>
-  <div class="col l6">
-    <h3>Can you add me to [this class I'm supposed to be in]?</h3>
-    <p>
-    No, sorry. Once again, you'll have to check with your professor for this one.
-    </p>
+
+  <div class="row">
+    <div class="col s12 m6">
+      <div class="card contact-card">
+        <div class="card-content">
+          <span class="card-title">
+            <i class="material-icons contact-icon">bug_report</i>
+            Report a Bug or Request a Feature
+          </span>
+          <p>
+            Help us keep Autolab healthy by reporting reproducible issues with as much detail as possible.
+          </p>
+          <ul class="contact-topics">
+            <li>Steps to reproduce and expected behavior</li>
+            <li>Relevant screenshots or stack traces</li>
+            <li>Autograder logs or submission IDs</li>
+          </ul>
+        </div>
+        <div class="card-action">
+          <a class="btn-flat waves-effect contact-mailto" href="https://github.com/autolab/Autolab/issues" target="_blank" rel="noopener">
+            <i class="material-icons left">open_in_new</i>
+            Open GitHub Issues
+          </a>
+          <%= mail_to Rails.configuration.school['support_email'],
+                      "Email support",
+                      subject: "[Autolab] Issue report",
+                      class: "btn-flat waves-effect contact-mailto" %>
+        </div>
+      </div>
+    </div>
+
+    <% if @show_dev_cta %>
+      <div class="col s12 m6">
+        <div class="card contact-card">
+          <div class="card-content">
+            <span class="card-title">
+              <i class="material-icons contact-icon">memory</i>
+              Instance Managers &amp; Dev Team
+            </span>
+            <p>
+              Use this channel for escalations that affect your entire Autolab instance or require code changes.
+            </p>
+            <ul class="contact-topics">
+              <li>Site-wide outages or severe performance drops</li>
+              <li>Security disclosures</li>
+              <li>Upgrades, migrations, or sponsor acknowledgements</li>
+            </ul>
+          </div>
+          <div class="card-action">
+            <%= mail_to @developer_email,
+                        "Email Autolab Dev Team",
+                        subject: "[Autolab] Instance escalation",
+                        class: "btn waves-effect waves-light" %>
+          </div>
+        </div>
+      </div>
+    <% end %>
   </div>
-</div><!-- container -->
-<hr>
-<div class="row">
-  <div class="col l6">
-    <h3>I'm seeing a picture of Donkey Kong... what just happened?</h3>
-    <p>
-    Something with Autolab just broke&mdash;it definitely wasn't supposed to
-    happen. Read the next two questions to figure out where to go from here!
-    </p>
-  </div>
-  <div class="col l6">
-    <h3>What should I do if I've encountered an error or if I'd like to request a feature?</h3>
-    <p>
-    Jump on over to our <b><a href="https://github.com/autolab/Autolab/issues/">issue tracker
-    on GitHub</a></b>. From there, you can search for already-reported issues (to make
-    sure the one you have in mind hasn't already been reported) and then create an
-    issue detailing what's wrong or what you'd like to see happen. Make sure to read
-    below for what makes a good error report.
-    </p>
-  </div>
-  <div class="col l6">
-    <h3>I don't have a GitHub account or I'd like a little bit more personalized bug resolution experience. Is there an alternative to the issue tracker?</h3>
-    <p>
-    In this case, feel free to send an email to the Autolab developers mailing list,
-    </p>
-    <p>
-    <b><%= Rails.configuration.school['support_email'] %></b>
-    </p>
-    <p>
-    We get a good deal of traffic on this list, but we'll make our best effort to
-    get back to as soon as we can. Make sure to read below for what makes a good
-    error report.
-    </p>
-  </div>
-  <div class="col l6">
-    <h3>What makes a good error report?</h3>
-    <p>
-    When reporting an issue or requesting a feature, please be as descriptive as possible! Good issue reports have
-    <ul>
-      <li>screenshots</li>
-      <li>stack traces (if you saw an error page and it gave you one)</li>
-      <li>a description of what you think you did to generate the error</li>
-      <li>a description of what you think should have happened</li>
-    </ul>
-    </p>
-  </div>
-</div><!-- container -->
-<hr>
-<div class="row">
-  <div class="col l6">
-    <h3>Where can I learn more about Autolab?</h3>
-    <p>
-    For more information about the Autolab Project and team, check out our <b><a href="http://www.autolabproject.com/">
-      project page</a></b>. For more information about how to get started using Autolab for your own autograding
-      adventures, check out the <b><a href="https://github.com/autolab/Autolab/">GitHub repository</a></b>.
-      The README and the Wiki have good documentation about how to get up and running.
-      If you encounter an issue along the way, report it or send us an email!
-    </p>
-  </div>
-  <div class="col l6">
-    <h3>Can I help with Autolab development?</h3>
-    <p>
-    Yes! Autolab is completely open source, from the frontend Rails app to the backend autograding and VM management
-      system called <b><a href="https://github.com/autolab/Tango">Tango</a></b>, and we welcome any external
-      contributions. If you're interested in contributing to Autolab,
-      check out the <b><a href="https://github.com/autolab/Autolab/">GitHub repository</a></b>!
-    </p>
-  </div>
-</div><!-- container -->
+
+  <% if @show_sponsor_panel %>
+    <div class="row">
+      <div class="col s12">
+        <div class="card contact-card">
+          <div class="card-content">
+            <span class="card-title">
+              <i class="material-icons contact-icon">favorite</i>
+              Sponsors &amp; Acknowledgements
+            </span>
+            <p>
+              Celebrate the organizations that make your Autolab instance possible.
+              Instance managers can keep sponsor information up to date and share logos or links.
+            </p>
+          </div>
+          <div class="card-action">
+            <%= link_to "Manage sponsors", home_sponsors_path, class: "btn-flat waves-effect" %>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>

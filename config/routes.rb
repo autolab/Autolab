@@ -64,6 +64,7 @@ Rails.application.routes.draw do
       match "developer_login", via: [:get, :post]
     end
     get "contact"
+    get "sponsors"
     get "no_user"
   end
 
