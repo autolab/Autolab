@@ -79,8 +79,10 @@ private
   end
 
   def announcement_params
-    params.require(:announcement).permit(:title, :description, :start_date,
-                                         :end_date, :system, :persistent)
+    allowed_params = [:title, :description, :start_date,
+                      :end_date, :persistent]
+    allowed_params << :system if @cud.user.administrator?
+    params.require(:announcement).permit(allowed_params)
   end
 
   def set_manage_announcement_breadcrumb
