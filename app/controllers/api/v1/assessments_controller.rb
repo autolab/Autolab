@@ -90,9 +90,9 @@ class Api::V1::AssessmentsController < Api::V1::BaseApiController
         respond_with_hash({ handout: "none" }) and return
       end
 
-      send_file(hash["fullpath"],
-                disposition: "inline",
-                filename: hash["filename"])
+      unless send_handout_file(hash["fullpath"], hash["filename"])
+        respond_with_hash({ handout: "none" })
+      end
       return
     end
 
@@ -103,9 +103,9 @@ class Api::V1::AssessmentsController < Api::V1::BaseApiController
     if @assessment.handout_is_file?
       # Note: handout_is_file? validates that the handout lies within the assessment folder
       filename = @assessment.handout_path
-      send_file(filename,
-                disposition: "inline",
-                file: File.basename(filename))
+      unless send_handout_file(filename)
+        respond_with_hash({ handout: "none" })
+      end
       return
     end
 
@@ -240,6 +240,35 @@ private
     send_data(content,
               disposition: "inline",
               filename: File.basename(filename))
+    true
+  end
+
+  def send_handout_file(path, download_name = nil)
+    filename = download_name || File.basename(path.to_s)
+
+    if File.file?(path) && File.readable?(path)
+      send_file(path,
+                disposition: "inline",
+                filename:)
+      return true
+    end
+
+    content = UnixGroupManager.read_file_via_delegate(path.to_s)
+    return false if content.nil?
+
+    send_data(content,
+              disposition: "inline",
+              filename:)
+    true
+  rescue ActionController::MissingFile, Errno::ENOENT, Errno::EACCES, Errno::EPERM => e
+    Rails.logger.warn("Failed to stream API handout for assessment #{@assessment.id}: #{e.class} - #{e.message}")
+
+    content = UnixGroupManager.read_file_via_delegate(path.to_s)
+    return false if content.nil?
+
+    send_data(content,
+              disposition: "inline",
+              filename:)
     true
   end
 end

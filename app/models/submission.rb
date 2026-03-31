@@ -88,21 +88,24 @@ class Submission < ApplicationRecord
       # Sanity!
       upload["file"].rewind
       file_path = create_user_directory_and_return_handin_file_path
-      File.open(file_path, "wb") { |f|
-        f.write(upload["file"].read)
-      }
+      write_submission_content(file_path, upload["file"].read)
     elsif upload["local_submit_file"]
       # local_submit_file is a path string to the temporary handin
       # directory we create for local submissions
       file_path = create_user_directory_and_return_handin_file_path
-      File.open(file_path, "wb") do |f|
-        f.write(File.read(upload["local_submit_file"], mode: File::RDONLY | File::NOFOLLOW))
-      end
+      write_submission_content(file_path,
+                               File.read(upload["local_submit_file"],
+                                         mode: File::RDONLY | File::NOFOLLOW))
     elsif upload["tar"]
       src = upload["tar"]
       # Only used for Github submissions, so this is fairly safe
       file_path = create_user_directory_and_return_handin_file_path
-      FileUtils.mv(src, file_path)
+      begin
+        FileUtils.mv(src, file_path)
+      rescue Errno::EACCES, Errno::EPERM
+        write_submission_content(file_path, File.binread(src))
+        File.delete(src) if File.exist?(src)
+      end
     end
 
     if upload["file"]
@@ -120,10 +123,10 @@ class Submission < ApplicationRecord
     save!
 
     # Enforce permissions on uploaded file and directory
-    if file_path && File.exist?(file_path)
-      FilesystemEnforcer.fix_path(file_path)
-      FilesystemEnforcer.fix_path(File.dirname(file_path))
-    end
+    return unless file_path && File.exist?(file_path)
+
+    FilesystemEnforcer.fix_path(file_path)
+    FilesystemEnforcer.fix_path(File.dirname(file_path))
   end
 
   def archive_handin
@@ -169,7 +172,13 @@ class Submission < ApplicationRecord
 
   ### handin helpers
   def create_user_handin_directory
-    FileUtils.mkdir_p File.join(assessment.handin_directory_path, course_user_datum.email)
+    path = File.join(assessment.handin_directory_path, course_user_datum.email)
+    FileUtils.mkdir_p(path)
+  rescue Errno::EACCES, Errno::EPERM
+    raise unless UnixGroupManager.delegate_enabled?
+
+    created = UnixGroupManager.mkdir_p_via_delegate(path.to_s, mode: 0o2770)
+    raise Errno::EACCES, "Permission denied creating directory #{path}" unless created
   end
 
   def handin_file_filename
@@ -200,6 +209,15 @@ class Submission < ApplicationRecord
 
     create_user_handin_directory
     new_handin_file_path
+  end
+
+  def write_submission_content(path, content)
+    File.binwrite(path, content)
+  rescue Errno::EACCES, Errno::EPERM
+    raise unless UnixGroupManager.delegate_enabled?
+
+    ok = UnixGroupManager.write_file_via_delegate(path.to_s, content)
+    raise Errno::EACCES, "Permission denied writing #{path}" unless ok
   end
 
   def handin_annotated_file_path
