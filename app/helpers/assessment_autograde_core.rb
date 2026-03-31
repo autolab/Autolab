@@ -557,7 +557,7 @@ module AssessmentAutogradeCore
   def extend_config_module(assessment, submission, cud)
     # autograde core calls might be called before migration to unique module name occurs, so need to add check
     begin
-      if @assessment.use_unique_module_name
+      if assessment.use_unique_module_name
         require assessment.unique_config_file_path.to_s
       else
         require assessment.config_file_path.to_s
@@ -565,7 +565,14 @@ module AssessmentAutogradeCore
     rescue TypeError => e
       raise AutogradeError, "could not find the assessment config file: #{e}"
     rescue LoadError => e
-      raise AutogradeError, "could not load the assessment config file: #{e}"
+      begin
+        # Fallback for assessments that have not yet populated assessmentConfig/
+        assessment.load_config_file
+        require assessment.unique_config_file_path.to_s
+      rescue StandardError => fallback_error
+        raise AutogradeError,
+              "could not load the assessment config file: #{e}; fallback failed: #{fallback_error}"
+      end
     end
 
     # casted to local variable so that
