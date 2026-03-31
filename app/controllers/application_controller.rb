@@ -350,10 +350,14 @@ protected
   # class.
   # @return The filename of the dlist that was created.
   def make_dlist(cuds)
-    emails = []
+    return "" if cuds.blank?
 
-    cuds.each do |cud|
-      emails << cud.user.email.to_s
+    emails = cuds.filter_map do |entry|
+      if entry.respond_to?(:user) && entry.user&.email.present?
+        entry.user.email.to_s
+      elsif entry.respond_to?(:email) && entry.email.present?
+        entry.email.to_s
+      end
     end
 
     emails.join(",")

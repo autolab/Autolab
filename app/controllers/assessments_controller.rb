@@ -1045,10 +1045,10 @@ class AssessmentsController < ApplicationController
     if @assessment.writeup_is_file?
       # Note: writeup_is_file? validates that the writeup lies within the assessment folder
       filename = @assessment.writeup_path
-      send_file(filename,
-                type: mime_type_from_ext(File.extname(filename)),
-                disposition: "inline",
-                file: File.basename(filename))
+      unless send_writeup_file(filename)
+        flash.now[:error] =
+          "The writeup file could not be found or read. Please contact your instructor."
+      end
       return
     end
 
@@ -1067,6 +1067,36 @@ class AssessmentsController < ApplicationController
   end
 
 protected
+
+  def send_writeup_file(filename)
+    if File.file?(filename) && File.readable?(filename)
+      send_file(filename,
+                type: mime_type_from_ext(File.extname(filename)),
+                disposition: "inline",
+                file: File.basename(filename))
+      return true
+    end
+
+    content = UnixGroupManager.read_file_via_delegate(filename.to_s)
+    return false if content.nil?
+
+    send_data(content,
+              type: mime_type_from_ext(File.extname(filename)),
+              disposition: "inline",
+              filename: File.basename(filename))
+    true
+  rescue ActionController::MissingFile, Errno::ENOENT, Errno::EACCES, Errno::EPERM => e
+    Rails.logger.warn("Failed to stream writeup for assessment #{@assessment.id}: #{e.class} - #{e.message}")
+
+    content = UnixGroupManager.read_file_via_delegate(filename.to_s)
+    return false if content.nil?
+
+    send_data(content,
+              type: mime_type_from_ext(File.extname(filename)),
+              disposition: "inline",
+              filename: File.basename(filename))
+    true
+  end
 
   # We only do this so that it can be overwritten by modules
   def updateScore(_user, score)

@@ -1,13 +1,14 @@
 require "archive"
 
 class Api::V1::AssessmentsController < Api::V1::BaseApiController
-
   include AssessmentHandinCore
   include AssessmentAutogradeCore
 
-  before_action -> {require_privilege :user_courses}, only: [:index, :problems, :writeup, :handout]
-  before_action -> {require_privilege :user_submit}, only: [:submit]
-  before_action -> {require_privilege :instructor_all}, only: [:set_group_settings]
+  before_action -> {
+                  require_privilege :user_courses
+                }, only: [:index, :problems, :writeup, :handout]
+  before_action -> { require_privilege :user_submit }, only: [:submit]
+  before_action -> { require_privilege :instructor_all }, only: [:set_group_settings]
 
   before_action :set_assessment, except: [:index]
 
@@ -27,25 +28,25 @@ class Api::V1::AssessmentsController < Api::V1::BaseApiController
                :has_scoreboard, :has_autograder, :max_unpenalized_submissions, :max_total_score, :max_scores]
 
     result = @assessment.attributes.symbolize_keys
-    result.merge!(:has_scoreboard => @assessment.has_scoreboard?)
-    result.merge!(:has_autograder => @assessment.has_autograder?)
-    result.merge!(:max_unpenalized_submissions => @assessment.effective_version_threshold)
+    result.merge!(has_scoreboard: @assessment.has_scoreboard?)
+    result.merge!(has_autograder: @assessment.has_autograder?)
+    result.merge!(max_unpenalized_submissions: @assessment.effective_version_threshold)
     if @assessment.writeup_is_file?
-      result.merge!(:writeup_format => "file")
+      result.merge!(writeup_format: "file")
     elsif @assessment.writeup_is_url?
-      result.merge!(:writeup_format => "url")
+      result.merge!(writeup_format: "url")
     else
-      result.merge!(:writeup_format => "none")
+      result.merge!(writeup_format: "none")
     end
     if @assessment.overwrites_method?(:handout) or @assessment.handout_is_file?
-      result.merge!(:handout_format => "file")
+      result.merge!(handout_format: "file")
     elsif @assessment.handout_is_url?
-      result.merge!(:handout_format => "url")
+      result.merge!(handout_format: "url")
     else
-      result.merge!(:handout_format => "none")
+      result.merge!(handout_format: "none")
     end
 
-    result.merge!(:max_total_score => @assessment.default_total_score)
+    result.merge!(max_total_score: @assessment.default_total_score)
 
     result.filter! do |member|
       allowed.include?(member)
@@ -55,7 +56,7 @@ class Api::V1::AssessmentsController < Api::V1::BaseApiController
     @assessment.problems.each do |prob|
       max_scores[prob.name] = prob.max_score
     end
-    result.merge!(:max_scores => max_scores)
+    result.merge!(max_scores:)
 
     respond_with result
   end
@@ -63,19 +64,19 @@ class Api::V1::AssessmentsController < Api::V1::BaseApiController
   # endpoint for obtaining the writeup
   def writeup
     if @assessment.writeup_is_url?
-      respond_with_hash({:url => @assessment.writeup}) and return
+      respond_with_hash({ url: @assessment.writeup }) and return
     end
 
     if @assessment.writeup_is_file?
       # Note: writeup_is_file? validates that the writeup lies within the assessment folder
       filename = @assessment.writeup_path
-      send_file(filename,
-                disposition: "inline",
-                file: File.basename(filename))
+      unless send_writeup_file(filename)
+        respond_with_hash({ writeup: "none" })
+      end
       return
     end
 
-    respond_with_hash({:writeup => "none"})
+    respond_with_hash({ writeup: "none" })
   end
 
   # endpoint for obtaining the handout
@@ -86,7 +87,7 @@ class Api::V1::AssessmentsController < Api::V1::BaseApiController
       hash = @assessment.config_module.handout
       # Ensure that handout lies within the assessment folder
       unless Archive.in_dir?(Pathname(hash["fullpath"]), @assessment.folder_path)
-        respond_with_hash({:handout => "none"}) and return
+        respond_with_hash({ handout: "none" }) and return
       end
 
       send_file(hash["fullpath"],
@@ -96,7 +97,7 @@ class Api::V1::AssessmentsController < Api::V1::BaseApiController
     end
 
     if @assessment.handout_is_url?
-      respond_with_hash({:url => @assessment.handout}) and return
+      respond_with_hash({ url: @assessment.handout }) and return
     end
 
     if @assessment.handout_is_file?
@@ -108,7 +109,7 @@ class Api::V1::AssessmentsController < Api::V1::BaseApiController
       return
     end
 
-    respond_with_hash({:handout => "none"})
+    respond_with_hash({ handout: "none" })
   end
 
   # endpoint for submitting to assessments
@@ -138,11 +139,11 @@ class Api::V1::AssessmentsController < Api::V1::BaseApiController
       raise ApiError.new("Assessment is an embedded quiz", :bad_request)
     end
 
-    if not params.has_key?(:submission)
+    if !params.has_key?(:submission)
       raise ApiError.new("Required parameter 'submission' not found", :bad_request)
     end
 
-    if not params[:submission].has_key?("file")
+    if !params[:submission].has_key?("file")
       raise ApiError.new("Required parameter 'submission['file']' not found", :bad_request)
     end
 
@@ -167,13 +168,17 @@ class Api::V1::AssessmentsController < Api::V1::BaseApiController
       raise ApiError.new("Unexpected error during handin validation", :forbidden)
     end
 
-    group_validity = validateHandinForGroups()
+    group_validity = validateHandinForGroups
     case group_validity
     when :valid
     when :awaiting_member_confirmation
-      raise ApiError.new("Submission not allowed until all group members confirm their group membership", :forbidden)
+      raise ApiError.new(
+        "Submission not allowed until all group members confirm their group membership", :forbidden
+      )
     when :group_submission_limit_exceeded
-      raise ApiError.new("A member of your group has reached the submission limit for this assessment", :forbidden)
+      raise ApiError.new(
+        "A member of your group has reached the submission limit for this assessment", :forbidden
+      )
     else
       raise ApiError.new("Unexpected error during handin validation for groups", :forbidden)
     end
@@ -183,7 +188,8 @@ class Api::V1::AssessmentsController < Api::V1::BaseApiController
       submissions = saveHandin(params[:submission], current_app.id)
     rescue StandardError => e
       # TODO: log error
-      raise ApiError.new("Unexpected error during submission handin.\nDetails: #{e.message}", :internal_server_error)
+      raise ApiError.new("Unexpected error during submission handin.\nDetails: #{e.message}",
+                         :internal_server_error)
     end
 
     # autograde the submission
@@ -191,11 +197,12 @@ class Api::V1::AssessmentsController < Api::V1::BaseApiController
       begin
         sendJob(@course, @assessment, submissions, @cud)
       rescue AssessmentAutogradeCore::AutogradeError => e
-        raise ApiError.new("Submission accepted, but autograding failed: " + e.message, :internal_server_error)
+        raise ApiError.new("Submission accepted, but autograding failed: " + e.message,
+                           :internal_server_error)
       end
     end
 
-    respond_with_hash({version: submissions[0].version, filename: submissions[0].filename})
+    respond_with_hash({ version: submissions[0].version, filename: submissions[0].filename })
   end
 
   def set_group_settings
@@ -203,8 +210,36 @@ class Api::V1::AssessmentsController < Api::V1::BaseApiController
     @assessment.group_size = params[:group_size].to_i
     @assessment.allow_student_assign_group = (params[:allow_student_assign_group].to_s == "true")
     @assessment.save!
-    respond_with_hash({ group_size: @assessment.group_size, 
-      allow_student_assign_group: @assessment.allow_student_assign_group })
+    respond_with_hash({ group_size: @assessment.group_size,
+                        allow_student_assign_group: @assessment.allow_student_assign_group })
   end
 
+private
+
+  def send_writeup_file(filename)
+    if File.file?(filename) && File.readable?(filename)
+      send_file(filename,
+                disposition: "inline",
+                file: File.basename(filename))
+      return true
+    end
+
+    content = UnixGroupManager.read_file_via_delegate(filename.to_s)
+    return false if content.nil?
+
+    send_data(content,
+              disposition: "inline",
+              filename: File.basename(filename))
+    true
+  rescue ActionController::MissingFile, Errno::ENOENT, Errno::EACCES, Errno::EPERM => e
+    Rails.logger.warn("Failed to stream API writeup for assessment #{@assessment.id}: #{e.class} - #{e.message}")
+
+    content = UnixGroupManager.read_file_via_delegate(filename.to_s)
+    return false if content.nil?
+
+    send_data(content,
+              disposition: "inline",
+              filename: File.basename(filename))
+    true
+  end
 end
