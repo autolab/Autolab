@@ -755,6 +755,18 @@ private
 
     begin
       Dir.mkdir dir
+    rescue Errno::EACCES, Errno::EPERM => e
+      unless UnixGroupManager.delegate_enabled?
+        errors.add :handin_directory, "(#{dir}) could not be created, please do so manually. (#{e})"
+        return false
+      end
+
+      created = UnixGroupManager.mkdir_p_via_delegate(dir.to_s, mode: 0o2770)
+      unless created
+        errors.add :handin_directory, "(#{dir}) could not be created, please do so manually. (#{e})"
+        return false
+      end
+      true
     rescue SystemCallError => e
       errors.add :handin_directory, "(#{dir}) could not be created, please do so manually. (#{e})"
       false
