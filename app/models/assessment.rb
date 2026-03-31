@@ -297,7 +297,13 @@ class Assessment < ApplicationRecord
   # writes the properties of the assessment in YAML format to the assessment's yaml file
   #
   def dump_yaml
-    File.open(asmt_yaml_path, "w") { |f| f.write(YAML.dump(sort_hash(serialize))) }
+    yaml_content = YAML.dump(sort_hash(serialize))
+    File.open(asmt_yaml_path, "w") { |f| f.write(yaml_content) }
+  rescue Errno::EACCES, Errno::EPERM
+    raise unless UnixGroupManager.delegate_enabled?
+
+    ok = UnixGroupManager.write_file_via_delegate(asmt_yaml_path.to_s, yaml_content)
+    raise Errno::EACCES, "Permission denied writing #{asmt_yaml_path}" unless ok
   end
 
   # If the name field in a yaml for an assessment differs from the folder name
