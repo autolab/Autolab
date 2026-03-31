@@ -2,6 +2,7 @@ require "fileutils"
 require "utilities"
 require "association_cache"
 require "json"
+require "stringio"
 require_relative "../services/filesystem_enforcer"
 ##
 # Submissions jointly belong to Assessments and CourseUserData
@@ -277,11 +278,14 @@ class Submission < ApplicationRecord
     path = handin_file_path
     return nil unless path
 
-    if !File.exist?(path) || !File.readable?(path)
-      nil
-    else
-      File.open path, "r"
-    end
+    return File.open(path, "r") if File.exist?(path) && File.readable?(path)
+
+    return nil unless UnixGroupManager.delegate_enabled?
+
+    delegate_content = UnixGroupManager.read_file_via_delegate(path.to_s)
+    return nil if delegate_content.nil?
+
+    StringIO.new(delegate_content)
   end
 
   def global_annotations

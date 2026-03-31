@@ -545,9 +545,16 @@ class SubmissionsController < ApplicationController
                 disposition: "inline"
 
     else
-      send_file @filename,
-                filename: @basename,
-                disposition: "inline"
+      handin_file = @submission.handin_file
+      if handin_file.is_a?(StringIO)
+        send_data handin_file.read,
+                  filename: @basename,
+                  disposition: "inline"
+      else
+        send_file @filename,
+                  filename: @basename,
+                  disposition: "inline"
+      end
     end
   end
 
@@ -625,7 +632,13 @@ class SubmissionsController < ApplicationController
                     )) && return
       end
 
-      file = @submission.handin_file.read
+      handin_file = @submission.handin_file
+      unless handin_file
+        flash[:error] = "Could not find submission file."
+        redirect_to course_assessment_path(@course, @assessment) and return false
+      end
+
+      file = handin_file.read
       @displayFilename = @submission.filename
     end
 
@@ -932,7 +945,8 @@ private
                                               @submission.course_user_datum.user.email)
     end
 
-    unless File.exist? @filename
+    file_available = File.exist?(@filename) || (!Archive.archive?(@filename) && !@submission.handin_file.nil?)
+    unless file_available
       flash[:error] = "Could not find submission file."
       redirect_to course_assessment_path(@course, @assessment) and return false
     end
