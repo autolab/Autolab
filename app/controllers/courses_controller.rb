@@ -216,11 +216,8 @@ class CoursesController < ApplicationController
       tarFile = File.new(tarFile.open, "rb")
       tar_extract = Gem::Package::TarReader.new(tarFile)
       tar_extract.rewind
-      unless valid_course_tar(tar_extract)
-        flash[:error] +=
-          "<br>Invalid tarball. A valid course tar has a single root "\
-            "directory that's named after the course, containing a "\
-            "course yaml file"
+      is_valid, course_root_dir = valid_course_tar(tar_extract)
+      unless is_valid
         flash[:html_safe] = true
         render(action: "new") && return
       end
@@ -238,9 +235,9 @@ class CoursesController < ApplicationController
 
     begin
       tar_extract.rewind
-      @newCourse = get_course_from_config(tar_extract)
+      @newCourse = get_course_from_config(tar_extract, course_root_dir)
       # save assessment directories
-      save_assessments_from_tar(tar_extract)
+      save_assessments_from_tar(tar_extract, course_root_dir)
       tar_extract.close
     rescue StandardError => e
       flash[:error] = "Error while extracting course to server -- #{e.message}."
@@ -1300,13 +1297,12 @@ private
     end
   end
 
-  def get_course_from_config(tar_extract)
+  def get_course_from_config(tar_extract, root_dir)
     tar_extract.rewind
 
     tar_extract.each do |entry|
-      next unless entry.file? && entry.full_name.count('/') == 1
-      # there should only be one file in the main directory with .yml extension
-      next unless File.extname(entry.full_name) == '.yml'
+      # The new tarball format stores course config at root_dir/course_config.yml.
+      next unless entry.file? && entry.full_name == "#{root_dir}/course_config.yml"
 
       config = YAML.safe_load(entry.read, permitted_classes: [Date])
       general_config = config["general"]
@@ -1332,9 +1328,9 @@ private
     end
   end
 
-  def save_assessments_from_tar(tar_extract)
+  def save_assessments_from_tar(tar_extract, root_dir)
     tar_extract.rewind
-    src_directory = File.join(@newCourse.name, "assessments")
+    src_directory = File.join(root_dir, "assessments")
     dest_directory = Rails.root.join("courses", @newCourse.name)
 
     tar_extract.each do |entry|
@@ -1354,11 +1350,11 @@ private
   end
 
   # same as assessment import check, ensures the tar has a single root directory
-  # named after the course with a course yml file
+  # containing course.rb and course_config.yml
   def valid_course_tar(tar_extract)
-    course_name = nil
-    course_yml_exists = false
-    course_name_is_valid = true
+    root_dir = nil
+    course_config_yml_exists = false
+    root_dir_is_valid = true
     tar_extract.each do |entry|
       pathname = entry.full_name
       next if pathname.start_with? "."
@@ -1369,45 +1365,43 @@ private
       pathname.chomp!("/") if entry.directory?
       # nested directories are okay
       if entry.directory? && pathname.count("/") == 0
-        if course_name
-          flash[:error] = "Error in tarball: Found root directory #{course_name}
-                           but also found root directory #{pathname}. Ensure
+        if root_dir
+          flash[:error] = "Error in tarball: Multiple root directories found. Ensure
                            there is only one root directory in the tarball."
-          return false
+          return [false, nil]
         end
 
-        course_name = pathname
+        root_dir = pathname
       else
-        if !course_name
+        if !root_dir
           flash[:error] = "Error in tarball: No root directory found."
-          return false
+          return [false, nil]
         end
 
-        if pathname == "#{course_name}/course.rb"
+        if pathname == "#{root_dir}/course.rb"
           # We only ever read once, so no need to rewind after
           config_source = entry.read
 
           # validate syntax of config
           RubyVM::InstructionSequence.compile(config_source)
         end
-        course_yml_exists = true if pathname == "#{course_name}/#{course_name}.yml"
+        course_config_yml_exists = true if pathname == "#{root_dir}/course_config.yml"
       end
     end
-    # it is possible that the course path does not match the
-    # the expected course path when the Ruby config file
-    # has a different name then the pathname
-    if !course_name.nil? && course_name !~ /\A(\w|-)+\z/
-      flash[:error] = "Errors found in tarball: Course name is invalid. Valid course names consist
+    # Validate that root directory name is valid
+    if !root_dir.nil? && root_dir !~ /\A(\w|-)+\z/
+      flash[:error] = "Errors found in tarball: Root directory name is invalid. Valid directory names consist
                   of letters, numbers, and hyphens, starting and ending with a letter or number."
-      return false
+      return [false, nil]
     end
-    if !(course_yml_exists && !course_name.nil?)
+    if !(course_config_yml_exists && !root_dir.nil?)
       flash[:error] = "Errors found in tarball:"
-      if !course_yml_exists && !course_name.nil?
-        flash[:error] += "<br>Course yml file #{course_name}/#{course_name}.yml was not found"
+      if !course_config_yml_exists && !root_dir.nil?
+        flash[:error] += "<br>Course config file #{root_dir}/course_config.yml was not found"
       end
       flash[:html_safe] = true
+      return [false, nil]
     end
-    course_yml_exists && !course_name.nil? && course_name_is_valid
+    [course_config_yml_exists && !root_dir.nil? && root_dir_is_valid, root_dir]
   end
 end
