@@ -172,7 +172,10 @@ class AssessmentsController < ApplicationController
 
             created = UnixGroupManager.mkdir_p_via_delegate(entry_file, mode: entry.header.mode)
             chmod_ok = UnixGroupManager.chmod_path(entry_file, entry.header.mode)
-            raise Errno::EACCES, "Permission denied creating directory #{entry_file}" unless created && chmod_ok
+            unless created && chmod_ok
+              raise Errno::EACCES,
+                    "Permission denied creating directory #{entry_file}"
+            end
           end
           FilesystemEnforcer.fix_path(entry_file)
         elsif entry.file?
@@ -195,8 +198,12 @@ class AssessmentsController < ApplicationController
             raise unless UnixGroupManager.delegate_enabled?
 
             parent_ok = UnixGroupManager.mkdir_p_via_delegate(File.dirname(entry_file), mode: 0o755)
-            write_ok = UnixGroupManager.write_file_via_delegate(entry_file, file_bytes, mode: entry.header.mode)
-            raise Errno::EACCES, "Permission denied writing file #{entry_file}" unless parent_ok && write_ok
+            write_ok = UnixGroupManager.write_file_via_delegate(entry_file, file_bytes,
+                                                                mode: entry.header.mode)
+            unless parent_ok && write_ok
+              raise Errno::EACCES,
+                    "Permission denied writing file #{entry_file}"
+            end
           end
           FilesystemEnforcer.fix_path(entry_file)
         elsif entry.header.typeflag == "2"
@@ -205,7 +212,8 @@ class AssessmentsController < ApplicationController
           rescue Errno::EACCES
             raise unless UnixGroupManager.delegate_enabled?
 
-            created = UnixGroupManager.create_symlink_via_delegate(entry.header.linkname, entry_file)
+            created = UnixGroupManager.create_symlink_via_delegate(entry.header.linkname,
+                                                                   entry_file)
             raise Errno::EACCES, "Permission denied creating symlink #{entry_file}" unless created
           end
         end

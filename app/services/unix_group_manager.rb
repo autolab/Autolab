@@ -267,7 +267,7 @@ class UnixGroupManager
     end
 
     if mode
-      FileUtils.mkdir_p(path.to_s, mode: mode)
+      FileUtils.mkdir_p(path.to_s, mode:)
     else
       FileUtils.mkdir_p(path.to_s)
     end
@@ -305,7 +305,8 @@ class UnixGroupManager
     return false if target.nil? || target.to_s.empty? || link_path.nil? || link_path.to_s.empty?
 
     if delegate_enabled?
-      success, parsed = call_delegate("create_symlink", target: target.to_s, link_path: link_path.to_s)
+      success, parsed = call_delegate("create_symlink", target: target.to_s,
+                                                        link_path: link_path.to_s)
       Rails.logger.error("UnixGroupManager.create_symlink_via_delegate failed for #{link_path}: #{parsed.inspect}") unless success
       return success
     end
