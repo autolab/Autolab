@@ -11,7 +11,7 @@
 require_relative "../config/environment"
 require_relative "../app/services/unix_group_manager"
 
-SERVICE_USER = "user9999"
+SERVICE_USERS = %w[app user9999].freeze
 DRY_RUN = ARGV.include?("--dry-run")
 
 # Simple logging helpers
@@ -57,38 +57,43 @@ scope.find_each do |course|
     end
   end
 
-  # 2. Add user to group on the Host (Remote Sync)
-  if dry?
-    say "  [DRY] would add #{SERVICE_USER} to host group #{group_name}"
-    remote_success = true
-  else
-    remote_success = UnixGroupManager.add_user_to_group(SERVICE_USER, group_name)
-    if remote_success
-      say "  [REMOTE] added/verified #{SERVICE_USER} in #{group_name}"
-    else
-      say "  [ERROR] failed to add #{SERVICE_USER} to #{group_name} on host"
-      group_failed = true
-    end
-  end
+  # 2. Add users to group on the Host (Remote Sync)
+  remote_success = true
+  local_success = true
 
-  # 3. Add user to group inside the Container (Local Sync)
-  # This stops the 500 errors immediately without a Docker restart
+  # 3. Add users to group inside the Container (Local Sync)
   gid = UnixGroupManager.get_group_gid(group_name)
 
   if gid.nil?
     say "  [ERROR] missing GID for #{group_name}; cannot ensure local membership"
+    remote_success = false
     local_success = false
     group_failed = true
-  elsif dry?
-    say "  [DRY] would ensure local membership for #{SERVICE_USER} in #{group_name} (gid #{gid})"
-    local_success = true
   else
-    local_success = UnixGroupManager.ensure_local_group_membership(SERVICE_USER, group_name, gid_hint: gid)
-    if local_success
-      say "  [LOCAL] added/verified #{SERVICE_USER} in local group #{group_name} (gid #{gid})"
-    else
-      say "  [ERROR] failed to ensure local membership for #{SERVICE_USER} in #{group_name}"
-      group_failed = true
+    SERVICE_USERS.each do |service_user|
+      if dry?
+        say "  [DRY] would add #{service_user} to host group #{group_name}"
+        say "  [DRY] would ensure local membership for #{service_user} in #{group_name} (gid #{gid})"
+        next
+      end
+
+      user_remote_success = UnixGroupManager.add_user_to_group(service_user, group_name)
+      if user_remote_success
+        say "  [REMOTE] added/verified #{service_user} in #{group_name}"
+      else
+        say "  [ERROR] failed to add #{service_user} to #{group_name} on host"
+        remote_success = false
+        group_failed = true
+      end
+
+      user_local_success = UnixGroupManager.ensure_local_group_membership(service_user, group_name, gid_hint: gid)
+      if user_local_success
+        say "  [LOCAL] added/verified #{service_user} in local group #{group_name} (gid #{gid})"
+      else
+        say "  [ERROR] failed to ensure local membership for #{service_user} in #{group_name}"
+        local_success = false
+        group_failed = true
+      end
     end
   end
 
