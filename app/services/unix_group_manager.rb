@@ -181,6 +181,60 @@ class UnixGroupManager
     File.read(path) if File.readable?(path)
   end
 
+  # List directory entries via delegate (useful when directory is locked down)
+  def self.list_dir_via_delegate(path)
+    return nil if path.nil?
+
+    if delegate_enabled?
+      Rails.logger.info("UnixGroupManager.list_dir_via_delegate: path=#{path}")
+      success, parsed = call_delegate("list_dir", path:)
+      if success && parsed && parsed["entries"].is_a?(Array)
+        Rails.logger.info("UnixGroupManager.list_dir_via_delegate: SUCCESS for #{path} (#{parsed['entries'].size} entries)")
+        return parsed["entries"]
+      else
+        Rails.logger.error("UnixGroupManager.list_dir_via_delegate: FAILED for #{path}, response: #{parsed.inspect}")
+        return nil
+      end
+    end
+
+    # Not using delegate - try to list directly
+    Dir.children(path) if Dir.exist?(path)
+  rescue StandardError => e
+    Rails.logger.error("UnixGroupManager.list_dir_via_delegate error for #{path}: #{e.class} - #{e.message}")
+    nil
+  end
+
+  # List assessment subdirectories with metadata via delegate.
+  # Returns an array of hashes: { "name" => String, "yml_exists" => Boolean }
+  def self.list_assessment_dirs_via_delegate(path)
+    return nil if path.nil?
+
+    if delegate_enabled?
+      Rails.logger.info("UnixGroupManager.list_assessment_dirs_via_delegate: path=#{path}")
+      success, parsed = call_delegate("list_assessment_dirs", path:)
+      if success && parsed && parsed["entries"].is_a?(Array)
+        Rails.logger.info("UnixGroupManager.list_assessment_dirs_via_delegate: SUCCESS for #{path} (#{parsed['entries'].size} entries)")
+        return parsed["entries"]
+      else
+        Rails.logger.error("UnixGroupManager.list_assessment_dirs_via_delegate: FAILED for #{path}, response: #{parsed.inspect}")
+        return nil
+      end
+    end
+
+    Dir.children(path).filter_map do |entry|
+      entry_path = File.join(path, entry)
+      next unless File.directory?(entry_path)
+
+      {
+        "name" => entry,
+        "yml_exists" => File.exist?(File.join(entry_path, "#{entry}.yml"))
+      }
+    end
+  rescue StandardError => e
+    Rails.logger.error("UnixGroupManager.list_assessment_dirs_via_delegate error for #{path}: #{e.class} - #{e.message}")
+    nil
+  end
+
   # Set file permissions via delegate
   def self.chmod_path(path, mode)
     return false if path.nil?

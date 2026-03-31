@@ -192,6 +192,38 @@ module UnixOps
         rescue StandardError => e
           [false, e.message, nil]
         end
+      when "list_dir"
+        begin
+          path = payload["path"]
+          unless path && Dir.exist?(path)
+            [false, "directory_not_found", nil]
+          else
+            entries = Dir.children(path)
+            [true, "list_dir", { path: path, entries: entries }]
+          end
+        rescue StandardError => e
+          [false, e.message, nil]
+        end
+      when "list_assessment_dirs"
+        begin
+          path = payload["path"]
+          unless path && Dir.exist?(path)
+            [false, "directory_not_found", nil]
+          else
+            entries = Dir.children(path).filter_map do |entry|
+              entry_path = File.join(path, entry)
+              next unless File.directory?(entry_path)
+
+              {
+                "name" => entry,
+                "yml_exists" => File.exist?(File.join(entry_path, "#{entry}.yml"))
+              }
+            end
+            [true, "list_assessment_dirs", { path: path, entries: entries }]
+          end
+        rescue StandardError => e
+          [false, e.message, nil]
+        end
       else
         [false, "unknown_action", nil]
       end

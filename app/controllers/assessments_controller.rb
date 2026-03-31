@@ -187,7 +187,7 @@ class AssessmentsController < ApplicationController
         end
       end
       tar_extract.close
-    FilesystemEnforcer.fix_tree(assessment_path.to_s)
+      FilesystemEnforcer.fix_tree(assessment_path.to_s)
     rescue StandardError => e
       flash[:error] = "Error while extracting tarball to server -- #{e.message}."
       redirect_to(action: "install_assessment") && return
@@ -1227,10 +1227,39 @@ private
   def get_unimported_asmts_from_dir
     dir_path = @course.directory_path
     @unused_config_files = []
-    Dir.foreach(dir_path) do |filename|
+    use_delegated_metadata = false
+    filenames = begin
+      Dir.children(dir_path)
+    rescue Errno::EACCES
+      if UnixGroupManager.delegate_enabled?
+        delegated_entries = UnixGroupManager.list_assessment_dirs_via_delegate(dir_path.to_s)
+        if delegated_entries.nil?
+          flash.now[:error] =
+            "Cannot access course directory #{dir_path}. Check UnixOps delegate and course directory permissions."
+          flash.now[:html_safe] = true
+          return
+        end
+        use_delegated_metadata = true
+        delegated_entries
+      else
+        flash.now[:error] = "Cannot access course directory #{dir_path}: permission denied."
+        flash.now[:html_safe] = true
+        return
+      end
+    end
+
+    filenames.each do |entry|
+      filename = use_delegated_metadata ? entry["name"] : entry
+
       # skip if not directory in folder
-      next if !File.directory?(File.join(dir_path,
-                                         filename)) || (filename == "..") || (filename == ".")
+      next if (filename == "..") || (filename == ".")
+
+      is_directory = if use_delegated_metadata
+                       true
+                     else
+                       File.directory?(File.join(dir_path, filename))
+                     end
+      next unless is_directory
 
       # assessment names must be only lowercase letters and digits
       if filename !~ Assessment::VALID_NAME_REGEX
@@ -1246,7 +1275,13 @@ private
 
       # each assessment must have an associated yaml file,
       # and it must have a name field that matches its filename
-      unless File.exist?(File.join(dir_path, filename, "#{filename}.yml"))
+      yml_exists = if use_delegated_metadata
+                     entry["yml_exists"]
+                   else
+                     File.exist?(File.join(dir_path, filename, "#{filename}.yml"))
+                   end
+
+      unless yml_exists
         flash.now[:error] = flash.now[:error] ? "#{flash.now[:error]} <br>" : ""
         flash.now[:error] += "An error occurred while trying to display an existing assessment " \
           "from file directory #{filename}: #{filename}.yml does not exist"
