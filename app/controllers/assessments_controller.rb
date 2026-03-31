@@ -167,7 +167,7 @@ class AssessmentsController < ApplicationController
             # In case the directory was implicitly created by a file
             FileUtils.chmod entry.header.mode, entry_file,
                             verbose: false
-          rescue Errno::EACCES
+          rescue Errno::EACCES, Errno::EPERM
             raise unless UnixGroupManager.delegate_enabled?
 
             created = UnixGroupManager.mkdir_p_via_delegate(entry_file, mode: entry.header.mode)
@@ -194,7 +194,7 @@ class AssessmentsController < ApplicationController
             end
             FileUtils.chmod entry.header.mode, entry_file,
                             verbose: false
-          rescue Errno::EACCES
+          rescue Errno::EACCES, Errno::EPERM
             raise unless UnixGroupManager.delegate_enabled?
 
             parent_ok = UnixGroupManager.mkdir_p_via_delegate(File.dirname(entry_file), mode: 0o755)
@@ -209,7 +209,7 @@ class AssessmentsController < ApplicationController
         elsif entry.header.typeflag == "2"
           begin
             File.symlink entry.header.linkname, entry_file
-          rescue Errno::EACCES
+          rescue Errno::EACCES, Errno::EPERM
             raise unless UnixGroupManager.delegate_enabled?
 
             created = UnixGroupManager.create_symlink_via_delegate(entry.header.linkname,
@@ -221,6 +221,8 @@ class AssessmentsController < ApplicationController
       tar_extract.close
       FilesystemEnforcer.fix_tree(assessment_path.to_s)
     rescue StandardError => e
+      Rails.logger.error("Tarball extraction failed for course=#{@course.name}, tar=#{tarFile.respond_to?(:original_filename) ? tarFile.original_filename : 'unknown'}: #{e.class} - #{e.message}")
+      Rails.logger.error(e.backtrace.first(10).join("\n")) if e.backtrace
       flash[:error] = "Error while extracting tarball to server -- #{e.message}."
       redirect_to(action: "install_assessment") && return
     end
