@@ -258,7 +258,10 @@ class Assessment < ApplicationRecord
       raise unless UnixGroupManager.delegate_enabled?
 
       content = UnixGroupManager.read_file_via_delegate(unique_source_config_file_path.to_s)
-      raise Errno::EACCES, "Permission denied reading #{unique_source_config_file_path}" if content.nil?
+      if content.nil?
+        raise Errno::EACCES,
+              "Permission denied reading #{unique_source_config_file_path}"
+      end
 
       content
     end
