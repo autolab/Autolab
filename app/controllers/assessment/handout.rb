@@ -74,7 +74,20 @@ private
     end
 
     content = UnixGroupManager.read_file_via_delegate(path.to_s)
-    return false if content.nil?
+    if content.nil?
+      UnixGroupManager.repair_course_directory_access(@course) if @course
+
+      if File.file?(path) && File.readable?(path)
+        send_file(path,
+                  type: mime_type_from_ext(File.extname(path.to_s)),
+                  disposition: "inline",
+                  filename:)
+        return true
+      end
+
+      content = UnixGroupManager.read_file_via_delegate(path.to_s)
+      return false if content.nil?
+    end
 
     send_data(content,
               type: mime_type_from_ext(File.extname(path.to_s)),
@@ -83,6 +96,16 @@ private
     true
   rescue ActionController::MissingFile, Errno::ENOENT, Errno::EACCES, Errno::EPERM => e
     Rails.logger.warn("Failed to stream handout for assessment #{@assessment.id}: #{e.class} - #{e.message}")
+
+    UnixGroupManager.repair_course_directory_access(@course) if @course
+
+    if File.file?(path) && File.readable?(path)
+      send_file(path,
+                type: mime_type_from_ext(File.extname(path.to_s)),
+                disposition: "inline",
+                filename:)
+      return true
+    end
 
     content = UnixGroupManager.read_file_via_delegate(path.to_s)
     return false if content.nil?

@@ -170,9 +170,20 @@ class UnixGroupManager
       Rails.logger.info("UnixGroupManager.read_file_via_delegate: path=#{path}")
       success, parsed = call_delegate("read_file", path:)
       data = parsed.is_a?(Hash) ? parsed["data"] : nil
-      if success && data.is_a?(Hash) && data["content"]
+      if success && data.is_a?(Hash)
         Rails.logger.info("UnixGroupManager.read_file_via_delegate: SUCCESS for #{path} (#{data['size']} bytes)")
-        return data["content"]
+
+        if data["content_base64"]
+          begin
+            return Base64.decode64(data["content_base64"])
+          rescue StandardError => e
+            Rails.logger.error("UnixGroupManager.read_file_via_delegate: base64 decode failed for #{path}: #{e.class} - #{e.message}")
+            return nil
+          end
+        end
+
+        # Backward compatibility with older daemon responses
+        return data["content"] if data["content"]
       else
         Rails.logger.error("UnixGroupManager.read_file_via_delegate: FAILED for #{path}, response: #{parsed.inspect}")
         return nil
@@ -180,7 +191,7 @@ class UnixGroupManager
     end
 
     # Not using delegate - try to read directly
-    File.read(path) if File.readable?(path)
+    File.binread(path) if File.readable?(path)
   end
 
   # List directory entries via delegate (useful when directory is locked down)

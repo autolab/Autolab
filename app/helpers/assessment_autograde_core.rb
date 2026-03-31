@@ -38,13 +38,19 @@ module AssessmentAutogradeCore
       raise AutogradeError.new("Error with getting files", :tango_upload, e.message)
     end
 
+    file_bytes = {}
+
     upload_file_list.each do |f|
-      if !Pathname.new(f["localFile"]).file?
+      bytes = read_autograde_input_file(f["localFile"])
+      if bytes.nil?
         name_of_file = f["localFile"]
         COURSE_LOGGER.log("Error while uploading autograding files for #{submission.id}: missing file #{name_of_file}")
         raise AutogradeError.new("Error while uploading autograding files",
                                  :missing_autograder_file, name_of_file)
       end
+
+      file_bytes[f["localFile"]] = bytes
+
       if f["remoteFile"].nil?
         f["remoteFile"] = File.basename(f["localFile"])
       end
@@ -52,14 +58,15 @@ module AssessmentAutogradeCore
 
     # now actually send all of the upload requests
     upload_file_list.each do |f|
-      md5hash = Digest::MD5.file(f["localFile"]).to_s
+      bytes = file_bytes[f["localFile"]]
+      md5hash = Digest::MD5.hexdigest(bytes)
       next if existing_files.has_key?(f["remoteFile"]) &&
               existing_files[f["remoteFile"]] == md5hash
 
       begin
         TangoClient.upload("#{course.name}-#{assessment.name}",
                            f["remoteFile"],
-                           File.open(f["localFile"], "rb").read)
+                           bytes)
       rescue TangoClient::TangoException => e
         COURSE_LOGGER.log("Error while uploading autograding files for #{submission.id}: #{e.message}")
         raise AutogradeError.new("Error while uploading autograding files", :tango_upload,
@@ -68,6 +75,18 @@ module AssessmentAutogradeCore
     end
 
     upload_file_list
+  end
+
+  def read_autograde_input_file(path)
+    return nil if path.nil?
+
+    File.binread(path)
+  rescue Errno::EACCES, Errno::EPERM
+    return nil unless UnixGroupManager.delegate_enabled?
+
+    UnixGroupManager.read_file_via_delegate(path.to_s)
+  rescue Errno::ENOENT
+    nil
   end
 
   ##

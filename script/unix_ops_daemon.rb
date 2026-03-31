@@ -187,8 +187,12 @@ module UnixOps
           unless File.exist?(path)
             [false, "file_not_found", nil]
           else
-            content = File.read(path)
-            [true, "read_file", { path: path, content: content, size: content.bytesize }]
+            content = File.binread(path)
+            [true, "read_file", {
+              path: path,
+              content_base64: Base64.strict_encode64(content),
+              size: content.bytesize
+            }]
           end
         rescue StandardError => e
           [false, e.message, nil]
