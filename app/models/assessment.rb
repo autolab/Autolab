@@ -224,7 +224,7 @@ class Assessment < ApplicationRecord
   #
   def construct_default_config_file
     assessment_config_file_path = unique_source_config_file_path
-    return false if File.file?(assessment_config_file_path)
+    return false if is_file?("#{name}.rb")
 
     # Open and read the default assessment config file
     default_config_file_path = Rails.root.join("lib/__defaultAssessment.rb")
@@ -233,7 +233,14 @@ class Assessment < ApplicationRecord
     # Update with this assessment information
     config_source.gsub!("##NAME_CAMEL##", unique_config_module_name)
     # Write the new config out to the right file.
-    File.open(assessment_config_file_path, "w") { |f| f.write(config_source) }
+    begin
+      File.open(assessment_config_file_path, "w") { |f| f.write(config_source) }
+    rescue Errno::EACCES, Errno::EPERM
+      raise unless UnixGroupManager.delegate_enabled?
+
+      ok = UnixGroupManager.write_file_via_delegate(assessment_config_file_path.to_s, config_source)
+      raise Errno::EACCES, "Permission denied writing #{assessment_config_file_path}" unless ok
+    end
     true
   end
 
@@ -245,7 +252,16 @@ class Assessment < ApplicationRecord
   #
   def load_config_file
     # read from source
-    config_source = File.open(unique_source_config_file_path, "r", &:read)
+    config_source = begin
+      File.open(unique_source_config_file_path, "r", &:read)
+    rescue Errno::EACCES, Errno::EPERM
+      raise unless UnixGroupManager.delegate_enabled?
+
+      content = UnixGroupManager.read_file_via_delegate(unique_source_config_file_path.to_s)
+      raise Errno::EACCES, "Permission denied reading #{unique_source_config_file_path}" if content.nil?
+
+      content
+    end
 
     # validate syntax of config
     begin
