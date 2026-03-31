@@ -41,7 +41,7 @@ class Assessment < ApplicationRecord
 
   # Callbacks
   trim_field :name, :display_name, :handin_filename, :handin_directory, :handout, :writeup
-  after_commit :dump_yaml
+  after_commit :dump_yaml, on: %i[create update]
   after_commit :dump_embedded_quiz, if: :saved_change_to_embedded_quiz_form_data?
   after_save :invalidate_course_cgdubs, if: :saved_change_to_due_at_or_max_grace_days?
   after_create :create_AUDs_modulo_callbacks
