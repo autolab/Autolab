@@ -1,14 +1,12 @@
 require "uri"
 require "tango_client"
-require_relative Rails.root.join("config", "autogradeConfig.rb")
+require_relative Rails.root.join("config/autogradeConfig.rb")
 require_relative "../services/filesystem_enforcer"
 
 module AssessmentAutogradeCore
-
   class AutogradeError < StandardError
-    attr_reader :error_code
-    attr_reader :additional_data # additional error data
-    
+    attr_reader :error_code, :additional_data # additional error data
+
     def initialize(msg = "Autograding Failed", error_code = :unexpected, additional_data = "")
       @error_code = error_code
       @additional_data = additional_data
@@ -27,7 +25,8 @@ module AssessmentAutogradeCore
       COURSE_LOGGER.log("Dir: #{ass_dir}")
 
       if assessment.overwrites_method?(:autogradeInputFiles)
-        upload_file_list = assessment.config_module.autogradeInputFiles(ass_dir, assessment, submission)
+        upload_file_list = assessment.config_module.autogradeInputFiles(ass_dir, assessment,
+                                                                        submission)
       else
         upload_file_list = autogradeInputFiles(ass_dir, assessment, submission)
       end
@@ -38,12 +37,13 @@ module AssessmentAutogradeCore
       e.backtrace.each { |line| COURSE_LOGGER.log(line) }
       raise AutogradeError.new("Error with getting files", :tango_upload, e.message)
     end
-    
+
     upload_file_list.each do |f|
       if !Pathname.new(f["localFile"]).file?
         name_of_file = f["localFile"]
         COURSE_LOGGER.log("Error while uploading autograding files for #{submission.id}: missing file #{name_of_file}")
-        raise AutogradeError.new("Error while uploading autograding files", :missing_autograder_file, name_of_file)
+        raise AutogradeError.new("Error while uploading autograding files",
+                                 :missing_autograder_file, name_of_file)
       end
       if f["remoteFile"].nil?
         f["remoteFile"] = File.basename(f["localFile"])
@@ -53,8 +53,8 @@ module AssessmentAutogradeCore
     # now actually send all of the upload requests
     upload_file_list.each do |f|
       md5hash = Digest::MD5.file(f["localFile"]).to_s
-      next if (existing_files.has_key?(f["remoteFile"]) &&
-          existing_files[f["remoteFile"]] == md5hash)
+      next if existing_files.has_key?(f["remoteFile"]) &&
+              existing_files[f["remoteFile"]] == md5hash
 
       begin
         TangoClient.upload("#{course.name}-#{assessment.name}",
@@ -62,7 +62,8 @@ module AssessmentAutogradeCore
                            File.open(f["localFile"], "rb").read)
       rescue TangoClient::TangoException => e
         COURSE_LOGGER.log("Error while uploading autograding files for #{submission.id}: #{e.message}")
-        raise AutogradeError.new("Error while uploading autograding files", :tango_upload, e.message)
+        raise AutogradeError.new("Error while uploading autograding files", :tango_upload,
+                                 e.message)
       end
     end
 
@@ -76,17 +77,17 @@ module AssessmentAutogradeCore
   def save_daves(submissions)
     # Generate the dave number/string, this is used when autograding is done.
     # The key is not guaranteed to be unique, but it's gonna be unique.
-    dave = (0...60).map { 65.+(rand(25)).chr }.join
+    dave = (0...60).map { rand(65..89).chr }.join
 
     # save dave keys.  These let us know which submissions to save the autoresult for
     ActiveRecord::Base.transaction do
       submissions.each do |submission|
         submission.dave = dave
-        if not submission.save
-          error_msg = submission.errors.full_messages.join(", ")
-          COURSE_LOGGER.log("Error while updating submission #{submission.id} callback key: #{error_msg}")
-          raise AutogradeError.new("Error saving daves", :save_daves, error_msg)
-        end
+        next if submission.save
+
+        error_msg = submission.errors.full_messages.join(", ")
+        COURSE_LOGGER.log("Error while updating submission #{submission.id} callback key: #{error_msg}")
+        raise AutogradeError.new("Error saving daves", :save_daves, error_msg)
       end
     end
 
@@ -108,18 +109,21 @@ module AssessmentAutogradeCore
     end
 
     begin
-      if Rails.env.development?
-        hostname = request.base_url
-      else
-        hostname = prefix + request.host
-      end
-    rescue
+      hostname = if Rails.env.development?
+                   request.base_url
+                 else
+                   prefix + request.host
+                 end
+    rescue StandardError
       hostname = `hostname`
       hostname = prefix + hostname.strip
     end
 
-    callback_url = (RESTFUL_USE_POLLING) ? "" :
-      "#{hostname}/courses/#{course.name}/assessments/#{assessment.name}/autograde_done?dave=#{dave}&submission_id=#{submission.id}"
+    callback_url = if RESTFUL_USE_POLLING
+                     ""
+                   else
+                     "#{hostname}/courses/#{course.name}/assessments/#{assessment.name}/autograde_done?dave=#{dave}&submission_id=#{submission.id}"
+                   end
     COURSE_LOGGER.log("Callback: #{callback_url}")
 
     callback_url
@@ -135,19 +139,19 @@ module AssessmentAutogradeCore
   def get_job_status(job_id)
     begin
       raw_live_jobs = TangoClient.jobs
-      assigned_jobs, unassigned_jobs = raw_live_jobs.partition {|rjob| rjob["assigned"]}
+      assigned_jobs, unassigned_jobs = raw_live_jobs.partition { |rjob| rjob["assigned"] }
 
       # Order by job number to get the position in queue
-      unassigned_jobs = unassigned_jobs.sort {|rjob1, rjob2| rjob1["id"].to_i - rjob2["id"].to_i}
+      unassigned_jobs = unassigned_jobs.sort { |rjob1, rjob2| rjob1["id"].to_i - rjob2["id"].to_i }
     rescue TangoClient::TangoException => e
       COURSE_LOGGER.log("Error while getting jobs")
       raise AutogradeError.new("Error while getting jobs", :get_job_status)
     end
-    
-    assignment = {"is_assigned"=>assigned_jobs.any? {|rjob| rjob["id"].to_i == job_id}}
+
+    assignment = { "is_assigned" => assigned_jobs.any? { |rjob| rjob["id"].to_i == job_id } }
     if !assignment["is_assigned"] && unassigned_jobs.length > 0
       # Assign a queue position if the job is live but not assigned
-      assignment["queue_position"] = unassigned_jobs.index {|rjob| rjob["id"] == job_id}
+      assignment["queue_position"] = unassigned_jobs.index { |rjob| rjob["id"] == job_id }
       assignment["queue_length"] = unassigned_jobs.length
     end
     assignment
@@ -167,7 +171,7 @@ module AssessmentAutogradeCore
                        "timeout" => @autograde_prop.autograde_timeout,
                        "callback_url" => callback_url,
                        "jobName" => job_name,
-                       "disable_network" => assessment.disable_network}
+                       "disable_network" => assessment.disable_network }
     if Rails.configuration.x.ec2_ssh.present?
       job_properties["ec2Vmms"] = true
       if @autograde_prop.use_access_key?
@@ -200,7 +204,8 @@ module AssessmentAutogradeCore
     begin
       Timeout.timeout(80) do
         loop do
-          response = TangoClient.poll("#{course.name}-#{assessment.name}", "#{URI.encode(output_file)}")
+          response = TangoClient.poll("#{course.name}-#{assessment.name}",
+                                      "#{URI.encode(output_file)}")
           # json is returned when a job is not complete
           unless response.content_type == "application/json"
             feedback = response.body
@@ -220,13 +225,11 @@ module AssessmentAutogradeCore
     if feedback.nil?
       COURSE_LOGGER.log("Error while polling for #{submissions[0].id} job status: No feedback")
       raise AutogradeError.new("Error getting response from polling Tango", :tango_poll)
+    elsif assessment.overwrites_method?(:autogradeDone)
+      assessment.config_module.autogradeDone(submissions, feedback)
     else
-      if assessment.overwrites_method?(:autogradeDone)
-        assessment.config_module.autogradeDone(submissions, feedback)
-      else
-        # this doesn't work because autogradeDone is defined in submissions_controller
-        autogradeDone(submissions, feedback)
-      end
+      # this doesn't work because autogradeDone is defined in submissions_controller
+      autogradeDone(submissions, feedback)
 
     end
   end
@@ -236,15 +239,18 @@ module AssessmentAutogradeCore
       response = TangoClient.getpartialoutput(job_id)
     rescue Timeout::Error
       COURSE_LOGGER.log("Error while getting partial feedback for job #{job_id}")
-      raise AutogradeError.new("Timed out while getting partial feedback", :tango_get_partial_feedback)
+      raise AutogradeError.new("Timed out while getting partial feedback",
+                               :tango_get_partial_feedback)
     rescue TangoClient::TangoException => e
       COURSE_LOGGER.log("Error while getting partial feedback for job #{job_id} status: #{e.message}")
-      raise AutogradeError.new("Error while getting partial feedback", :tango_get_partial_feedback, e.message)
+      raise AutogradeError.new("Error while getting partial feedback", :tango_get_partial_feedback,
+                               e.message)
     end
 
     if response.nil?
       COURSE_LOGGER.log("Error while getting partial feedback for job #{job_id} status: No feedback")
-      raise AutogradeError.new("Error getting response from getting partial feedback", :tango_get_partial_feedback)
+      raise AutogradeError.new("Error getting response from getting partial feedback",
+                               :tango_get_partial_feedback)
     end
 
     response["output"]
@@ -253,7 +259,7 @@ module AssessmentAutogradeCore
   ##
   # sendJob_batch - Takes the same parameters as sendJob, except this runs sendJob on all
   # submissions in the submissions list.
-  # 
+  #
   # Returns a list of failed submissions with their corresponding errors
   #
   def sendJob_batch(course, assessment, submissions, cud)
@@ -264,19 +270,20 @@ module AssessmentAutogradeCore
         begin
           sendJob(course, assessment, [submission], cud)
         rescue AssessmentAutogradeCore::AutogradeError => e
-          if e.error_code == :missing_autograding_props
-            # no autograding properties for this assessment
-            raise e
-          else # autograding failed
-            failed_list << {:submission => submission, :error => e}
-          end
+          raise e if e.error_code == :missing_autograding_props
+
+          # no autograding properties for this assessment
+
+          # autograding failed
+          failed_list << { submission:, error: e }
         end
       else
-        failed_list << {:submission => submission, :error => AutogradeError.new("Invalid submission", :nil_submission)}
+        failed_list << { submission:,
+                         error: AutogradeError.new("Invalid submission", :nil_submission) }
       end
     end
 
-    return failed_list
+    failed_list
   end
 
   ##
@@ -286,7 +293,7 @@ module AssessmentAutogradeCore
   # Tango server via an REST API.
   #
   # Note on param submissions:
-  #   Although this is a list of submissions, it must only contain 
+  #   Although this is a list of submissions, it must only contain
   # submission objects corresponding to the same "logical submission",
   # i.e. this list contains more than one submission ONLY when a
   # student submits a job as a member of a group. In that case, each
@@ -300,7 +307,10 @@ module AssessmentAutogradeCore
 
     # Get the autograding properties for this assessment.
     @autograde_prop = assessment.autograder
-    raise AutogradeError.new("There are no autograding properties", :missing_autograding_props) unless @autograde_prop
+    unless @autograde_prop
+      raise AutogradeError.new("There are no autograding properties",
+                               :missing_autograding_props)
+    end
 
     # send the tango open request
     begin
@@ -319,7 +329,7 @@ module AssessmentAutogradeCore
     job_name = get_job_name(course, assessment, submissions[0])
 
     response_json = tango_add_job(course, assessment, upload_file_list,
-                                          callback_url, job_name, output_file)
+                                  callback_url, job_name, output_file)
 
     # If Autolab user opts not to use a callback URL, we poll the job for 80 seconds
     if callback_url.blank?
@@ -374,9 +384,9 @@ module AssessmentAutogradeCore
       COURSE_LOGGER.log("Looking for feedback file:" + feedback_file)
 
       feedback.force_encoding("UTF-8")
-      if not feedback.valid_encoding?
+      if !feedback.valid_encoding?
         feedback.force_encoding("ASCII-8BIT")
-        hexify = Proc.new {|c| "\\x" + c.bytes[0].to_s(16) }
+        hexify = proc { |c| "\\x" + c.bytes[0].to_s(16) }
         feedback = feedback.encode("UTF-8", invalid: :replace, fallback: hexify)
       end
 
@@ -411,55 +421,61 @@ module AssessmentAutogradeCore
       end
 
       lines = feedback.rstrip.lines
-      raise AutogradeError.new("The Autograder returned no output", :autograde_no_output) if lines.empty?
+      if lines.empty?
+        raise AutogradeError.new("The Autograder returned no output",
+                                 :autograde_no_output)
+      end
 
       # The last line of the output is assumed to be the
       # autoresult string from the autograding driver
       autoresult = lines[lines.length - 1]
 
-      if @assessment.overwrites_method?(:parseAutoresult)
-        scores = @assessment.config_module.parseAutoresult(autoresult, true)
-      else
-        scores = parseAutoresult(autoresult, true)
+      scores = if @assessment.overwrites_method?(:parseAutoresult)
+                 @assessment.config_module.parseAutoresult(autoresult, true)
+               else
+                 parseAutoresult(autoresult, true)
+               end
+      if scores.keys.length == 0
+        raise AutogradeError.new("Empty autoresult string",
+                                 :empty_autoresult)
       end
-      raise AutogradeError.new("Empty autoresult string", :empty_autoresult) if scores.keys.length == 0
 
       # Grab the autograde config info
       @autograde_prop = @assessment.autograder
 
       # Record each of the scores extracted from the autoresult
       submissions.each do |submission|
-
         # If modifySubmissionScore is overridden, use that to modify the score
         # Provide it with the scores and previous submissions
         if @assessment.overwrites_method?(:modifySubmissionScores)
-          
+
           # Get previous submissions of the same assessment by the user, excluding the current submission
-          previous_submissions = Submission.where(course_user_datum_id: submission.course_user_datum_id, 
-                                 assessment_id: @assessment.id)
-                                 .where.not(id: submission.id)
-                                 .where("created_at < ?", submission.created_at)
-                                 .order(created_at: :desc)
-                                 
+          previous_submissions = Submission.where(course_user_datum_id: submission.course_user_datum_id,
+                                                  assessment_id: @assessment.id)
+                                           .where.not(id: submission.id)
+                                           .where("created_at < ?", submission.created_at)
+                                           .order(created_at: :desc)
+
           # If the assessment variable is set to exclude autograding in progress submissions, exclude them
-          previous_submissions = if (@assessment.assessment_variable.key?("exclude_autograding_in_progress_submissions") && 
-            @assessment.assessment_variable.key?("exclude_autograding_in_progress_submissions"))
-                                  previous_submissions.where(jobid: nil)
-                                else
-                                  previous_submissions
-                                end
-          
-          previous_submissions_lookback = if (@assessment.assessment_variable.key?("previous_submissions_lookback"))
+          previous_submissions = if @assessment.assessment_variable.key?("exclude_autograding_in_progress_submissions") &&
+                                    @assessment.assessment_variable.key?("exclude_autograding_in_progress_submissions")
+                                   previous_submissions.where(jobid: nil)
+                                 else
+                                   previous_submissions
+                                 end
+
+          previous_submissions_lookback = if @assessment.assessment_variable.key?("previous_submissions_lookback")
                                             @assessment.assessment_variable["previous_submissions_lookback"]
                                           else
                                             1000 # default to 1000
-                                          end 
+                                          end
 
           # Limit the number of previous submissions to the lookback value
           previous_submissions = previous_submissions.limit(previous_submissions_lookback)
-          
+
           begin
-            scores = @assessment.config_module.modifySubmissionScores(scores, previous_submissions, @assessment.problems)
+            scores = @assessment.config_module.modifySubmissionScores(scores, previous_submissions,
+                                                                      @assessment.problems)
           rescue StandardError => e
             # Append the error message to the feedback
             feedback_str = "An error occurred while modifying submission scores:\nError message: #{e}\n\n---\n"
@@ -477,7 +493,7 @@ module AssessmentAutogradeCore
 
           score = submission.scores.find_or_initialize_by(problem_id: problem.id)
           score.score = scores[key]
-          score.feedback = feedback 
+          score.feedback = feedback
           score.released = @autograde_prop.release_score
           score.grader_id = 0
           score.save!
@@ -486,7 +502,8 @@ module AssessmentAutogradeCore
         submission.save!
 
         unless submission.missing_problems.empty?
-          raise AutogradeError, "Problems \"#{submission.missing_problems}\" found in autograder result, but not defined by assessment. Instructor should add missing problems to assessment and regrade submissions."
+          raise AutogradeError,
+                "Problems \"#{submission.missing_problems}\" found in autograder result, but not defined by assessment. Instructor should add missing problems to assessment and regrade submissions."
         end
       end
 
@@ -528,7 +545,12 @@ module AssessmentAutogradeCore
   def parseAutoresult(autoresult, _isOfficial)
     parsed = ActiveSupport::JSON.decode(autoresult.gsub(/([a-zA-Z0-9]+):/, '"\1":'))
     raise AutogradeError.new("Empty autoresult", :parse_autoresult) unless parsed
-    raise AutogradeError.new("Missing 'scores' object in the autoresult", :parse_autoresult) unless parsed["scores"]
+
+    unless parsed["scores"]
+      raise AutogradeError.new("Missing 'scores' object in the autoresult",
+                               :parse_autoresult)
+    end
+
     parsed["scores"]
   end
 
@@ -536,16 +558,15 @@ module AssessmentAutogradeCore
     # autograde core calls might be called before migration to unique module name occurs, so need to add check
     begin
       if @assessment.use_unique_module_name
-        require assessment.unique_config_file_path
+        require assessment.unique_config_file_path.to_s
       else
-        require assessment.config_file_path
+        require assessment.config_file_path.to_s
       end
     rescue TypeError => e
       raise AutogradeError, "could not find the assessment config file: #{e}"
     rescue LoadError => e
       raise AutogradeError, "could not load the assessment config file: #{e}"
     end
-
 
     # casted to local variable so that
     # they can be passed into `module_eval`
@@ -555,13 +576,13 @@ module AssessmentAutogradeCore
 
     begin
       req_hostname = request.host
-    rescue
+    rescue StandardError
       req_hostname = "n/a"
     end
 
     begin
       req_port = request.port
-    rescue
+    rescue StandardError
       req_port = 80
     end
 
@@ -576,7 +597,10 @@ module AssessmentAutogradeCore
       @port = req_port
       @submission = submission
 
-      raise AutogradeError.new("Assessment #{ass_name} does not exist!", :nonexistent_assessment) unless @assessment
+      unless @assessment
+        raise AutogradeError.new("Assessment #{ass_name} does not exist!",
+                                 :nonexistent_assessment)
+      end
 
       @name = @assessment.name
       @description = @assessment.description
@@ -595,11 +619,9 @@ module AssessmentAutogradeCore
         public nonmodule_func
       end
     end
-
-  rescue StandardError => error
-    COURSE_LOGGER.log(error)
-    error.backtrace.each { |line| COURSE_LOGGER.log(line) }
-    raise error
+  rescue StandardError => e
+    COURSE_LOGGER.log(e)
+    e.backtrace.each { |line| COURSE_LOGGER.log(line) }
+    raise e
   end
-
 end

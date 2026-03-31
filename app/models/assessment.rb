@@ -200,7 +200,17 @@ class Assessment < ApplicationRecord
 
   def construct_folder
     # this should construct the assessment folder and the handin folder
-    FileUtils.mkdir_p(handin_directory_path)
+    begin
+      FileUtils.mkdir_p(handin_directory_path)
+    rescue Errno::EACCES, Errno::EPERM
+      raise unless UnixGroupManager.delegate_enabled?
+
+      created = UnixGroupManager.mkdir_p_via_delegate(handin_directory_path.to_s, mode: 0o2770)
+      unless created
+        raise Errno::EACCES,
+              "Permission denied creating directory #{handin_directory_path}"
+      end
+    end
     constructed_default_config_file = construct_default_config_file
     if constructed_default_config_file
       dump_yaml
@@ -541,7 +551,7 @@ private
     end
 
     # force load config file (see http://www.ruby-doc.org/core-2.0.0/Kernel.html#method-i-load)
-    load unique_config_file_path
+    load unique_config_file_path.to_s
 
     # updated last loaded time
     @@CONFIG_FILE_LAST_LOADED[unique_config_file_path] = Time.current

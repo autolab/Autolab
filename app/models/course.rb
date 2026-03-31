@@ -892,7 +892,7 @@ private
   def config!
     source = "#{name}_course_config".to_sym
     Utilities.execute_instructor_code(source) do
-      require config_file_path
+      require config_file_path.to_s
       # rubocop:disable Security/Eval
       Class.new.extend eval(config_module_name)
       # rubocop:enable Security/Eval
