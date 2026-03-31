@@ -12,6 +12,7 @@
 ENV["RAILS_ENV"] ||= ENV.fetch("UNIX_OPS_RAILS_ENV", "production")
 
 require "json"
+require "base64"
 require "webrick"
 require "active_support/security_utils"
 require_relative "../config/environment"
@@ -188,6 +189,56 @@ module UnixOps
           else
             content = File.read(path)
             [true, "read_file", { path: path, content: content, size: content.bytesize }]
+          end
+        rescue StandardError => e
+          [false, e.message, nil]
+        end
+      when "mkdir_p"
+        begin
+          path = payload["path"]
+          mode = payload["mode"]
+          if path.nil? || path.empty?
+            [false, "invalid_path", nil]
+          else
+            if mode
+              FileUtils.mkdir_p(path, mode: mode.to_i)
+            else
+              FileUtils.mkdir_p(path)
+            end
+            [true, "mkdir_p", { path: path, mode: mode }]
+          end
+        rescue StandardError => e
+          [false, e.message, nil]
+        end
+      when "write_file"
+        begin
+          path = payload["path"]
+          encoded_content = payload["content_base64"]
+          mode = payload["mode"]
+
+          if path.nil? || path.empty? || encoded_content.nil?
+            [false, "invalid_write_payload", nil]
+          else
+            content = Base64.decode64(encoded_content)
+            parent = File.dirname(path)
+            FileUtils.mkdir_p(parent) unless Dir.exist?(parent)
+            File.binwrite(path, content)
+            File.chmod(mode.to_i, path) if mode
+            [true, "write_file", { path: path, size: content.bytesize, mode: mode }]
+          end
+        rescue StandardError => e
+          [false, e.message, nil]
+        end
+      when "create_symlink"
+        begin
+          target = payload["target"]
+          link_path = payload["link_path"]
+          if target.nil? || target.empty? || link_path.nil? || link_path.empty?
+            [false, "invalid_symlink_payload", nil]
+          else
+            File.delete(link_path) if File.exist?(link_path) || File.symlink?(link_path)
+            File.symlink(target, link_path)
+            [true, "create_symlink", { target: target, link_path: link_path }]
           end
         rescue StandardError => e
           [false, e.message, nil]

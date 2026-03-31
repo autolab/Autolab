@@ -4,6 +4,7 @@ require "etc"
 require "net/http"
 require "uri"
 require "json"
+require "base64"
 
 ##
 # UnixGroupManager - Manages Unix groups and users for course filesystem permissions
@@ -252,6 +253,69 @@ class UnixGroupManager
   rescue StandardError => e
     Rails.logger.error("UnixGroupManager.list_assessment_dirs_via_delegate error for #{path}: #{e.class} - #{e.message}")
     nil
+  end
+
+  def self.mkdir_p_via_delegate(path, mode: nil)
+    return false if path.nil? || path.to_s.empty?
+
+    if delegate_enabled?
+      payload = { path: path.to_s }
+      payload[:mode] = mode if mode
+      success, parsed = call_delegate("mkdir_p", payload)
+      Rails.logger.error("UnixGroupManager.mkdir_p_via_delegate failed for #{path}: #{parsed.inspect}") unless success
+      return success
+    end
+
+    if mode
+      FileUtils.mkdir_p(path.to_s, mode: mode)
+    else
+      FileUtils.mkdir_p(path.to_s)
+    end
+    true
+  rescue StandardError => e
+    Rails.logger.error("UnixGroupManager.mkdir_p_via_delegate error for #{path}: #{e.class} - #{e.message}")
+    false
+  end
+
+  def self.write_file_via_delegate(path, content, mode: nil)
+    return false if path.nil? || path.to_s.empty? || content.nil?
+
+    if delegate_enabled?
+      payload = {
+        path: path.to_s,
+        content_base64: Base64.strict_encode64(content)
+      }
+      payload[:mode] = mode if mode
+      success, parsed = call_delegate("write_file", payload)
+      Rails.logger.error("UnixGroupManager.write_file_via_delegate failed for #{path}: #{parsed.inspect}") unless success
+      return success
+    end
+
+    parent = File.dirname(path.to_s)
+    FileUtils.mkdir_p(parent) unless Dir.exist?(parent)
+    File.binwrite(path.to_s, content)
+    File.chmod(mode, path.to_s) if mode
+    true
+  rescue StandardError => e
+    Rails.logger.error("UnixGroupManager.write_file_via_delegate error for #{path}: #{e.class} - #{e.message}")
+    false
+  end
+
+  def self.create_symlink_via_delegate(target, link_path)
+    return false if target.nil? || target.to_s.empty? || link_path.nil? || link_path.to_s.empty?
+
+    if delegate_enabled?
+      success, parsed = call_delegate("create_symlink", target: target.to_s, link_path: link_path.to_s)
+      Rails.logger.error("UnixGroupManager.create_symlink_via_delegate failed for #{link_path}: #{parsed.inspect}") unless success
+      return success
+    end
+
+    File.delete(link_path.to_s) if File.exist?(link_path.to_s) || File.symlink?(link_path.to_s)
+    File.symlink(target.to_s, link_path.to_s)
+    true
+  rescue StandardError => e
+    Rails.logger.error("UnixGroupManager.create_symlink_via_delegate error for #{link_path}: #{e.class} - #{e.message}")
+    false
   end
 
   def self.repair_course_directory_access(course)

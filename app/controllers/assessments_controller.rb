@@ -161,11 +161,19 @@ class AssessmentsController < ApplicationController
                                                  existing_asmt.handin_directory_path, strict: false)
 
         if entry.directory?
-          FileUtils.mkdir_p(entry_file,
-                            mode: entry.header.mode, verbose: false)
-          # In case the directory was implicitly created by a file
-          FileUtils.chmod entry.header.mode, entry_file,
-                          verbose: false
+          begin
+            FileUtils.mkdir_p(entry_file,
+                              mode: entry.header.mode, verbose: false)
+            # In case the directory was implicitly created by a file
+            FileUtils.chmod entry.header.mode, entry_file,
+                            verbose: false
+          rescue Errno::EACCES
+            raise unless UnixGroupManager.delegate_enabled?
+
+            created = UnixGroupManager.mkdir_p_via_delegate(entry_file, mode: entry.header.mode)
+            chmod_ok = UnixGroupManager.chmod_path(entry_file, entry.header.mode)
+            raise Errno::EACCES, "Permission denied creating directory #{entry_file}" unless created && chmod_ok
+          end
           FilesystemEnforcer.fix_path(entry_file)
         elsif entry.file?
           # Skip config files
@@ -174,16 +182,32 @@ class AssessmentsController < ApplicationController
             entry_file == existing_asmt.log_path.to_s)
 
           # Default to 0755 so that directory is writeable, mode will be updated later
-          FileUtils.mkdir_p(File.dirname(entry_file),
-                            mode: 0o755, verbose: false)
-          File.open(entry_file, "wb") do |f|
-            f.write entry.read
+          file_bytes = entry.read
+          begin
+            FileUtils.mkdir_p(File.dirname(entry_file),
+                              mode: 0o755, verbose: false)
+            File.open(entry_file, "wb") do |f|
+              f.write file_bytes
+            end
+            FileUtils.chmod entry.header.mode, entry_file,
+                            verbose: false
+          rescue Errno::EACCES
+            raise unless UnixGroupManager.delegate_enabled?
+
+            parent_ok = UnixGroupManager.mkdir_p_via_delegate(File.dirname(entry_file), mode: 0o755)
+            write_ok = UnixGroupManager.write_file_via_delegate(entry_file, file_bytes, mode: entry.header.mode)
+            raise Errno::EACCES, "Permission denied writing file #{entry_file}" unless parent_ok && write_ok
           end
-          FileUtils.chmod entry.header.mode, entry_file,
-                          verbose: false
           FilesystemEnforcer.fix_path(entry_file)
         elsif entry.header.typeflag == "2"
-          File.symlink entry.header.linkname, entry_file
+          begin
+            File.symlink entry.header.linkname, entry_file
+          rescue Errno::EACCES
+            raise unless UnixGroupManager.delegate_enabled?
+
+            created = UnixGroupManager.create_symlink_via_delegate(entry.header.linkname, entry_file)
+            raise Errno::EACCES, "Permission denied creating symlink #{entry_file}" unless created
+          end
         end
       end
       tar_extract.close
