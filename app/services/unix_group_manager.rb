@@ -168,9 +168,10 @@ class UnixGroupManager
     if delegate_enabled?
       Rails.logger.info("UnixGroupManager.read_file_via_delegate: path=#{path}")
       success, parsed = call_delegate("read_file", path:)
-      if success && parsed && parsed["content"]
-        Rails.logger.info("UnixGroupManager.read_file_via_delegate: SUCCESS for #{path} (#{parsed['size']} bytes)")
-        return parsed["content"]
+      data = parsed.is_a?(Hash) ? parsed["data"] : nil
+      if success && data.is_a?(Hash) && data["content"]
+        Rails.logger.info("UnixGroupManager.read_file_via_delegate: SUCCESS for #{path} (#{data['size']} bytes)")
+        return data["content"]
       else
         Rails.logger.error("UnixGroupManager.read_file_via_delegate: FAILED for #{path}, response: #{parsed.inspect}")
         return nil
@@ -188,9 +189,10 @@ class UnixGroupManager
     if delegate_enabled?
       Rails.logger.info("UnixGroupManager.list_dir_via_delegate: path=#{path}")
       success, parsed = call_delegate("list_dir", path:)
-      if success && parsed && parsed["entries"].is_a?(Array)
-        Rails.logger.info("UnixGroupManager.list_dir_via_delegate: SUCCESS for #{path} (#{parsed['entries'].size} entries)")
-        return parsed["entries"]
+      data = parsed.is_a?(Hash) ? parsed["data"] : nil
+      if success && data.is_a?(Hash) && data["entries"].is_a?(Array)
+        Rails.logger.info("UnixGroupManager.list_dir_via_delegate: SUCCESS for #{path} (#{data['entries'].size} entries)")
+        return data["entries"]
       else
         Rails.logger.error("UnixGroupManager.list_dir_via_delegate: FAILED for #{path}, response: #{parsed.inspect}")
         return nil
@@ -212,9 +214,10 @@ class UnixGroupManager
     if delegate_enabled?
       Rails.logger.info("UnixGroupManager.list_assessment_dirs_via_delegate: path=#{path}")
       success, parsed = call_delegate("list_assessment_dirs", path:)
-      if success && parsed && parsed["entries"].is_a?(Array)
-        Rails.logger.info("UnixGroupManager.list_assessment_dirs_via_delegate: SUCCESS for #{path} (#{parsed['entries'].size} entries)")
-        return parsed["entries"]
+      data = parsed.is_a?(Hash) ? parsed["data"] : nil
+      if success && data.is_a?(Hash) && data["entries"].is_a?(Array)
+        Rails.logger.info("UnixGroupManager.list_assessment_dirs_via_delegate: SUCCESS for #{path} (#{data['entries'].size} entries)")
+        return data["entries"]
       end
 
       # use list_dir + list_dir(subdir) to infer yml presence.
@@ -254,7 +257,9 @@ class UnixGroupManager
   def self.repair_course_directory_access(course)
     return false if course.nil?
 
-    course.ensure_service_user_group_membership!
+    return false unless course.respond_to?(:ensure_service_user_group_membership!, true)
+
+    course.send(:ensure_service_user_group_membership!)
   rescue StandardError => e
     Rails.logger.error("UnixGroupManager.repair_course_directory_access failed for course #{course&.name}: #{e.class} - #{e.message}")
     false
