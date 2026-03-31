@@ -337,7 +337,18 @@ class Assessment < ApplicationRecord
   def load_yaml
     return unless new_record?
 
-    props = YAML.safe_load(File.open(asmt_yaml_path, "r", &:read))
+    yaml_content = begin
+      File.open(asmt_yaml_path, "r", &:read)
+    rescue Errno::EACCES, Errno::EPERM
+      raise unless UnixGroupManager.delegate_enabled?
+
+      content = UnixGroupManager.read_file_via_delegate(asmt_yaml_path.to_s)
+      raise Errno::EACCES, "Permission denied reading #{asmt_yaml_path}" if content.nil?
+
+      content
+    end
+
+    props = YAML.safe_load(yaml_content)
     validate_yaml(props)
     backwards_compatibility(props)
     deserialize(props)
