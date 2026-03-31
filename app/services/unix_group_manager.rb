@@ -215,10 +215,26 @@ class UnixGroupManager
       if success && parsed && parsed["entries"].is_a?(Array)
         Rails.logger.info("UnixGroupManager.list_assessment_dirs_via_delegate: SUCCESS for #{path} (#{parsed['entries'].size} entries)")
         return parsed["entries"]
-      else
-        Rails.logger.error("UnixGroupManager.list_assessment_dirs_via_delegate: FAILED for #{path}, response: #{parsed.inspect}")
-        return nil
       end
+
+      # use list_dir + list_dir(subdir) to infer yml presence.
+      Rails.logger.warn("UnixGroupManager.list_assessment_dirs_via_delegate: primary action failed for #{path}, trying fallback")
+      root_entries = list_dir_via_delegate(path)
+      return nil if root_entries.nil?
+
+      inferred_entries = root_entries.filter_map do |entry|
+        entry_path = File.join(path.to_s, entry.to_s)
+        child_entries = list_dir_via_delegate(entry_path)
+        next if child_entries.nil? # likely not a directory
+
+        {
+          "name" => entry,
+          "yml_exists" => child_entries.include?("#{entry}.yml")
+        }
+      end
+
+      Rails.logger.info("UnixGroupManager.list_assessment_dirs_via_delegate: fallback SUCCESS for #{path} (#{inferred_entries.size} entries)")
+      return inferred_entries
     end
 
     Dir.children(path).filter_map do |entry|
@@ -233,6 +249,15 @@ class UnixGroupManager
   rescue StandardError => e
     Rails.logger.error("UnixGroupManager.list_assessment_dirs_via_delegate error for #{path}: #{e.class} - #{e.message}")
     nil
+  end
+
+  def self.repair_course_directory_access(course)
+    return false if course.nil?
+
+    course.ensure_service_user_group_membership!
+  rescue StandardError => e
+    Rails.logger.error("UnixGroupManager.repair_course_directory_access failed for course #{course&.name}: #{e.class} - #{e.message}")
+    false
   end
 
   # Set file permissions via delegate

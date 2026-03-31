@@ -1234,12 +1234,17 @@ private
       if UnixGroupManager.delegate_enabled?
         delegated_entries = UnixGroupManager.list_assessment_dirs_via_delegate(dir_path.to_s)
         if delegated_entries.nil?
-          flash.now[:error] =
-            "Cannot access course directory #{dir_path}. Check UnixOps delegate and course directory permissions."
-          flash.now[:html_safe] = true
-          return
+          UnixGroupManager.repair_course_directory_access(@course)
+          begin
+            delegated_entries = Dir.children(dir_path)
+          rescue Errno::EACCES
+            flash.now[:error] =
+              "Cannot access course directory #{dir_path}. Ensure UnixOps daemon is running with the latest code and verify course group membership for app/user9999."
+            flash.now[:html_safe] = true
+            return
+          end
         end
-        use_delegated_metadata = true
+        use_delegated_metadata = delegated_entries.first.is_a?(Hash)
         delegated_entries
       else
         flash.now[:error] = "Cannot access course directory #{dir_path}: permission denied."
