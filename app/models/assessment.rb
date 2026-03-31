@@ -679,7 +679,18 @@ private
   end
 
   def is_file?(name)
-    File.file?(path(name))
+    file_path = path(name)
+    File.stat(file_path).file?
+  rescue Errno::EACCES, Errno::EPERM
+    # The assessment directory may be locked to root:<course_group> (mode 2770) so the
+    # webapp process cannot stat files inside it directly.  Fall back to the delegate
+    # to check whether the entry exists in the parent directory.
+    return false unless UnixGroupManager.delegate_enabled?
+
+    entries = UnixGroupManager.list_dir_via_delegate(File.dirname(file_path.to_s))
+    entries&.include?(File.basename(file_path.to_s)) || false
+  rescue Errno::ENOENT
+    false
   end
 
   def verify_dates_order
