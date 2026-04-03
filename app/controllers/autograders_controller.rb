@@ -16,9 +16,9 @@ class AutogradersController < ApplicationController
       a.autograde_timeout = 180
       a.autograde_image = "autograding_image"
       a.release_score = true
-      a.access_key_id = ""
-      a.access_key = ""
-      a.instance_type = "t2.micro"
+      a.access_key_id = nil
+      a.access_key = nil
+      a.instance_type = "t3.micro"
     end
     if @autograder.save
       flash[:success] = "Autograder created."
@@ -41,7 +41,20 @@ class AutogradersController < ApplicationController
 
   action_auth_level :update, :instructor
   def update
-    if @autograder.update(autograder_params) && @assessment.update(assessment_params)
+    # Clear secrets if use_access_key is disabled
+    params_to_update = autograder_params.to_h.symbolize_keys
+    use_access_key_enabled = ActiveModel::Type::Boolean.new.cast(params_to_update[:use_access_key])
+    params_to_update[:use_access_key] = use_access_key_enabled
+
+    if use_access_key_enabled
+      params_to_update.delete(:access_key) if params_to_update[:access_key].blank?
+      params_to_update.delete(:access_key_id) if params_to_update[:access_key_id].blank?
+    else
+      params_to_update[:access_key] = nil
+      params_to_update[:access_key_id] = nil
+    end
+
+    if @autograder.update(params_to_update) && @assessment.update(assessment_params)
       flash[:success] = "Autograder saved."
       begin
         upload
@@ -115,8 +128,10 @@ private
   end
 
   def autograder_params
-    params[:autograder].permit(:autograde_timeout, :autograde_image, :release_score, :access_key,
-                               :access_key_id, :instance_type)
+    params.require(:autograder).permit(
+      :autograde_timeout, :autograde_image, :release_score,
+      :use_access_key, :access_key, :access_key_id, :instance_type
+    )
   end
 
   def assessment_params

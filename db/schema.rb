@@ -150,9 +150,9 @@ ActiveRecord::Schema.define(version: 2025_11_02_150304) do
     t.string "autograde_image"
     t.boolean "release_score"
     t.string "instance_type", default: ""
-    t.string "access_key", default: ""
-    t.string "access_key_id", default: ""
     t.boolean "use_access_key", default: false
+    t.text "access_key_ciphertext"
+    t.text "access_key_id_ciphertext"
   end
 
   create_table "course_user_data", id: :integer, charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|

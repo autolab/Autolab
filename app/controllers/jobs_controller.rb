@@ -247,9 +247,12 @@ protected
                     else
                       "Running"
                     end
+    elsif rjob["trace"][-1].include?("Autodriver returned normally")
+        job[:state] = "Succeeded"
+    elsif rjob["trace"][-1].split("|")[1].include? "Error"
+      job[:state] = "Failed"
     else
-      job[:state] = "Completed"
-      job[:state] = "Failed" if rjob["trace"][-1].split("|")[1].include? "Error"
+      job[:state] = "Unknown State"
     end
 
     job

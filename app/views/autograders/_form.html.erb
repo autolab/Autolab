@@ -18,30 +18,17 @@
 
 <div class="row">
   <div class="col s12">
-<<<<<<< HEAD
     <%= form_for @autograder, url: course_assessment_autograder_path(@course, @assessment, @autograder),
                               builder: FormBuilderWithDateTimeInput,
                               html: { multipart: true } do |f| %>
       <div id="tab_basic">
-        <%= render "basic_settings", f: f %>
+        <%= render "basic_settings", f: %>
       </div>
-      <div id="tab_ec2">
-        <%= render "ec2_settings", f: f %>
-      </div>
-    <% end %>
-=======
-      <%= form_for @autograder, url: course_assessment_autograder_path(@course, @assessment, @autograder),
-                                builder: FormBuilderWithDateTimeInput,
-                                html: { multipart: true } do |f| %>
-        <div id="tab_basic">
-          <%= render "basic_settings", f: %>
+      <% if Rails.configuration.x.ec2_ssh.presence %>
+        <div id="tab_ec2">
+          <%= render "ec2_settings", f: %>
         </div>
-        <% if Rails.configuration.x.ec2_ssh.presence %>
-          <div id="tab_ec2">
-            <%= render "ec2_settings", f: %>
-          </div>
-        <% end %>
       <% end %>
->>>>>>> a7fd8a19 (add new option on Tango side to explicitly check for ec2 vmms usage, and disable access key fields if not enabled)
+    <% end %>
   </div>
 </div>
