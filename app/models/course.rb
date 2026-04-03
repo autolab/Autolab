@@ -361,19 +361,49 @@ class Course < ApplicationRecord
           tar_file.write(dump_yaml(export_configs&.include?('metrics_config')))
         end
 
-        # save assessments
-        if export_configs&.include?('assessments')
-          assessments.each do |assessment|
-            asmt_dir = assessment.name
-            assessment.dump_yaml
-            filter = [assessment.handin_directory_path]
-            assessment.load_dir_to_tar(base_path, asmt_dir, tar, filter, course_dir)
+        # save users
+        if export_configs&.include?('users')
+          tar.mkdir File.join(course_dir, "users"), mode
+
+          course_user_data.includes(:user).each do |cud|
+            tar.add_file File.join(course_dir, "users", "user_#{cud.user_id}.yml"), mode do |tar_file|
+              tar_file.write(cud.user.attributes.to_yaml)
+            end
           end
         end
 
-        if export_configs&.include?('users')
-          tar.add_file File.join(course_dir, "users.yml"), mode do |tar_file|
-            tar_file.write(generate_users_yaml)
+        # save course user data
+        if export_configs&.include?('course_user_data')
+          tar.mkdir File.join(course_dir, "course_user_data"), mode
+
+          course_user_data.each do |cud|
+            tar.add_file File.join(course_dir, "course_user_data", "cud_#{cud.id}.yml"), mode do |tar_file|
+              tar_file.write(cud.attributes.to_yaml)
+            end
+          end
+        end
+
+        # save assessments
+        if export_configs&.include?('assessments')
+          tar.mkdir File.join(course_dir, "assessments"), mode
+
+          assessments.each do |assessment|
+            tar.add_file File.join(course_dir, "assessments", "assessment_#{assessment.id}.yml"), mode do |tar_file|
+              tar_file.write(assessment.attributes.to_yaml)
+            end
+          end
+        end
+
+        # save submissions
+        if export_configs&.include?('submissions')
+          tar.mkdir File.join(course_dir, "submissions"), mode
+
+          assessments.each do |assessment|
+            assessment.submissions.each do |submission|
+              tar.add_file File.join(course_dir, "submissions", "submission_#{submission.id}.yml"), mode do |tar_file|
+                tar_file.write(submission.attributes.to_yaml)
+              end
+            end
           end
         end
       end
@@ -384,31 +414,6 @@ class Course < ApplicationRecord
   end
 
 private
-  def generate_users_yaml(user_ids = nil)
-    cuds = if user_ids
-             # filter specific users, otherwise include all
-             course_user_data.where(user_id: user_ids).includes(:user)
-           else
-             course_user_data.includes(:user)
-           end
-
-    users = cuds.map do |cud|
-      {
-        "email" => cud.user.email,
-        "first_name" => cud.user.first_name,
-        "last_name" => cud.user.last_name,
-        "role" => if cud.instructor?
-                    "instructor"
-                  elsif cud.course_assistant?
-                    "course_assistant"
-                  else
-                    "student"
-                  end
-      }
-    end
-
-    YAML.dump("users" => users) # returns yaml string
-  end
 
   def saved_change_to_grade_related_fields?
     saved_change_to_late_slack? or saved_change_to_grace_days? or
