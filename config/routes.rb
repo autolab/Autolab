@@ -106,6 +106,10 @@ Rails.application.routes.draw do
   resources :courses, param: :name do
     match "join_course", via: [:get, :post], on: :collection
 
+    resources :container_images, except: [:show, :edit] do
+      get "refresh_status"
+    end
+
     resources :schedulers do
       post "visualRun", action: :visual_run
       post "run"
