@@ -339,9 +339,9 @@ class Course < ApplicationRecord
 
   def generate_tar(export_configs)
     base_path = Rails.root.join("courses", name).to_s
-    course_dir = name
+    course_dir = "course"
     rb_path = "course.rb"
-    config_path = "#{name}.yml"
+    config_path = "course_config.yml"
     mode = 0o755
 
     begin
@@ -370,6 +370,12 @@ class Course < ApplicationRecord
             assessment.load_dir_to_tar(base_path, asmt_dir, tar, filter, course_dir)
           end
         end
+
+        if export_configs&.include?('users')
+          tar.add_file File.join(course_dir, "users.yml"), mode do |tar_file|
+            tar_file.write(generate_users_yaml)
+          end
+        end
       end
       tarStream.rewind
       tarStream.close
@@ -378,6 +384,31 @@ class Course < ApplicationRecord
   end
 
 private
+  def generate_users_yaml(user_ids = nil)
+    cuds = if user_ids
+             # filter specific users, otherwise include all
+             course_user_data.where(user_id: user_ids).includes(:user)
+           else
+             course_user_data.includes(:user)
+           end
+
+    users = cuds.map do |cud|
+      {
+        "email" => cud.user.email,
+        "first_name" => cud.user.first_name,
+        "last_name" => cud.user.last_name,
+        "role" => if cud.instructor?
+                    "instructor"
+                  elsif cud.course_assistant?
+                    "course_assistant"
+                  else
+                    "student"
+                  end
+      }
+    end
+
+    YAML.dump("users" => users) # returns yaml string
+  end
 
   def saved_change_to_grade_related_fields?
     saved_change_to_late_slack? or saved_change_to_grace_days? or
