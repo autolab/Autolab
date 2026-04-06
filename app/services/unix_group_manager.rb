@@ -469,7 +469,12 @@ class UnixGroupManager
 
       # This calls the 'create_symlink' action in your daemon
       # Your daemon code: File.delete(link_path) if File.exist?(link_path)
-      create_symlink_via_delegate(target, link_path)
+      if create_symlink_via_delegate(target, link_path)
+        # CHANGE: Explicitly set the ownership of the symlink to the instructor.
+        # Note: Your chgrp_path must handle the '-h' flag (for links) in the daemon
+        # to ensure it doesn't try to change the owner of the TARGET course folder.
+        self.chgrp_path(link_path, username, owner: username)
+      end
     end
 
     true

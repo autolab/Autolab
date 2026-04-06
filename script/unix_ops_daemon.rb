@@ -149,7 +149,7 @@ module UnixOps
           end
           # If owner was nil or empty string, owner_uid remains nil, which keeps current owner
           
-          File.chown(owner_uid, group_info.gid, path)
+          File.lchown(owner_uid, group_info.gid, path)
           owner_desc = owner_uid ? (owner.to_s.match?(/^\d+$/) ? "uid:#{owner_uid}" : owner) : "unchanged"
           [true, "chgrp", { path: path, group_name: group_name, gid: group_info.gid, owner: owner_desc }]
         rescue ArgumentError
