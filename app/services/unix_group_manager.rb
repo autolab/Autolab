@@ -975,7 +975,7 @@ class UnixGroupManager
   def self.delete_user(username, remove_home: true)
     return false if username.nil? || username.empty?
     if delegate_enabled?
-      return delegate_action("delete_user", username:, remove_home:)
+      return delegate_action("delete_user", username: username, remove_home: remove_home)
     end
 
     # Check if user exists

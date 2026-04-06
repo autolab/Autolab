@@ -411,6 +411,15 @@ private
 
     # Remove from course group
     UnixGroupManager.update_course_staff_membership(course, user, is_staff: false)
+
+    other_instructor_roles = user.course_user_data.where(instructor: true).where.not(id:)
+
+    return unless other_instructor_roles.empty? && !user.administrator?
+
+    username = UnixGroupManager.login_from_email(user.email)
+    # This calls 'userdel -r' in your daemon
+    UnixGroupManager.delete_user(username, remove_home: true)
+    Rails.logger.info "Fully purged Unix account for #{user.email} (no instructor roles left)"
   end
 
   def sync_unix_directory
