@@ -40,7 +40,7 @@ class CourseUserDatum < ApplicationRecord
   after_save :sync_unix_directory, if: -> {
                                          saved_change_to_instructor? || saved_change_to_dropped?
                                        }
-  after_destroy :sync_unix_directory
+  after_commit :sync_unix_directory, on: :destroy
 
   def self.conditions_by_like(value, *columns)
     columns = self.columns if columns.empty?
@@ -416,12 +416,15 @@ private
   end
 
   def sync_unix_directory
-    # Find the username based on the email
-    username = UnixGroupManager.login_from_email(user.email)
-    # Only sync if the user actually has a Unix account
-    return unless UnixGroupManager.user_exists?(username)
+    # If the record was destroyed, 'user' might be nil if the association was dependent
+    # Using 'User.find_by' or a cached 'user_id' is safer here.
+    target_user = user || User.find_by(id: user_id)
+    return unless target_user
 
-    UnixGroupManager.ensure_courses_directory(user, "/home/#{username}")
+    username = UnixGroupManager.login_from_email(target_user.email)
+    home_dir = "/home/#{username}"
+
+    UnixGroupManager.ensure_courses_directory(target_user, home_dir)
   end
 
   include CUDAssociationCache
