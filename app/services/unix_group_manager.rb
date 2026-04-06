@@ -694,16 +694,16 @@ class UnixGroupManager
         Rails.logger.warn("User #{username} not found in passwd, skipping ownership changes")
       end
       # 1. Find the user in the database (assuming username is email/LDAP)
-      user = User.find_by(email: username)
+      # user = User.find_by(email: username)
 
-      if user
-        # 2. Call the new directory-based method we discussed
-        ensure_courses_directory(user, home_dir)
-      else
-        # If we can't find the user, we can't know which courses they lead.
-        # We fall back to the old method OR just skip to avoid clutter.
-        Rails.logger.warn("User #{username} not found in DB; skipping course links.")
-      end
+      # if user
+      #   # 2. Call the new directory-based method we discussed
+      #   ensure_courses_directory(user, home_dir)
+      # else
+      #   # If we can't find the user, we can't know which courses they lead.
+      #   # We fall back to the old method OR just skip to avoid clutter.
+      #   Rails.logger.warn("User #{username} not found in DB; skipping course links.")
+      # end
 
       true
     rescue StandardError => e
