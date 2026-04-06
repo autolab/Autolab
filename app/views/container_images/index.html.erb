@@ -1,0 +1,81 @@
+<% @title = "Manage Autograder Images" %>
+
+<% content_for :stylesheets do %>
+  <%= stylesheet_link_tag "style" %>
+<% end %>
+
+<h3>Manage Autograder Images</h3>
+<hr>
+
+<div class="row buttons-row">
+  <%= link_to 'New Docker Image', new_course_container_image_path(@course), { class: "btn mr-8" } %>
+</div>
+<table class="prettyBorder">
+  <colgroup>
+    <col style="width: 20%">
+    <col >
+    <col style="width: 80px">
+    <col style="width: 180px">
+  </colgroup>
+  <thead>
+  <tr>
+    <th>Name</th>
+    <th>ECR Image URI</th>
+    <th class="center-column">Status</th>
+    <th>Actions</th>
+  </tr>
+  </thead>
+  <tbody>
+  <% if @container_images.empty? %>
+    <tr>
+      <td colspan="2">There are currently no autograder images</td>
+    </tr>
+  <% else %>
+    <% @container_images.each do |image| %>
+      <tr>
+        <td>
+          <div>
+            <div class="ami-name"><%= image.name %></div>
+          </div>
+        </td>
+        <td>
+        </td>
+        <td class="status-cell">
+          <div class="center-column">
+            <% if image.status == "draft" %>
+              <div class="hourglass-icon">
+                <i class="material-icons status-icon">hourglass_bottom</i>
+              </div>
+            <% elsif image.status == "building" %>
+              <div class="building-icon">
+                <i class="material-icons status-icon">construction</i>
+              </div>
+            <% elsif image.status == "ready" %>
+              <div class="success-icon">
+                <i class="material-icons status-icon">done_all</i>
+              </div>
+            <% elsif image.status == "disabled" %>
+              <div class="success-icon">
+                <i class="material-icons status-icon">done_all</i>
+              </div>
+            <% else %>
+              <div class="error-icon">
+                <i class="material-icons status-icon">error_outline</i>
+              </div>
+            <% end %>
+          </div>
+        </td>
+        <td class="actions-cell">
+          <div>
+            <%= link_to "<i class='material-icons'>delete</i>".html_safe, course_container_image_path(@course, image.id),
+                        { method: :delete, title: "Delete this AMI image", class: "btn small" } %>
+            Delete
+          </div>
+        </td>
+      </tr>
+    <% end %>
+  <% end %>
+  </tbody>
+</table>
+
+<br>

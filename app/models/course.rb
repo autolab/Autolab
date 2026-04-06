@@ -28,6 +28,7 @@ class Course < ApplicationRecord
   has_many :risk_conditions, dependent: :destroy
   has_one :watchlist_configuration, dependent: :destroy
   has_one :lti_course_datum, dependent: :destroy
+  has_many :container_images, dependent: :destroy
 
   # Callbacks
   before_save :cgdub_dependencies_updated, if: :grace_days_or_late_slack_changed?

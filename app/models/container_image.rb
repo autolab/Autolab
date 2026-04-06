@@ -1,16 +1,18 @@
 class ContainerImage < ApplicationRecord
+  attr_accessor :dockerfile
+
   belongs_to :course, optional: true
 
   enum status: {
+    failed: -1,
     draft: 0,
     building: 1,
     ready: 2,
-    failed: 3,
-    disabled: 4
+    disabled: 3
   }
 
   validates :name, presence: true
-  validates :image_uri, presence: true, uniqueness: true
+  validates :image_uri, uniqueness: true, allow_nil: true
   validate :public_or_course_scoped
 
   # Extract tag from image_uri
@@ -18,6 +20,10 @@ class ContainerImage < ApplicationRecord
     return nil unless image_uri.include?(":")
 
     image_uri.split(":").last
+  end
+
+  def not_ready
+    status == 0 || status == 1
   end
 
   private
