@@ -428,52 +428,44 @@ class UnixGroupManager
   # end
 
   def self.ensure_courses_directory(user, home_dir)
-    courses_dir = File.join(home_dir, "courses")
+    return unless user
 
-    # 1. Clean up the old global symlink if it exists
-    if File.symlink?(courses_dir)
-      File.delete(courses_dir)
-    end
+    # 1. Consistent naming logic
+    username = self.login_from_email(user.email)
+    return unless username
 
-    # 2. Create a REAL directory and set permissions
-    unless Dir.exist?(courses_dir)
-      FileUtils.mkdir_p(courses_dir)
+    # 2. Path Definitions
+    internal_courses_root = "/home/app/webapp/courses"
+    user_courses_dir = File.join(home_dir, "courses")
 
-      # Crucial: Set ownership so the SSH user can actually use the folder
-      begin
-        # We use the login_from_email helper to get 'joys' instead of the email
-        username = login_from_email(user.email)
-        user_info = Etc.getpwnam(username)
-        File.chown(user_info.uid, user_info.gid, courses_dir)
-        File.chmod(0o755, courses_dir)
-      rescue ArgumentError => e
-        Rails.logger.warn("UnixGroupManager: Could not set ownership for #{courses_dir}: #{e.message}")
-      end
-    end
+    # 3. Clean up and Create the Directory
+    # Instead of rm -rf, we use the daemon's create_symlink logic
+    # which handles its own deletion, or we can use a small trick:
+    # We'll rely on our existing mkdir_p_via_delegate
+    self.mkdir_p_via_delegate(user_courses_dir)
 
-    # 3. Get current instructor courses
+    # 4. Set Ownership (Using the 'chgrp' action in your daemon)
+    # Your daemon's chgrp action handles both owner and group!
+    self.chgrp_path(user_courses_dir, username, owner: username)
+    self.chmod_path(user_courses_dir, 0o755)
+
+    # 5. Fetch Instructor Courses
     instructor_courses = user.course_user_data.where(instructor: true).map(&:course)
-    current_course_names = instructor_courses.map(&:name)
 
-    # 4. (Optional but Recommended) Remove stale links
-    # This ensures that if they lose access to a course, it disappears from 'ls'
-    if Dir.exist?(courses_dir)
-      Dir.children(courses_dir).each do |entry|
-        next if current_course_names.include?(entry)
-
-        File.delete(File.join(courses_dir, entry))
-      end
-    end
-
-    # 5. Create/Update symlinks for each active course
+    # 6. Create Curated Links
     instructor_courses.each do |course|
-      # Ensure this path matches your Autolab deployment exactly
-      target = "/home/autolab/autolab-docker/Autolab/courses/#{course.name}"
-      link_path = File.join(courses_dir, course.name)
+      target = File.join(internal_courses_root, course.name)
+      link_path = File.join(user_courses_dir, course.name)
 
-      # Use the delegate to handle privileged linking
+      # This calls the 'create_symlink' action in your daemon
+      # Your daemon code: File.delete(link_path) if File.exist?(link_path)
       self.create_symlink_via_delegate(target, link_path)
     end
+
+    true
+  rescue StandardError => e
+    Rails.logger.error "UnixGroupManager: ensure_courses_directory failed: #{e.message}"
+    false
   end
 
   # Extract a safe Unix group name from course name
