@@ -655,47 +655,36 @@ class UnixGroupManager
       return false if home_dir.nil? || home_dir.empty?
 
       # Ensure home directory exists
-      unless Dir.exist?(home_dir)
-        FileUtils.mkdir_p(home_dir)
-
-        # Copy .bashrc, .profile, etc. from system template
-        if Dir.exist?("/etc/skel")
-          # -n (no-clobber) ensures we don't overwrite if files exist
-          # We use a system call to handle hidden files/dots correctly
-          system("cp -rn /etc/skel/. #{home_dir}/")
-        end
-      end
+      FileUtils.mkdir_p(home_dir) unless Dir.exist?(home_dir)
 
       # Create .ssh directory with proper permissions (700)
       ssh_dir = File.join(home_dir, ".ssh")
       FileUtils.mkdir_p(ssh_dir) unless Dir.exist?(ssh_dir)
+      File.chmod(0o700, ssh_dir)
 
+      # Get user info - handle case where user might not exist yet
       begin
         user_info = Etc.getpwnam(username)
-
-        # RECURSIVE CHOWN: Ensure the user owns the new .bashrc, .ssh, etc.
-        FileUtils.chown_R(user_info.uid, user_info.gid, home_dir)
+        File.chown(user_info.uid, user_info.gid, ssh_dir)
 
         # Create authorized_keys file if it doesn't exist (600)
         authorized_keys = File.join(ssh_dir, "authorized_keys")
         FileUtils.touch(authorized_keys) unless File.exist?(authorized_keys)
-
-        # ENFORCE PERMISSIONS: Strict modes for SSH to work
-        File.chmod(0o700, ssh_dir)
         File.chmod(0o600, authorized_keys)
-        # Re-verify specific ownership for SSH files
-        File.chown(user_info.uid, user_info.gid, ssh_dir)
         File.chown(user_info.uid, user_info.gid, authorized_keys)
 
       rescue ArgumentError
         Rails.logger.warn("User #{username} not found in passwd, skipping ownership changes")
       end
-
-      # 4. Sync course directories
+      # 1. Find the user in the database (assuming username is email/LDAP)
       user = User.find_by(email: username)
+
       if user
+        # 2. Call the new directory-based method we discussed
         ensure_courses_directory(user, home_dir)
       else
+        # If we can't find the user, we can't know which courses they lead.
+        # We fall back to the old method OR just skip to avoid clutter.
         Rails.logger.warn("User #{username} not found in DB; skipping course links.")
       end
 
