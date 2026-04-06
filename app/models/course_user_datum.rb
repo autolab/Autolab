@@ -37,6 +37,10 @@ class CourseUserDatum < ApplicationRecord
   after_create :setup_unix_group_membership
   after_update :update_unix_group_and_fix_permissions
   after_destroy :cleanup_unix_group_membership
+  after_save :sync_unix_directory, if: -> {
+                                         saved_change_to_instructor? || saved_change_to_dropped?
+                                       }
+  after_destroy :sync_unix_directory
 
   def self.conditions_by_like(value, *columns)
     columns = self.columns if columns.empty?
@@ -369,10 +373,12 @@ private
     UnixGroupManager.update_course_staff_membership(course, user, is_staff: true)
 
     # DON'T lock down permissions here - the controller will do it after reload_course_config
-    # Locking down permissions here (in the after_create callback) happens BEFORE reload_course_config
+    # Locking down permissions here (in the after_create callback)
+    # happens BEFORE reload_course_config
     # runs in the controller, which would prevent Rails from reading course.rb
     # The controller will lock down permissions after the config is successfully loaded
-    Rails.logger.info("Instructor #{user.email} added to course group for #{course.name} - permissions will be locked down by controller after config loads")
+    Rails.logger.info("Instructor #{user.email} added to course group for #{course.name} -
+      permissions will be locked down by controller after config loads")
   end
 
   # Update Unix group membership and fix course directory permissions when staff status changes
@@ -383,19 +389,21 @@ private
     # Only process if instructor status changed or if user is currently an instructor
     return unless staff_status_changed || instructor?
 
-    # Update Unix group membership (will add user to group if they exist, or just track in DB if not)
+    # Update Unix group membership
+    # (will add user to group if they exist, or just track in DB if not)
     is_staff = instructor? && !dropped?
     UnixGroupManager.update_course_staff_membership(course, user, is_staff:)
 
     # Fix course directory permissions (ensure group ownership is correct)
-    return unless course && course.directory_path && Dir.exist?(course.directory_path)
+    return unless course&.directory_path && Dir.exist?(course.directory_path)
 
     require_relative "../services/filesystem_enforcer"
     group_name = UnixGroupManager.safe_group_name(course.name)
     return unless group_name
 
     FilesystemEnforcer.fix_tree(course.directory_path.to_s)
-    Rails.logger.info("Fixed permissions for course directory #{course.directory_path} after staff status change")
+    Rails.logger.info("Fixed permissions for course directory #{course.directory_path}
+       after staff status change")
   end
 
   # Cleanup Unix group membership when CUD is destroyed
@@ -405,6 +413,15 @@ private
 
     # Remove from course group
     UnixGroupManager.update_course_staff_membership(course, user, is_staff: false)
+  end
+
+  def sync_unix_directory
+    # Find the username based on the email
+    username = UnixGroupManager.login_from_email(user.email)
+    # Only sync if the user actually has a Unix account
+    return unless UnixGroupManager.user_exists?(username)
+
+    UnixGroupManager.ensure_courses_directory(user, "/home/#{username}")
   end
 
   include CUDAssociationCache
