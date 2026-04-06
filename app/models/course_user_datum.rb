@@ -406,20 +406,32 @@ private
 
   # Cleanup Unix group membership when CUD is destroyed
   def cleanup_unix_group_membership
-    # Only cleanup if user was an instructor in this course
+    # 1. Safety check: only instructors have these accounts
     return unless instructor?
 
-    # Remove from course group
-    UnixGroupManager.update_course_staff_membership(course, user, is_staff: false)
+    # 2. Get the user object even if the association is broken
+    # We use the user_id column which is still in the CUD's memory
+    target_user = user || User.find_by(id: user_id)
+    return unless target_user
 
-    other_instructor_roles = user.course_user_data.where(instructor: true).where.not(id:)
+    # 3. Remove from course group (your existing logic)
+    UnixGroupManager.update_course_staff_membership(course, target_user, is_staff: false)
 
-    return unless other_instructor_roles.empty? && !user.administrator?
+    # 4. Check for other roles using the database directly
+    # Checking u.course_user_data might fail if u is being destroyed
+    other_instructor_roles = CourseUserDatum.where(user_id: target_user.id)
+                                            .where(instructor: true)
+                                            .where.not(id:)
 
-    username = UnixGroupManager.login_from_email(user.email)
-    # This calls 'userdel -r' in your daemon
+    # 5. The Purge
+    return unless other_instructor_roles.empty? && !target_user.administrator?
+
+    username = UnixGroupManager.login_from_email(target_user.email)
+
+    # This triggers the 'userdel -r' in the daemon
     UnixGroupManager.delete_user(username, remove_home: true)
-    Rails.logger.info "Fully purged Unix account for #{user.email} (no instructor roles left)"
+
+    Rails.logger.info "[CUD Cleanup] Fully purged Unix account for #{target_user.email}"
   end
 
   def sync_unix_directory
