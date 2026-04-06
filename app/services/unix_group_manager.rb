@@ -430,45 +430,40 @@ class UnixGroupManager
   def self.ensure_courses_directory(user, home_dir)
     return unless user
 
-    Rails.logger.info "[UnixGroupManager] Syncing directory for #{user.email} at #{home_dir}"
-
-    # 1. Consistent naming logic
     username = self.login_from_email(user.email)
     return unless username
 
     self.ensure_user(username, email: user.email)
-    Rails.logger.info "[UnixGroupManager] Syncing directory for #{user.email} at #{home_dir}"
-
     self.ensure_group(username)
     self.add_user_to_group(username, username)
 
-    # 2. Path Definitions
-    internal_courses_root = "/home/autolab/autolab-docker/Autolab/courses"
+    # PATH DEFINITIONS
+    # Use the host path so links are valid via SSH on the AWS machine
+    host_courses_root = "/home/autolab/autolab-docker/Autolab/courses"
     user_courses_dir = File.join(home_dir, "courses")
 
-    # 3. Clean up and Create the Directory
-    # Instead of rm -rf, we use the daemon's create_symlink logic
-    # which handles its own deletion, or we can use a small trick:
-    # We'll rely on our existing mkdir_p_via_delegate
+    # 1. Clean up the user's courses folder entirely
     self.call_delegate(:rm_rf, { path: user_courses_dir })
-    # Recreate the folder fresh
-    self.mkdir_p_via_delegate(user_courses_dir)
 
-    # 4. Set Ownership (Using the 'chgrp' action in your daemon)
-    # Your daemon's chgrp action handles both owner and group!
+    # 2. Recreate it fresh
+    self.mkdir_p_via_delegate(user_courses_dir)
     self.chgrp_path(user_courses_dir, username, owner: username)
     self.chmod_path(user_courses_dir, 0o755)
 
-    # 5. Fetch Instructor Courses
+    # 3. Create Curated Links
     instructor_courses = user.course_user_data.where(instructor: true).map(&:course)
 
-    # 6. Create Curated Links
     instructor_courses.each do |course|
-      target = File.join(internal_courses_root, course.name)
+      target = File.join(host_courses_root, course.name)
       link_path = File.join(user_courses_dir, course.name)
 
-      create_symlink_via_delegate(target, link_path)
-      self.chgrp_path(link_path, username, owner: username)
+      # Break any existing loop before creating the new link
+      self.call_delegate(:rm_rf, { path: link_path })
+
+      if create_symlink_via_delegate(target, link_path)
+        # Use lchown (the safe version) to set link ownership to the instructor
+        self.chgrp_path(link_path, username, owner: username)
+      end
     end
 
     true
