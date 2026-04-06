@@ -171,6 +171,15 @@ module UnixOps
         rescue StandardError => e
           [false, e.message, nil]
         end
+      when "chmod_R"
+        path = payload["path"]
+        mode = payload["mode"] # e.g., "g+rwX,g+s"
+        # Use system() to handle the symbolic mode string safely
+        if system("chmod", "-R", mode, path)
+          [true, "chmod_R successful", { path: path, mode: mode }]
+        else
+          [false, "chmod -R failed", nil]
+        end
       when "get_user_uid"
         begin
           require "etc"
