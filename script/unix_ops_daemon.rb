@@ -214,6 +214,42 @@ module UnixOps
         rescue StandardError => e
           [false, e.message, nil]
         end
+      when "rm_rf"
+        begin
+          path = payload["path"]
+          if path.nil? || path.empty?
+            [false, "invalid_path", nil]
+          else
+            require "fileutils"
+            # Safety check: Prevent accidental root/system nuking
+            if path == "/" || path == "/home" || path == "/etc"
+              [false, "protected_path", nil]
+            else
+              FileUtils.rm_rf(path)
+              [true, "rm_rf", { path: path }]
+            end
+          end
+        rescue StandardError => e
+          [false, e.message, nil]
+        end
+      when "create_symlink"
+        begin
+          target = payload["target"]
+          link_path = payload["link_path"]
+          if target.nil? || target.empty? || link_path.nil? || link_path.empty?
+            [false, "invalid_symlink_payload", nil]
+          else
+            # Use rm_rf here so it can clear out old directories
+            # that might be blocking the symlink creation
+            require "fileutils"
+            FileUtils.rm_rf(link_path)
+
+            File.symlink(target, link_path)
+            [true, "create_symlink", { target: target, link_path: link_path }]
+          end
+        rescue StandardError => e
+          [false, e.message, nil]
+        end
       when "write_file"
         begin
           path = payload["path"]
