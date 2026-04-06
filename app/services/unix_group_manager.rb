@@ -443,7 +443,7 @@ class UnixGroupManager
     self.add_user_to_group(username, username)
 
     # 2. Path Definitions
-    internal_courses_root = "/home/app/webapp/courses"
+    internal_courses_root = "/home/autolab/autolab-docker/Autolab/courses"
     user_courses_dir = File.join(home_dir, "courses")
 
     # 3. Clean up and Create the Directory
@@ -467,14 +467,8 @@ class UnixGroupManager
       target = File.join(internal_courses_root, course.name)
       link_path = File.join(user_courses_dir, course.name)
 
-      # This calls the 'create_symlink' action in your daemon
-      # Your daemon code: File.delete(link_path) if File.exist?(link_path)
-      if create_symlink_via_delegate(target, link_path)
-        # CHANGE: Explicitly set the ownership of the symlink to the instructor.
-        # Note: Your chgrp_path must handle the '-h' flag (for links) in the daemon
-        # to ensure it doesn't try to change the owner of the TARGET course folder.
-        self.chgrp_path(link_path, username, owner: username)
-      end
+      create_symlink_via_delegate(target, link_path)
+      self.chgrp_path(link_path, username, owner: username)
     end
 
     true
