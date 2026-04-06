@@ -655,7 +655,16 @@ class UnixGroupManager
       return false if home_dir.nil? || home_dir.empty?
 
       # Ensure home directory exists
-      FileUtils.mkdir_p(home_dir) unless Dir.exist?(home_dir)
+      unless Dir.exist?(home_dir)
+        FileUtils.mkdir_p(home_dir)
+
+        if Dir.exist?("/etc/skel")
+          # -n (no-clobber) ensures we don't overwrite if files somehow exist
+          # -r (recursive) gets subfolders if any
+          # We use a system call here because FileUtils.cp_r with globbing is finicky with hidden files
+          system("cp -rn /etc/skel/. #{home_dir}/")
+        end
+      end
 
       # Create .ssh directory with proper permissions (700)
       ssh_dir = File.join(home_dir, ".ssh")
@@ -665,13 +674,22 @@ class UnixGroupManager
       # Get user info - handle case where user might not exist yet
       begin
         user_info = Etc.getpwnam(username)
-        File.chown(user_info.uid, user_info.gid, ssh_dir)
 
-        # Create authorized_keys file if it doesn't exist (600)
+        # 1. Recursive ownership: Sets home, .bashrc, .ssh, etc. all at once
+        FileUtils.chown_R(user_info.uid, user_info.gid, home_dir)
+
+        # 2. Setup SSH specifically
         authorized_keys = File.join(ssh_dir, "authorized_keys")
         FileUtils.touch(authorized_keys) unless File.exist?(authorized_keys)
+
+        # 3. Enforce strict permissions (chown_R might have loosened these)
+        File.chmod(0o700, ssh_dir)
         File.chmod(0o600, authorized_keys)
+
+        # Re-verify SSH ownership just to be safe
+        File.chown(user_info.uid, user_info.gid, ssh_dir)
         File.chown(user_info.uid, user_info.gid, authorized_keys)
+
       rescue ArgumentError
         Rails.logger.warn("User #{username} not found in passwd, skipping ownership changes")
       end
