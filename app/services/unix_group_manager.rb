@@ -455,7 +455,6 @@ class UnixGroupManager
 
     instructor_courses.each do |course|
       target = File.join(host_courses_root, course.name)
-      self.call_delegate(:chmod_R, { path: target, mode: "g+rwX,g+s" })
       link_path = File.join(user_courses_dir, course.name)
 
       # Break any existing loop before creating the new link
