@@ -401,29 +401,78 @@ class UnixGroupManager
     false
   end
 
-  def self.ensure_courses_symlink(home_dir)
-    target = "/home/autolab/autolab-docker/Autolab/courses"
-    return unless Dir.exist?(target)
+  # def self.ensure_courses_symlink(home_dir)
+  #   target = "/home/autolab/autolab-docker/Autolab/courses"
+  #   return unless Dir.exist?(target)
+  #
+  #   link_path = File.join(home_dir, "courses")
+  #   begin
+  #     if File.symlink?(link_path)
+  #       current_target = begin
+  #         File.readlink(link_path)
+  #       rescue StandardError
+  #         nil
+  #       end
+  #       return if current_target == target
+  #
+  #       File.delete(link_path)
+  #     elsif File.exist?(link_path)
+  #       # Avoid overwriting an existing directory/file
+  #       return
+  #     end
+  #
+  #     File.symlink(target, link_path)
+  #   rescue StandardError => e
+  #     Rails.logger.warn("Failed to create courses symlink at #{link_path}: #{e.message}")
+  #   end
+  # end
 
-    link_path = File.join(home_dir, "courses")
-    begin
-      if File.symlink?(link_path)
-        current_target = begin
-          File.readlink(link_path)
-        rescue StandardError
-          nil
-        end
-        return if current_target == target
+  def self.ensure_courses_directory(user, home_dir)
+    courses_dir = File.join(home_dir, "courses")
 
-        File.delete(link_path)
-      elsif File.exist?(link_path)
-        # Avoid overwriting an existing directory/file
-        return
+    # 1. Clean up the old global symlink if it exists
+    if File.symlink?(courses_dir)
+      File.delete(courses_dir)
+    end
+
+    # 2. Create a REAL directory and set permissions
+    unless Dir.exist?(courses_dir)
+      FileUtils.mkdir_p(courses_dir)
+
+      # Crucial: Set ownership so the SSH user can actually use the folder
+      begin
+        # We use the login_from_email helper to get 'joys' instead of the email
+        username = login_from_email(user.email)
+        user_info = Etc.getpwnam(username)
+        File.chown(user_info.uid, user_info.gid, courses_dir)
+        File.chmod(0o755, courses_dir)
+      rescue ArgumentError => e
+        Rails.logger.warn("UnixGroupManager: Could not set ownership for #{courses_dir}: #{e.message}")
       end
+    end
 
-      File.symlink(target, link_path)
-    rescue StandardError => e
-      Rails.logger.warn("Failed to create courses symlink at #{link_path}: #{e.message}")
+    # 3. Get current instructor courses
+    instructor_courses = user.course_user_data.where(instructor: true).map(&:course)
+    current_course_names = instructor_courses.map(&:name)
+
+    # 4. (Optional but Recommended) Remove stale links
+    # This ensures that if they lose access to a course, it disappears from 'ls'
+    if Dir.exist?(courses_dir)
+      Dir.children(courses_dir).each do |entry|
+        next if current_course_names.include?(entry)
+
+        File.delete(File.join(courses_dir, entry))
+      end
+    end
+
+    # 5. Create/Update symlinks for each active course
+    instructor_courses.each do |course|
+      # Ensure this path matches your Autolab deployment exactly
+      target = "/home/autolab/autolab-docker/Autolab/courses/#{course.name}"
+      link_path = File.join(courses_dir, course.name)
+
+      # Use the delegate to handle privileged linking
+      self.create_symlink_via_delegate(target, link_path)
     end
   end
 
@@ -626,11 +675,20 @@ class UnixGroupManager
         File.chmod(0o600, authorized_keys)
         File.chown(user_info.uid, user_info.gid, authorized_keys)
       rescue ArgumentError
-        # User doesn't exist in passwd - that's ok, skip ownership changes
         Rails.logger.warn("User #{username} not found in passwd, skipping ownership changes")
       end
 
-      ensure_courses_symlink(home_dir)
+      # 1. Find the user in the database (assuming username is email/LDAP)
+      user = User.find_by(email: username)
+
+      if user
+        # 2. Call the new directory-based method we discussed
+        ensure_courses_directory(user, home_dir)
+      else
+        # If we can't find the user, we can't know which courses they lead.
+        # We fall back to the old method OR just skip to avoid clutter.
+        Rails.logger.warn("User #{username} not found in DB; skipping course links.")
+      end
 
       true
     rescue StandardError => e
