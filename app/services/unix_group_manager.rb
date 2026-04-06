@@ -431,8 +431,11 @@ class UnixGroupManager
     return unless user
 
     # 1. Consistent naming logic
-    username = login_from_email(user.email)
+    username = self.login_from_email(user.email)
     return unless username
+
+    self.ensure_group(username)
+    self.add_user_to_group(username, username)
 
     # 2. Path Definitions
     internal_courses_root = "/home/app/webapp/courses"
@@ -442,12 +445,13 @@ class UnixGroupManager
     # Instead of rm -rf, we use the daemon's create_symlink logic
     # which handles its own deletion, or we can use a small trick:
     # We'll rely on our existing mkdir_p_via_delegate
-    mkdir_p_via_delegate(user_courses_dir)
+    self.call_delegate(:rm_rf, { path: user_courses_dir })
+    self.mkdir_p_via_delegate(user_courses_dir)
 
     # 4. Set Ownership (Using the 'chgrp' action in your daemon)
     # Your daemon's chgrp action handles both owner and group!
-    chgrp_path(user_courses_dir, username, owner: username)
-    chmod_path(user_courses_dir, 0o755)
+    self.chgrp_path(user_courses_dir, username, owner: username)
+    self.chmod_path(user_courses_dir, 0o755)
 
     # 5. Fetch Instructor Courses
     instructor_courses = user.course_user_data.where(instructor: true).map(&:course)
