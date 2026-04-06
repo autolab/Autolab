@@ -436,7 +436,8 @@ class UnixGroupManager
     username = self.login_from_email(user.email)
     return unless username
 
-    self.setup_user_home(username)
+    self.ensure_user(username, email: user.email)
+    Rails.logger.info "[UnixGroupManager] Syncing directory for #{user.email} at #{home_dir}"
 
     self.ensure_group(username)
     self.add_user_to_group(username, username)
