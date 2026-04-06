@@ -450,8 +450,9 @@ class UnixGroupManager
     # Instead of rm -rf, we use the daemon's create_symlink logic
     # which handles its own deletion, or we can use a small trick:
     # We'll rely on our existing mkdir_p_via_delegate
+    self.call_delegate(:rm_rf, { path: user_courses_dir })
+    # Recreate the folder fresh
     self.mkdir_p_via_delegate(user_courses_dir)
-    self.call_delegate(:rm_rf, { path: File.join(user_courses_dir, "*") })
 
     # 4. Set Ownership (Using the 'chgrp' action in your daemon)
     # Your daemon's chgrp action handles both owner and group!

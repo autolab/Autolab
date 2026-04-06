@@ -37,9 +37,7 @@ class CourseUserDatum < ApplicationRecord
   after_create :setup_unix_group_membership
   after_update :update_unix_group_and_fix_permissions
   after_destroy :cleanup_unix_group_membership
-  after_save :sync_unix_directory, if: -> {
-                                         saved_change_to_instructor? || saved_change_to_dropped?
-                                       }
+  after_save :sync_unix_directory, if: :role_or_status_changed?
   after_commit :sync_unix_directory, on: :destroy
 
   def self.conditions_by_like(value, *columns)
@@ -425,6 +423,11 @@ private
     home_dir = "/home/#{username}"
 
     UnixGroupManager.ensure_courses_directory(target_user, home_dir)
+  end
+
+  def role_or_status_changed?
+    saved_change_to_instructor? || saved_change_to_course_assistant? ||
+      saved_change_to_dropped?
   end
 
   include CUDAssociationCache
