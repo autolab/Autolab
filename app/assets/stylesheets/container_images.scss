@@ -1,0 +1,84 @@
+.status-cell {
+  font-size: 18px;
+}
+
+.material-icons.status-icon {
+  font-size: 24px;
+}
+
+.center-column {
+  height: 100%;
+  border: 0;
+  outline: 0;
+  display: flex;
+  justify-content: center;
+  align-content: center;
+}
+
+.all-icon {
+  display: flex;
+  justify-content: center;
+  align-content: center;
+}
+
+.error-icon {
+  color: red;
+}
+
+.hourglass-icon {
+  color: lightgray;
+}
+
+.draft-icon {
+  color: gray;
+}
+
+.building-icon {
+  color: gray;
+}
+
+.success-icon {
+  color: limegreen;
+}
+
+.source-table {
+  margin-bottom: 36px;
+}
+
+.mr-8 {
+  margin-right: 8px;
+}
+
+.status-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+
+  padding: 0.2rem 0.5rem;
+  border: 1px solid currentColor;
+  border-radius: 0.2rem;
+
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.status-chip__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 0.8rem;
+  height: 0.8rem;
+  flex-shrink: 0;
+}
+
+.status-chip--closed {
+  color: #d9534f;
+  background-color: #fdf1f1;
+}
+
+.status-chip--progress {
+  color: #21b5b0;
+  background-color: #eefbfa;
+}

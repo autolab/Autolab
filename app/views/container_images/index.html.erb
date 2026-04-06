@@ -1,6 +1,7 @@
 <% @title = "Manage Autograder Images" %>
 
 <% content_for :stylesheets do %>
+  <%= stylesheet_link_tag "container_images" %>
   <%= stylesheet_link_tag "style" %>
 <% end %>
 
@@ -39,28 +40,38 @@
           </div>
         </td>
         <td>
+          <% if image.image_uri.nil? %>
+            Image not ready
+          <% else %>
+            <%= image.image_uri %>
+          <% end %>
         </td>
         <td class="status-cell">
           <div class="center-column">
             <% if image.status == "draft" %>
-              <div class="hourglass-icon">
-                <i class="material-icons status-icon">hourglass_bottom</i>
+              <div class="status-chip status-chip--closed">
+                <i class="material-icons status-icon">edit</i>
+                <div class="status-desc">Draft</div>
               </div>
             <% elsif image.status == "building" %>
-              <div class="building-icon">
+              <div class="status-chip status-chip--closed">
                 <i class="material-icons status-icon">construction</i>
+                <div class="status-desc">Building</div>
               </div>
             <% elsif image.status == "ready" %>
-              <div class="success-icon">
+              <div class="status-chip status-chip--closed">
                 <i class="material-icons status-icon">done_all</i>
+                <div class="status-desc">Ready</div>
               </div>
             <% elsif image.status == "disabled" %>
-              <div class="success-icon">
-                <i class="material-icons status-icon">done_all</i>
+              <div class="status-chip status-chip--closed">
+                <i class="material-icons status-icon">block</i>
+                <div class="status-desc">Disabled</div>
               </div>
             <% else %>
-              <div class="error-icon">
-                <i class="material-icons status-icon">error_outline</i>
+              <div class="status-chip status-chip--closed">
+                <i class="material-icons status-icon">error</i>
+                <div class="status-desc">Failed</div>
               </div>
             <% end %>
           </div>
@@ -70,6 +81,11 @@
             <%= link_to "<i class='material-icons'>delete</i>".html_safe, course_container_image_path(@course, image.id),
                         { method: :delete, title: "Delete this AMI image", class: "btn small" } %>
             Delete
+          </div>
+          <div>
+            <%= link_to "<i class='material-icons'>refresh</i>".html_safe, course_container_image_refresh_status_url(@course, image.id),
+                        { method: :post, title: "Refresh ECR image status", class: "btn small" } %>
+            Refresh Status
           </div>
         </td>
       </tr>
