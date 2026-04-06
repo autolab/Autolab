@@ -660,17 +660,17 @@ class UnixGroupManager
       # 1. Create the directory if it doesn't exist
       unless Dir.exist?(home_dir)
         FileUtils.mkdir_p(home_dir)
+      end
 
-        # 2. SEED THE .BASHRC (The specific fix)
-        if Dir.exist?("/etc/skel")
-          # Use Ruby globbing to ensure hidden dot-files are included
-          # excluding '.' and '..'
-          skel_items = Dir.entries("/etc/skel").reject { |e| e == "." || e == ".." }
-          skel_paths = skel_items.map { |e| File.join("/etc/skel", e) }
-
-          # Copy skeleton files into the home_dir
-          # We use preserve: true to keep original modes (e.g., 644)
-          FileUtils.cp_r(skel_paths, home_dir, preserve: true)
+      if Dir.exist?("/etc/skel") && !File.exist?(File.join(home_dir, ".bashrc"))
+        begin
+          # Grab everything (including hidden files) except . and ..
+          items = Dir.entries("/etc/skel").reject { |e| e == "." || e == ".." }
+          items.each do |item|
+            FileUtils.cp_r(File.join("/etc/skel", item), home_dir, preserve: true)
+          end
+        rescue => e
+          Rails.logger.warn("Manual skel copy failed: #{e.message}")
         end
       end
 
