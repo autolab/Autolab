@@ -656,8 +656,22 @@ class UnixGroupManager
       home_dir = stdout.split(":")[5]
       return false if home_dir.nil? || home_dir.empty?
 
-      # Ensure home directory exists
-      FileUtils.mkdir_p(home_dir) unless Dir.exist?(home_dir)
+      # 1. Create the directory if it doesn't exist
+      unless Dir.exist?(home_dir)
+        FileUtils.mkdir_p(home_dir)
+
+        # 2. SEED THE .BASHRC (The specific fix)
+        if Dir.exist?("/etc/skel")
+          # Use Ruby globbing to ensure hidden dot-files are included
+          # excluding '.' and '..'
+          skel_items = Dir.entries("/etc/skel").reject { |e| e == "." || e == ".." }
+          skel_paths = skel_items.map { |e| File.join("/etc/skel", e) }
+
+          # Copy skeleton files into the home_dir
+          # We use preserve: true to keep original modes (e.g., 644)
+          FileUtils.cp_r(skel_paths, home_dir, preserve: true)
+        end
+      end
 
       # Create .ssh directory with proper permissions (700)
       ssh_dir = File.join(home_dir, ".ssh")
