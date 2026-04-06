@@ -430,6 +430,8 @@ class UnixGroupManager
   def self.ensure_courses_directory(user, home_dir)
     return unless user
 
+    Rails.logger.info "[UnixGroupManager] Syncing directory for #{user.email} at #{home_dir}"
+
     # 1. Consistent naming logic
     username = self.login_from_email(user.email)
     return unless username
