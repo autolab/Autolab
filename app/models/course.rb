@@ -148,9 +148,12 @@ class Course < ApplicationRecord
     group_name = UnixGroupManager.safe_group_name(name)
 
     # Ensure base dirs exist first
-    FileUtils.mkdir_p dir_path
-    FileUtils.mkdir_p Rails.root.join("assessmentConfig")
-    FileUtils.mkdir_p Rails.root.join("courseConfig")
+    [dir_path, Rails.root.join("assessmentConfig"), Rails.root.join("courseConfig")].each do |dir|
+      FileUtils.mkdir_p(dir)
+    rescue Errno::EACCES, Errno::EPERM
+      created = UnixGroupManager.mkdir_p_via_delegate(dir.to_s, mode: 0o2775)
+      raise unless created
+    end
 
     # Log current ownership after creation
     begin
