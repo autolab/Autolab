@@ -455,13 +455,13 @@ class UnixGroupManager
 
     instructor_courses.each do |course|
       target = File.join(host_courses_root, course.name)
-      link_path = File.join(user_courses_dir, course.name)
+      group_name = self.safe_group_name(course.name)
+      self.call_delegate(:fix_course_permissions, { path: target, group_name: group_name })
 
-      # Break any existing loop before creating the new link
+      link_path = File.join(user_courses_dir, course.name)
       self.call_delegate(:rm_rf, { path: link_path })
 
       if create_symlink_via_delegate(target, link_path)
-        # Use lchown (the safe version) to set link ownership to the instructor
         self.chgrp_path(link_path, username, owner: username)
       end
     end

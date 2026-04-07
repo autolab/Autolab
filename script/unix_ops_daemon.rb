@@ -315,6 +315,29 @@ module UnixOps
         rescue StandardError => e
           [false, e.message, nil]
         end
+      when "fix_course_permissions"
+        begin
+          path = payload["path"]
+          group_name = payload["group_name"]
+
+          unless path && Dir.exist?(path)
+            return [false, "directory_not_found", nil]
+          end
+
+          # 1. Recursive chown to the course group
+          # We use system() for efficiency with large directories
+          system("chown", "-R", ":#{group_name}", path)
+
+          # 2. Directories: SetGID (2), Owner/Group Full (77), Others Traverse (5) -> 2775
+          system("find", path, "-type", "d", "-exec", "chmod", "2775", "{}", "+")
+
+          # 3. Files: Owner/Group Read/Write (66), Others Read (4) -> 664
+          system("find", path, "-type", "f", "-exec", "chmod", "664", "{}", "+")
+
+          [true, "fix_course_permissions", { path: path, group: group_name }]
+        rescue StandardError => e
+          [false, e.message, nil]
+        end
       else
         [false, "unknown_action", nil]
       end
