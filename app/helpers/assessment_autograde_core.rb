@@ -193,12 +193,9 @@ module AssessmentAutogradeCore
                        "disable_network" => assessment.disable_network }
     if Rails.configuration.x.ec2_ssh.present?
       job_properties["ec2Vmms"] = true
-      if use_access_key?(@autograde_prop) && @autograde_prop.use_access_key?
+      if @autograde_prop.respond_to?(:use_access_key?) && @autograde_prop.use_access_key?
         job_properties["accessKey"] = @autograde_prop.access_key
         job_properties["accessKeyId"] = @autograde_prop.access_key_id
-      else
-        job_properties["accessKey"] = ""
-        job_properties["accessKeyId"] = ""
       end
       job_properties["instanceType"] = @autograde_prop.instance_type
     end

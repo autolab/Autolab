@@ -43,15 +43,21 @@ class AutogradersController < ApplicationController
   def update
     # Clear secrets if use_access_key is disabled
     params_to_update = autograder_params.to_h.symbolize_keys
-    use_access_key_enabled = ActiveModel::Type::Boolean.new.cast(params_to_update[:use_access_key])
-    params_to_update[:use_access_key] = use_access_key_enabled
+    if @autograder.respond_to?(:use_access_key)
+      use_access_key_enabled = ActiveModel::Type::Boolean.new.cast(params_to_update[:use_access_key])
+      params_to_update[:use_access_key] = use_access_key_enabled
 
-    if use_access_key_enabled
-      params_to_update.delete(:access_key) if params_to_update[:access_key].blank?
-      params_to_update.delete(:access_key_id) if params_to_update[:access_key_id].blank?
+      if use_access_key_enabled
+        params_to_update.delete(:access_key) if params_to_update[:access_key].blank?
+        params_to_update.delete(:access_key_id) if params_to_update[:access_key_id].blank?
+      else
+        params_to_update[:access_key] = nil
+        params_to_update[:access_key_id] = nil
+      end
     else
-      params_to_update[:access_key] = nil
-      params_to_update[:access_key_id] = nil
+      params_to_update.delete(:use_access_key)
+      params_to_update.delete(:access_key)
+      params_to_update.delete(:access_key_id)
     end
 
     if @autograder.update(params_to_update) && @assessment.update(assessment_params)
