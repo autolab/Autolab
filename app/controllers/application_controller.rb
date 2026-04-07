@@ -345,7 +345,9 @@ protected
                       (view_context.link_to "Users List", users_path)
                     else
                       # For non-admins, show the text but don't make it a link
-                      "Users List"
+                      view_context.link_to("Users List", "", class: "disabled-breadcrumb",
+                                                             style: "cursor: default;
+                                                                    color: inherit;")
                     end
   end
   ### END HELPERS
