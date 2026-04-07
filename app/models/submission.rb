@@ -302,8 +302,12 @@ class Submission < ApplicationRecord
   def path_exists_with_delegate?(path)
     return false if path.nil?
 
-    true if File.exist?(path)
-  rescue Errno::EACCES, Errno::EPERM
+    begin
+      return true if File.exist?(path)
+    rescue Errno::EACCES, Errno::EPERM
+      # Fall through to delegate-backed existence check.
+    end
+
     return false unless UnixGroupManager.delegate_enabled?
 
     entries = UnixGroupManager.list_dir_via_delegate(File.dirname(path.to_s))
