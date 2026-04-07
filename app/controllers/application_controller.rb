@@ -341,7 +341,12 @@ protected
   end
 
   def set_users_list_breadcrumb
-    @breadcrumbs << (view_context.link_to "Users List", users_path)
+    @breadcrumbs << if current_user.administrator?
+                      (view_context.link_to "Users List", users_path)
+                    else
+                      # For non-admins, show the text but don't make it a link
+                      "Users List"
+                    end
   end
   ### END HELPERS
 
