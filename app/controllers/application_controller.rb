@@ -415,6 +415,7 @@ private
       end
       format.json { head :internal_server_error }
       format.js { head :internal_server_error }
+      format.any { head :internal_server_error }
     end
   end
 end
