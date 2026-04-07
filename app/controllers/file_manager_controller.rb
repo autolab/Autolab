@@ -61,8 +61,7 @@ class FileManagerController < ApplicationController
       parent = absolute_path.parent
       raise "Unable to delete courses in the root directory." if parent == BASE_DIRECTORY
 
-      FileUtils.rm_r(absolute_path)
-      if path_exists?(absolute_path)
+      unless remove_path_with_delegate_fallback(absolute_path)
         raise SystemCallError, "Delete operation did not remove #{absolute_path}"
       end
 
@@ -133,7 +132,10 @@ class FileManagerController < ApplicationController
         FilesystemEnforcer.fix_path(absolute_path.parent.to_s)
         FilesystemEnforcer.fix_path(parent.to_s)
 
-        FileUtils.mv(absolute_path, new_path)
+        unless move_path_with_delegate_fallback(absolute_path, new_path)
+          raise SystemCallError, "Rename operation failed from #{absolute_path} to #{new_path}"
+        end
+
         FilesystemEnforcer.fix_path(new_path.to_s)
         flash[:success] = "Successfully renamed file to #{params[:new_name]}"
       end
@@ -361,6 +363,26 @@ private
   rescue Errno::EACCES, Errno::EPERM
     ok = UnixGroupManager.write_file_via_delegate(path.to_s, content)
     raise Errno::EACCES, "Permission denied writing file #{path}" unless ok
+  end
+
+  def remove_path_with_delegate_fallback(path)
+    FileUtils.rm_r(path)
+    !path_exists?(path)
+  rescue Errno::EACCES, Errno::EPERM
+    return false unless UnixGroupManager.delegate_enabled?
+
+    deleted = UnixGroupManager.delegate_action("delete_path", path: path.to_s, recursive: true)
+    deleted && !path_exists?(path)
+  end
+
+  def move_path_with_delegate_fallback(src, dest)
+    FileUtils.mv(src, dest)
+    path_exists?(dest) && !path_exists?(src)
+  rescue Errno::EACCES, Errno::EPERM
+    return false unless UnixGroupManager.delegate_enabled?
+
+    moved = UnixGroupManager.delegate_action("move_path", src: src.to_s, dest: dest.to_s)
+    moved && path_exists?(dest) && !path_exists?(src)
   end
 
   def stream_file_with_fallback(path, filename:, disposition:)
