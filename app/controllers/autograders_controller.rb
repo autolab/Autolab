@@ -16,9 +16,9 @@ class AutogradersController < ApplicationController
       a.autograde_timeout = 180
       a.autograde_image = "autograding_image"
       a.release_score = true
-      a.access_key_id = nil
-      a.access_key = nil
-      a.instance_type = "t3.micro"
+      a.access_key_id = nil if a.respond_to?(:access_key_id=)
+      a.access_key = nil if a.respond_to?(:access_key=)
+      a.instance_type = "t3.micro" if a.respond_to?(:instance_type=)
     end
     if @autograder.save
       flash[:success] = "Autograder created."
@@ -59,6 +59,8 @@ class AutogradersController < ApplicationController
       params_to_update.delete(:access_key)
       params_to_update.delete(:access_key_id)
     end
+
+    params_to_update.delete(:instance_type) unless @autograder.respond_to?(:instance_type)
 
     if @autograder.update(params_to_update) && @assessment.update(assessment_params)
       flash[:success] = "Autograder saved."

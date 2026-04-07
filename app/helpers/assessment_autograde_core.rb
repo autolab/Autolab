@@ -197,7 +197,9 @@ module AssessmentAutogradeCore
         job_properties["accessKey"] = @autograde_prop.access_key
         job_properties["accessKeyId"] = @autograde_prop.access_key_id
       end
-      job_properties["instanceType"] = @autograde_prop.instance_type
+      if @autograde_prop.respond_to?(:instance_type)
+        job_properties["instanceType"] = @autograde_prop.instance_type
+      end
     end
 
     job_properties = job_properties.to_json
