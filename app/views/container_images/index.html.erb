@@ -10,6 +10,7 @@
 
 <div class="row buttons-row">
   <%= link_to 'New Docker Image', new_course_container_image_path(@course), { class: "btn mr-8" } %>
+  <%= link_to 'Refresh All', refresh_all_status_course_container_images_path(@course), { class: "btn mr-8" } %>
 </div>
 <table class="prettyBorder">
   <colgroup>

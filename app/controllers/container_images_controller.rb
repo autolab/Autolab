@@ -6,6 +6,7 @@ class ContainerImagesController < ApplicationController
 
   action_auth_level :index, :instructor
   def index;
+    refresh_images
     @container_images = @course.container_images.all.order(created_at: :desc)
   end
 
@@ -84,10 +85,41 @@ class ContainerImagesController < ApplicationController
     redirect_to course_container_images_path(@course)
   end
 
+  def refresh_all_status;
+    redirect_to course_container_images_path(@course)
+  end
+
   private
 
   def set_container_image;
     @container_image = ContainerImage.find(params[:id])
+  end
+
+  def refresh_images;
+    begin
+      updated_images = TangoClient.all_build_status
+      @course.container_images.transaction do
+        @course.container_images.each do |image|
+          next if image.status == "ready" || image.status == "failed"
+
+          updated_image = updated_images[image.id.to_s]
+          if updated_image.nil?
+            image.update!(status: "failed")
+          else
+            updated_status = updated_image["statusId"]
+            if updated_status == 2
+              image.update!(status: updated_status, image_uri: updated_image["ecrImageUri"])
+            else
+              image.update!(status: updated_status)
+            end
+          end
+        end
+      end
+    rescue TangoClient::TangoException => e
+      flash[:error] = "Error while refreshing docker image build status: #{e.message}"
+    rescue StandardError => e
+      flash[:error] = "Unexpected error occurred: #{e.message}"
+    end
   end
 
   def container_image_params;

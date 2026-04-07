@@ -152,6 +152,15 @@ module TangoClient
     }
   end
 
+  def self.all_build_status
+    resp = handle_exceptions do
+      url = "/all_build_status/#{api_key}/"
+      ClientObj.get(url, headers: { "Content-Type" => "application/json" })
+    end
+    parsed = resp.parsed_response
+    parsed["images"]
+  end
+
   def self.api_key
     RESTFUL_KEY
   end
