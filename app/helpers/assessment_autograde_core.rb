@@ -42,6 +42,19 @@ module AssessmentAutogradeCore
 
     upload_file_list.each do |f|
       bytes = read_autograde_input_file(f["localFile"])
+
+      # Under delegated filesystem permissions (or mixed legacy/new handin paths),
+      # the direct path may be unreadable or stale even when the submission file exists.
+      # Fall back to the submission model's file accessor for the handin file.
+      if bytes.nil? && f["localFile"].to_s == submission.handin_file_path.to_s
+        handin_io = submission.handin_file
+        begin
+          bytes = handin_io.read if handin_io
+        ensure
+          handin_io.rewind if handin_io.respond_to?(:rewind)
+        end
+      end
+
       if bytes.nil?
         name_of_file = f["localFile"]
         COURSE_LOGGER.log("Error while uploading autograding files for #{submission.id}: missing file #{name_of_file}")
