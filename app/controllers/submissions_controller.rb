@@ -1011,11 +1011,11 @@ private
   def find_versions_with_file(pathname, versions, current_version)
     matchedVersions = []
     versions.each do |submission|
-      submission_path = submission.handin_file_path
+      archive_path = readable_submission_archive_path(submission)
 
       # Find corresponding header position
-      header_position = if Archive.archive? submission_path
-                          submission_files = Archive.get_files(submission_path)
+      header_position = if archive_path
+                          submission_files = Archive.get_files(archive_path)
                           matched_file = submission_files.detect { |submission_file|
                             submission_file[:pathname] == pathname
                           }
@@ -1063,12 +1063,12 @@ private
   end
 
   def get_file(submission, header_position)
-    handin_file_path = submission.handin_file_path
+    archive_path = readable_submission_archive_path(submission)
 
     if header_position == -1
       get_autograder_output(submission)
-    elsif Archive.archive?(handin_file_path)
-      file, = Archive.get_nth_file(handin_file_path, header_position.to_i)
+    elsif archive_path
+      file, = Archive.get_nth_file(archive_path, header_position.to_i)
       file
     else
       handin_file = submission.handin_file
