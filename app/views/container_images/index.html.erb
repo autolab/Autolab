@@ -81,7 +81,7 @@
                 <i class="material-icons status-icon">error</i>
                 <div class="status-desc">Failed</div>
               </div>
-            <% end %>
+          <% end %>
           </div>
         </td>
         <td class="actions-cell">
@@ -91,9 +91,9 @@
             Delete
           </div>
           <div>
-            <%= link_to "<i class='material-icons'>refresh</i>".html_safe, course_container_image_refresh_status_url(@course, image.id),
-                        { method: :get, title: "Refresh ECR image status", class: "btn small" } %>
-            Refresh Status
+            <%= link_to "<i class='material-icons'>text_snippet</i>".html_safe, course_container_image_log_path(@course, image.id),
+                        { method: :get, title: "View Build Log", class: "btn small" } %>
+            View Log
           </div>
         </td>
       </tr>

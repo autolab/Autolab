@@ -82,11 +82,15 @@ class ContainerImagesController < ApplicationController
     rescue StandardError => e
       flash[:error] = "Unexpected error occurred: #{e.message}"
     end
-    redirect_to course_container_images_path(@course)
+    redirect_to course_container_image_log_path(@course, @container_image)
   end
 
   def refresh_all_status;
     redirect_to course_container_images_path(@course)
+  end
+
+  def log;
+    @container_image = ContainerImage.find(params[:container_image_id])
   end
 
   private

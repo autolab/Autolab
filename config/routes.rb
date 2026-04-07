@@ -108,6 +108,7 @@ Rails.application.routes.draw do
 
     resources :container_images, except: [:show, :edit] do
       get "refresh_status"
+      get "log"
 
       collection do
         get "refresh_all_status"
