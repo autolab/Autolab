@@ -123,12 +123,13 @@ module TangoClient
     end
   end
 
-  def self.build_image(name, dockerfile_content, course_name)
+  def self.build_image(name, image_id, dockerfile_content, course_name)
     resp = handle_exceptions do
       url = "/build_image/#{api_key}/"
       options = {
         "course_id" => course_name,
         "image_name" => name,
+        "job_id" => image_id,
         "dockerfile_content" => dockerfile_content
       }
       ClientObj.post(url, headers: { "Content-Type" => "application/json" }, body: options.to_json)
@@ -136,7 +137,6 @@ module TangoClient
     parsed = resp.parsed_response
     {
       "status" => parsed["statusId"],
-      "build_id" => parsed["jobId"],
     }
   end
 

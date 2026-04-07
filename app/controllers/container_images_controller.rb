@@ -24,7 +24,7 @@ class ContainerImagesController < ApplicationController
 
     if @container_image.save
       begin
-        resp = TangoClient.build_image(@container_image.name, dockerfile_content, @course.name)
+        resp = TangoClient.build_image(@container_image.name, @container_image.id, dockerfile_content, @course.name)
         if @container_image.update(resp)
           flash[:success] = "Successfully started docker image build process"
           redirect_to course_container_images_path(@course), notice: "Container image was successfully created."
@@ -67,8 +67,10 @@ class ContainerImagesController < ApplicationController
       redirect_to course_container_images_path(@course), alert: "Container image not found."
     end
 
+    return if (@container_image.status == "failed ") || (@container_image.status == "ready")
+
     begin
-      resp = TangoClient.build_status(@container_image.build_id)
+      resp = TangoClient.build_status(@container_image.id)
       if @container_image.update(resp)
         flash[:success] = "Successfully started refreshed image status"
       else
