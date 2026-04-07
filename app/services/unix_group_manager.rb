@@ -395,36 +395,81 @@ class UnixGroupManager
       return data == true
     end
 
-    stdout, _stderr, status = Open3.capture3("id", "-u", username)
+    _, _stderr, status = Open3.capture3("id", "-u", username)
     status.success?
   rescue StandardError
     false
   end
 
-  def self.ensure_courses_symlink(home_dir)
-    target = "/home/autolab/autolab-docker/Autolab/courses"
-    return unless Dir.exist?(target)
+  # def self.ensure_courses_symlink(home_dir)
+  #   target = "/home/autolab/autolab-docker/Autolab/courses"
+  #   return unless Dir.exist?(target)
+  #
+  #   link_path = File.join(home_dir, "courses")
+  #   begin
+  #     if File.symlink?(link_path)
+  #       current_target = begin
+  #         File.readlink(link_path)
+  #       rescue StandardError
+  #         nil
+  #       end
+  #       return if current_target == target
+  #
+  #       File.delete(link_path)
+  #     elsif File.exist?(link_path)
+  #       # Avoid overwriting an existing directory/file
+  #       return
+  #     end
+  #
+  #     File.symlink(target, link_path)
+  #   rescue StandardError => e
+  #     Rails.logger.warn("Failed to create courses symlink at #{link_path}: #{e.message}")
+  #   end
+  # end
 
-    link_path = File.join(home_dir, "courses")
-    begin
-      if File.symlink?(link_path)
-        current_target = begin
-          File.readlink(link_path)
-        rescue StandardError
-          nil
-        end
-        return if current_target == target
+  def self.ensure_courses_directory(user, home_dir)
+    return unless user
 
-        File.delete(link_path)
-      elsif File.exist?(link_path)
-        # Avoid overwriting an existing directory/file
-        return
+    username = self.login_from_email(user.email)
+    return unless username
+
+    self.ensure_user(username, email: user.email)
+    self.ensure_group(username)
+    self.add_user_to_group(username, username)
+
+    # PATH DEFINITIONS
+    # Use the host path so links are valid via SSH on the AWS machine
+    host_courses_root = "/home/autolab/autolab-docker/Autolab/courses"
+    user_courses_dir = File.join(home_dir, "courses")
+
+    # 1. Clean up the user's courses folder entirely
+    self.call_delegate(:rm_rf, { path: user_courses_dir })
+
+    # 2. Recreate it fresh
+    self.mkdir_p_via_delegate(user_courses_dir)
+    self.chgrp_path(user_courses_dir, username, owner: username)
+    self.chmod_path(user_courses_dir, 0o755)
+
+    # 3. Create Curated Links
+    instructor_courses = user.course_user_data.where(instructor: true).map(&:course)
+
+    instructor_courses.each do |course|
+      target = File.join(host_courses_root, course.name)
+      link_path = File.join(user_courses_dir, course.name)
+
+      # Break any existing loop before creating the new link
+      self.call_delegate(:rm_rf, { path: link_path })
+
+      if create_symlink_via_delegate(target, link_path)
+        # Use lchown (the safe version) to set link ownership to the instructor
+        self.chgrp_path(link_path, username, owner: username)
       end
-
-      File.symlink(target, link_path)
-    rescue StandardError => e
-      Rails.logger.warn("Failed to create courses symlink at #{link_path}: #{e.message}")
     end
+
+    true
+  rescue StandardError => e
+    Rails.logger.error "UnixGroupManager: ensure_courses_directory failed: #{e.message}"
+    false
   end
 
   # Extract a safe Unix group name from course name
@@ -479,11 +524,11 @@ class UnixGroupManager
 
     begin
       # Check if group exists
-      stdout, stderr, status = Open3.capture3("getent", "group", group_name)
+      _, stderr, status = Open3.capture3("getent", "group", group_name)
       return true if status.success?
 
       # Create the group
-      stdout, stderr, status = Open3.capture3("groupadd", group_name)
+      _, stderr, status = Open3.capture3("groupadd", group_name)
       if status.success?
         Rails.logger.info("Created Unix group: #{group_name}")
         true
@@ -510,7 +555,7 @@ class UnixGroupManager
 
     if force
       # Force delete (use with caution)
-      stdout, stderr, status = Open3.capture3("groupdel", group_name)
+      _, stderr, status = Open3.capture3("groupdel", group_name)
       if status.success?
         Rails.logger.info("Removed Unix group: #{group_name}")
         true
@@ -523,7 +568,7 @@ class UnixGroupManager
       group_info = stdout.strip.split(":")
       members = group_info[3] # Fourth field contains member list
       if members.nil? || members.empty?
-        stdout, stderr, status = Open3.capture3("groupdel", group_name)
+        _, stderr, status = Open3.capture3("groupdel", group_name)
         if status.success?
           Rails.logger.info("Removed Unix group: #{group_name}")
           true
@@ -548,7 +593,7 @@ class UnixGroupManager
 
     begin
       # Check if user exists
-      stdout, stderr, status = Open3.capture3("id", "-u", username)
+      _, stderr, status = Open3.capture3("id", "-u", username)
       if status.success?
         # User exists, ensure home directory and .ssh directory exist
         setup_user_home(username)
@@ -571,7 +616,7 @@ class UnixGroupManager
       cmd << "-c" << email if email
       cmd << username
 
-      stdout, stderr, status = Open3.capture3(*cmd)
+      _, stderr, status = Open3.capture3(*cmd)
       if status.success?
         Rails.logger.info("Created Unix user: #{username}")
         # Set up home directory and .ssh
@@ -601,14 +646,28 @@ class UnixGroupManager
 
     begin
       # Get home directory
-      stdout, stderr, status = Open3.capture3("getent", "passwd", username)
+      stdout, _, status = Open3.capture3("getent", "passwd", username)
       return false unless status.success?
 
       home_dir = stdout.split(":")[5]
       return false if home_dir.nil? || home_dir.empty?
 
-      # Ensure home directory exists
-      FileUtils.mkdir_p(home_dir) unless Dir.exist?(home_dir)
+      # 1. Create the directory if it doesn't exist
+      unless Dir.exist?(home_dir)
+        FileUtils.mkdir_p(home_dir)
+      end
+
+      if Dir.exist?("/etc/skel") && !File.exist?(File.join(home_dir, ".bashrc"))
+        begin
+          # Grab everything (including hidden files) except . and ..
+          items = Dir.entries("/etc/skel").reject { |e| e == "." || e == ".." }
+          items.each do |item|
+            FileUtils.cp_r(File.join("/etc/skel", item), home_dir, preserve: true)
+          end
+        rescue => e
+          Rails.logger.warn("Manual skel copy failed: #{e.message}")
+        end
+      end
 
       # Create .ssh directory with proper permissions (700)
       ssh_dir = File.join(home_dir, ".ssh")
@@ -625,12 +684,21 @@ class UnixGroupManager
         FileUtils.touch(authorized_keys) unless File.exist?(authorized_keys)
         File.chmod(0o600, authorized_keys)
         File.chown(user_info.uid, user_info.gid, authorized_keys)
+
       rescue ArgumentError
-        # User doesn't exist in passwd - that's ok, skip ownership changes
         Rails.logger.warn("User #{username} not found in passwd, skipping ownership changes")
       end
+      # 1. Find the user in the database (assuming username is email/LDAP)
+      # user = User.find_by(email: username)
 
-      ensure_courses_symlink(home_dir)
+      # if user
+      #   # 2. Call the new directory-based method we discussed
+      #   ensure_courses_directory(user, home_dir)
+      # else
+      #   # If we can't find the user, we can't know which courses they lead.
+      #   # We fall back to the old method OR just skip to avoid clutter.
+      #   Rails.logger.warn("User #{username} not found in DB; skipping course links.")
+      # end
 
       true
     rescue StandardError => e
@@ -648,13 +716,13 @@ class UnixGroupManager
     end
 
     # Check if user is already in group
-    stdout, stderr, status = Open3.capture3("id", "-nG", username)
+    stdout, _, status = Open3.capture3("id", "-nG", username)
     if status.success? && stdout.split.include?(group_name)
       return true # Already a member
     end
 
     # Add user to group
-    stdout, stderr, status = Open3.capture3("usermod", "-a", "-G", group_name, username)
+    _, stderr, status = Open3.capture3("usermod", "-a", "-G", group_name, username)
     if status.success?
       Rails.logger.info("Added #{username} to group #{group_name}")
       true
@@ -673,7 +741,7 @@ class UnixGroupManager
     end
 
     # Remove user from group using gpasswd
-    stdout, stderr, status = Open3.capture3("gpasswd", "-d", username, group_name)
+    _, stderr, status = Open3.capture3("gpasswd", "-d", username, group_name)
     if status.success?
       Rails.logger.info("Removed #{username} from group #{group_name}")
       true
@@ -729,8 +797,21 @@ class UnixGroupManager
     return false if username.nil? || username.empty? || public_key.nil? || public_key.empty?
 
     if delegate_enabled?
-      return delegate_action("provision_ssh_key", username:, public_key:,
-                                                  email:)
+      # 1. First, tell the delegate to handle the SSH key and user account
+      success = delegate_action("provision_ssh_key", username:, public_key:,
+                                                     email:)
+
+      # 2. TRIGGER: If successful, sync the curated courses directory
+      if success
+        # We need the User object to know which courses they lead
+        user = User.find_by(email: email || username)
+        if user
+          # home_dir is typically /home/username
+          ensure_courses_directory(user, "/home/#{username}")
+        end
+      end
+
+      return success
     end
 
     # In development or when system commands aren't available, just log and succeed
@@ -744,7 +825,7 @@ class UnixGroupManager
     setup_user_home(username)
 
     # Get home directory
-    stdout, stderr, status = Open3.capture3("getent", "passwd", username)
+    stdout, _, status = Open3.capture3("getent", "passwd", username)
     return false unless status.success?
 
     home_dir = stdout.split(":")[5]
@@ -780,12 +861,20 @@ class UnixGroupManager
   # Remove SSH key from authorized_keys by fingerprint
   def self.deprovision_ssh_key(username, fingerprint)
     return false if username.nil? || username.empty? || fingerprint.nil? || fingerprint.empty?
+
     if delegate_enabled?
-      return delegate_action("deprovision_ssh_key", username:, fingerprint:)
+      success = delegate_action("deprovision_ssh_key", username:, fingerprint:)
+
+      if success
+        user = User.find_by(email: username) || User.find_by(email: "#{username}@andrew.cmu.edu") # Flexible lookup
+        ensure_courses_directory(user, "/home/#{username}") if user
+      end
+
+      return success
     end
 
     # Get home directory
-    stdout, stderr, status = Open3.capture3("getent", "passwd", username)
+    stdout, _, status = Open3.capture3("getent", "passwd", username)
     return false unless status.success?
 
     home_dir = stdout.split(":")[5]
@@ -834,8 +923,15 @@ class UnixGroupManager
     return false if username.nil? || username.empty?
 
     if delegate_enabled?
-      return delegate_action("provision_ssh_keys", username:, public_keys:,
-                                                   email:)
+      success = delegate_action("provision_ssh_keys", username:, public_keys:,
+                                                      email:)
+
+      if success
+        user = User.find_by(email: email || username)
+        ensure_courses_directory(user, "/home/#{username}") if user
+      end
+
+      return success
     end
 
     # Ensure user exists and home is set up
@@ -843,7 +939,7 @@ class UnixGroupManager
     setup_user_home(username)
 
     # Get home directory
-    stdout, stderr, status = Open3.capture3("getent", "passwd", username)
+    stdout, _, status = Open3.capture3("getent", "passwd", username)
     return false unless status.success?
 
     home_dir = stdout.split(":")[5]
@@ -873,18 +969,18 @@ class UnixGroupManager
   def self.delete_user(username, remove_home: true)
     return false if username.nil? || username.empty?
     if delegate_enabled?
-      return delegate_action("delete_user", username:, remove_home:)
+      return delegate_action("delete_user", username: username, remove_home: remove_home)
     end
 
     # Check if user exists
-    stdout, stderr, status = Open3.capture3("id", "-u", username)
+    _, _, status = Open3.capture3("id", "-u", username)
     return true unless status.success? # Already doesn't exist
 
     cmd = ["userdel"]
     cmd << "-r" if remove_home # Remove home directory and mail spool
     cmd << username
 
-    stdout, stderr, status = Open3.capture3(*cmd)
+    _, stderr, status = Open3.capture3(*cmd)
     if status.success?
       Rails.logger.info("Deleted Unix user: #{username}")
       true

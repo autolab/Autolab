@@ -149,7 +149,7 @@ module UnixOps
           end
           # If owner was nil or empty string, owner_uid remains nil, which keeps current owner
           
-          File.chown(owner_uid, group_info.gid, path)
+          File.lchown(owner_uid, group_info.gid, path)
           owner_desc = owner_uid ? (owner.to_s.match?(/^\d+$/) ? "uid:#{owner_uid}" : owner) : "unchanged"
           [true, "chgrp", { path: path, group_name: group_name, gid: group_info.gid, owner: owner_desc }]
         rescue ArgumentError
@@ -210,6 +210,42 @@ module UnixOps
               FileUtils.mkdir_p(path)
             end
             [true, "mkdir_p", { path: path, mode: mode }]
+          end
+        rescue StandardError => e
+          [false, e.message, nil]
+        end
+      when "rm_rf"
+        begin
+          path = payload["path"]
+          if path.nil? || path.empty?
+            [false, "invalid_path", nil]
+          else
+            require "fileutils"
+            # Safety check: Prevent accidental root/system nuking
+            if path == "/" || path == "/home" || path == "/etc"
+              [false, "protected_path", nil]
+            else
+              FileUtils.rm_rf(path)
+              [true, "rm_rf", { path: path }]
+            end
+          end
+        rescue StandardError => e
+          [false, e.message, nil]
+        end
+      when "create_symlink"
+        begin
+          target = payload["target"]
+          link_path = payload["link_path"]
+          if target.nil? || target.empty? || link_path.nil? || link_path.empty?
+            [false, "invalid_symlink_payload", nil]
+          else
+            # Use rm_rf here so it can clear out old directories
+            # that might be blocking the symlink creation
+            require "fileutils"
+            FileUtils.rm_rf(link_path)
+
+            File.symlink(target, link_path)
+            [true, "create_symlink", { target: target, link_path: link_path }]
           end
         rescue StandardError => e
           [false, e.message, nil]
