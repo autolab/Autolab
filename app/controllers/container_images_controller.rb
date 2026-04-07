@@ -61,7 +61,25 @@ class ContainerImagesController < ApplicationController
 
   action_auth_level :refresh_status, :instructor
   def refresh_status;
+    @container_image = ContainerImage.find(params[:container_image_id])
 
+    if @container_image.nil?
+      redirect_to course_container_images_path(@course), alert: "Container image not found."
+    end
+
+    begin
+      resp = TangoClient.build_status(@container_image.build_id)
+      if @container_image.update(resp)
+        flash[:success] = "Successfully started refreshed image status"
+      else
+        flash[:error] = "Successfully refreshed docker status, failed to write to DB"
+      end
+    rescue TangoClient::TangoException => e
+      flash[:error] = "Error while refreshing docker image build status: #{e.message}"
+    rescue StandardError => e
+      flash[:error] = "Unexpected error occurred: #{e.message}"
+    end
+    redirect_to course_container_images_path(@course)
   end
 
   private

@@ -21,7 +21,7 @@
   <thead>
   <tr>
     <th>Name</th>
-    <th>ECR Image URI</th>
+    <th>ECR Image Tag</th>
     <th class="center-column">Status</th>
     <th>Actions</th>
   </tr>
@@ -43,33 +43,40 @@
           <% if image.image_uri.nil? %>
             Image not ready
           <% else %>
-            <%= image.image_uri %>
+            <span class="tooltip">
+              <span class="tooltip-text">
+                <%= image.image_uri.split(":").last %>
+              </span>
+              <span class="tooltip-hover">
+                <%= image.image_uri %>
+              </span>
+            </span>
           <% end %>
         </td>
         <td class="status-cell">
           <div class="center-column">
             <% if image.status == "draft" %>
-              <div class="status-chip status-chip--closed">
+              <div class="status-chip status-chip--draft">
                 <i class="material-icons status-icon">edit</i>
                 <div class="status-desc">Draft</div>
               </div>
             <% elsif image.status == "building" %>
-              <div class="status-chip status-chip--closed">
+              <div class="status-chip status-chip--building">
                 <i class="material-icons status-icon">construction</i>
                 <div class="status-desc">Building</div>
               </div>
             <% elsif image.status == "ready" %>
-              <div class="status-chip status-chip--closed">
+              <div class="status-chip status-chip--ready">
                 <i class="material-icons status-icon">done_all</i>
                 <div class="status-desc">Ready</div>
               </div>
             <% elsif image.status == "disabled" %>
-              <div class="status-chip status-chip--closed">
+              <div class="status-chip status-chip--disabled">
                 <i class="material-icons status-icon">block</i>
                 <div class="status-desc">Disabled</div>
               </div>
             <% else %>
-              <div class="status-chip status-chip--closed">
+              <div class="status-chip status-chip--error">
                 <i class="material-icons status-icon">error</i>
                 <div class="status-desc">Failed</div>
               </div>

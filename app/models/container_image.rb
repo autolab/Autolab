@@ -4,7 +4,7 @@ class ContainerImage < ApplicationRecord
   belongs_to :course, optional: true
 
   enum status: {
-    failed: -1,
+    failed: 255,
     draft: 0,
     building: 1,
     ready: 2,
