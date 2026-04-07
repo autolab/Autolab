@@ -451,7 +451,11 @@ class UnixGroupManager
     self.chmod_path(user_courses_dir, 0o755)
 
     # 3. Create Curated Links
-    instructor_courses = user.course_user_data.where(instructor: true).map(&:course)
+    instructor_courses = if user.administrator?
+                           Course.all
+                         else
+                           user.course_user_data.where(instructor: true).map(&:course)
+                         end
 
     instructor_courses.each do |course|
       target = File.join(host_courses_root, course.name)
