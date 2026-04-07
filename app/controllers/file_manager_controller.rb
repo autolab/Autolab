@@ -33,15 +33,17 @@ class FileManagerController < ApplicationController
       render 'file_manager/index'
     elsif file_path?(absolute_path) && check_instructor(absolute_path)
       if file_size_bytes(absolute_path).to_i > 1_000_000 || params[:download]
-        send_file absolute_path.to_s
+        stream_file_with_fallback(absolute_path,
+                                  filename: File.basename(absolute_path),
+                                  disposition: 'attachment')
       elsif !is_binary_file?(absolute_path)
         @path = path
         @file = read_binary_file(absolute_path)&.force_encoding("UTF-8")
         render :file, formats: :html
       else
-        send_file(absolute_path.to_s,
-                  filename: File.basename(absolute_path),
-                  disposition: 'attachment')
+        stream_file_with_fallback(absolute_path,
+                                  filename: File.basename(absolute_path),
+                                  disposition: 'attachment')
       end
     else
       flash[:error] = "You are not authorized to view this path"
@@ -59,14 +61,45 @@ class FileManagerController < ApplicationController
       parent = absolute_path.parent
       raise "Unable to delete courses in the root directory." if parent == BASE_DIRECTORY
 
-      FileUtils.rm_rf(absolute_path)
+      FileUtils.rm_r(absolute_path)
+      if path_exists?(absolute_path)
+        raise SystemCallError, "Delete operation did not remove #{absolute_path}"
+      end
+
+      respond_to do |format|
+        format.html do
+          flash[:success] = "Deleted successfully."
+          redirect_to(file_manager_index_path(path: parent.relative_path_from(BASE_DIRECTORY).to_s))
+        end
+        format.json { render json: { success: true }, status: :ok }
+        format.js { head :ok }
+      end
     else
       flash[:error] = "You are not authorized to delete this"
-      redirect_to root_path
+      respond_to do |format|
+        format.html { redirect_to root_path }
+        format.json { render json: { success: false, error: flash[:error] }, status: :forbidden }
+        format.js { head :forbidden }
+      end
     end
   rescue Errno::EACCES, Errno::EPERM
     flash[:error] = "Unable to delete this path due to filesystem permissions."
-    redirect_to root_path
+    respond_to do |format|
+      format.html { redirect_to root_path }
+      format.json {
+        render json: { success: false, error: flash[:error] }, status: :unprocessable_entity
+      }
+      format.js { head :unprocessable_entity }
+    end
+  rescue StandardError => e
+    flash[:error] = "Unable to delete this path. (#{e.message})"
+    respond_to do |format|
+      format.html { redirect_to root_path }
+      format.json {
+        render json: { success: false, error: flash[:error] }, status: :unprocessable_entity
+      }
+      format.js { head :unprocessable_entity }
+    end
   end
 
   def rename
@@ -90,9 +123,16 @@ class FileManagerController < ApplicationController
         new_path = safe_expand_path("#{dir_name}/#{params[:new_name]}")
         parent = new_path.dirname
 
-        raise ArgumentError, "A file with that name already exists" if File.exist?(new_path)
+        raise ArgumentError, "A file with that name already exists" if path_exists?(new_path)
 
         create_directory_path(parent)
+
+        # Under the delegated permission model, source/parent paths can be unreadable/unwritable
+        # to the webapp process. Best-effort permission repair before moving.
+        FilesystemEnforcer.fix_path(absolute_path.to_s)
+        FilesystemEnforcer.fix_path(absolute_path.parent.to_s)
+        FilesystemEnforcer.fix_path(parent.to_s)
+
         FileUtils.mv(absolute_path, new_path)
         FilesystemEnforcer.fix_path(new_path.to_s)
         flash[:success] = "Successfully renamed file to #{params[:new_name]}"
@@ -103,6 +143,10 @@ class FileManagerController < ApplicationController
     end
   rescue ArgumentError => e
     flash[:error] = e.message
+  rescue Errno::EACCES, Errno::EPERM
+    flash[:error] = "Unable to rename this path due to filesystem permissions."
+  rescue SystemCallError => e
+    flash[:error] = "Unable to rename this path. (#{e.message})"
   end
 
   def download_tar
@@ -132,9 +176,9 @@ class FileManagerController < ApplicationController
                   type: "application/x-tar",
                   disposition: "attachment"
       else
-        send_file(absolute_path,
-                  filename: File.basename(absolute_path),
-                  disposition: 'attachment')
+        stream_file_with_fallback(absolute_path,
+                                  filename: File.basename(absolute_path),
+                                  disposition: 'attachment')
       end
     else
       flash[:error] = "You are not authorized to download attachments at this path"
@@ -317,6 +361,17 @@ private
   rescue Errno::EACCES, Errno::EPERM
     ok = UnixGroupManager.write_file_via_delegate(path.to_s, content)
     raise Errno::EACCES, "Permission denied writing file #{path}" unless ok
+  end
+
+  def stream_file_with_fallback(path, filename:, disposition:)
+    send_file(path.to_s, filename:, disposition:)
+  rescue ActionController::MissingFile, Errno::EACCES, Errno::EPERM
+    content = read_binary_file(path)
+    raise ActionController::MissingFile, "Cannot read file #{path}" if content.nil?
+
+    send_data(content,
+              filename:,
+              disposition:)
   end
 
   def is_instructor_of_any_course
