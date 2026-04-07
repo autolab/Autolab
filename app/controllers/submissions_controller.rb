@@ -633,12 +633,23 @@ class SubmissionsController < ApplicationController
       end
 
       handin_file = @submission.handin_file
-      unless handin_file
-        flash[:error] = "Could not find submission file."
-        redirect_to course_assessment_path(@course, @assessment) and return false
+      if handin_file
+        file = handin_file.read
+      else
+        file = begin
+          if File.exist?(@filename) && File.readable?(@filename)
+            File.binread(@filename)
+          end
+        rescue Errno::EACCES, Errno::EPERM
+          nil
+        end
+
+        unless file
+          flash[:error] = "Could not find submission file."
+          redirect_to course_assessment_path(@course, @assessment) and return false
+        end
       end
 
-      file = handin_file.read
       @displayFilename = @submission.filename
     end
 
