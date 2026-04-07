@@ -754,7 +754,7 @@ private
     return true if File.directory? dir
 
     begin
-      Dir.mkdir dir
+      FileUtils.mkdir_p(dir)
     rescue Errno::EACCES, Errno::EPERM => e
       unless UnixGroupManager.delegate_enabled?
         errors.add :handin_directory, "(#{dir}) could not be created, please do so manually. (#{e})"
