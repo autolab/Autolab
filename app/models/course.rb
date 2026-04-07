@@ -178,10 +178,22 @@ class Course < ApplicationRecord
     # Create initial files BEFORE setting strict ownership/permissions
     # This allows the Rails process to create files, then we fix ownership afterwards
     autolab_log_path = File.join(dir_path, "autolab.log")
-    FileUtils.touch autolab_log_path
+    begin
+      FileUtils.touch(autolab_log_path)
+    rescue Errno::EACCES, Errno::EPERM
+      created = UnixGroupManager.write_file_via_delegate(autolab_log_path, "", mode: 0o660)
+      raise unless created
+    end
+
     course_rb_path = File.join(dir_path, "course.rb")
     default_course_rb = Rails.root.join("lib", "__defaultCourse.rb") # rubocop:disable Rails/FilePath
-    FileUtils.cp default_course_rb, course_rb_path
+    begin
+      FileUtils.cp(default_course_rb, course_rb_path)
+    rescue Errno::EACCES, Errno::EPERM
+      default_content = File.binread(default_course_rb)
+      created = UnixGroupManager.write_file_via_delegate(course_rb_path, default_content, mode: 0o660)
+      raise unless created
+    end
 
     # Log file creation
     Rails.logger.info("Course files created: autolab.log=#{autolab_log_path}, course.rb=#{course_rb_path}")
