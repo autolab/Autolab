@@ -198,7 +198,7 @@ class Submission < ApplicationRecord
     return nil unless filename
 
     old_handin_file_path = File.join(assessment.handin_directory_path, filename)
-    unless File.exist?(old_handin_file_path)
+    unless path_exists_with_delegate?(old_handin_file_path)
       return new_handin_file_path
     end
 
@@ -228,7 +228,7 @@ class Submission < ApplicationRecord
                                                course_user_datum.email, "annotated_#{filename}")
     old_handin_annotated_file_path = File.join(assessment.handin_directory_path,
                                                "annotated_#{filename}")
-    unless File.exist?(old_handin_annotated_file_path)
+    unless path_exists_with_delegate?(old_handin_annotated_file_path)
       return new_handin_annotated_file_path
     end
 
@@ -251,7 +251,7 @@ class Submission < ApplicationRecord
   def autograde_feedback_path
     old_autograde_feedback_path = File.join(assessment.handin_directory_path,
                                             old_autograde_feedback_filename)
-    unless File.exist?(old_autograde_feedback_path)
+    unless path_exists_with_delegate?(old_autograde_feedback_path)
       return new_autograde_feedback_path
     end
 
@@ -267,18 +267,11 @@ class Submission < ApplicationRecord
     path = autograde_feedback_path
     return nil unless path
 
-    if !File.exist?(path) || !File.readable?(path)
-      nil
-    else
-      File.open path, "r"
+    begin
+      return File.open(path, "r") if File.exist?(path) && File.readable?(path)
+    rescue Errno::EACCES, Errno::EPERM
+      # Fall through to delegate-backed read.
     end
-  end
-
-  def handin_file
-    path = handin_file_path
-    return nil unless path
-
-    return File.open(path, "r") if File.exist?(path) && File.readable?(path)
 
     return nil unless UnixGroupManager.delegate_enabled?
 
@@ -286,6 +279,35 @@ class Submission < ApplicationRecord
     return nil if delegate_content.nil?
 
     StringIO.new(delegate_content)
+  end
+
+  def handin_file
+    path = handin_file_path
+    return nil unless path
+
+    begin
+      return File.open(path, "r") if File.exist?(path) && File.readable?(path)
+    rescue Errno::EACCES, Errno::EPERM
+      # Fall through to delegate-backed read.
+    end
+
+    return nil unless UnixGroupManager.delegate_enabled?
+
+    delegate_content = UnixGroupManager.read_file_via_delegate(path.to_s)
+    return nil if delegate_content.nil?
+
+    StringIO.new(delegate_content)
+  end
+
+  def path_exists_with_delegate?(path)
+    return false if path.nil?
+
+    true if File.exist?(path)
+  rescue Errno::EACCES, Errno::EPERM
+    return false unless UnixGroupManager.delegate_enabled?
+
+    entries = UnixGroupManager.list_dir_via_delegate(File.dirname(path.to_s))
+    entries&.include?(File.basename(path.to_s)) || false
   end
 
   def global_annotations

@@ -191,7 +191,8 @@ class Course < ApplicationRecord
       FileUtils.cp(default_course_rb, course_rb_path)
     rescue Errno::EACCES, Errno::EPERM
       default_content = File.binread(default_course_rb)
-      created = UnixGroupManager.write_file_via_delegate(course_rb_path, default_content, mode: 0o660)
+      created = UnixGroupManager.write_file_via_delegate(course_rb_path, default_content,
+                                                         mode: 0o660)
       raise unless created
     end
 
