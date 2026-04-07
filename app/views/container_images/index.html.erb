@@ -92,7 +92,7 @@
           </div>
           <div>
             <%= link_to "<i class='material-icons'>refresh</i>".html_safe, course_container_image_refresh_status_url(@course, image.id),
-                        { method: :post, title: "Refresh ECR image status", class: "btn small" } %>
+                        { method: :get, title: "Refresh ECR image status", class: "btn small" } %>
             Refresh Status
           </div>
         </td>

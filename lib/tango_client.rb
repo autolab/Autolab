@@ -149,6 +149,7 @@ module TangoClient
     {
       "status" => parsed["statusId"],
       "image_uri" => parsed["ecrImageUri"],
+      "logs" => parsed["logs"].join,
     }
   end
 

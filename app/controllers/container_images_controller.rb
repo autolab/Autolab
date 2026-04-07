@@ -68,14 +68,14 @@ class ContainerImagesController < ApplicationController
       redirect_to course_container_images_path(@course), alert: "Container image not found."
     end
 
-    return if (@container_image.status == "failed ") || (@container_image.status == "ready")
+    return if (@container_image.status == "failed") || (@container_image.status == "ready")
 
     begin
       resp = TangoClient.build_status(@container_image.id)
-      if @container_image.update(resp)
-        flash[:success] = "Successfully started refreshed image status"
-      else
-        flash[:error] = "Successfully refreshed docker status, failed to write to DB"
+      updated_status = resp["status"]
+      @container_image.update!(status: updated_status, build_logs: @container_image.build_logs.to_s + resp["logs"])
+      if updated_status == 2
+        @container_image.update!(image_uri: resp["image_uri"])
       end
     rescue TangoClient::TangoException => e
       flash[:error] = "Error while refreshing docker image build status: #{e.message}"
@@ -107,10 +107,9 @@ class ContainerImagesController < ApplicationController
             image.update!(status: "failed")
           else
             updated_status = updated_image["statusId"]
+            image.update!(status: updated_status, build_logs: image.build_logs.to_s + updated_image["logs"].join)
             if updated_status == 2
-              image.update!(status: updated_status, image_uri: updated_image["ecrImageUri"])
-            else
-              image.update!(status: updated_status)
+              image.update!(image_uri: updated_image["ecrImageUri"])
             end
           end
         end
