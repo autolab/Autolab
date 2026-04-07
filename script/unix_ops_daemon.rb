@@ -232,6 +232,46 @@ module UnixOps
         rescue StandardError => e
           [false, e.message, nil]
         end
+      when "delete_path"
+        begin
+          path = payload["path"]
+          recursive = payload.fetch("recursive", true)
+          if path.nil? || path.empty?
+            [false, "invalid_path", nil]
+          else
+            # Safety check: Prevent accidental root/system nuking
+            if path == "/" || path == "/home" || path == "/etc"
+              [false, "protected_path", nil]
+            else
+              require "fileutils"
+              if recursive
+                FileUtils.rm_rf(path)
+              elsif File.directory?(path)
+                Dir.rmdir(path)
+              else
+                File.delete(path)
+              end
+              [true, "delete_path", { path: path, recursive: recursive }]
+            end
+          end
+        rescue StandardError => e
+          [false, e.message, nil]
+        end
+      when "move_path"
+        begin
+          src = payload["src"]
+          dest = payload["dest"]
+          if src.nil? || src.empty? || dest.nil? || dest.empty?
+            [false, "invalid_move_payload", nil]
+          else
+            require "fileutils"
+            FileUtils.mkdir_p(File.dirname(dest))
+            FileUtils.mv(src, dest)
+            [true, "move_path", { src: src, dest: dest }]
+          end
+        rescue StandardError => e
+          [false, e.message, nil]
+        end
       when "create_symlink"
         begin
           target = payload["target"]
@@ -265,20 +305,6 @@ module UnixOps
             File.binwrite(path, content)
             File.chmod(mode.to_i, path) if mode
             [true, "write_file", { path: path, size: content.bytesize, mode: mode }]
-          end
-        rescue StandardError => e
-          [false, e.message, nil]
-        end
-      when "create_symlink"
-        begin
-          target = payload["target"]
-          link_path = payload["link_path"]
-          if target.nil? || target.empty? || link_path.nil? || link_path.empty?
-            [false, "invalid_symlink_payload", nil]
-          else
-            File.delete(link_path) if File.exist?(link_path) || File.symlink?(link_path)
-            File.symlink(target, link_path)
-            [true, "create_symlink", { target: target, link_path: link_path }]
           end
         rescue StandardError => e
           [false, e.message, nil]
