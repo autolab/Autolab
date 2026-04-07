@@ -945,7 +945,14 @@ private
                                               @submission.course_user_datum.user.email)
     end
 
-    file_available = File.exist?(@filename) || (!Archive.archive?(@filename) && !@submission.handin_file.nil?)
+    handin_file = @submission.handin_file
+    file_available = begin
+      File.exist?(@filename)
+    rescue Errno::EACCES, Errno::EPERM
+      false
+    end
+    file_available ||= !handin_file.nil?
+
     unless file_available
       flash[:error] = "Could not find submission file."
       redirect_to course_assessment_path(@course, @assessment) and return false
