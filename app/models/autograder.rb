@@ -15,7 +15,7 @@ class Autograder < ApplicationRecord
   validates :autograde_timeout,
             numericality: { greater_than_or_equal_to: 10, less_than_or_equal_to: 900 }
   validates :autograde_image, :autograde_timeout, presence: true
-  validates :autograde_image, length: { maximum: 64 }
+  validates :autograde_image, length: { maximum: 512 }
 
   with_options if: :use_access_key do
     validates :access_key_id, presence: true, format: {

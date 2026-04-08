@@ -1520,6 +1520,11 @@ table.sub td, th {
   padding: 0;
   cursor: pointer;
 }
+.select-field-label {
+  color: #444444;
+  font-size: 14px;
+  font-weight: 600;
+}
 .refresh-feedback:hover {
   cursor: pointer;
 }
