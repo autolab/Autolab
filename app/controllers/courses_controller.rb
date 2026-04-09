@@ -249,6 +249,17 @@ class CoursesController < ApplicationController
       render(action: "new") && return
     end
 
+    begin
+      tarFile.rewind
+      tar_extract = Gem::Package::TarReader.new(tarFile)
+      save_users_from_tar(tar_extract, course_root_dir)
+      tar_extract.close
+    rescue StandardError => e
+      @newCourse.destroy
+      flash[:error] = "Error while importing users from tarball -- #{e.message}."
+      render(action: "new") && return
+    end
+
     instructor = User.where(email: params[:instructor_email]).first
 
     # create a new user as instructor if they didn't exist
@@ -1347,6 +1358,64 @@ private
     end
 
     params[:cleanup_on_failure] = true
+  end
+
+  def save_users_from_tar(tar_extract, root_dir)
+    imported_users_by_id = {}
+    imported_users = load_yaml_records_from_tar(tar_extract, root_dir, "users")
+
+    imported_users.each do |user_attrs|
+      email = user_attrs["email"]&.strip
+      raise StandardError, "User #{email} has no email" if email.blank?
+
+      raise StandardError, "User #{email} does not have an id" unless user_attrs.key?("id")
+
+      user = User.find_by(email:)
+      if user.nil?
+        user = User.roster_create(email,
+                                  user_attrs["first_name"].to_s,
+                                  user_attrs["last_name"].to_s,
+                                  user_attrs["school"].to_s,
+                                  user_attrs["major"].to_s,
+                                  user_attrs["year"].to_s)
+      end
+      # We could update the user's attributes here, but I believe it makes more sense
+      # to leave the user as is if they're alread in the database with the same email
+      # user.first_name = user_attrs["first_name"] if user_attrs.key?("first_name")
+      # user.last_name = user_attrs["last_name"] if user_attrs.key?("last_name")
+      # user.school = user_attrs["school"] if user_attrs.key?("school")
+      # user.major = user_attrs["major"] if user_attrs.key?("major")
+      # user.year = user_attrs["year"] if user_attrs.key?("year")
+
+      user.save!
+
+      imported_users_by_id[user_attrs["id"]] = user
+    end
+  end
+
+  def load_yaml_records_from_tar(tar_extract, root_dir, sub_root_dir)
+    tar_extract.rewind
+    records = []
+    src_directory = File.join(root_dir, sub_root_dir)
+
+    tar_extract.each do |entry|
+      next unless entry.file? && File.dirname(entry.full_name).start_with?(src_directory)
+      next unless entry.full_name.end_with?(".yml") # Only process YAML files
+
+      begin
+        yaml_data = YAML.safe_load(entry.read,
+                                   permitted_classes: [Date, Time,
+                                                       ActiveSupport::TimeWithZone,
+                                                       ActiveSupport::TimeZone],
+                                   aliases: true)
+        records << yaml_data if yaml_data.is_a?(Hash)
+      rescue Psych::BadAlias, Psych::SyntaxError, Psych::DisallowedClass => e
+        # Skip files that aren't valid YAML
+        next
+      end
+    end
+
+    records
   end
 
   # same as assessment import check, ensures the tar has a single root directory

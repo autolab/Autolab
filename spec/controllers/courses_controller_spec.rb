@@ -363,6 +363,95 @@ RSpec.describe CoursesController, type: :controller do
         expect(flash[:error]).to be_present
         expect(flash[:error]).to match(/there is only one root directory in the tarball/m)
       end
+
+      it "imports users and enrollments from tar YAML directories" do
+        imported_course = FactoryBot.create(:course, name: "import-users-course-#{SecureRandom.hex(4)}")
+        controller.instance_variable_set(:@newCourse, imported_course)
+
+        tar_file = Tempfile.new(["import-users", ".tar"])
+        begin
+          Gem::Package::TarWriter.new(tar_file) do |tar|
+            tar.mkdir("course", 0o755)
+            tar.mkdir("course/users", 0o755)
+            tar.mkdir("course/course_user_data", 0o755)
+
+            user_1 = {
+              "id" => 101,
+              "email" => "import_user1@example.org",
+              "first_name" => "Import",
+              "last_name" => "Instructor",
+              "administrator" => false,
+              "school" => "SCS",
+              "major" => "CS",
+              "year" => "4"
+            }
+            user_2 = {
+              "id" => 102,
+              "email" => "import_user2@example.org",
+              "first_name" => "Import",
+              "last_name" => "Student",
+              "administrator" => false,
+              "school" => "SCS",
+              "major" => "CS",
+              "year" => "3"
+            }
+
+            cud_1 = {
+              "user_id" => 101,
+              "instructor" => true,
+              "course_assistant" => false,
+              "dropped" => false,
+              "lecture" => "A",
+              "section" => "1",
+              "grade_policy" => "",
+              "course_number" => ""
+            }
+            cud_2 = {
+              "user_id" => 102,
+              "instructor" => false,
+              "course_assistant" => false,
+              "dropped" => false,
+              "lecture" => "A",
+              "section" => "1",
+              "grade_policy" => "",
+              "course_number" => ""
+            }
+
+            [
+              ["course/users/user_101.yml", user_1],
+              ["course/users/user_102.yml", user_2],
+              ["course/course_user_data/cud_101.yml", cud_1],
+              ["course/course_user_data/cud_102.yml", cud_2]
+            ].each do |path, hash|
+              yaml = YAML.dump(hash)
+              tar.add_file_simple(path, 0o644, yaml.bytesize) do |io|
+                io.write(yaml)
+              end
+            end
+          end
+          tar_file.rewind
+
+          tar_extract = Gem::Package::TarReader.new(File.open(tar_file.path, "rb"))
+          controller.send(:save_users_from_tar, tar_extract, "course")
+          tar_extract.close
+
+          imported_course.reload
+          instructor_cud = imported_course.course_user_data.joins(:user)
+                                        .find_by(users: { email: "import_user1@example.org" })
+          student_cud = imported_course.course_user_data.joins(:user)
+                                     .find_by(users: { email: "import_user2@example.org" })
+
+          expect(instructor_cud).to be_present
+          expect(instructor_cud.instructor).to eq(true)
+          expect(student_cud).to be_present
+          expect(student_cud.instructor).to eq(false)
+        ensure
+          tar_file.close
+          tar_file.unlink
+          delete_course_files(imported_course)
+          imported_course.destroy
+        end
+      end
     end
   end
 
