@@ -252,7 +252,7 @@ class CoursesController < ApplicationController
     begin
       tarFile.rewind
       tar_extract = Gem::Package::TarReader.new(tarFile)
-      save_users_from_tar(tar_extract, course_root_dir)
+      _imported_users_by_id, new_users = save_users_from_tar(tar_extract, course_root_dir)
       tar_extract.close
     rescue StandardError => e
       @newCourse.destroy
@@ -270,6 +270,8 @@ class CoursesController < ApplicationController
       rescue StandardError => e
         # roll back course creation
         @newCourse.destroy
+        new_users.each(&:destroy)
+
         flash[:error] = "Can't create instructor for the course: #{e}"
         render(action: "new") && return
       end
@@ -282,6 +284,7 @@ class CoursesController < ApplicationController
     unless new_cud.save
       # roll back course creation
       @newCourse.destroy
+      new_users.each(&:destroy)
       flash[:error] = "Can't create instructor for the course."
       render(action: "new") && return
     end
@@ -292,6 +295,7 @@ class CoursesController < ApplicationController
       # roll back course creation and instruction creation
       new_cud.destroy
       @newCourse.destroy
+      new_users.each(&:destroy)
       flash[:error] = "Can't load course config for #{@newCourse.name}."
       render(action: "new") && return
     else
@@ -1362,13 +1366,20 @@ private
 
   def save_users_from_tar(tar_extract, root_dir)
     imported_users_by_id = {}
+    new_users = []
     imported_users = load_yaml_records_from_tar(tar_extract, root_dir, "users")
 
     imported_users.each do |user_attrs|
       email = user_attrs["email"]&.strip
-      raise StandardError, "User #{email} has no email" if email.blank?
+      if email.blank?
+        new_users.each(&:destroy)
+        raise StandardError, "User #{email} has no email"
+      end
 
-      raise StandardError, "User #{email} does not have an id" unless user_attrs.key?("id")
+      unless user_attrs.key?("id")
+        new_users.each(&:destroy)
+        raise StandardError, "User #{email} does not have an id"
+      end
 
       user = User.find_by(email:)
       if user.nil?
@@ -1378,6 +1389,7 @@ private
                                   user_attrs["school"].to_s,
                                   user_attrs["major"].to_s,
                                   user_attrs["year"].to_s)
+        new_users << user
       end
       # We could update the user's attributes here, but I believe it makes more sense
       # to leave the user as is if they're alread in the database with the same email
@@ -1391,6 +1403,7 @@ private
 
       imported_users_by_id[user_attrs["id"]] = user
     end
+    [imported_users_by_id, new_users]
   end
 
   def load_yaml_records_from_tar(tar_extract, root_dir, sub_root_dir)
