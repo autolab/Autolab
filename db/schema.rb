@@ -258,6 +258,7 @@ ActiveRecord::Schema.define(version: 2026_04_17_002415) do
     t.string "website"
     t.string "access_code"
     t.boolean "disable_on_end", default: false
+    t.text "allowed_ec2_instances"
   end
 
   create_table "extensions", force: :cascade do |t|
