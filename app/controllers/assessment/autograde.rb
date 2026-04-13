@@ -1,4 +1,5 @@
 require "uri"
+require "digest"
 require "tango_client"
 require_relative Rails.root.join("config/autogradeConfig.rb")
 
@@ -21,7 +22,35 @@ module AssessmentAutograde
     # there can be multiple submission with the same dave if this was a group submission
     submissions = Submission.where(dave: params[:dave]).all
 
-    feedback_str = params[:file].read
+    payload_source = if params[:file].respond_to?(:read)
+                       :multipart_file
+                     elsif request.raw_post.present?
+                       :raw_post
+                     else
+                       :request_body
+                     end
+
+    feedback_str = case payload_source
+                   when :multipart_file
+                     params[:file].read
+                   when :raw_post
+                     request.raw_post
+                   else
+                     request.body.read
+                   end
+
+    payload_bytes = feedback_str.to_s.bytesize
+    payload_sha256 = Digest::SHA256.hexdigest(feedback_str.to_s)
+    payload_preview = feedback_str.to_s.encode("UTF-8", invalid: :replace, undef: :replace, replace: "?")
+    payload_preview = payload_preview[0, 500]
+
+    COURSE_LOGGER.log("autograde_done payload source=#{payload_source} content_type=#{request.content_type} bytes=#{payload_bytes} sha256=#{payload_sha256}")
+    COURSE_LOGGER.log("autograde_done payload preview=#{payload_preview.inspect}")
+
+    if feedback_str.blank?
+      COURSE_LOGGER.log("autograde_done missing feedback payload #{params[:dave]} submission_id=#{params[:submission_id]}")
+      raise StandardError, "autograde_done callback received empty feedback payload"
+    end
 
     COURSE_LOGGER.log("autograde_done")
     COURSE_LOGGER.log("autograde_done hit: #{request.fullpath}")
