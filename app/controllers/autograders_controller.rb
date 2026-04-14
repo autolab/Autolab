@@ -42,6 +42,14 @@ class AutogradersController < ApplicationController
     @container_images = ContainerImage.ready.where(course: @course)
                                       .or(ContainerImage.ready.where(is_public: true))
                                       .order(created_at: :desc)
+    config_path = "#{Rails.configuration.config_location}/ec2_config.yml"
+
+    if File.exist?(config_path) && File.size?(config_path)
+      ec2_config_hash = YAML.safe_load(File.read(config_path))
+      @allowed_instance_types = ec2_config_hash["allowed_instances"] || Autograder::INSTANCE_TYPES
+    else
+      @allowed_instance_types = Autograder::INSTANCE_TYPES
+    end
   end
 
   action_auth_level :update, :instructor

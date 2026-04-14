@@ -1,0 +1,22 @@
+<div class="row">
+  <div class="col s12">
+    <h4>EC2 Instance Limits</h4>
+    <p class="help-text">Select which EC2 instances are globally available for Instructors to choose from when configuring autograders.</p>
+
+    <%= form_with url: update_ec2_config_admins_path, method: :post, local: true do |f| %>
+      <div class="row">
+        <% Autograder::INSTANCE_TYPES.each do |instance_type| %>
+          <div class="col s12 m4">
+            <label>
+              <%= check_box_tag "allowed_instances[]",
+                                instance_type,
+                                @ec2_config_hash["allowed_instances"].include?(instance_type) %>
+              <span><%= instance_type %></span>
+            </label>
+          </div>
+        <% end %>
+      </div>
+      <%= f.submit "Save EC2 Limits", class: "btn primary" %>
+    <% end %>
+  </div>
+</div>
