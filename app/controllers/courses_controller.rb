@@ -289,6 +289,27 @@ class CoursesController < ApplicationController
       render(action: "new") && return
     end
 
+    # Import assessments from tar
+    begin
+      tarFile.rewind
+      tar_extract = Gem::Package::TarReader.new(tarFile)
+      files = {}
+      tar_extract.each do |entry|
+        pathname = entry.full_name
+        next if pathname.start_with?(".") || pathname.start_with?("PaxHeader")
+        next unless entry.file?
+        relative = pathname.delete_prefix("#{course_root_dir}/")
+        files[relative] = entry.read
+      end
+      tar_extract.close
+      import_assessments(files)
+    rescue StandardError => e
+      @newCourse.destroy
+      new_users.each(&:destroy)
+      flash[:error] = "Error importing assessments: #{e.message}"
+      render(action: "new") && return
+    end
+
     begin
       @newCourse.reload_course_config
     rescue StandardError, SyntaxError
@@ -1485,5 +1506,79 @@ private
       return [false, nil]
     end
     [course_config_yml_exists && !root_dir.nil? && root_dir_is_valid, root_dir]
+  end
+
+  # --- Assessment import ---
+
+  # Validates a single assessment_{id}.yml file contents.
+  # Returns [:valid, nil], [:invalid, reason], or [:absent, nil].
+  REQUIRED_ASSESSMENT_FIELDS = %w[name display_name due_at end_at start_at category_name].freeze
+
+  def validate_assessment(contents)
+    return [:absent, nil] if contents.nil?
+
+    begin
+      # Uses unsafe_load because exported YAMLs contain !ruby/object:ActiveSupport::TimeWithZone
+      # and YAML anchors/aliases for timezone objects. These are our own exported files.
+      config = YAML.unsafe_load(contents)
+    rescue Psych::SyntaxError => e
+      return [:invalid, "not valid YAML — #{e.message}"]
+    end
+
+    return [:invalid, "YAML is empty"] unless config.is_a?(Hash)
+
+    missing = REQUIRED_ASSESSMENT_FIELDS.select { |f| config[f].blank? }
+    return [:invalid, "missing required fields: #{missing.join(', ')}"] if missing.any?
+
+    unless config["name"] =~ Assessment::VALID_NAME_REGEX
+      return [:invalid, "name '#{config['name']}' is invalid (must start with a letter, "\
+                        "contain only letters, numbers, hyphens, underscores)"]
+    end
+
+    [:valid, nil]
+  end
+
+  # Creates Assessment DB records from validated assessment YAMLs.
+  # Call AFTER valid_course_tar has passed and @newCourse has been saved.
+  # Takes a hash of { relative_path => file_contents } from the tar.
+  ASSESSMENT_ATTRIBUTES = %w[
+    name display_name description category_name
+    due_at end_at start_at
+    handin_filename handin_directory max_grace_days
+    max_submissions max_size disable_handins allow_unofficial
+    exam quiz quizData embedded_quiz embedded_quiz_form_data
+    remote_handin_path handout writeup
+    version_threshold is_positive_grading
+    group_size github_submission_enabled allow_student_assign_group
+    disable_network
+  ].freeze
+
+  def import_assessments(files)
+    assessment_files = files.select { |path, _| path.start_with?("assessments/") && path.end_with?(".yml") }
+
+    assessment_files.each do |_path, contents|
+      config = YAML.unsafe_load(contents)
+
+      assessment = @newCourse.assessments.new(config.slice(*ASSESSMENT_ATTRIBUTES))
+
+      # Create the assessment directory on disk (needed for after_commit :dump_yaml callback)
+      asmt_dir = Rails.root.join("courses", @newCourse.name, config["name"])
+      FileUtils.mkdir_p(asmt_dir)
+
+      # Create penalty records from inline data if present
+      if config["late_penalty"].is_a?(Hash)
+        assessment.late_penalty = Penalty.new(config["late_penalty"])
+      end
+      if config["version_penalty"].is_a?(Hash)
+        assessment.version_penalty = Penalty.new(config["version_penalty"])
+      end
+
+      unless assessment.save
+        raise "Failed to import assessment '#{config['name']}': "\
+              "#{assessment.errors.full_messages.join(', ')}"
+      end
+
+      assessment.construct_folder
+    end
   end
 end
