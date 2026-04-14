@@ -46,9 +46,13 @@ module AssessmentAutogradeCore
       # Under delegated filesystem permissions (or mixed legacy/new handin paths),
       # the direct path may be unreadable or stale even when the submission file exists.
       # Fall back to the submission model's file accessor for the handin file.
-      if bytes.nil? && f["localFile"].to_s == submission.handin_file_path.to_s
+      is_handin_upload = (f["localFile"].to_s == submission.handin_file_path.to_s) ||
+                         (f["destFile"].to_s == assessment.handin_filename.to_s)
+
+      if bytes.nil? && is_handin_upload
         handin_io = submission.handin_file
         begin
+          handin_io.rewind if handin_io.respond_to?(:rewind)
           bytes = handin_io.read if handin_io
         ensure
           handin_io.rewind if handin_io.respond_to?(:rewind)
@@ -297,20 +301,21 @@ module AssessmentAutogradeCore
     failed_list = []
 
     submissions.each do |submission|
-      if submission
-        begin
-          sendJob(course, assessment, [submission], cud)
-        rescue AssessmentAutogradeCore::AutogradeError => e
-          raise e if e.error_code == :missing_autograding_props
-
-          # no autograding properties for this assessment
-
-          # autograding failed
-          failed_list << { submission:, error: e }
-        end
-      else
-        failed_list << { submission:,
+      unless submission
+        failed_list << { submission: submission,
                          error: AutogradeError.new("Invalid submission", :nil_submission) }
+        next
+      end
+
+      begin
+        sendJob(course, assessment, [submission], cud)
+      rescue AssessmentAutogradeCore::AutogradeError => e
+        raise e if e.error_code == :missing_autograding_props
+
+        # no autograding properties for this assessment
+
+        # autograding failed
+        failed_list << { submission: submission, error: e }
       end
     end
 
@@ -421,14 +426,36 @@ module AssessmentAutogradeCore
         feedback = feedback.encode("UTF-8", invalid: :replace, fallback: hexify)
       end
 
-      File.open(feedback_file, "w") do |f|
-        f.write(feedback)
+      begin
+        File.open(feedback_file, "w") do |f|
+          f.write(feedback)
+        end
+      rescue Errno::EACCES, Errno::EPERM => e
+        COURSE_LOGGER.log("Local write failed for feedback file #{feedback_file}: #{e.class} (#{e.message})")
+
+        wrote_via_delegate = false
+        if UnixGroupManager.delegate_enabled?
+          parent_dir = File.dirname(feedback_file)
+          created_dir = UnixGroupManager.mkdir_p_via_delegate(parent_dir)
+          wrote_via_delegate = created_dir && UnixGroupManager.write_file_via_delegate(feedback_file, feedback)
+        end
+
+        unless wrote_via_delegate
+          COURSE_LOGGER.log("Delegate write failed for feedback file #{feedback_file}")
+          raise e
+        end
+
+        COURSE_LOGGER.log("Wrote feedback via delegate to #{feedback_file}")
       end
 
       # Enforce permissions on autograde feedback file and directory
-      if feedback_file && File.exist?(feedback_file)
-        FilesystemEnforcer.fix_path(feedback_file)
-        FilesystemEnforcer.fix_path(File.dirname(feedback_file))
+      begin
+        if feedback_file && File.exist?(feedback_file)
+          FilesystemEnforcer.fix_path(feedback_file)
+          FilesystemEnforcer.fix_path(File.dirname(feedback_file))
+        end
+      rescue Errno::EACCES, Errno::EPERM => e
+        COURSE_LOGGER.log("Skipping FilesystemEnforcer for #{feedback_file}: #{e.class} (#{e.message})")
       end
     end
 
