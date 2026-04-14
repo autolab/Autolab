@@ -1,6 +1,7 @@
 require "archive"
 require "csv"
 require "fileutils"
+require "tempfile"
 require "rubygems/package"
 require "statistics"
 require "yaml"
@@ -780,8 +781,29 @@ class AssessmentsController < ApplicationController
     raw_score_hash = scoreHashFromScores(autograded_scores) if @score.grader_id <= 0
     @scoreHash = parseScore(raw_score_hash) unless raw_score_hash.nil?
 
-    if Archive.archive? @submission.handin_file_path
-      @files = Archive.get_files @submission.handin_file_path
+    handin_path = @submission.handin_file_path
+    begin
+      if Archive.archive?(handin_path)
+        @files = Archive.get_files(handin_path)
+      end
+    rescue Errno::EACCES, Errno::EPERM => e
+      COURSE_LOGGER.log("viewFeedback could not read handin archive #{handin_path}: #{e.class} (#{e.message})")
+      Rails.logger.warn("viewFeedback could not read handin archive #{handin_path}: #{e.class} (#{e.message})")
+
+      if UnixGroupManager.delegate_enabled?
+        delegate_content = UnixGroupManager.read_file_via_delegate(handin_path.to_s)
+        if delegate_content.present?
+          Tempfile.create(["handin-#{@submission.id}", File.extname(handin_path.to_s)]) do |tmp|
+            tmp.binmode
+            tmp.write(delegate_content)
+            tmp.flush
+
+            @files = Archive.get_files(tmp.path) if Archive.archive?(tmp.path)
+          end
+        else
+          COURSE_LOGGER.log("viewFeedback delegate read returned no content for #{handin_path}")
+        end
+      end
     end
 
     # get_correct_filename is protected, so we wrap around controller-specific call
