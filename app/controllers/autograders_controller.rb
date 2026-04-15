@@ -105,6 +105,13 @@ class AutogradersController < ApplicationController
     unless assessment_dir.directory?
       raise Errno::ENOENT, "Assessment directory does not exist: #{assessment_dir}"
     end
+
+    if UnixGroupManager.delegate_enabled?
+      unless UnixGroupManager.mkdir_p_via_delegate(assessment_dir.to_s)
+        raise Errno::EACCES, "Permission denied creating #{assessment_dir}"
+      end
+    end
+
     FilesystemEnforcer.fix_path(assessment_dir.to_s)
 
     write_uploaded_file(uploaded_makefile, assessment_dir.join("autograde-Makefile")) unless uploaded_makefile.nil?
@@ -153,9 +160,17 @@ private
   end
 
   def write_uploaded_file(uploaded_file, destination_path)
-    File.open(destination_path, "wb") do |file|
-      file.write(uploaded_file.read)
+    file_content = uploaded_file.read
+
+    if UnixGroupManager.delegate_enabled?
+      success = UnixGroupManager.write_file_via_delegate(destination_path.to_s, file_content)
+      raise Errno::EACCES, "Permission denied writing #{destination_path}" unless success
+    else
+      File.open(destination_path, "wb") do |file|
+        file.write(file_content)
+      end
     end
+
     FilesystemEnforcer.fix_path(destination_path.to_s)
   end
 end
