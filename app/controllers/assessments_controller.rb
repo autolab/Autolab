@@ -1324,24 +1324,30 @@ private
     dir_path = @course.directory_path
     @unused_config_files = []
     use_delegated_metadata = false
-    filenames = begin
+
+    filenames = nil
+    if UnixGroupManager.delegate_enabled?
+      delegated_entries = UnixGroupManager.list_assessment_dirs_via_delegate(dir_path.to_s)
+      if delegated_entries.is_a?(Array) &&
+         delegated_entries.all? { |entry| entry.is_a?(Hash) && entry.key?("name") }
+        use_delegated_metadata = true
+        filenames = delegated_entries
+      end
+    end
+
+    filenames ||= begin
       Dir.children(dir_path)
     rescue Errno::EACCES
       if UnixGroupManager.delegate_enabled?
-        delegated_entries = UnixGroupManager.list_assessment_dirs_via_delegate(dir_path.to_s)
-        if delegated_entries.nil?
-          UnixGroupManager.repair_course_directory_access(@course)
-          begin
-            delegated_entries = Dir.children(dir_path)
-          rescue Errno::EACCES
-            flash.now[:error] =
-              "Cannot access course directory #{dir_path}. Ensure UnixOps daemon is running with the latest code and verify course group membership for app/user9999."
-            flash.now[:html_safe] = true
-            return
-          end
+        UnixGroupManager.repair_course_directory_access(@course)
+        begin
+          Dir.children(dir_path)
+        rescue Errno::EACCES
+          flash.now[:error] =
+            "Cannot access course directory #{dir_path}. Ensure UnixOps daemon is running with the latest code and verify course group membership for app/user9999."
+          flash.now[:html_safe] = true
+          return
         end
-        use_delegated_metadata = delegated_entries.first.is_a?(Hash)
-        delegated_entries
       else
         flash.now[:error] = "Cannot access course directory #{dir_path}: permission denied."
         flash.now[:html_safe] = true
