@@ -371,7 +371,8 @@ class Course < ApplicationRecord
               "school", "major", "year", "hover_assessment_date"
             )
 
-            tar.add_file File.join(course_dir, "users", "user_#{cud.user_id}.yml"), mode do |tar_file|
+            tar.add_file File.join(course_dir, "users", "user_#{cud.user_id}.yml"),
+                         mode do |tar_file|
               tar_file.write(user_data.to_yaml)
             end
           end
@@ -382,7 +383,8 @@ class Course < ApplicationRecord
           tar.mkdir File.join(course_dir, "course_user_data"), mode
 
           course_user_data.each do |cud|
-            tar.add_file File.join(course_dir, "course_user_data", "cud_#{cud.id}.yml"), mode do |tar_file|
+            tar.add_file File.join(course_dir, "course_user_data", "cud_#{cud.id}.yml"),
+                         mode do |tar_file|
               tar_file.write(cud.attributes.to_yaml)
             end
           end
@@ -397,7 +399,8 @@ class Course < ApplicationRecord
             asmt_data["late_penalty"] = assessment.late_penalty&.attributes
             asmt_data["version_penalty"] = assessment.version_penalty&.attributes
 
-            tar.add_file File.join(course_dir, "assessments", "assessment_#{assessment.id}.yml"), mode do |tar_file|
+            tar.add_file File.join(course_dir, "assessments", "assessment_#{assessment.id}.yml"),
+                         mode do |tar_file|
               tar_file.write(asmt_data.to_yaml)
             end
           end
@@ -409,7 +412,8 @@ class Course < ApplicationRecord
 
           assessments.each do |assessment|
             assessment.submissions.each do |submission|
-              tar.add_file File.join(course_dir, "submissions", "submission_#{submission.id}.yml"), mode do |tar_file|
+              tar.add_file File.join(course_dir, "submissions", "submission_#{submission.id}.yml"),
+                           mode do |tar_file|
                 tar_file.write(submission.attributes.to_yaml)
               end
             end
