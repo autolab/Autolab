@@ -66,7 +66,11 @@ class AutogradersController < ApplicationController
       flash[:success] = "Autograder saved."
       begin
         upload
-      rescue StandardError
+      rescue Errno::EACCES, Errno::EPERM => e
+        Rails.logger.error("Autograder upload permission error for course=#{@course.name}, assessment=#{@assessment.name}: #{e.class}: #{e.message}")
+        flash[:error] = "Autograder could not be uploaded due to filesystem permissions."
+      rescue StandardError => e
+        Rails.logger.error("Autograder upload failed for course=#{@course.name}, assessment=#{@assessment.name}: #{e.class}: #{e.message}")
         flash[:error] = "Autograder could not be uploaded."
       end
     else
@@ -92,21 +96,19 @@ class AutogradersController < ApplicationController
 
   action_auth_level :upload, :instructor
   def upload
-    uploaded_makefile = params[:autograder][:makefile]
-    uploaded_tar = params[:autograder][:tar]
-    unless uploaded_makefile.nil?
-      File.open(Rails.root.join("courses", @course.name, @assessment.name, "autograde-Makefile"),
-                "wb") do |file|
-        file.write(uploaded_makefile.read) unless uploaded_makefile.nil?
-      end
-    end
+    uploaded = params.fetch(:autograder, {})
+    uploaded_makefile = uploaded[:makefile]
+    uploaded_tar = uploaded[:tar]
+    return if uploaded_makefile.nil? && uploaded_tar.nil?
 
-    return if uploaded_tar.nil?
-
-    File.open(Rails.root.join("courses", @course.name, @assessment.name, "autograde.tar"),
-              "wb") do |file|
-      file.write(uploaded_tar.read) unless uploaded_tar.nil?
+    assessment_dir = autograder_directory_path
+    unless assessment_dir.directory?
+      raise Errno::ENOENT, "Assessment directory does not exist: #{assessment_dir}"
     end
+    FilesystemEnforcer.fix_path(assessment_dir.to_s)
+
+    write_uploaded_file(uploaded_makefile, assessment_dir.join("autograde-Makefile")) unless uploaded_makefile.nil?
+    write_uploaded_file(uploaded_tar, assessment_dir.join("autograde.tar")) unless uploaded_tar.nil?
   end
 
   action_auth_level :download_file, :instructor
@@ -144,5 +146,16 @@ private
 
   def assessment_params
     params.fetch(:autograder, {}).fetch(:assessment, {}).permit(:disable_network)
+  end
+
+  def autograder_directory_path
+    Rails.root.join("courses", @course.name, @assessment.name)
+  end
+
+  def write_uploaded_file(uploaded_file, destination_path)
+    File.open(destination_path, "wb") do |file|
+      file.write(uploaded_file.read)
+    end
+    FilesystemEnforcer.fix_path(destination_path.to_s)
   end
 end
