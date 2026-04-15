@@ -676,7 +676,7 @@ private
 
     if s["autograder"]
       autograder = Autograder.find_or_initialize_by(assessment_id: id)
-      autograder.update(s["autograder"])
+      autograder.update!(s["autograder"])
       self.autograder = autograder
     end
     if s["scoreboard"]

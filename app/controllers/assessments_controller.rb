@@ -1351,6 +1351,7 @@ private
 
     filenames.each do |entry|
       filename = use_delegated_metadata ? entry["name"] : entry
+      entry_path = File.join(dir_path, filename.to_s)
 
       # skip if not directory in folder
       next if (filename == "..") || (filename == ".")
@@ -1358,9 +1359,19 @@ private
       is_directory = if use_delegated_metadata
                        true
                      else
-                       File.directory?(File.join(dir_path, filename))
+                       File.directory?(entry_path)
                      end
       next unless is_directory
+
+      unless use_delegated_metadata
+        unless File.readable?(entry_path) && File.executable?(entry_path)
+          flash.now[:error] = flash.now[:error] ? "#{flash.now[:error]} <br>" : ""
+          flash.now[:error] += "An error occurred while trying to display an existing assessment " \
+            "from file directory #{filename}: cannot access directory due to filesystem permissions"
+          flash.now[:html_safe] = true
+          next
+        end
+      end
 
       # assessment names must be only lowercase letters and digits
       if filename !~ Assessment::VALID_NAME_REGEX
@@ -1379,8 +1390,16 @@ private
       yml_exists = if use_delegated_metadata
                      entry["yml_exists"]
                    else
-                     File.exist?(File.join(dir_path, filename, "#{filename}.yml"))
+                     File.exist?(File.join(entry_path, "#{filename}.yml"))
                    end
+
+      if yml_exists.nil?
+        flash.now[:error] = flash.now[:error] ? "#{flash.now[:error]} <br>" : ""
+        flash.now[:error] += "An error occurred while trying to display an existing assessment " \
+          "from file directory #{filename}: unable to verify #{filename}.yml due to filesystem permissions"
+        flash.now[:html_safe] = true
+        next
+      end
 
       unless yml_exists
         flash.now[:error] = flash.now[:error] ? "#{flash.now[:error]} <br>" : ""
