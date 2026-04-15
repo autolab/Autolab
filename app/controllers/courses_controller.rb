@@ -432,8 +432,20 @@ class CoursesController < ApplicationController
       config_source = uploaded_config_file.read
 
       course_config_source_path = @course.source_config_file_path
-      File.open(course_config_source_path, "w") do |f|
-        f.write(config_source)
+      begin
+        File.open(course_config_source_path, "w") do |f|
+          f.write(config_source)
+        end
+      rescue Errno::EACCES, Errno::EPERM => e
+        wrote_via_delegate = false
+
+        if UnixGroupManager.delegate_enabled?
+          parent_dir = File.dirname(course_config_source_path.to_s)
+          created_parent = UnixGroupManager.mkdir_p_via_delegate(parent_dir)
+          wrote_via_delegate = created_parent && UnixGroupManager.write_file_via_delegate(course_config_source_path.to_s, config_source)
+        end
+
+        raise e unless wrote_via_delegate
       end
       FilesystemEnforcer.fix_path(course_config_source_path.to_s)
 
@@ -460,13 +472,26 @@ class CoursesController < ApplicationController
   # DELETE courses/:id/
   action_auth_level :destroy, :administrator
   def destroy
+    delete_config_file = lambda do |path|
+      next unless File.exist?(path)
+
+      begin
+        File.delete(path)
+      rescue Errno::EACCES, Errno::EPERM => e
+        deleted_via_delegate = false
+
+        if UnixGroupManager.delegate_enabled?
+          deleted_via_delegate, _parsed = UnixGroupManager.call_delegate("delete_path", path: path.to_s,
+                                                                                         recursive: false)
+        end
+
+        raise e unless deleted_via_delegate
+      end
+    end
+
     # Delete config file copy in courseConfig
-    if File.exist? @course.config_file_path
-      File.delete @course.config_file_path
-    end
-    if File.exist? @course.config_backup_file_path
-      File.delete @course.config_backup_file_path
-    end
+    delete_config_file.call(@course.config_file_path)
+    delete_config_file.call(@course.config_backup_file_path)
 
     # Get group name before destroying course
     group_name = UnixGroupManager.safe_group_name(@course.name)

@@ -157,6 +157,31 @@ module UnixOps
         rescue StandardError => e
           [false, e.message, nil]
         end
+      when "chown"
+        begin
+          path = payload["path"]
+          owner = payload["owner"]
+
+          if path.nil? || path.empty? || owner.nil? || owner.to_s.empty?
+            [false, "invalid_chown_payload", nil]
+          else
+            require "etc"
+            owner_uid = if owner.to_s.match?(/^\d+$/)
+                          owner.to_i
+                        else
+                          Etc.getpwnam(owner.to_s).uid
+                        end
+
+            # Keep current group unchanged
+            File.lchown(owner_uid, nil, path)
+            owner_desc = owner.to_s.match?(/^\d+$/) ? "uid:#{owner_uid}" : owner.to_s
+            [true, "chown", { path: path, owner: owner_desc }]
+          end
+        rescue ArgumentError
+          [false, "user_or_file_not_found", nil]
+        rescue StandardError => e
+          [false, e.message, nil]
+        end
       when "chmod"
         begin
           path = payload["path"]
