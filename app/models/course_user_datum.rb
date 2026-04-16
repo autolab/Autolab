@@ -426,8 +426,7 @@ private
   end
 
   def role_or_status_changed?
-    saved_change_to_instructor? || saved_change_to_course_assistant? ||
-      saved_change_to_dropped?
+    saved_change_to_instructor? || saved_change_to_dropped?
   end
 
   include CUDAssociationCache
