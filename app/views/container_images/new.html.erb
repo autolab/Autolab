@@ -1,4 +1,4 @@
 <% @title = "Build Autograder Image" %>
 
 <%= render partial: "new_image",
-           locals: {container_image: @container_image, course: @course, admin: false} %>
+           locals: {form_model: [@course, @container_image]} %>
