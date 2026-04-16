@@ -14,6 +14,11 @@ class ContainerImage < ApplicationRecord
   validates :name, presence: true
   validates :image_uri, uniqueness: true, allow_nil: true
   validate :public_or_course_scoped
+  validates :name,
+            uniqueness: {
+              conditions: -> { where(is_public: true) }
+            },
+            if: :is_public?
 
   # Extract tag from image_uri
   def tag

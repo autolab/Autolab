@@ -28,6 +28,12 @@ module Admin
       uploaded_file = params[:container_image][:dockerfile]
       dockerfile_content = uploaded_file.read if uploaded_file.present?
 
+      if dockerfile_content.nil?
+        flash[:error] = "Dockerfile is empty or not uploaded."
+        redirect_to admin_container_images_path
+        return
+      end
+
       if @container_image.save
         begin
           resp = TangoClient.build_image(
@@ -51,6 +57,7 @@ module Admin
 
         redirect_to admin_container_images_path
       else
+        flash[:error] = @container_image.errors.full_messages.to_sentence
         render :new, status: :unprocessable_entity
       end
     end
