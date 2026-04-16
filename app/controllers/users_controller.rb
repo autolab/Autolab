@@ -290,16 +290,13 @@ class UsersController < ApplicationController
     end
 
     # Cleanup Unix user if they have a Unix account
-    # Only delete if user is no longer staff in any course
     is_staff_anywhere = user.course_user_data.where(instructor: true)
-                            .or(user.course_user_data.where(course_assistant: true))
                             .exists?
 
-    unless is_staff_anywhere
-      username = UnixGroupManager.login_from_email(user.email)
-      if username
-        UnixGroupManager.delete_user(username, remove_home: true)
-      end
+    username = UnixGroupManager.login_from_email(user.email)
+    if username && is_staff_anywhere
+      # Wipe their keys to block ssh access
+      UnixGroupManager.provision_ssh_keys(username, [], email: user.email)
     end
 
     user.destroy
