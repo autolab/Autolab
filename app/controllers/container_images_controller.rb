@@ -24,8 +24,10 @@ class ContainerImagesController < ApplicationController
     dockerfile_content = uploaded_file.read if uploaded_file.present?
 
     if @container_image.save
-      template_name = @container_image.public_template.name if @container_image.public_template.present?
-      template_uri = @container_image.public_template.uri if @container_image.public_template.present?
+      template_name = @container_image.public_template.name if @container_image.public_template
+                                                                               .present?
+      template_uri = @container_image.public_template.uri if @container_image.public_template
+                                                                             .present?
       begin
         resp = TangoClient.build_image(
           @container_image.name,
@@ -37,7 +39,8 @@ class ContainerImagesController < ApplicationController
         )
         if @container_image.update(resp)
           flash[:success] = "Successfully started docker image build process"
-          redirect_to course_container_images_path(@course), notice: "Container image was successfully created."
+          redirect_to course_container_images_path(@course),
+                      notice: "Container image was successfully created."
           return
         else
           flash[:error] = "Successfully started docker image build process, failed to write to DB"
@@ -57,7 +60,8 @@ class ContainerImagesController < ApplicationController
   action_auth_level :update, :instructor
   def update;
     if @container_image.update(container_image_params)
-      redirect_to course_container_images_path(@course), notice: "Container image was successfully updated."
+      redirect_to course_container_images_path(@course),
+                  notice: "Container image was successfully updated."
     else
       render :edit, status: :unprocessable_entity
     end
@@ -66,7 +70,8 @@ class ContainerImagesController < ApplicationController
   action_auth_level :destroy, :instructor
   def destroy;
     @container_image.destroy
-    redirect_to course_container_images_path(@course), notice: "Container image was successfully deleted."
+    redirect_to course_container_images_path(@course),
+                notice: "Container image was successfully deleted."
   end
 
   action_auth_level :refresh_status, :instructor
@@ -82,7 +87,7 @@ class ContainerImagesController < ApplicationController
     begin
       resp = TangoClient.build_status(@container_image.id)
       updated_status = resp["status"]
-      @container_image.update!(status: updated_status, build_logs: @container_image.build_logs.to_s + resp["logs"])
+      @container_image.update!(status: updated_status, build_logs: resp["logs"])
       if updated_status == 2
         @container_image.update!(image_uri: resp["image_uri"])
       end
@@ -102,36 +107,34 @@ class ContainerImagesController < ApplicationController
     @container_image = ContainerImage.find(params[:container_image_id])
   end
 
-  private
+private
 
   def set_container_image;
     @container_image = ContainerImage.find(params[:id])
   end
 
   def refresh_images;
-    begin
-      updated_images = TangoClient.all_build_status
-      @course.container_images.transaction do
-        @course.container_images.each do |image|
-          next if image.status == "ready" || image.status == "failed"
+    updated_images = TangoClient.all_build_status
+    @course.container_images.transaction do
+      @course.container_images.each do |image|
+        next if image.status == "ready" || image.status == "failed"
 
-          updated_image = updated_images[image.id.to_s]
-          if updated_image.nil?
-            image.update!(status: "failed")
-          else
-            updated_status = updated_image["statusId"]
-            image.update!(status: updated_status, build_logs: image.build_logs.to_s + updated_image["logs"].join)
-            if updated_status == 2
-              image.update!(image_uri: updated_image["ecrImageUri"])
-            end
+        updated_image = updated_images[image.id.to_s]
+        if updated_image.nil?
+          image.update!(status: "failed")
+        else
+          updated_status = updated_image["statusId"]
+          image.update!(status: updated_status, build_logs: updated_image["logs"])
+          if updated_status == 2
+            image.update!(image_uri: updated_image["ecrImageUri"])
           end
         end
       end
-    rescue TangoClient::TangoException => e
-      flash[:error] = "Error while refreshing docker image build status: #{e.message}"
-    rescue StandardError => e
-      flash[:error] = "Unexpected error occurred: #{e.message}"
     end
+  rescue TangoClient::TangoException => e
+    flash[:error] = "Error while refreshing docker image build status: #{e.message}"
+  rescue StandardError => e
+    flash[:error] = "Unexpected error occurred: #{e.message}"
   end
 
   def container_image_params;

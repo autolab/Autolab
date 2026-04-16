@@ -46,7 +46,8 @@ module Admin
           )
           if @container_image.update(resp)
             flash[:success] = "Successfully started docker image build process"
-            redirect_to admin_container_images_path, notice: "Container image was successfully created."
+            redirect_to admin_container_images_path,
+                        notice: "Container image was successfully created."
             return
           else
             flash[:error] = "Successfully started docker image build process, failed to write to DB"
@@ -96,7 +97,7 @@ module Admin
         updated_status = resp["status"]
         @container_image.update!(
           status: updated_status,
-          build_logs: @container_image.build_logs.to_s + resp["logs"]
+          build_logs: resp["logs"].join
         )
         if updated_status == 2
           @container_image.update!(image_uri: resp["image_uri"])
@@ -126,33 +127,31 @@ module Admin
     end
 
     def refresh_images;
-      begin
-        updated_images = TangoClient.all_build_status
-        public_images = ContainerImage.where(is_public: true)
-        public_images.transaction do
-          public_images.each do |image|
-            next if image.status == "ready" || image.status == "failed"
+      updated_images = TangoClient.all_build_status
+      public_images = ContainerImage.where(is_public: true)
+      public_images.transaction do
+        public_images.each do |image|
+          next if image.status == "ready" || image.status == "failed"
 
-            updated_image = updated_images[image.id.to_s]
-            if updated_image.nil?
-              image.update!(status: "failed")
-            else
-              updated_status = updated_image["statusId"]
-              image.update!(
-                status: updated_status,
-                build_logs: image.build_logs.to_s + updated_image["logs"].join
-              )
-              if updated_status == 2
-                image.update!(image_uri: updated_image["ecrImageUri"])
-              end
+          updated_image = updated_images[image.id.to_s]
+          if updated_image.nil?
+            image.update!(status: "failed")
+          else
+            updated_status = updated_image["statusId"]
+            image.update!(
+              status: updated_status,
+              build_logs: updated_image["logs"].join
+            )
+            if updated_status == 2
+              image.update!(image_uri: updated_image["ecrImageUri"])
             end
           end
         end
-      rescue TangoClient::TangoException => e
-        flash[:error] = "Error while refreshing docker image build status: #{e.message}"
-      rescue StandardError => e
-        flash[:error] = "Unexpected error occurred: #{e.message}"
       end
+    rescue TangoClient::TangoException => e
+      flash[:error] = "Error while refreshing docker image build status: #{e.message}"
+    rescue StandardError => e
+      flash[:error] = "Unexpected error occurred: #{e.message}"
     end
 
     def container_image_params;
