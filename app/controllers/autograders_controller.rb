@@ -38,7 +38,6 @@ class AutogradersController < ApplicationController
     @makefile_exists = File.exist?(makefile_path) ? makefile_path : nil
     @tar_exists = File.exist?(tar_path) ? tar_path : nil
     @container_images = ContainerImage.ready.where(course: @course)
-                                      .or(ContainerImage.ready.where(is_public: true))
   end
 
   action_auth_level :update, :instructor
