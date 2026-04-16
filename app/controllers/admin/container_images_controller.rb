@@ -2,20 +2,21 @@ require "tango_client"
 
 module Admin
   class ContainerImagesController < ApplicationController
+    skip_before_action :set_course
     before_action :set_container_image, only: [:update, :destroy]
 
-    action_auth_level :index, :admin
+    action_auth_level :index, :administrator
     def index;
       refresh_images
       @container_images = ContainerImage.where(is_public: true)
     end
 
-    action_auth_level :new, :admin
+    action_auth_level :new, :administrator
     def new;
       @container_image = ContainerImage.new(is_public: true)
     end
 
-    action_auth_level :create, :admin
+    action_auth_level :create, :administrator
     def create;
       @container_image = ContainerImage.new(container_image_params)
 
@@ -51,7 +52,7 @@ module Admin
       end
     end
 
-    action_auth_level :update, :admin
+    action_auth_level :update, :administrator
     def update;
       if @container_image.update(container_image_params)
         redirect_to admin_container_images_path,
@@ -61,13 +62,13 @@ module Admin
       end
     end
 
-    action_auth_level :destroy, :admin
+    action_auth_level :destroy, :administrator
     def destroy;
       @container_image.destroy
       redirect_to admin_container_images_path, notice: "Container image was successfully deleted."
     end
 
-    action_auth_level :refresh_status, :admin
+    action_auth_level :refresh_status, :administrator
     def refresh_status;
       @container_image = ContainerImage.find(params[:container_image_id])
 
@@ -145,7 +146,6 @@ module Admin
         :status,
         :image_uri,
         :build_id,
-        :course_id,
         :is_public,
         :dockerfile
       )

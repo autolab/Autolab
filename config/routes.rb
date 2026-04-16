@@ -91,7 +91,7 @@ Rails.application.routes.draw do
   end
 
   namespace :admin do
-    resources :container_images do
+    resources :container_images, except: [:show, :edit] do
       get "refresh_status"
       get "log"
 
