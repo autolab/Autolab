@@ -6,21 +6,21 @@ module Admin
     skip_before_action :authorize_user_for_course
     skip_before_action :update_persistent_announcements
 
-    before_action :set_container_image, only: [:update, :destroy]
+    before_action :set_container_image, only: [:admin_update, :admin_destroy]
 
-    action_auth_level :index, :administrator
-    def index;
+    action_auth_level :admin_index, :administrator
+    def admin_index;
       refresh_images
       @container_images = ContainerImage.where(is_public: true)
     end
 
-    action_auth_level :new, :administrator
-    def new;
+    action_auth_level :admin_new, :administrator
+    def admin_new;
       @container_image = ContainerImage.new(is_public: true)
     end
 
-    action_auth_level :create, :administrator
-    def create;
+    action_auth_level :admin_create, :administrator
+    def admin_create;
       @container_image = ContainerImage.new(container_image_params)
 
       @container_image.status = 0
@@ -58,29 +58,30 @@ module Admin
         redirect_to admin_container_images_path
       else
         flash[:error] = @container_image.errors.full_messages.to_sentence
-        render :new, status: :unprocessable_entity
+        render :admin_new, status: :unprocessable_entity
       end
     end
 
-    action_auth_level :update, :administrator
-    def update;
+    action_auth_level :admin_update, :administrator
+    def admin_update;
       if @container_image.update(container_image_params)
         redirect_to admin_container_images_path,
                     notice: "Container image was successfully updated."
       else
-        render :edit, status: :unprocessable_entity
+        flash[:error] = @container_image.errors.full_messages.to_sentence
+        redirect_to admin_container_images_path
       end
     end
 
-    action_auth_level :destroy, :administrator
-    def destroy;
+    action_auth_level :admin_destroy, :administrator
+    def admin_destroy;
       @container_image.destroy
       redirect_to admin_container_images_path, notice: "Container image was successfully deleted."
     end
 
-    action_auth_level :refresh_status, :administrator
-    def refresh_status;
-      @container_image = ContainerImage.find(params[:container_image_id])
+    action_auth_level :admin_refresh_status, :administrator
+    def admin_refresh_status;
+      @container_image = ContainerImage.find(params[:id])
 
       if @container_image.nil?
         redirect_to admin_container_images_path, alert: "Container image not found."
@@ -103,15 +104,17 @@ module Admin
       rescue StandardError => e
         flash[:error] = "Unexpected error occurred: #{e.message}"
       end
-      redirect_to admin_container_image_log_path(@container_image)
+      redirect_to log_admin_container_image_path(@container_image)
     end
 
-    def refresh_all_status;
+    action_auth_level :admin_refresh_all_status, :administrator
+    def admin_refresh_all_status;
       redirect_to admin_container_images_path
     end
 
-    def log;
-      @container_image = ContainerImage.find(params[:container_image_id])
+    action_auth_level :admin_log, :administrator
+    def admin_log;
+      @container_image = ContainerImage.find(params[:id])
     end
 
   private

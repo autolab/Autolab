@@ -11,7 +11,7 @@
         <h3>Build Log</h3>
         <div id="status-refresh">
           <% if admin %>
-            <%= button_to admin_container_image_refresh_status_path(container_image),
+            <%= button_to refresh_status_admin_container_image_path(container_image),
                           method: :get,
                           form: { style: "display:inline; " },
                           class: "refresh-feedback-btn" do %>
