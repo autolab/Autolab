@@ -99,11 +99,11 @@ private
   def unique_key_per_user
     return if public_key.blank?
 
-    # Check if another key with the same fingerprint exists for this user
+    # Check if another key with the same fingerprint exists across all users
     fingerprint = calculate_fingerprint
     return unless fingerprint
 
-    existing = SshKey.where(user_id:, fingerprint:)
+    existing = SshKey.where(fingerprint:)
                      .where.not(id:)
                      .exists?
 
