@@ -1,15 +1,4 @@
 <% @title = "Build Autograder Image" %>
 
-<div class="section">
-  <h4>Build Docker Image</h4>
-  <%= form_with model: [@course, @container_image], builder: FormBuilderWithDateTimeInput do |f| %>
-    <%= f.text_field :name,
-                       pattern: "^[a-z0-9](_{0,2}[a-z0-9])*(/[a-z0-9](_{0,2}[a-z0-9])*)?$",
-                       help_text: "Name of Docker image. Any existing image with the same name will be overwritten." %>
-    <%= f.check_box :is_public,
-                    display_name: "Allow other courses to use this autograder image",
-                    help_text: "By making this course public, other courses/instructors can use your docker image without permission."%>
-    <%= f.file_field :dockerfile, button_text: "Choose Dockerfile" %>
-    <%= f.submit "Build Docker Image" %>
-  <% end %>
-</div>
+<%= render partial: "new_image",
+           locals: {container_image: @container_image, course: @course, admin: false} %>
