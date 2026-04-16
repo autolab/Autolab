@@ -123,10 +123,12 @@ module TangoClient
     end
   end
 
-  def self.build_image(name, image_id, dockerfile_content, course_name)
+  def self.build_image(name, image_id, dockerfile_content, course_name, base_tag, base_uri)
     resp = handle_exceptions do
       url = "/build_image/#{api_key}/"
       options = {
+        "base_tag" => base_tag,
+        "base_uri" => base_uri,
         "is_public" => course_name.nil?,
         "course_id" => course_name.nil? ? "" : course_name,
         "image_name" => name,

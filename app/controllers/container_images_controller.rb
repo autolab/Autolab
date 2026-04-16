@@ -25,7 +25,14 @@ class ContainerImagesController < ApplicationController
 
     if @container_image.save
       begin
-        resp = TangoClient.build_image(@container_image.name, @container_image.id, dockerfile_content, @course.name)
+        resp = TangoClient.build_image(
+          @container_image.name,
+          @container_image.id,
+          dockerfile_content,
+          @course.name,
+          @container_image.public_template.name,
+          @container_image.public_template.image_uri
+        )
         if @container_image.update(resp)
           flash[:success] = "Successfully started docker image build process"
           redirect_to course_container_images_path(@course), notice: "Container image was successfully created."
@@ -133,7 +140,8 @@ class ContainerImagesController < ApplicationController
       :build_id,
       :course_id,
       :is_public,
-      :dockerfile
+      :dockerfile,
+      :public_template_id
     )
   end
 end

@@ -40,6 +40,8 @@ module Admin
             @container_image.name,
             @container_image.id,
             dockerfile_content,
+            nil,
+            nil,
             nil
           )
           if @container_image.update(resp)
