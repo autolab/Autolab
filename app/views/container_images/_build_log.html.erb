@@ -30,8 +30,9 @@
           </div>
         </div>
       </div>
-      <div id="partial-feedback"></div>
-    <% else %>
+      <div id="partial-feedback">
+        <pre><%= container_image.build_logs %></pre>
+      </div>    <% else %>
       <div class="feedback-header">
         <h3>Build Log</h3>
         <div id="status-badge" class="feedback-status feedback-status__completed">
