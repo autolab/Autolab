@@ -24,14 +24,16 @@ class ContainerImagesController < ApplicationController
     dockerfile_content = uploaded_file.read if uploaded_file.present?
 
     if @container_image.save
+      template_name = @container_image.public_template.name if @container_image.public_template.present?
+      template_uri = @container_image.public_template.uri if @container_image.public_template.present?
       begin
         resp = TangoClient.build_image(
           @container_image.name,
           @container_image.id,
           dockerfile_content,
           @course.name,
-          @container_image.public_template.name,
-          @container_image.public_template.image_uri
+          template_name,
+          template_uri
         )
         if @container_image.update(resp)
           flash[:success] = "Successfully started docker image build process"
