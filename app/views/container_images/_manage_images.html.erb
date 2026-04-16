@@ -97,7 +97,7 @@
           </div>
           <div>
             <% if admin %>
-              <%= link_to "<i class='material-icons'>text_snippet</i>".html_safe, admin_container_image_path(image.id),
+              <%= link_to "<i class='material-icons'>text_snippet</i>".html_safe, admin_container_image_log_path(image.id),
                           { method: :get, title: "View Build Log", class: "btn small" } %>
             <% else %>
               <%= link_to "<i class='material-icons'>text_snippet</i>".html_safe, course_container_image_log_path(course, image.id),

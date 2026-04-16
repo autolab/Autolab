@@ -3,6 +3,9 @@ require "tango_client"
 module Admin
   class ContainerImagesController < ApplicationController
     skip_before_action :set_course
+    skip_before_action :authorize_user_for_course
+    skip_before_action :update_persistent_announcements
+
     before_action :set_container_image, only: [:update, :destroy]
 
     action_auth_level :index, :administrator
