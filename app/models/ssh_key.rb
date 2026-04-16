@@ -99,15 +99,19 @@ private
   def unique_key_per_user
     return if public_key.blank?
 
-    # Check if another key with the same fingerprint exists for this user
     fingerprint = calculate_fingerprint
     return unless fingerprint
 
-    existing = SshKey.where(user_id:, fingerprint:)
-                     .where.not(id:)
-                     .exists?
+    # Check if another key with the same fingerprint exists for this user
+    if SshKey.where(user_id:, fingerprint:).where.not(id:).exists?
+      errors.add(:public_key, "has already been added to your account")
+      return
+    end
 
-    errors.add(:public_key, "already exists for this user") if existing
+    # Check if another key with the same fingerprint exists across all users
+    return unless SshKey.where(fingerprint:).where.not(id:).exists?
+
+    errors.add(:public_key, "is already in use by another user")
   end
 
   def self.ensure_unix_username!(user)
