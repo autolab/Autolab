@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2026_04_07_033729) do
+ActiveRecord::Schema.define(version: 2026_04_16_010842) do
 
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
@@ -212,6 +212,7 @@ ActiveRecord::Schema.define(version: 2026_04_07_033729) do
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.text "build_logs", default: "", null: false
+    t.text "dockerfile_contents"
     t.index ["course_id"], name: "index_container_images_on_course_id"
     t.index ["image_uri"], name: "index_container_images_on_image_uri", unique: true
     t.index ["is_public"], name: "index_container_images_on_is_public"
