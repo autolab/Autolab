@@ -72,9 +72,10 @@ module UnixOps
       end
     end
 
+
     def authorized?(req)
       secret = ENV["UNIX_OPS_SHARED_SECRET"]
-      return true if secret.nil? || secret.empty?
+      return false if secret.nil? || secret.empty?
 
       header = req.header["authorization"]&.first
       return false if header.nil? || !header.start_with?("Bearer ")
