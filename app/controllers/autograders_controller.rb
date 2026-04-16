@@ -37,7 +37,7 @@ class AutogradersController < ApplicationController
     tar_path = Rails.root.join("courses", @course.name, @assessment.name, "autograde.tar")
     @makefile_exists = File.exist?(makefile_path) ? makefile_path : nil
     @tar_exists = File.exist?(tar_path) ? tar_path : nil
-    @container_images = ContainerImage.ready.where(course: @course)
+    @container_images = ContainerImage.ready.where(course: @course).order(created_at: :desc)
   end
 
   action_auth_level :update, :instructor

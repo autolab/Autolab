@@ -11,7 +11,7 @@ module Admin
     action_auth_level :admin_index, :administrator
     def admin_index;
       refresh_images
-      @container_images = ContainerImage.where(is_public: true)
+      @container_images = ContainerImage.where(is_public: true).order(created_at: :desc)
     end
 
     action_auth_level :admin_new, :administrator
