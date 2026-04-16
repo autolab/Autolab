@@ -2,6 +2,13 @@ class ContainerImage < ApplicationRecord
   attr_accessor :dockerfile
 
   belongs_to :course, optional: true
+  belongs_to :public_template,
+             class_name: "ContainerImage",
+             optional: true
+  has_many :derived_images,
+           class_name: "ContainerImage",
+           foreign_key: :public_template_id,
+           dependent: :nullify
 
   enum status: {
     failed: 255,

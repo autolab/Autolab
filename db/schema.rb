@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2026_04_16_010842) do
+ActiveRecord::Schema.define(version: 2026_04_16_081649) do
 
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
@@ -213,9 +213,12 @@ ActiveRecord::Schema.define(version: 2026_04_16_010842) do
     t.datetime "updated_at", precision: 6, null: false
     t.text "build_logs", default: "", null: false
     t.text "dockerfile_contents"
+    t.integer "public_template_id"
     t.index ["course_id"], name: "index_container_images_on_course_id"
     t.index ["image_uri"], name: "index_container_images_on_image_uri", unique: true
     t.index ["is_public"], name: "index_container_images_on_is_public"
+    t.index ["name"], name: "index_container_images_on_name_public_only", unique: true, where: "is_public = true"
+    t.index ["public_template_id"], name: "index_container_images_on_public_template_id"
     t.index ["status"], name: "index_container_images_on_status"
   end
 
@@ -510,4 +513,5 @@ ActiveRecord::Schema.define(version: 2026_04_16_010842) do
   add_foreign_key "ami_packages", "ami_images"
   add_foreign_key "ami_packages", "ami_package_sources"
   add_foreign_key "autograders", "ami_images"
+  add_foreign_key "container_images", "container_images", column: "public_template_id"
 end
