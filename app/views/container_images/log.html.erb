@@ -1,37 +1,4 @@
 <% @title = "Build Log" %>
 
-<%= link_to "< Back to Container Images", course_container_images_path(@course) %>
-
-<div class="feedback-container" style="width: 100%; margin-top: 24px">
-  <div class="result-pane">
-    <% if @container_image.status != "failed" && @container_image.status != "ready" %>
-      <div class="feedback-header">
-        <h3>Build Log</h3>
-        <div id="status-refresh">
-          <%= button_to course_container_image_refresh_status_path(@course, @container_image),
-                        method: :get,
-                        form: { style: "display:inline; " },
-                        class: "refresh-feedback-btn" do %>
-            <i class="refresh-feedback material-icons small">refresh</i>
-          <% end %>
-          <div id="status-badge" class="feedback-status feedback-status__inprogress">
-            In-Progress
-          </div>
-        </div>
-      </div>
-      <div id="partial-feedback"></div>
-    <% else %>
-      <div class="feedback-header">
-        <h3>Build Log</h3>
-        <div id="status-badge" class="feedback-status feedback-status__completed">
-          Completed
-        </div>
-      </div>
-      <% if @container_image.build_logs.nil? %>
-        <pre>There was an error before building the dockerfile. Feedback is not available.</pre>
-      <% else %>
-        <pre><%= @container_image.build_logs %></pre>
-      <% end %>
-    <% end %>
-  </div>
-</div>
+<%= render partial: "build_log",
+           locals: {container_image: @container_image, course: @course, admin: false} %>
