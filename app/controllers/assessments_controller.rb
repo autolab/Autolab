@@ -552,7 +552,7 @@ class AssessmentsController < ApplicationController
   def export
     dir_path = @course.directory_path.to_s
     asmt_dir = @assessment.name
-    begin
+    build_export_tar = lambda do
       # Update the assessment config YAML file.
       @assessment.dump_yaml
       # Save embedded_quiz
@@ -566,9 +566,34 @@ class AssessmentsController < ApplicationController
       end
       tarStream.rewind
       tarStream.close
+      tarStream
+    end
+
+    begin
+      tarStream = build_export_tar.call
       send_data tarStream.string.force_encoding("binary"),
                 filename: "#{@assessment.name}_#{Time.current.strftime('%Y%m%d')}.tar",
                 content_type: "application/x-tar"
+    rescue Errno::EACCES, Errno::EPERM => e
+      repaired = UnixGroupManager.delegate_enabled? &&
+                 UnixGroupManager.repair_course_directory_access(@course)
+
+      if repaired
+        begin
+          tarStream = build_export_tar.call
+          send_data tarStream.string.force_encoding("binary"),
+                    filename: "#{@assessment.name}_#{Time.current.strftime('%Y%m%d')}.tar",
+                    content_type: "application/x-tar"
+          return
+        rescue Errno::EACCES, Errno::EPERM => retry_error
+          flash[:error] = "Unable to export assessment due to filesystem permission error: #{retry_error.message}"
+          redirect_to action: "index"
+          return
+        end
+      end
+
+      flash[:error] = "Unable to export assessment due to filesystem permission error: #{e.message}"
+      redirect_to action: "index"
     rescue SystemCallError => e
       flash[:error] = "Unable to update the config YAML file: #{e}"
       redirect_to action: "index"
