@@ -127,7 +127,8 @@ module TangoClient
     resp = handle_exceptions do
       url = "/build_image/#{api_key}/"
       options = {
-        "course_id" => course_name,
+        "is_public" => course_name.nil?,
+        "course_id" => course_name.nil? ? "" : course_name,
         "image_name" => name,
         "job_id" => image_id,
         "dockerfile_content" => dockerfile_content

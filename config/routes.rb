@@ -90,6 +90,17 @@ Rails.application.routes.draw do
     get "autolab_config"
   end
 
+  namespace :admin do
+    resources :container_images do
+      get "refresh_status"
+      get "log"
+
+      collection do
+        get "refresh_all_status"
+      end
+    end
+  end
+
   resources :users do
     get "admin"
     get "download_all_submissions", on: :member
