@@ -12,6 +12,7 @@ class UsersController < ApplicationController
                 only: [:github_oauth, :github_revoke, :lti_launch_initialize,
                        :lti_launch_link_course]
   before_action :set_users_list_breadcrumb, except: %i[index]
+  before_destroy :cleanup_unix_access
 
   # GET /users
   action_auth_level :index, :student
@@ -602,6 +603,12 @@ class UsersController < ApplicationController
     end
 
     redirect_to(ssh_keys_user_path(user))
+  end
+
+  def cleanup_unix_access
+    # Clear ssh keys for user to remove ssh access once account deleted
+    username = UnixGroupManager.login_from_email(email)
+    UnixGroupManager.provision_ssh_keys(username, [], email:)
   end
 
 private
