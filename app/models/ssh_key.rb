@@ -126,7 +126,8 @@ private
         .includes(:course).find_each do |cud|
       next if UnixGroupManager.update_course_staff_membership(cud.course, user, is_staff: true)
 
-      raise ProvisioningError, "Failed to sync Unix group for #{cud.course.name}"
+      raise ProvisioningError,
+            "Failed to sync Unix group for course '#{cud.course.name}' (user: #{user.email}, course_id: #{cud.course_id})"
     end
   end
 

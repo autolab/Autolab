@@ -796,20 +796,32 @@ class UnixGroupManager
   # Update group membership when staff is added/removed
   # Note: Does NOT create Unix user - users are created on-demand when SSH key is added
   def self.update_course_staff_membership(course, user, is_staff: true)
-    group_name = safe_group_name(course.name)
-    return false unless group_name
+    group_name = safe_group_name(course&.name)
+    unless group_name
+      Rails.logger.error("UnixGroupManager.update_course_staff_membership: invalid group name for course=#{course&.id} name=#{course&.name.inspect}")
+      return false
+    end
 
     # Ensure group exists
-    return false unless ensure_group(group_name)
+    unless ensure_group(group_name)
+      Rails.logger.error("UnixGroupManager.update_course_staff_membership: ensure_group failed for group=#{group_name} course=#{course&.id}")
+      return false
+    end
 
     username = update_unix_user_mapping(user)
-    return false unless username
+    unless username
+      Rails.logger.error("UnixGroupManager.update_course_staff_membership: unable to derive unix username for user=#{user&.id} email=#{user&.email}")
+      return false
+    end
 
     # Check if user exists (only add to group if user already exists)
     # User is created on-demand when first SSH key is added
-    return true unless user_exists?(username) # User doesn't exist yet - that's ok
+    unless user_exists?(username)
+      Rails.logger.info("UnixGroupManager.update_course_staff_membership: skipping group membership update because unix user does not exist yet username=#{username} course=#{course&.id}")
+      return true
+    end
 
-    if is_staff
+    success = if is_staff
       # Add existing user to group
       add_user_to_group(username, group_name)
     else
@@ -817,7 +829,15 @@ class UnixGroupManager
       remove_user_from_group(username, group_name)
     end
 
-    true
+    unless success
+      action = is_staff ? "add" : "remove"
+      Rails.logger.error("UnixGroupManager.update_course_staff_membership: failed to #{action} username=#{username} #{is_staff ? 'to' : 'from'} group=#{group_name} course=#{course&.id}")
+    end
+
+    success
+  rescue StandardError => e
+    Rails.logger.error("UnixGroupManager.update_course_staff_membership error: #{e.class} - #{e.message}")
+    false
   end
 
   # Provision SSH public key to user's authorized_keys file
