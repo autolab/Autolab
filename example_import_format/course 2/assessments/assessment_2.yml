@@ -1,0 +1,51 @@
+---
+id: 2
+due_at: !ruby/object:ActiveSupport::TimeWithZone
+  utc: 2026-03-18 22:29:18.215323000 Z
+  zone: &1 !ruby/object:ActiveSupport::TimeZone
+    name: America/New_York
+  time: 2026-03-18 18:29:18.215323000 Z
+end_at: !ruby/object:ActiveSupport::TimeWithZone
+  utc: 2026-03-18 22:29:18.215323000 Z
+  zone: *1
+  time: 2026-03-18 18:29:18.215323000 Z
+start_at: !ruby/object:ActiveSupport::TimeWithZone
+  utc: 2026-03-18 22:29:18.215323000 Z
+  zone: *1
+  time: 2026-03-18 18:29:18.215323000 Z
+name: hello_python
+description: A simple Python assignment where students write a greet() function.
+created_at: !ruby/object:ActiveSupport::TimeWithZone
+  utc: 2026-03-17 22:29:18.225236000 Z
+  zone: *1
+  time: 2026-03-17 18:29:18.225236000 Z
+updated_at: !ruby/object:ActiveSupport::TimeWithZone
+  utc: 2026-03-17 22:29:18.252398000 Z
+  zone: *1
+  time: 2026-03-17 18:29:18.252398000 Z
+course_id: 1
+display_name: Hello Python
+handin_filename: hello.py
+handin_directory: handin
+max_grace_days: 3
+handout:
+writeup:
+allow_unofficial:
+max_submissions: 30
+disable_handins: false
+exam: false
+max_size: 2
+version_threshold:
+quiz: false
+quizData: ''
+remote_handin_path:
+category_name: Homework
+group_size: 1
+embedded_quiz_form_data:
+embedded_quiz:
+github_submission_enabled: true
+allow_student_assign_group: true
+is_positive_grading: false
+disable_network: false
+late_penalty:
+version_penalty:

@@ -252,7 +252,9 @@ class CoursesController < ApplicationController
     begin
       tarFile.rewind
       tar_extract = Gem::Package::TarReader.new(tarFile)
-      _imported_users_by_id, new_users = save_users_from_tar(tar_extract, course_root_dir)
+      imported_users_by_id, new_users = save_users_from_tar(tar_extract, course_root_dir)
+      imported_cuds_by_id = import_course_user_data_from_tar(tar_extract, course_root_dir,
+                                                             imported_users_by_id)
       tar_extract.close
     rescue StandardError => e
       @newCourse.destroy
@@ -277,8 +279,7 @@ class CoursesController < ApplicationController
       end
     end
 
-    new_cud = @newCourse.course_user_data.new
-    new_cud.user = instructor
+    new_cud = @newCourse.course_user_data.find_or_initialize_by(user: instructor)
     new_cud.instructor = true
 
     unless new_cud.save
@@ -298,11 +299,13 @@ class CoursesController < ApplicationController
         pathname = entry.full_name
         next if pathname.start_with?(".") || pathname.start_with?("PaxHeader")
         next unless entry.file?
+
         relative = pathname.delete_prefix("#{course_root_dir}/")
         files[relative] = entry.read
       end
       tar_extract.close
-      import_assessments(files)
+      imported_assessments_by_id = import_assessments(files)
+      import_submissions(files, imported_cuds_by_id, imported_assessments_by_id)
     rescue StandardError => e
       @newCourse.destroy
       new_users.each(&:destroy)
@@ -1427,6 +1430,33 @@ private
     [imported_users_by_id, new_users]
   end
 
+  CUD_IMPORT_ATTRIBUTES = %w[
+    lecture section grade_policy
+    instructor dropped nickname course_assistant course_number
+  ].freeze
+
+  def import_course_user_data_from_tar(tar_extract, root_dir, imported_users_by_id)
+    imported_cuds_by_id = {}
+    imported_cuds = load_yaml_records_from_tar(tar_extract, root_dir, "course_user_data")
+
+    imported_cuds.each do |cud_attrs|
+      old_user_id = cud_attrs["user_id"]
+      next if old_user_id.blank?
+
+      user = imported_users_by_id[old_user_id]
+      raise StandardError, "Course user data references unknown user_id #{old_user_id}" if user.nil?
+
+      cud = @newCourse.course_user_data.find_or_initialize_by(user:)
+      cud.assign_attributes(cud_attrs.slice(*CUD_IMPORT_ATTRIBUTES))
+      cud.save!
+
+      old_cud_id = cud_attrs["id"]
+      imported_cuds_by_id[old_cud_id] = cud if old_cud_id.present?
+    end
+
+    imported_cuds_by_id
+  end
+
   def load_yaml_records_from_tar(tar_extract, root_dir, sub_root_dir)
     tar_extract.rewind
     records = []
@@ -1443,13 +1473,73 @@ private
                                                        ActiveSupport::TimeZone],
                                    aliases: true)
         records << yaml_data if yaml_data.is_a?(Hash)
-      rescue Psych::BadAlias, Psych::SyntaxError, Psych::DisallowedClass => e
+      rescue Psych::BadAlias, Psych::SyntaxError, Psych::DisallowedClass
         # Skip files that aren't valid YAML
         next
       end
     end
 
     records
+  end
+
+  SUBMISSION_IMPORT_ATTRIBUTES = %w[
+    version filename created_at updated_at notes mime_type special_type
+    autoresult detected_mime_type submitter_ip ignored dave
+    embedded_quiz_form_answer submitted_by_app_id group_key jobid missing_problems
+  ].freeze
+
+  def import_submissions(files, imported_cuds_by_id, imported_assessments_by_id)
+    failed_submission_count = 0
+
+    submission_files_handins = files.select { |path, _|
+      path.start_with?("submission_files/")
+    }
+
+    submission_files = files.select { |path, _|
+      path.start_with?("submissions/") && path.end_with?(".yml")
+    }
+
+    submission_files_lookup = {}
+    submission_files_handins.each do |path, contents|
+      # submission_files/submission_file_1_admin@foo.bar_0_handin.c
+      begin
+        submission_number = Integer(path.split("/")[1].split("_")[2])
+      rescue StandardError
+        failed_submission_count += 1
+        next
+      end
+      submission_files_lookup[submission_number] = contents
+    end
+
+    submission_files.each do |_path, contents|
+      submission_attrs = YAML.unsafe_load(contents)
+      next unless submission_attrs.is_a?(Hash)
+
+      old_cud_id = submission_attrs["course_user_datum_id"]
+      old_assessment_id = submission_attrs["assessment_id"]
+      old_submitter_id = submission_attrs["submitted_by_id"]
+      old_submission_number = submission_attrs["id"]
+
+      cud = imported_cuds_by_id[old_cud_id]
+      assessment = imported_assessments_by_id[old_assessment_id]
+
+      if cud.nil?
+        raise StandardError,
+              "Submission references unknown course_user_datum_id #{old_cud_id}"
+      end
+      if assessment.nil?
+        raise StandardError,
+              "Submission references unknown assessment_id #{old_assessment_id}"
+      end
+
+      submission = Submission.new(submission_attrs.slice(*SUBMISSION_IMPORT_ATTRIBUTES))
+      submission.course_user_datum = cud
+      submission.assessment = assessment
+      submission.submitted_by = imported_cuds_by_id[old_submitter_id] || cud
+      submission.save!(validate: false)
+
+      submission.save_file(submission_files_lookup[old_submission_number])
+    end
   end
 
   # same as assessment import check, ensures the tar has a single root directory
@@ -1554,7 +1644,10 @@ private
   ].freeze
 
   def import_assessments(files)
-    assessment_files = files.select { |path, _| path.start_with?("assessments/") && path.end_with?(".yml") }
+    imported_assessments_by_id = {}
+    assessment_files = files.select { |path, _|
+      path.start_with?("assessments/") && path.end_with?(".yml")
+    }
 
     assessment_files.each do |_path, contents|
       config = YAML.unsafe_load(contents)
@@ -1579,6 +1672,11 @@ private
       end
 
       assessment.construct_folder
+
+      old_assessment_id = config["id"]
+      imported_assessments_by_id[old_assessment_id] = assessment if old_assessment_id.present?
     end
+
+    imported_assessments_by_id
   end
 end

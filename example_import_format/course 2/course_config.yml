@@ -1,0 +1,26 @@
+---
+general:
+  name: test-course
+  semester: s26
+  late_slack: 0
+  grace_days: 0
+  display_name: test-course
+  start_date: 2026-03-13
+  end_date: 2026-03-31
+  disabled: false
+  exam_in_progress: false
+  version_threshold: 10
+  gb_message: ''
+  website: ''
+  disable_on_end: true
+  late_penalty:
+    kind: 0
+    value: 0.0
+  version_penalty:
+    kind: 0
+    value: 0.0
+attachments:
+- filename: hello_python.tar
+  mime_type: application/x-tar
+  name: tar
+  assessment_id: 2
