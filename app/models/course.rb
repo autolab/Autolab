@@ -429,7 +429,7 @@ class Course < ApplicationRecord
           tar.mkdir File.join(course_dir, "submissions"), mode
           tar.mkdir File.join(course_dir, "submission_files"), mode
 
-          assessments.each do |assessment|
+          assessments.includes(:submissions).each do |assessment|
             assessment.submissions.each do |submission|
               tar.add_file File.join(course_dir, "submissions", "submission_#{submission.id}.yml"),
                            mode do |tar_file|
