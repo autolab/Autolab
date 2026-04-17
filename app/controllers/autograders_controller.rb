@@ -44,7 +44,8 @@ class AutogradersController < ApplicationController
     # Clear secrets if use_access_key is disabled
     params_to_update = autograder_params.to_h.symbolize_keys
     if @autograder.respond_to?(:use_access_key)
-      use_access_key_enabled = ActiveModel::Type::Boolean.new.cast(params_to_update[:use_access_key])
+      use_access_key_enabled =
+        ActiveModel::Type::Boolean.new.cast(params_to_update[:use_access_key])
       params_to_update[:use_access_key] = use_access_key_enabled
 
       if use_access_key_enabled
@@ -67,10 +68,14 @@ class AutogradersController < ApplicationController
       begin
         upload
       rescue Errno::EACCES, Errno::EPERM => e
-        Rails.logger.error("Autograder upload permission error for course=#{@course.name}, assessment=#{@assessment.name}: #{e.class}: #{e.message}")
+        Rails.logger.error("Autograder upload permission error for " \
+                             "course=#{@course.name}, assessment=#{@assessment.name}: " \
+                             "#{e.class}: #{e.message}")
         flash[:error] = "Autograder could not be uploaded due to filesystem permissions."
       rescue StandardError => e
-        Rails.logger.error("Autograder upload failed for course=#{@course.name}, assessment=#{@assessment.name}: #{e.class}: #{e.message}")
+        Rails.logger.error("Autograder upload failed for course=#{@course.name}, " \
+                             "assessment=#{@assessment.name}: " \
+                             "#{e.class}: #{e.message}")
         flash[:error] = "Autograder could not be uploaded."
       end
     else
@@ -106,15 +111,17 @@ class AutogradersController < ApplicationController
       raise Errno::ENOENT, "Assessment directory does not exist: #{assessment_dir}"
     end
 
-    if UnixGroupManager.delegate_enabled?
-      unless UnixGroupManager.mkdir_p_via_delegate(assessment_dir.to_s)
-        raise Errno::EACCES, "Permission denied creating #{assessment_dir}"
-      end
+    if UnixGroupManager.delegate_enabled? &&
+       !UnixGroupManager.mkdir_p_via_delegate(assessment_dir.to_s)
+      raise Errno::EACCES, "Permission denied creating #{assessment_dir}"
     end
 
     FilesystemEnforcer.fix_path(assessment_dir.to_s)
 
-    write_uploaded_file(uploaded_makefile, assessment_dir.join("autograde-Makefile")) unless uploaded_makefile.nil?
+    unless uploaded_makefile.nil?
+      write_uploaded_file(uploaded_makefile,
+                          assessment_dir.join("autograde-Makefile"))
+    end
     write_uploaded_file(uploaded_tar, assessment_dir.join("autograde.tar")) unless uploaded_tar.nil?
   end
 
