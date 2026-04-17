@@ -293,7 +293,7 @@ class UsersController < ApplicationController
     is_staff_anywhere = user.course_user_data.where(instructor: true)
                             .exists?
 
-    username = UnixGroupManager.login_from_email(user.email)
+    username = UnixGroupManager.update_unix_user_mapping(user)
     if username && is_staff_anywhere
       # Wipe their keys to block ssh access
       UnixGroupManager.provision_ssh_keys(username, [], email: user.email)

@@ -10,7 +10,7 @@
   </div>
 <% else %>
   <% if @user == current_user || current_user.administrator? %>
-    <% username = UnixGroupManager.login_from_email(@user.email) %>
+    <% username = UnixGroupManager.update_unix_user_mapping(@user) %>
     <% if username %>
       <p><strong>Unix Username:</strong> <code><%= username %></code></p>
       <% hostname = request.host || "autolab.example.com" %>

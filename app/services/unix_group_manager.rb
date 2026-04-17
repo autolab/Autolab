@@ -430,7 +430,7 @@ class UnixGroupManager
   def self.ensure_courses_directory(user, home_dir)
     return unless user
 
-    username = self.login_from_email(user.email)
+    username = self.update_unix_user_mapping(user)
     return unless username
 
     self.ensure_user(username, email: user.email)
@@ -502,21 +502,45 @@ class UnixGroupManager
     nil
   end
 
-  # Extract a safe Unix username from email
-  def self.login_from_email(email)
-    return nil if email.nil? || email.empty?
+  def self.update_unix_user_mapping(user)
+    # don't change unix_user if it already exists
+    return user.unix_user if user.unix_user.present?
 
-    # Extract local part before @, lowercase it
-    base = email.split("@").first.to_s.downcase
-    # Keep only alphanumeric, hyphens, underscores
-    base = base.gsub(/[^a-z0-9_-]/, "-")
-    # Ensure it starts with a letter
-    base = "u#{base}" unless base.match?(/\A[a-z]/)
-    # Limit length
-    base = base[0, 32]
-    base = "uuser" if base.empty?
-    base
+    return nil if user.email.nil? || user.email.empty?
+
+    base_name = user.email.split("@").first.to_s.downcase.gsub(/[^a-z0-9_-]/, "-")
+    base_name = "u#{base_name}" unless base_name.match?(/\A[a-z]/)
+    base_name = "uuser" if base_name.empty?
+
+    final_name = base_name[0, 32]
+    counter = 1
+
+    while User.exists?(unix_user: final_name)
+      suffix = "-#{counter}"
+      # Ensure name + suffix stays under 32 chars
+      final_name = "#{base_name[0, 32 - suffix.length]}#{suffix}"
+      counter += 1
+    end
+
+    user.update!(unix_user: final_name)
+    final_name
   end
+
+  # Extract a safe Unix username from email
+  # def self.login_from_email(email)
+  #   return nil if email.nil? || email.empty?
+  #
+  #   # Extract local part before @, lowercase it
+  #   base = email.split("@").first.to_s.downcase
+  #   # Keep only alphanumeric, hyphens, underscores
+  #   base = base.gsub(/[^a-z0-9_-]/, "-")
+  #   # Ensure it starts with a letter
+  #   base = "u#{base}" unless base.match?(/\A[a-z]/)
+  #   # Limit length
+  #   base = base[0, 32]
+  #   base = "uuser" if base.empty?
+  #   base
+  # end
 
   # Ensure a Unix group exists, creating it if necessary
   def self.ensure_group(group_name)
@@ -778,7 +802,7 @@ class UnixGroupManager
     # Ensure group exists
     return false unless ensure_group(group_name)
 
-    username = login_from_email(user.email)
+    username = update_unix_user_mapping(user)
     return false unless username
 
     # Check if user exists (only add to group if user already exists)
