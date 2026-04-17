@@ -1524,7 +1524,15 @@ table.sub td, th {
   color: #444444;
   font-size: 14px;
   font-weight: 600;
+  margin-top: -12px;
 }
+
+.select-field-helper-text {
+  color: #000000;
+  font-size: 15px;
+  margin-top: -12px;
+}
+
 .refresh-feedback:hover {
   cursor: pointer;
 }
