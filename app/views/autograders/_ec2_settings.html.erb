@@ -15,7 +15,10 @@
                  display_name: "Access Key ID",
                  value: nil,
                  autocomplete: "off",
+                 title: "Looks like an invalid AWS Access Key ID",
                  placeholder: "Leave blank to keep existing secret" %>
+
+<p class="help-text">Leave blank to keep existing secret.</p>
 
 <%
   # Group EC2 instance options by category for better organization
@@ -48,8 +51,22 @@
       ['r5.large - 2 vCPU, 16 GiB RAM (memory-optimized, for large datasets)', 'r5.large'],
       ['r5.xlarge - 4 vCPU, 32 GiB RAM (high memory capacity)', 'r5.xlarge'],
       ['r5.2xlarge - 8 vCPU, 64 GiB RAM (very high memory capacity)', 'r5.2xlarge']
+    ]],
+    # Accelerated Computing (GPU)
+    ['G - Accelerated Computing (GPU)', [
+      ['g4dn.xlarge - 4 vCPU, 16 GiB RAM, 1 NVIDIA T4 GPU (cost-effective ML/CUDA)', 'g4dn.xlarge'],
+      ['g4dn.2xlarge - 8 vCPU, 32 GiB RAM, 1 NVIDIA T4 GPU (balanced GPU/CPU)', 'g4dn.2xlarge'],
+      ['g5.xlarge - 4 vCPU, 16 GiB RAM, 1 NVIDIA A10G GPU (high-performance ML)', 'g5.xlarge']
     ]]
   ]
+%>
+
+<%
+  selected_instance_type = @autograder.instance_type
+  valid_instance_types = ec2_instance_options.flat_map { |_group, instances| instances.map(&:last) }
+  if selected_instance_type.present? && !valid_instance_types.include?(selected_instance_type)
+    raise ArgumentError, "Invalid EC2 instance type: #{selected_instance_type}"
+  end
 %>
 
 <div style="margin-bottom: 5px;"><strong>EC2 Instance Type</strong></div>

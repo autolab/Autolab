@@ -290,26 +290,58 @@ private
     # customized scoreboard. Extract the scoreboard entry
     # from the scoreboard array object in the JSON autoresult.
 
-    parsed = ActiveSupport::JSON.decode(autoresult)
+    begin
+      parsed = ActiveSupport::JSON.decode(autoresult)
 
-    # ensure that the parsed result is a hash with scoreboard field, where scoreboard is an array
-    if !parsed || !parsed.is_a?(Hash) || !parsed["scoreboard"] ||
-       !parsed["scoreboard"].is_a?(Array)
-      # If there is no autoresult for this student (typically
-      # because their code did not compile or it segfaulted and
-      # the instructor's autograder did not catch it) then
-      # raise an error, will be handled by caller
-      if @cud.instructor?
-        (flash.now[:error] = "Error parsing scoreboard for autograded assessment: " \
-          "scoreboard result is not an array. Please ensure that the autograder returns " \
-          "scoreboard results as an array.")
-      end
-      Rails.logger.error("Scoreboard error in #{@course.name}/#{@assessment.name}: " \
+      # ensure that the parsed result is a hash with scoreboard field, where scoreboard is an array
+      if !parsed || !parsed.is_a?(Hash) || !parsed["scoreboard"] ||
+         !parsed["scoreboard"].is_a?(Array)
+        # If there is no autoresult for this student (typically
+        # because their code did not compile or it segfaulted and
+        # the instructor's autograder did not catch it) then
+        # raise an error, will be handled by caller
+        if @cud.instructor?
+          (flash.now[:error] = "Error parsing scoreboard for autograded assessment: " \
+            "scoreboard result is not an array. Please ensure that the autograder returns " \
+            "scoreboard results as an array.")
+        end
+        Rails.logger.error("Scoreboard error in #{@course.name}/#{@assessment.name}: " \
                            "Scoreboard result is not an array")
-      raise StandardError
-    end
+        raise StandardError
+      end
 
-    parsed["scoreboard"]
+      # ADDED: Ensure the scoreboard entries align with colspec expectations
+      if @scoreboard && @scoreboard.colspec.present?
+        begin
+          colspec_parsed = ActiveSupport::JSON.decode(@scoreboard.colspec)
+          if colspec_parsed && colspec_parsed["scoreboard"] &&
+             colspec_parsed["scoreboard"].is_a?(Array)
+            expected_length = colspec_parsed["scoreboard"].length
+            # Ensure the entry has enough elements, pad with nil if needed
+            if parsed["scoreboard"].length < expected_length
+              Rails.logger.warn(
+                "Scoreboard entry too short (#{parsed['scoreboard'].length}) " \
+                "for user, expected #{expected_length}"
+              )
+              # Pad the array to match expected length
+              parsed["scoreboard"] = parsed["scoreboard"].fill(
+                nil,
+                parsed["scoreboard"].length,
+                expected_length - parsed["scoreboard"].length
+              )
+            end
+          end
+        rescue StandardError => e
+          Rails.logger.error("Error validating scoreboard entry against colspec: #{e.message}")
+        end
+      end
+
+      parsed["scoreboard"]
+    rescue StandardError => e
+      # Log the error and re-raise to be handled by the caller
+      Rails.logger.error("Error parsing scoreboard JSON: #{e.message}")
+      raise
+    end
   end
 
   #

@@ -427,7 +427,21 @@ ActiveRecord::Schema.define(version: 2026_04_16_081649) do
     t.index ["submission_id"], name: "index_scores_on_submission_id"
   end
 
-  create_table "submissions", force: :cascade do |t|
+  create_table "ssh_keys", id: :integer, charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.integer "user_id", null: false
+    t.text "public_key", null: false
+    t.string "comment"
+    t.string "key_type"
+    t.string "fingerprint"
+    t.boolean "active", default: true, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["active"], name: "index_ssh_keys_on_active"
+    t.index ["fingerprint"], name: "index_ssh_keys_on_fingerprint", unique: true
+    t.index ["user_id"], name: "index_ssh_keys_on_user_id"
+  end
+
+  create_table "submissions", id: :integer, charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.integer "version"
     t.integer "course_user_datum_id"
     t.integer "assessment_id"
@@ -514,4 +528,9 @@ ActiveRecord::Schema.define(version: 2026_04_16_081649) do
   add_foreign_key "ami_packages", "ami_package_sources"
   add_foreign_key "autograders", "ami_images"
   add_foreign_key "container_images", "container_images", column: "public_template_id"
+  add_foreign_key "github_integrations", "users"
+  add_foreign_key "oauth_access_grants", "oauth_applications", column: "application_id"
+  add_foreign_key "oauth_access_tokens", "oauth_applications", column: "application_id"
+  add_foreign_key "oauth_device_flow_requests", "oauth_applications", column: "application_id"
+  add_foreign_key "ssh_keys", "users"
 end
