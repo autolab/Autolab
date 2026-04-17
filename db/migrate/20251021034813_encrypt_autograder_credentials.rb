@@ -1,8 +1,8 @@
 class EncryptAutograderCredentials < ActiveRecord::Migration[6.1]
   def up
     # Add encrypted columns for access keys
-    add_column :autograders, :access_key_ciphertext, :text
-    add_column :autograders, :access_key_id_ciphertext, :text
+    add_column :autograders, :access_key_ciphertext, :text unless column_exists?(:autograders, :access_key_ciphertext)
+    add_column :autograders, :access_key_id_ciphertext, :text unless column_exists?(:autograders, :access_key_id_ciphertext)
 
     # Migrate existing plaintext data to encrypted columns
     Autograder.reset_column_information

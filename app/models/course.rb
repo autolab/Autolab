@@ -339,9 +339,9 @@ class Course < ApplicationRecord
 
   def generate_tar(export_configs)
     base_path = Rails.root.join("courses", name).to_s
-    course_dir = name
+    course_dir = "course"
     rb_path = "course.rb"
-    config_path = "#{name}.yml"
+    config_path = "course_config.yml"
     mode = 0o755
 
     begin
@@ -361,13 +361,92 @@ class Course < ApplicationRecord
           tar_file.write(dump_yaml(export_configs&.include?('metrics_config')))
         end
 
+        # save users
+        if export_configs&.include?('users')
+          tar.mkdir File.join(course_dir, "users"), mode
+
+          course_user_data.includes(:user).each do |cud|
+            user_data = cud.user.attributes.slice(
+              "id", "email", "first_name", "last_name", "administrator",
+              "school", "major", "year", "hover_assessment_date"
+            )
+
+            tar.add_file File.join(course_dir, "users", "user_#{cud.user_id}.yml"),
+                         mode do |tar_file|
+              tar_file.write(user_data.to_yaml)
+            end
+          end
+        end
+
+        # save course user data
+        if export_configs&.include?('course_user_data')
+          tar.mkdir File.join(course_dir, "course_user_data"), mode
+
+          course_user_data.each do |cud|
+            tar.add_file File.join(course_dir, "course_user_data", "cud_#{cud.id}.yml"),
+                         mode do |tar_file|
+              tar_file.write(cud.attributes.to_yaml)
+            end
+          end
+        end
+
         # save assessments
         if export_configs&.include?('assessments')
+          tar.mkdir File.join(course_dir, "assessments"), mode
+          tar.mkdir File.join(course_dir, "handout_files"), mode
+
           assessments.each do |assessment|
-            asmt_dir = assessment.name
-            assessment.dump_yaml
-            filter = [assessment.handin_directory_path]
-            assessment.load_dir_to_tar(base_path, asmt_dir, tar, filter, course_dir)
+            asmt_data = assessment.attributes.except("late_penalty_id", "version_penalty_id")
+            asmt_data["late_penalty"] = assessment.late_penalty&.attributes
+            asmt_data["version_penalty"] = assessment.version_penalty&.attributes
+
+            tar.add_file File.join(course_dir, "assessments", "assessment_#{assessment.id}.yml"),
+                         mode do |tar_file|
+              tar_file.write(asmt_data.to_yaml)
+            end
+
+            # export handout files
+            handout_path = Rails.root.join("courses", name, assessment.name, "handout")
+            if Dir.exist?(handout_path)
+              Dir.foreach(handout_path) do |filename|
+                next if filename == "." || filename == ".."
+                full_path = File.join(handout_path, filename)
+                next unless File.file?(full_path)
+
+                File.open(full_path, "rb") do |f|
+                  tar.add_file File.join(course_dir, "handout_files", "assessment_handout_#{assessment.id}_#{filename}"),
+                               mode do |tar_file|
+                    tar_file.write(f.read)
+                  end
+                end
+              end
+            end
+          end
+        end
+
+        # save submissions
+        if export_configs&.include?('submissions')
+          tar.mkdir File.join(course_dir, "submissions"), mode
+          tar.mkdir File.join(course_dir, "submission_files"), mode
+
+          assessments.includes(:submissions).each do |assessment|
+            assessment.submissions.each do |submission|
+              tar.add_file File.join(course_dir, "submissions", "submission_#{submission.id}.yml"),
+                           mode do |tar_file|
+                tar_file.write(submission.attributes.to_yaml)
+              end
+
+              # export submission file
+              handin_path = Rails.root.join("courses", name, assessment.name, "handin", submission.filename)
+              if submission.filename.present? && File.exist?(handin_path)
+                File.open(handin_path, "rb") do |f|
+                  tar.add_file File.join(course_dir, "submission_files", "submission_file_#{submission.id}_#{submission.filename}"),
+                               mode do |tar_file|
+                    tar_file.write(f.read)
+                  end
+                end
+              end
+            end
           end
         end
       end

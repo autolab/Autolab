@@ -95,7 +95,7 @@ class Assessment < ApplicationRecord
   end
 
   def asmt_yaml_path
-    path "#{name}.yml"
+    path "assignment_config.yml"
   end
 
   def handout_path
