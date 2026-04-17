@@ -38,7 +38,7 @@ class ContainerImage < ApplicationRecord
     status == 0 || status == 1
   end
 
-  private
+private
 
   # Ensure image is either public OR tied to a course
   def public_or_course_scoped

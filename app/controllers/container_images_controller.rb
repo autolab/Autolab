@@ -27,7 +27,7 @@ class ContainerImagesController < ApplicationController
       template_name = @container_image.public_template.name if @container_image.public_template
                                                                                .present?
       template_uri = @container_image.public_template.image_uri if @container_image.public_template
-                                                                             .present?
+                                                                                   .present?
       begin
         resp = TangoClient.build_image(
           @container_image.name,
