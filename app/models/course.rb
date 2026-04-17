@@ -393,6 +393,7 @@ class Course < ApplicationRecord
         # save assessments
         if export_configs&.include?('assessments')
           tar.mkdir File.join(course_dir, "assessments"), mode
+          tar.mkdir File.join(course_dir, "handout_files"), mode
 
           assessments.each do |assessment|
             asmt_data = assessment.attributes.except("late_penalty_id", "version_penalty_id")
@@ -403,18 +404,47 @@ class Course < ApplicationRecord
                          mode do |tar_file|
               tar_file.write(asmt_data.to_yaml)
             end
+
+            # export handout files
+            handout_path = Rails.root.join("courses", name, assessment.name, "handout")
+            if Dir.exist?(handout_path)
+              Dir.foreach(handout_path) do |filename|
+                next if filename == "." || filename == ".."
+                full_path = File.join(handout_path, filename)
+                next unless File.file?(full_path)
+
+                File.open(full_path, "rb") do |f|
+                  tar.add_file File.join(course_dir, "handout_files", "assessment_handout_#{assessment.id}_#{filename}"),
+                               mode do |tar_file|
+                    tar_file.write(f.read)
+                  end
+                end
+              end
+            end
           end
         end
 
         # save submissions
         if export_configs&.include?('submissions')
           tar.mkdir File.join(course_dir, "submissions"), mode
+          tar.mkdir File.join(course_dir, "submission_files"), mode
 
           assessments.each do |assessment|
             assessment.submissions.each do |submission|
               tar.add_file File.join(course_dir, "submissions", "submission_#{submission.id}.yml"),
                            mode do |tar_file|
                 tar_file.write(submission.attributes.to_yaml)
+              end
+
+              # export submission file
+              handin_path = Rails.root.join("courses", name, assessment.name, "handin", submission.filename)
+              if submission.filename.present? && File.exist?(handin_path)
+                File.open(handin_path, "rb") do |f|
+                  tar.add_file File.join(course_dir, "submission_files", "submission_file_#{submission.id}_#{submission.filename}"),
+                               mode do |tar_file|
+                    tar_file.write(f.read)
+                  end
+                end
               end
             end
           end
