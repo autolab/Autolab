@@ -133,15 +133,14 @@ class JobsController < ApplicationController
       # We don't have any information about which problems were
       # autograded, so search each problem until we find one
       # that has autograder feedback and save it for the view.
-      i = 0
       feedback_num = 0
       @feedback_str = ""
       scores.each do |score|
-        i += 1
-        next unless score.feedback && score.feedback["Autograder"]
+        next unless score.grader_id.to_i <= 0
+        next if score.feedback.blank?
 
         @feedback_str = score.feedback
-        feedback_num = i
+        feedback_num = score.problem_id
         break
       end
     end
@@ -241,19 +240,19 @@ protected
       job[:status] = rjob["trace"][-1].split("|")[1]
     end
 
-    if is_live
-      job[:state] = if job[:status]["Added job"]
+    job[:state] = if is_live
+                    if job[:status]["Added job"]
                       "Waiting"
                     else
                       "Running"
                     end
-    elsif rjob["trace"][-1].include?("Autodriver returned normally")
-        job[:state] = "Succeeded"
-    elsif rjob["trace"][-1].split("|")[1].include? "Error"
-      job[:state] = "Failed"
-    else
-      job[:state] = "Unknown State"
-    end
+                  elsif rjob["trace"][-1].include?("Autodriver returned normally")
+                    "Succeeded"
+                  elsif rjob["trace"][-1].split("|")[1].include? "Error"
+                    "Failed"
+                  else
+                    "Unknown State"
+                  end
 
     job
   end

@@ -3,15 +3,35 @@ production:
   school_short_name: "MS"
   support_email: "autolab@myschool.edu"
   tech_email: "autolab-tech@myschool.edu"
+  instance_manager_email: "instance-manager@myschool.edu"
+  developer_email: "autolab-dev@andrew.cmu.edu"
+  sponsors:
+    - name: "Example Computer Science Department"
+      url: "https://cs.myschool.edu"
+      logo: "/assets/sponsors/example_cs.svg"
+      description: "Primary teaching sponsor"
 
 development:
   school_name: "Carnegie Mellon University"
   school_short_name: "CMU"
   support_email: "autolab@myschool.edu"
   tech_email: "autolab-tech@myschool.edu"
+  instance_manager_email: "instance-manager@myschool.edu"
+  developer_email: "autolab-dev@andrew.cmu.edu"
+  sponsors:
+    - name: "Autolab Project"
+      url: "https://www.autolabproject.com"
+      logo: "/assets/sponsors/autolab.svg"
+      description: "Open-source contributors"
 
 test:
   school_name: "Carnegie Mellon University"
   school_short_name: "CMU"
   support_email: "autolab@myschool.edu"
   tech_email: "autolab-tech@myschool.edu"
+  instance_manager_email: "instance-manager@myschool.edu"
+  developer_email: "autolab-dev@andrew.cmu.edu"
+  sponsors:
+    - name: "Autolab Project"
+      url: "https://www.autolabproject.com"
+      logo: "/assets/sponsors/autolab.svg"

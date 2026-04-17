@@ -79,6 +79,7 @@ module AssessmentHandinCore
                                                   submitter_ip: request.remote_ip,
                                                   submitted_by_app_id: app_id)
       submission.save_file(sub)
+      FilesystemEnforcer.fix_path(submission.handin_file_path.to_s)
       return [submission]
     end
 
@@ -89,6 +90,7 @@ module AssessmentHandinCore
                                                   submitter_ip: request.remote_ip,
                                                   submitted_by_app_id: app_id)
       submission.save_file(sub)
+      FilesystemEnforcer.fix_path(submission.handin_file_path.to_s)
       return [submission]
     end
 

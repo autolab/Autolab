@@ -1,0 +1,29 @@
+<div class="row">
+  <% sponsors.each do |sponsor| %>
+    <div class="col s12 m6 l4">
+      <div class="card sponsor-card">
+        <div class="card-content center-align">
+          <% if sponsor[:logo].present? %>
+            <div class="sponsor-logo">
+              <%= image_tag sponsor[:logo], alt: sponsor[:name], class: "responsive-img" %>
+            </div>
+          <% else %>
+            <div class="sponsor-logo placeholder">
+              <span><%= sponsor[:name].first.upcase %></span>
+            </div>
+          <% end %>
+          <p class="sponsor-name">
+            <% if sponsor[:url].present? %>
+              <%= link_to sponsor[:name], sponsor[:url], target: "_blank", rel: "noopener" %>
+            <% else %>
+              <%= sponsor[:name] %>
+            <% end %>
+          </p>
+          <% if sponsor[:description].present? %>
+            <p class="grey-text text-darken-1 sponsor-description"><%= sponsor[:description] %></p>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>

@@ -64,6 +64,7 @@ Rails.application.routes.draw do
       match "developer_login", via: [:get, :post]
     end
     get "contact"
+    get "sponsors"
     get "no_user"
   end
 
@@ -101,6 +102,10 @@ Rails.application.routes.draw do
     match "update_password_for_user", on: :member, via: [:get, :put]
     post "change_password_for_user", on: :member
     patch "update_display_settings", on: :member
+    # SSH Key Management
+    get "ssh_keys", on: :member
+    post "create_ssh_key", on: :member
+    delete "destroy_ssh_key/:ssh_key_id", on: :member, to: "users#destroy_ssh_key", as: :destroy_ssh_key
   end
 
   resources :courses, param: :name do
