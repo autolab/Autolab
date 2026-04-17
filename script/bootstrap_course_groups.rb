@@ -69,7 +69,7 @@ scope.find_each do |course|
                      .or(course.course_user_data.where(course_assistant: true))
 
   staff_cuds.find_each do |cud|
-    username = UnixGroupManager.login_from_email(cud.user.email)
+    username = UnixGroupManager.update_unix_user_mapping(cud.user)
     unless username
       say "  [SKIP] Invalid username for #{cud.user.email}"
       next

@@ -114,7 +114,7 @@
     <% if @user.instructor? %>
       <p style="font-size: 0.9em; color: #666;">
         As a course instructor or admin, you can add SSH keys to access the system via SSH.
-        Your Unix username is: <code><%= UnixGroupManager.login_from_email(@user.email) || "(not yet created)" %></code>
+        Your Unix username is: <code><%= UnixGroupManager.update_unix_user_mapping(@user) || "(not yet created)" %></code>
       </p>
     <% end %>
   <% end %>

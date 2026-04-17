@@ -115,7 +115,7 @@ private
   end
 
   def self.ensure_unix_username!(user)
-    username = UnixGroupManager.login_from_email(user.email)
+    username = UnixGroupManager.update_unix_user_mapping(user)
     raise ProvisioningError, "Unable to derive Unix username for #{user.email}" unless username
 
     username

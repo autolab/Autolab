@@ -18,7 +18,7 @@ staff_users = User.joins(:course_user_data)
                   .distinct
 
 staff_users.find_each do |user|
-  username = UnixGroupManager.login_from_email(user.email)
+  username = UnixGroupManager.update_unix_user_mapping(user)
   next unless username
 
   puts "\nSetting up SSH for #{user.email} → #{username}"

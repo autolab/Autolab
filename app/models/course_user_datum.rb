@@ -419,7 +419,7 @@ private
     target_user = user || User.find_by(id: user_id)
     return unless target_user
 
-    username = UnixGroupManager.login_from_email(target_user.email)
+    username = UnixGroupManager.update_unix_user_mapping(target_user)
     home_dir = "/home/#{username}"
 
     UnixGroupManager.ensure_courses_directory(target_user, home_dir)
