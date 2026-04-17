@@ -927,8 +927,17 @@ private
     return false unless group_name
 
     service_user = UnixGroupManager.service_username
-    sync_users = [service_user, "app",
-                  "user9999"].compact.map(&:to_s).map(&:strip).reject(&:empty?).uniq
+    extra_service_users = ENV.fetch("AUTOLAB_EXTRA_SERVICE_USERS", "")
+                             .split(",").map(&:strip).reject(&:empty?)
+
+    requested_users = ([service_user] + extra_service_users)
+                      .compact.map(&:to_s).map(&:strip).reject(&:empty?).uniq
+
+    sync_users = requested_users.select do |username|
+      exists = UnixGroupManager.user_exists?(username)
+      Rails.logger.info("Course #{name}: skipping non-existent Unix user #{username} for group sync") unless exists
+      exists
+    end
 
     if sync_users.empty?
       Rails.logger.warn("Course #{name}: unable to determine service user(s) " \

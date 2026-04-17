@@ -480,12 +480,19 @@ class UnixGroupManager
   def self.safe_group_name(course_name)
     return nil if course_name.nil? || course_name.empty?
 
-    # Keep only alphanumeric, hyphens, dots, underscores
-    safe = course_name.strip.gsub(/[^A-Za-z0-9._-]/, "-")
-    # Limit length to 32 chars (Linux group name limit)
-    safe = safe[0, 32]
-    # Ensure it doesn't start with - or .
-    safe = "grp-#{safe}" if safe.empty? || safe.start_with?("-", ".")
+    # Keep only lowercase alphanumeric, hyphens, and underscores.
+    # Linux group names cannot be purely numeric and should not start with
+    # punctuation, so we enforce a leading alphabetic prefix when needed.
+    safe = course_name.to_s.strip.downcase.gsub(/[^a-z0-9_-]/, "-")
+    safe = safe.gsub(/-+/, "-").sub(/\A-+/, "").sub(/-+\z/, "")
+
+    if safe.empty? || safe.match?(/\A[^a-z_]/)
+      safe = "grp-#{safe}"
+    end
+
+    # Limit length to 32 chars (Linux group name limit), and avoid trailing '-'
+    safe = safe[0, 32].sub(/-+\z/, "")
+    safe = "grp" if safe.empty?
     safe
   end
 
