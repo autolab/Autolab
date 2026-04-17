@@ -90,6 +90,25 @@ Rails.application.routes.draw do
     get "autolab_config"
   end
 
+  namespace :admin do
+    resources :container_images, except: [:show, :edit], controller: "container_images" do
+      collection do
+        get  "/",                to: "container_images#admin_index",  action: :admin_index
+        get  "new",              to: "container_images#admin_new",  action: :admin_new
+        post "/",                to: "container_images#admin_create", action: :admin_create
+        get  "refresh_all_status", to: "container_images#admin_refresh_all_status"
+      end
+
+      member do
+        get    "refresh_status", to: "container_images#admin_refresh_status"
+        get    "log",            to: "container_images#admin_log"
+        patch  "/",              to: "container_images#admin_update", action: :admin_update
+        put    "/",              to: "container_images#admin_update"
+        delete "/",              to: "container_images#admin_destroy", action: :admin_destroy
+      end
+    end
+  end
+
   resources :users do
     get "admin"
     get "download_all_submissions", on: :member
@@ -105,6 +124,15 @@ Rails.application.routes.draw do
 
   resources :courses, param: :name do
     match "join_course", via: [:get, :post], on: :collection
+
+    resources :container_images, except: [:show, :edit] do
+      get "refresh_status"
+      get "log"
+
+      collection do
+        get "refresh_all_status"
+      end
+    end
 
     resources :schedulers do
       post "visualRun", action: :visual_run

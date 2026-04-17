@@ -241,19 +241,19 @@ protected
       job[:status] = rjob["trace"][-1].split("|")[1]
     end
 
-    if is_live
-      job[:state] = if job[:status]["Added job"]
+    job[:state] = if is_live
+                    if job[:status]["Added job"]
                       "Waiting"
                     else
                       "Running"
                     end
-    elsif rjob["trace"][-1].include?("Autodriver returned normally")
-        job[:state] = "Succeeded"
-    elsif rjob["trace"][-1].split("|")[1].include? "Error"
-      job[:state] = "Failed"
-    else
-      job[:state] = "Unknown State"
-    end
+                  elsif rjob["trace"][-1].include?("Autodriver returned normally")
+                    "Succeeded"
+                  elsif rjob["trace"][-1].split("|")[1].include? "Error"
+                    "Failed"
+                  else
+                    "Unknown State"
+                  end
 
     job
   end

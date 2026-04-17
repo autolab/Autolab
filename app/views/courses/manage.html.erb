@@ -52,10 +52,16 @@
               <%= link_to "Run Moss cheat checker", moss_course_path(@course),
                           { title: "Use the Stanford Moss server to detect copying" } %>
             </li>
-            <% if Rails.configuration.x.docker_image_upload_enabled.presence %>
+            <% if Rails.configuration.x.docker_image_upload_enabled.presence && !Rails.configuration.x.ec2_docker.presence%>
               <li>
                 <%= link_to "Upload docker image", course_dockers_path(@course),
                             { title: "Upload docker image for autograding assessments" } %>
+              </li>
+            <% end %>
+            <% if Rails.configuration.x.ec2_docker.presence %>
+              <li>
+                <%= link_to "Manage autograder images", course_container_images_path(@course),
+                            { title: "Manage autograder images for autograding assessments" } %>
               </li>
             <% end %>
             <li>

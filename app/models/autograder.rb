@@ -23,7 +23,7 @@ class Autograder < ApplicationRecord
             numericality: { greater_than_or_equal_to: 10, less_than_or_equal_to: 900 }
   validates :autograde_timeout, inclusion: { in: 10..900 }
   validates :autograde_image, :autograde_timeout, presence: true
-  validates :autograde_image, length: { maximum: 64 }
+  validates :autograde_image, length: { maximum: 512 }
   validates :instance_type, inclusion: { in: INSTANCE_TYPES }, allow_blank: true
 
   with_options if: :use_access_key? do

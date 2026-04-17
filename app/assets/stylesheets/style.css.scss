@@ -1506,6 +1506,25 @@ table.sub td, th {
   color: $autolab-blue-text;
   margin-right: 1vw;
 }
+.refresh-feedback-btn {
+  background: none;
+  border: none;
+  outline: none;
+  padding: 0;
+  cursor: pointer;
+}
+.refresh-feedback-btn:hover {
+  background: none;
+  border: none;
+  outline: none;
+  padding: 0;
+  cursor: pointer;
+}
+.select-field-label {
+  color: #444444;
+  font-size: 14px;
+  font-weight: 600;
+}
 .refresh-feedback:hover {
   cursor: pointer;
 }
