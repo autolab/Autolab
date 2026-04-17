@@ -1,6 +1,7 @@
 require "archive"
 require "csv"
 require "fileutils"
+require "tempfile"
 require "rubygems/package"
 require "statistics"
 require "yaml"
@@ -164,11 +165,23 @@ class AssessmentsController < ApplicationController
                                                  existing_asmt.handin_directory_path, strict: false)
 
         if entry.directory?
-          FileUtils.mkdir_p(entry_file,
-                            mode: entry.header.mode, verbose: false)
-          # In case the directory was implicitly created by a file
-          FileUtils.chmod entry.header.mode, entry_file,
-                          verbose: false
+          begin
+            FileUtils.mkdir_p(entry_file,
+                              mode: entry.header.mode, verbose: false)
+            # In case the directory was implicitly created by a file
+            FileUtils.chmod entry.header.mode, entry_file,
+                            verbose: false
+          rescue Errno::EACCES, Errno::EPERM
+            raise unless UnixGroupManager.delegate_enabled?
+
+            created = UnixGroupManager.mkdir_p_via_delegate(entry_file, mode: entry.header.mode)
+            chmod_ok = UnixGroupManager.chmod_path(entry_file, entry.header.mode)
+            unless created && chmod_ok
+              raise Errno::EACCES,
+                    "Permission denied creating directory #{entry_file}"
+            end
+          end
+          FilesystemEnforcer.fix_path(entry_file)
         elsif entry.file?
           # Skip config files
           next if existing_asmt && (entry_file == existing_asmt.asmt_yaml_path.to_s ||
@@ -176,19 +189,44 @@ class AssessmentsController < ApplicationController
             entry_file == existing_asmt.log_path.to_s)
 
           # Default to 0755 so that directory is writeable, mode will be updated later
-          FileUtils.mkdir_p(File.dirname(entry_file),
-                            mode: 0o755, verbose: false)
-          File.open(entry_file, "wb") do |f|
-            f.write entry.read
+          file_bytes = entry.read
+          begin
+            FileUtils.mkdir_p(File.dirname(entry_file),
+                              mode: 0o755, verbose: false)
+            File.open(entry_file, "wb") do |f|
+              f.write file_bytes
+            end
+            FileUtils.chmod entry.header.mode, entry_file,
+                            verbose: false
+          rescue Errno::EACCES, Errno::EPERM
+            raise unless UnixGroupManager.delegate_enabled?
+
+            parent_ok = UnixGroupManager.mkdir_p_via_delegate(File.dirname(entry_file), mode: 0o755)
+            write_ok = UnixGroupManager.write_file_via_delegate(entry_file, file_bytes,
+                                                                mode: entry.header.mode)
+            unless parent_ok && write_ok
+              raise Errno::EACCES,
+                    "Permission denied writing file #{entry_file}"
+            end
           end
-          FileUtils.chmod entry.header.mode, entry_file,
-                          verbose: false
+          FilesystemEnforcer.fix_path(entry_file)
         elsif entry.header.typeflag == "2"
-          File.symlink entry.header.linkname, entry_file
+          begin
+            File.symlink entry.header.linkname, entry_file
+          rescue Errno::EACCES, Errno::EPERM
+            raise unless UnixGroupManager.delegate_enabled?
+
+            created = UnixGroupManager.create_symlink_via_delegate(entry.header.linkname,
+                                                                   entry_file)
+            raise Errno::EACCES, "Permission denied creating symlink #{entry_file}" unless created
+          end
         end
       end
       tar_extract.close
+      FilesystemEnforcer.fix_tree(assessment_path.to_s)
     rescue StandardError => e
+      Rails.logger.error("Tarball extraction failed for course=#{@course.name}, tar=#{tarFile.respond_to?(:original_filename) ? tarFile.original_filename : 'unknown'}: #{e.class} - #{e.message}")
+      Rails.logger.error(e.backtrace.first(10).join("\n")) if e.backtrace
       flash[:error] = "Error while extracting tarball to server -- #{e.message}."
       redirect_to(action: "install_assessment") && return
     end
@@ -321,6 +359,7 @@ class AssessmentsController < ApplicationController
       end
       begin
         new_assessment.load_config_file # only call this on saved assessments
+        FilesystemEnforcer.fix_tree(assessment_path.to_s)
       rescue StandardError => e
         import_statuses[i][:errors] = "Error loading config module: #{e}"
         import_statuses[i][:status] = AssessmentsController::IMPORT_ASMT_FAILURE_STATUS
@@ -424,6 +463,7 @@ class AssessmentsController < ApplicationController
 
     begin
       @assessment.construct_folder
+      FilesystemEnforcer.fix_tree(@assessment.folder_path.to_s)
     rescue StandardError => e
       # Something bad happened. Undo everything
       flash[:error] = e.to_s
@@ -512,7 +552,7 @@ class AssessmentsController < ApplicationController
   def export
     dir_path = @course.directory_path.to_s
     asmt_dir = @assessment.name
-    begin
+    build_export_tar = lambda do
       # Update the assessment config YAML file.
       @assessment.dump_yaml
       # Save embedded_quiz
@@ -520,15 +560,45 @@ class AssessmentsController < ApplicationController
       # Pack assessment directory into a tarball.
       tarStream = StringIO.new("")
       Gem::Package::TarWriter.new(tarStream) do |tar|
-        tar.mkdir asmt_dir, File.stat(File.join(dir_path, asmt_dir)).mode
+        asmt_mode = begin
+          File.stat(File.join(dir_path, asmt_dir)).mode
+        rescue Errno::EACCES, Errno::EPERM
+          0o2770
+        end
+        tar.mkdir asmt_dir, asmt_mode
         filter = [@assessment.handin_directory_path]
         @assessment.load_dir_to_tar(dir_path, asmt_dir, tar, filter)
       end
       tarStream.rewind
       tarStream.close
+      tarStream
+    end
+
+    begin
+      tarStream = build_export_tar.call
       send_data tarStream.string.force_encoding("binary"),
                 filename: "#{@assessment.name}_#{Time.current.strftime('%Y%m%d')}.tar",
                 content_type: "application/x-tar"
+    rescue Errno::EACCES, Errno::EPERM => e
+      repaired = UnixGroupManager.delegate_enabled? &&
+                 UnixGroupManager.repair_course_directory_access(@course)
+
+      if repaired
+        begin
+          tarStream = build_export_tar.call
+          send_data tarStream.string.force_encoding("binary"),
+                    filename: "#{@assessment.name}_#{Time.current.strftime('%Y%m%d')}.tar",
+                    content_type: "application/x-tar"
+          return
+        rescue Errno::EACCES, Errno::EPERM => retry_error
+          flash[:error] = "Unable to export assessment due to filesystem permission error: #{retry_error.message}"
+          redirect_to action: "index"
+          return
+        end
+      end
+
+      flash[:error] = "Unable to export assessment due to filesystem permission error: #{e.message}"
+      redirect_to action: "index"
     rescue SystemCallError => e
       flash[:error] = "Unable to update the config YAML file: #{e}"
       redirect_to action: "index"
@@ -744,8 +814,29 @@ class AssessmentsController < ApplicationController
     raw_score_hash = scoreHashFromScores(autograded_scores) if @score.grader_id <= 0
     @scoreHash = parseScore(raw_score_hash) unless raw_score_hash.nil?
 
-    if Archive.archive? @submission.handin_file_path
-      @files = Archive.get_files @submission.handin_file_path
+    handin_path = @submission.handin_file_path
+    begin
+      if Archive.archive?(handin_path)
+        @files = Archive.get_files(handin_path)
+      end
+    rescue Errno::EACCES, Errno::EPERM => e
+      COURSE_LOGGER.log("viewFeedback could not read handin archive #{handin_path}: #{e.class} (#{e.message})")
+      Rails.logger.warn("viewFeedback could not read handin archive #{handin_path}: #{e.class} (#{e.message})")
+
+      if UnixGroupManager.delegate_enabled?
+        delegate_content = UnixGroupManager.read_file_via_delegate(handin_path.to_s)
+        if delegate_content.present?
+          Tempfile.create(["handin-#{@submission.id}", File.extname(handin_path.to_s)]) do |tmp|
+            tmp.binmode
+            tmp.write(delegate_content)
+            tmp.flush
+
+            @files = Archive.get_files(tmp.path) if Archive.archive?(tmp.path)
+          end
+        else
+          COURSE_LOGGER.log("viewFeedback delegate read returned no content for #{handin_path}")
+        end
+      end
     end
 
     # get_correct_filename is protected, so we wrap around controller-specific call
@@ -906,6 +997,7 @@ class AssessmentsController < ApplicationController
       File.open(assessment_config_file_path, "w") do |f|
         f.write(config_source)
       end
+      FilesystemEnforcer.fix_path(assessment_config_file_path.to_s)
 
       begin
         @assessment.load_config_file
@@ -1008,10 +1100,10 @@ class AssessmentsController < ApplicationController
     if @assessment.writeup_is_file?
       # Note: writeup_is_file? validates that the writeup lies within the assessment folder
       filename = @assessment.writeup_path
-      send_file(filename,
-                type: mime_type_from_ext(File.extname(filename)),
-                disposition: "inline",
-                file: File.basename(filename))
+      unless send_writeup_file(filename)
+        flash.now[:error] =
+          "The writeup file could not be found or read. Please contact your instructor."
+      end
       return
     end
 
@@ -1030,6 +1122,36 @@ class AssessmentsController < ApplicationController
   end
 
 protected
+
+  def send_writeup_file(filename)
+    if File.file?(filename) && File.readable?(filename)
+      send_file(filename,
+                type: mime_type_from_ext(File.extname(filename)),
+                disposition: "inline",
+                file: File.basename(filename))
+      return true
+    end
+
+    content = UnixGroupManager.read_file_via_delegate(filename.to_s)
+    return false if content.nil?
+
+    send_data(content,
+              type: mime_type_from_ext(File.extname(filename)),
+              disposition: "inline",
+              filename: File.basename(filename))
+    true
+  rescue ActionController::MissingFile, Errno::ENOENT, Errno::EACCES, Errno::EPERM => e
+    Rails.logger.warn("Failed to stream writeup for assessment #{@assessment.id}: #{e.class} - #{e.message}")
+
+    content = UnixGroupManager.read_file_via_delegate(filename.to_s)
+    return false if content.nil?
+
+    send_data(content,
+              type: mime_type_from_ext(File.extname(filename)),
+              disposition: "inline",
+              filename: File.basename(filename))
+    true
+  end
 
   # We only do this so that it can be overwritten by modules
   def updateScore(_user, score)
@@ -1231,10 +1353,61 @@ private
   def get_unimported_asmts_from_dir
     dir_path = @course.directory_path
     @unused_config_files = []
-    Dir.foreach(dir_path) do |filename|
+    use_delegated_metadata = false
+
+    filenames = nil
+    if UnixGroupManager.delegate_enabled?
+      delegated_entries = UnixGroupManager.list_assessment_dirs_via_delegate(dir_path.to_s)
+      if delegated_entries.is_a?(Array) &&
+         delegated_entries.all? { |entry| entry.is_a?(Hash) && entry.key?("name") }
+        use_delegated_metadata = true
+        filenames = delegated_entries
+      end
+    end
+
+    filenames ||= begin
+      Dir.children(dir_path)
+    rescue Errno::EACCES
+      if UnixGroupManager.delegate_enabled?
+        UnixGroupManager.repair_course_directory_access(@course)
+        begin
+          Dir.children(dir_path)
+        rescue Errno::EACCES
+          flash.now[:error] =
+            "Cannot access course directory #{dir_path}. Ensure UnixOps daemon is running with the latest code and verify course group membership for app/user9999."
+          flash.now[:html_safe] = true
+          return
+        end
+      else
+        flash.now[:error] = "Cannot access course directory #{dir_path}: permission denied."
+        flash.now[:html_safe] = true
+        return
+      end
+    end
+
+    filenames.each do |entry|
+      filename = use_delegated_metadata ? entry["name"] : entry
+      entry_path = File.join(dir_path, filename.to_s)
+
       # skip if not directory in folder
-      next if !File.directory?(File.join(dir_path,
-                                         filename)) || (filename == "..") || (filename == ".")
+      next if (filename == "..") || (filename == ".")
+
+      is_directory = if use_delegated_metadata
+                       true
+                     else
+                       File.directory?(entry_path)
+                     end
+      next unless is_directory
+
+      unless use_delegated_metadata
+        unless File.readable?(entry_path) && File.executable?(entry_path)
+          flash.now[:error] = flash.now[:error] ? "#{flash.now[:error]} <br>" : ""
+          flash.now[:error] += "An error occurred while trying to display an existing assessment " \
+            "from file directory #{filename}: cannot access directory due to filesystem permissions"
+          flash.now[:html_safe] = true
+          next
+        end
+      end
 
       # assessment names must be only lowercase letters and digits
       if filename !~ Assessment::VALID_NAME_REGEX
@@ -1250,7 +1423,21 @@ private
 
       # each assessment must have an associated yaml file,
       # and it must have a name field that matches its filename
-      unless File.exist?(File.join(dir_path, filename, "#{filename}.yml"))
+      yml_exists = if use_delegated_metadata
+                     entry["yml_exists"]
+                   else
+                     File.exist?(File.join(entry_path, "#{filename}.yml"))
+                   end
+
+      if yml_exists.nil?
+        flash.now[:error] = flash.now[:error] ? "#{flash.now[:error]} <br>" : ""
+        flash.now[:error] += "An error occurred while trying to display an existing assessment " \
+          "from file directory #{filename}: unable to verify #{filename}.yml due to filesystem permissions"
+        flash.now[:html_safe] = true
+        next
+      end
+
+      unless yml_exists
         flash.now[:error] = flash.now[:error] ? "#{flash.now[:error]} <br>" : ""
         flash.now[:error] += "An error occurred while trying to display an existing assessment " \
           "from file directory #{filename}: #{filename}.yml does not exist"

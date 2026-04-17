@@ -133,15 +133,14 @@ class JobsController < ApplicationController
       # We don't have any information about which problems were
       # autograded, so search each problem until we find one
       # that has autograder feedback and save it for the view.
-      i = 0
       feedback_num = 0
       @feedback_str = ""
       scores.each do |score|
-        i += 1
-        next unless score.feedback && score.feedback["Autograder"]
+        next unless score.grader_id.to_i <= 0
+        next if score.feedback.blank?
 
         @feedback_str = score.feedback
-        feedback_num = i
+        feedback_num = score.problem_id
         break
       end
     end

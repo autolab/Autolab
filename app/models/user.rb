@@ -15,6 +15,7 @@ class User < ApplicationRecord
   has_many :courses, through: :course_user_data
   has_many :authentications, dependent: :destroy
   has_one :github_integration
+  has_many :ssh_keys, dependent: :destroy
 
   trim_field :school
   validates :email, presence: true
@@ -27,6 +28,20 @@ class User < ApplicationRecord
     cuds.each { |cud| return true if cud.instructor? }
 
     false
+  end
+
+  # check if user is course assistant in any course
+  def course_assistant?
+    cuds = course_user_data
+
+    cuds.each { |cud| return true if cud.course_assistant? }
+
+    false
+  end
+
+  # check if user is staff (instructor or course assistant) in any course
+  def staff?
+    instructor? || course_assistant?
   end
 
   # check if self is instructor of a user

@@ -41,7 +41,7 @@ class Assessment < ApplicationRecord
 
   # Callbacks
   trim_field :name, :display_name, :handin_filename, :handin_directory, :handout, :writeup
-  after_commit :dump_yaml
+  after_commit :dump_yaml, on: %i[create update]
   after_commit :dump_embedded_quiz, if: :saved_change_to_embedded_quiz_form_data?
   after_save :invalidate_course_cgdubs, if: :saved_change_to_due_at_or_max_grace_days?
   after_create :create_AUDs_modulo_callbacks
@@ -200,7 +200,17 @@ class Assessment < ApplicationRecord
 
   def construct_folder
     # this should construct the assessment folder and the handin folder
-    FileUtils.mkdir_p(handin_directory_path)
+    begin
+      FileUtils.mkdir_p(handin_directory_path)
+    rescue Errno::EACCES, Errno::EPERM
+      raise unless UnixGroupManager.delegate_enabled?
+
+      created = UnixGroupManager.mkdir_p_via_delegate(handin_directory_path.to_s, mode: 0o2770)
+      unless created
+        raise Errno::EACCES,
+              "Permission denied creating directory #{handin_directory_path}"
+      end
+    end
     constructed_default_config_file = construct_default_config_file
     if constructed_default_config_file
       dump_yaml
@@ -214,7 +224,7 @@ class Assessment < ApplicationRecord
   #
   def construct_default_config_file
     assessment_config_file_path = unique_source_config_file_path
-    return false if File.file?(assessment_config_file_path)
+    return false if is_file?("#{name}.rb")
 
     # Open and read the default assessment config file
     default_config_file_path = Rails.root.join("lib/__defaultAssessment.rb")
@@ -223,7 +233,14 @@ class Assessment < ApplicationRecord
     # Update with this assessment information
     config_source.gsub!("##NAME_CAMEL##", unique_config_module_name)
     # Write the new config out to the right file.
-    File.open(assessment_config_file_path, "w") { |f| f.write(config_source) }
+    begin
+      File.open(assessment_config_file_path, "w") { |f| f.write(config_source) }
+    rescue Errno::EACCES, Errno::EPERM
+      raise unless UnixGroupManager.delegate_enabled?
+
+      ok = UnixGroupManager.write_file_via_delegate(assessment_config_file_path.to_s, config_source)
+      raise Errno::EACCES, "Permission denied writing #{assessment_config_file_path}" unless ok
+    end
     true
   end
 
@@ -235,7 +252,19 @@ class Assessment < ApplicationRecord
   #
   def load_config_file
     # read from source
-    config_source = File.open(unique_source_config_file_path, "r", &:read)
+    config_source = begin
+      File.open(unique_source_config_file_path, "r", &:read)
+    rescue Errno::EACCES, Errno::EPERM
+      raise unless UnixGroupManager.delegate_enabled?
+
+      content = UnixGroupManager.read_file_via_delegate(unique_source_config_file_path.to_s)
+      if content.nil?
+        raise Errno::EACCES,
+              "Permission denied reading #{unique_source_config_file_path}"
+      end
+
+      content
+    end
 
     # validate syntax of config
     begin
@@ -297,7 +326,13 @@ class Assessment < ApplicationRecord
   # writes the properties of the assessment in YAML format to the assessment's yaml file
   #
   def dump_yaml
-    File.open(asmt_yaml_path, "w") { |f| f.write(YAML.dump(sort_hash(serialize))) }
+    yaml_content = YAML.dump(sort_hash(serialize))
+    File.open(asmt_yaml_path, "w") { |f| f.write(yaml_content) }
+  rescue Errno::EACCES, Errno::EPERM
+    raise unless UnixGroupManager.delegate_enabled?
+
+    ok = UnixGroupManager.write_file_via_delegate(asmt_yaml_path.to_s, yaml_content)
+    raise Errno::EACCES, "Permission denied writing #{asmt_yaml_path}" unless ok
   end
 
   # If the name field in a yaml for an assessment differs from the folder name
@@ -337,7 +372,18 @@ class Assessment < ApplicationRecord
   def load_yaml
     return unless new_record?
 
-    props = YAML.safe_load(File.open(asmt_yaml_path, "r", &:read))
+    yaml_content = begin
+      File.open(asmt_yaml_path, "r", &:read)
+    rescue Errno::EACCES, Errno::EPERM
+      raise unless UnixGroupManager.delegate_enabled?
+
+      content = UnixGroupManager.read_file_via_delegate(asmt_yaml_path.to_s)
+      raise Errno::EACCES, "Permission denied reading #{asmt_yaml_path}" if content.nil?
+
+      content
+    end
+
+    props = YAML.safe_load(yaml_content)
     validate_yaml(props)
     backwards_compatibility(props)
     deserialize(props)
@@ -487,6 +533,48 @@ class Assessment < ApplicationRecord
         end
       end
     end
+  rescue Errno::EACCES, Errno::EPERM => e
+    raise unless UnixGroupManager.delegate_enabled?
+
+    Rails.logger.warn("Falling back to delegate tar export for #{File.join(dir_path, asmt_dir)}: #{e.class} - #{e.message}")
+    load_dir_to_tar_via_delegate(dir_path, asmt_dir, tar, filters, export_dir)
+  end
+
+  def load_dir_to_tar_via_delegate(dir_path, asmt_dir, tar, filters = [], export_dir = "")
+    absolute_path = File.join(dir_path, asmt_dir)
+    entries = UnixGroupManager.list_dir_via_delegate(absolute_path)
+
+    if entries.nil?
+      raise Errno::EACCES, "Permission denied listing #{absolute_path} via delegate"
+    end
+
+    entries.each do |entry|
+      entry_name = entry.to_s
+      child_path = File.join(absolute_path, entry_name)
+      relative_path = child_path.sub(%r{^#{Regexp.escape dir_path}/?}, "")
+      export_path = if export_dir == ""
+                      relative_path
+                    else
+                      File.join(export_dir, relative_path)
+                    end
+
+      child_entries = UnixGroupManager.list_dir_via_delegate(child_path)
+      if child_entries.is_a?(Array)
+        if filters.all? { |filter|
+          !Archive.in_dir?(Pathname.new(filter), Pathname.new(child_path), strict: false)
+        }
+          tar.mkdir export_path, 0o2770
+          load_dir_to_tar_via_delegate(dir_path, relative_path, tar, filters, export_dir)
+        end
+      else
+        content = UnixGroupManager.read_file_via_delegate(child_path)
+        content = File.binread(child_path) if content.nil?
+
+        tar.add_file export_path, 0o660 do |tarFile|
+          tarFile.write(content)
+        end
+      end
+    end
   end
 
 private
@@ -524,7 +612,7 @@ private
     end
 
     # force load config file (see http://www.ruby-doc.org/core-2.0.0/Kernel.html#method-i-load)
-    load unique_config_file_path
+    load unique_config_file_path.to_s
 
     # updated last loaded time
     @@CONFIG_FILE_LAST_LOADED[unique_config_file_path] = Time.current
@@ -630,7 +718,7 @@ private
 
     if s["autograder"]
       autograder = Autograder.find_or_initialize_by(assessment_id: id)
-      autograder.update(s["autograder"])
+      autograder.update!(s["autograder"])
       self.autograder = autograder
     end
     if s["scoreboard"]
@@ -668,7 +756,18 @@ private
   end
 
   def is_file?(name)
-    File.file?(path(name))
+    file_path = path(name)
+    File.stat(file_path).file?
+  rescue Errno::EACCES, Errno::EPERM
+    # The assessment directory may be locked to root:<course_group> (mode 2770) so the
+    # webapp process cannot stat files inside it directly.  Fall back to the delegate
+    # to check whether the entry exists in the parent directory.
+    return false unless UnixGroupManager.delegate_enabled?
+
+    entries = UnixGroupManager.list_dir_via_delegate(File.dirname(file_path.to_s))
+    entries&.include?(File.basename(file_path.to_s)) || false
+  rescue Errno::ENOENT
+    false
   end
 
   def verify_dates_order
@@ -697,7 +796,19 @@ private
     return true if File.directory? dir
 
     begin
-      Dir.mkdir dir
+      FileUtils.mkdir_p(dir)
+    rescue Errno::EACCES, Errno::EPERM => e
+      unless UnixGroupManager.delegate_enabled?
+        errors.add :handin_directory, "(#{dir}) could not be created, please do so manually. (#{e})"
+        return false
+      end
+
+      created = UnixGroupManager.mkdir_p_via_delegate(dir.to_s, mode: 0o2770)
+      unless created
+        errors.add :handin_directory, "(#{dir}) could not be created, please do so manually. (#{e})"
+        return false
+      end
+      true
     rescue SystemCallError => e
       errors.add :handin_directory, "(#{dir}) could not be created, please do so manually. (#{e})"
       false

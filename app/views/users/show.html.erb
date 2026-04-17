@@ -104,6 +104,20 @@
     </ul>
     <%= f.submit 'Save', { class: "btn primary" } %>
   <% end %>
+  <% if @user.instructor? || current_user.administrator? %>
+    <h4>SSH Access</h4>
+    <%= link_to ssh_keys_user_path(@user) do %>
+      <span class="btn primary">
+        Manage SSH Keys
+      </span>
+    <% end %>
+    <% if @user.instructor? %>
+      <p style="font-size: 0.9em; color: #666;">
+        As a course instructor or admin, you can add SSH keys to access the system via SSH.
+        Your Unix username is: <code><%= UnixGroupManager.update_unix_user_mapping(@user) || "(not yet created)" %></code>
+      </p>
+    <% end %>
+  <% end %>
   <h4>Download Submissions</h4>
   <%= link_to download_all_submissions_user_path(@user, final: true),
               { title: "Download all your final submissions",

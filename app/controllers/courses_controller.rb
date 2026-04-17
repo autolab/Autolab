@@ -3,6 +3,7 @@ require "csv"
 require "fileutils"
 require "pathname"
 require "statistics"
+require_relative "../services/unix_group_manager"
 
 class CoursesController < ApplicationController
   skip_before_action :set_course,
@@ -179,15 +180,51 @@ class CoursesController < ApplicationController
       new_cud.instructor = true
 
       if new_cud.save
+        @newCourse.ensure_default_group_instructor!
         begin
+          # Unix group was already created in before_create callback
+          # Staff membership is handled by after_create callback in CourseUserDatum
+          # IMPORTANT: Reload course config BEFORE fixing directory permissions
+          Rails.logger.info("=== COURSE CREATION: Reloading config for #{@newCourse.name} ===")
           @newCourse.reload_course_config
-        rescue StandardError, SyntaxError
+          Rails.logger.info("Successfully reloaded course config for #{@newCourse.name}")
+
+          # Lock down directory permissions now that config is loaded
+          # Directory will be root:<course-group> with 2770 (drwxrws---) permissions
+          Rails.logger.info("Locking down directory permissions for #{@newCourse.name}")
+          begin
+            FilesystemEnforcer.fix_tree(@newCourse.directory_path.to_s)
+
+            # Verify the permissions were actually set
+            begin
+              final_stat = File.stat(@newCourse.directory_path)
+              expected_mode = 0o2770
+              actual_mode = final_stat.mode & 0o7777
+              Rails.logger.info("After fix_tree - Directory: uid=#{final_stat.uid}, gid=#{final_stat.gid}, mode=#{actual_mode.to_s(8)} (expected #{expected_mode.to_s(8)})")
+              if actual_mode == expected_mode && final_stat.uid == 0
+                Rails.logger.info("Successfully locked down directory permissions to 2770 with root ownership")
+              else
+                Rails.logger.warn("Directory permissions not set correctly: mode=#{actual_mode.to_s(8)}, uid=#{final_stat.uid}")
+              end
+            rescue StandardError => e
+              Rails.logger.warn("Could not verify final directory permissions: #{e.message}")
+            end
+          rescue StandardError => e
+            Rails.logger.error("Failed to lock down directory permissions: #{e.class} - #{e.message}")
+            Rails.logger.error("Backtrace: #{e.backtrace.first(10).join("\n")}")
+            # Don't fail course creation if permission locking fails - log and continue
+            Rails.logger.warn("Continuing with course creation despite permission fix failure")
+          end
+        rescue StandardError, SyntaxError => e
+          Rails.logger.error("Failed to reload course config for #{@newCourse.name}: #{e.class} - #{e.message}")
+          Rails.logger.error("Backtrace: #{e.backtrace.first(10).join("\n")}")
           # roll back course creation and instruction creation
           new_cud.destroy
           @newCourse.destroy
-          flash.now[:error] = "Can't load course config for #{@newCourse.name}."
+          flash.now[:error] = "Can't load course config for #{@newCourse.name}: #{e.message}"
           render(action: "new") && return
         else
+          Rails.logger.info("=== COURSE CREATION: SUCCESS - Course #{@newCourse.name} created! ===")
           flash[:success] = "New Course #{@newCourse.name} successfully created!"
           redirect_to(edit_course_path(@newCourse)) && return
         end
@@ -278,15 +315,108 @@ class CoursesController < ApplicationController
       render(action: "new") && return
     end
 
+    @newCourse.ensure_default_group_instructor!
+
+    Rails.logger.info("=== COURSE CREATION: Starting config reload and permission setup for #{@newCourse.name} ===")
     begin
-      @newCourse.reload_course_config
-    rescue StandardError, SyntaxError
+      # Unix group was already created in before_create callback
+      # IMPORTANT: Reload course config BEFORE fixing directory permissions
+      # because reload_course_config needs to read course.rb, and fix_tree
+      # sets directory to drwxrws--- which would block access
+      Rails.logger.info("Step 1: Preparing to reload course config for #{@newCourse.name}")
+      Rails.logger.info("Source config path: #{@newCourse.source_config_file_path}")
+      Rails.logger.info("Process uid: #{Process.uid}, gid: #{Process.gid}, euid: #{Process.euid}, egid: #{Process.egid}")
+
+      # Verify directory and file are accessible before trying to reload
+      dir_path = @newCourse.directory_path
+      source_config = @newCourse.source_config_file_path
+      Rails.logger.info("Verifying directory and file accessibility...")
+      begin
+        dir_exists = Dir.exist?(dir_path)
+        file_exists = File.exist?(source_config)
+        Rails.logger.info("Directory exists: #{dir_exists}, File exists: #{file_exists}")
+
+        if dir_exists
+          dir_stat = File.stat(dir_path)
+          Rails.logger.info("Directory stats: uid=#{dir_stat.uid}, gid=#{dir_stat.gid}, mode=#{dir_stat.mode.to_s(8)}, readable=#{File.readable?(dir_path)}, executable=#{File.executable?(dir_path)}")
+        else
+          Rails.logger.error("Directory does not exist: #{dir_path}")
+        end
+
+        if file_exists
+          file_stat = File.stat(source_config)
+          Rails.logger.info("File stats: uid=#{file_stat.uid}, gid=#{file_stat.gid}, mode=#{file_stat.mode.to_s(8)}, readable=#{File.readable?(source_config)}")
+        else
+          Rails.logger.error("Source config file does not exist: #{source_config}")
+        end
+      rescue StandardError => e
+        Rails.logger.error("Error checking directory/file stats: #{e.class} - #{e.message}")
+        Rails.logger.error("Backtrace: #{e.backtrace.first(5).join("\n")}")
+      end
+
+      Rails.logger.info("Step 2: Calling @newCourse.reload_course_config...")
+      begin
+        @newCourse.reload_course_config
+        Rails.logger.info("Step 2 complete: Successfully reloaded course config for #{@newCourse.name}")
+      rescue StandardError, SyntaxError => e
+        Rails.logger.error("Step 2 FAILED: reload_course_config raised exception")
+        Rails.logger.error("Exception: #{e.class} - #{e.message}")
+        Rails.logger.error("Backtrace:\n#{e.backtrace.join("\n")}")
+        raise
+      end
+
+      # Lock down directory permissions now that config is loaded
+      # Directory will be root:<course-group> with 2770 (drwxrws---) permissions
+      # Rails will use delegate (with root privileges) to access files when needed
+      Rails.logger.info("Step 3: Locking down directory permissions for #{@newCourse.name}")
+      Rails.logger.info("Directory path: #{@newCourse.directory_path}")
+      begin
+        FilesystemEnforcer.fix_tree(@newCourse.directory_path.to_s)
+
+        # Verify the permissions were actually set
+        begin
+          final_stat = File.stat(@newCourse.directory_path)
+          expected_mode = 0o2770
+          actual_mode = final_stat.mode & 0o7777
+          Rails.logger.info("After fix_tree - Directory stats: uid=#{final_stat.uid}, gid=#{final_stat.gid}, mode=#{actual_mode.to_s(8)} (expected #{expected_mode.to_s(8)})")
+          if actual_mode == expected_mode
+            Rails.logger.info("Step 3 complete: Successfully locked down directory permissions to 2770")
+          else
+            Rails.logger.warn("Step 3 WARNING: Directory mode is #{actual_mode.to_s(8)}, expected #{expected_mode.to_s(8)}")
+          end
+        rescue StandardError => e
+          Rails.logger.warn("Could not verify final directory permissions: #{e.message}")
+        end
+      rescue StandardError => e
+        Rails.logger.error("Step 3 FAILED: Failed to lock down directory permissions: #{e.class} - #{e.message}")
+        Rails.logger.error("Backtrace: #{e.backtrace.first(10).join("\n")}")
+        # Don't fail course creation if permission locking fails - log and continue
+        Rails.logger.warn("Continuing with course creation despite permission fix failure")
+      end
+
+      Rails.logger.info("=== COURSE CREATION: Config reload and permission setup COMPLETED for #{@newCourse.name} ===")
+    rescue StandardError, SyntaxError => e
+      Rails.logger.error("=== COURSE CREATION: Config reload FAILED for #{@newCourse.name} ===")
+      Rails.logger.error("Exception: #{e.class} - #{e.message}")
+      Rails.logger.error("Full backtrace:\n#{e.backtrace.join("\n")}")
       # roll back course creation and instruction creation
-      new_cud.destroy
-      @newCourse.destroy
-      flash[:error] = "Can't load course config for #{@newCourse.name}."
+      Rails.logger.info("Rolling back course creation...")
+      begin
+        new_cud.destroy
+        Rails.logger.info("Destroyed CourseUserDatum")
+      rescue StandardError => e2
+        Rails.logger.error("Failed to destroy CourseUserDatum: #{e2.message}")
+      end
+      begin
+        @newCourse.destroy
+        Rails.logger.info("Destroyed Course")
+      rescue StandardError => e2
+        Rails.logger.error("Failed to destroy Course: #{e2.message}")
+      end
+      flash[:error] = "Can't load course config for #{@newCourse.name}: #{e.message}"
       render(action: "new") && return
     else
+      Rails.logger.info("=== COURSE CREATION: SUCCESS - Course #{@newCourse.name} created successfully! ===")
       flash[:success] = "New Course #{@newCourse.name} successfully created!"
       redirect_to(course_onboard_install_asmt_course_assessments_path(@newCourse)) && return
     end
@@ -302,9 +432,22 @@ class CoursesController < ApplicationController
       config_source = uploaded_config_file.read
 
       course_config_source_path = @course.source_config_file_path
-      File.open(course_config_source_path, "w") do |f|
-        f.write(config_source)
+      begin
+        File.open(course_config_source_path, "w") do |f|
+          f.write(config_source)
+        end
+      rescue Errno::EACCES, Errno::EPERM => e
+        wrote_via_delegate = false
+
+        if UnixGroupManager.delegate_enabled?
+          parent_dir = File.dirname(course_config_source_path.to_s)
+          created_parent = UnixGroupManager.mkdir_p_via_delegate(parent_dir)
+          wrote_via_delegate = created_parent && UnixGroupManager.write_file_via_delegate(course_config_source_path.to_s, config_source)
+        end
+
+        raise e unless wrote_via_delegate
       end
+      FilesystemEnforcer.fix_path(course_config_source_path.to_s)
 
       begin
         @course.reload_course_config
@@ -329,15 +472,33 @@ class CoursesController < ApplicationController
   # DELETE courses/:id/
   action_auth_level :destroy, :administrator
   def destroy
-    # Delete config file copy in courseConfig
-    if File.exist? @course.config_file_path
-      File.delete @course.config_file_path
-    end
-    if File.exist? @course.config_backup_file_path
-      File.delete @course.config_backup_file_path
+    delete_config_file = lambda do |path|
+      next unless File.exist?(path)
+
+      begin
+        File.delete(path)
+      rescue Errno::EACCES, Errno::EPERM => e
+        deleted_via_delegate = false
+
+        if UnixGroupManager.delegate_enabled?
+          deleted_via_delegate, _parsed = UnixGroupManager.call_delegate("delete_path", path: path.to_s,
+                                                                                         recursive: false)
+        end
+
+        raise e unless deleted_via_delegate
+      end
     end
 
+    # Delete config file copy in courseConfig
+    delete_config_file.call(@course.config_file_path)
+    delete_config_file.call(@course.config_backup_file_path)
+
+    # Get group name before destroying course
+    group_name = UnixGroupManager.safe_group_name(@course.name)
+
     if @course.destroy
+      # Remove Unix group if course was successfully destroyed
+      UnixGroupManager.remove_group(group_name) if group_name
       flash[:success] = "Course destroyed."
     else
       flash[:error] = "Error: Course wasn't destroyed!"
@@ -493,6 +654,12 @@ class CoursesController < ApplicationController
 
     # save all the cuds
     if @cuds.all?(&:save)
+      # Create Unix users and add to course group for instructors only
+      @cuds.each do |cud|
+        next unless cud.instructor? && !cud.dropped?
+
+        UnixGroupManager.update_course_staff_membership(@course, cud.user, is_staff: true)
+      end
       flash[:success] = "Success: Users added to course."
     else
       flash[:error] = "Error: Users could not be added to course."
@@ -882,6 +1049,11 @@ private
 
           # Save without validations
           cud.save(validate: false)
+
+          # Create Unix user and add to course group for instructors only
+          if cud.instructor? && !cud.dropped?
+            UnixGroupManager.update_course_staff_membership(@course, user, is_staff: true)
+          end
         end
 
       when "red"
@@ -890,6 +1062,11 @@ private
                           .where(users: { email: new_cud[:email] }).first
 
         fail "Red CUD doesn't exist in the database." if existing.nil?
+
+        # Remove from Unix group if active instructor loses access
+        if existing.instructor? && !existing.dropped?
+          UnixGroupManager.update_course_staff_membership(@course, existing.user, is_staff: false)
+        end
 
         existing.dropped = true
         existing.save(validate: false)
@@ -944,6 +1121,11 @@ private
         existing.assign_attributes(params.permit(:course_number, :lecture, :section, :grade_policy))
         existing.dropped = false
         existing.save(validate: false) # Save without validations.
+
+        # Update Unix group membership if user is currently an instructor
+        if existing.instructor? && !existing.dropped?
+          UnixGroupManager.update_course_staff_membership(@course, user, is_staff: true)
+        end
       end
       rowNum += 1
     end
@@ -1192,6 +1374,7 @@ private
 
         # Copy their submission over
         FileUtils.cp(subFile, stuDir)
+        FilesystemEnforcer.fix_path(File.join(stuDir, File.basename(subFile)))
 
         # Read archive files
         next unless isArchive
@@ -1249,6 +1432,7 @@ private
     extTarPath = File.join(extTarDir, "input_file")
     external_tar.rewind
     File.open(extTarPath, "wb") { |f| f.write(external_tar.read) } # Write tar file.
+    FilesystemEnforcer.fix_path(extTarPath)
 
     # Directory to hold all external individual submission.
     extFilesDir = File.join(extTarDir, "submissions")
@@ -1287,6 +1471,7 @@ private
             nil
           end
         end
+        FilesystemEnforcer.fix_path(output_file)
       end
     rescue StandardError
       @failures << "External Tar"
@@ -1351,6 +1536,7 @@ private
     end
 
     params[:cleanup_on_failure] = true
+    FilesystemEnforcer.fix_tree(dest_directory.to_s)
   end
 
   # same as assessment import check, ensures the tar has a single root directory

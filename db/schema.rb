@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2026_04_16_081649) do
+ActiveRecord::Schema.define(version: 2026_04_17_002415) do
 
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
@@ -27,7 +27,7 @@ ActiveRecord::Schema.define(version: 2026_04_16_081649) do
     t.string "filename", null: false
     t.string "content_type"
     t.text "metadata"
-    t.bigint "byte_size", null: false
+    t.integer "byte_size", null: false
     t.string "checksum", null: false
     t.datetime "created_at", null: false
     t.string "service_name", null: false
@@ -195,6 +195,8 @@ ActiveRecord::Schema.define(version: 2026_04_16_081649) do
     t.boolean "release_score"
     t.string "instance_type", default: ""
     t.boolean "use_access_key", default: false
+    t.string "ami", default: ""
+    t.string "security_group", default: ""
     t.text "access_key_ciphertext"
     t.text "access_key_id_ciphertext"
     t.boolean "use_ami_image", default: false, null: false
@@ -409,15 +411,15 @@ ActiveRecord::Schema.define(version: 2026_04_16_081649) do
 
   create_table "scoreboards", force: :cascade do |t|
     t.integer "assessment_id"
-    t.text "banner"
-    t.text "colspec"
+    t.text "banner", limit: 65535
+    t.text "colspec", limit: 65535
     t.boolean "include_instructors", default: false
   end
 
   create_table "scores", force: :cascade do |t|
     t.integer "submission_id"
     t.float "score"
-    t.text "feedback"
+    t.text "feedback", limit: 16777215
     t.integer "problem_id"
     t.datetime "created_at"
     t.datetime "updated_at"
@@ -427,7 +429,7 @@ ActiveRecord::Schema.define(version: 2026_04_16_081649) do
     t.index ["submission_id"], name: "index_scores_on_submission_id"
   end
 
-  create_table "ssh_keys", id: :integer, charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+  create_table "ssh_keys", force: :cascade do |t|
     t.integer "user_id", null: false
     t.text "public_key", null: false
     t.string "comment"
@@ -441,7 +443,7 @@ ActiveRecord::Schema.define(version: 2026_04_16_081649) do
     t.index ["user_id"], name: "index_ssh_keys_on_user_id"
   end
 
-  create_table "submissions", id: :integer, charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+  create_table "submissions", force: :cascade do |t|
     t.integer "version"
     t.integer "course_user_datum_id"
     t.integer "assessment_id"
@@ -457,7 +459,7 @@ ActiveRecord::Schema.define(version: 2026_04_16_081649) do
     t.string "submitter_ip", limit: 40
     t.integer "tweak_id"
     t.boolean "ignored", default: false, null: false
-    t.string "dave"
+    t.string "dave", limit: 255
     t.text "embedded_quiz_form_answer"
     t.integer "submitted_by_app_id"
     t.string "group_key", default: ""
@@ -491,9 +493,11 @@ ActiveRecord::Schema.define(version: 2026_04_16_081649) do
     t.string "major"
     t.string "year"
     t.boolean "hover_assessment_date", default: false, null: false
+    t.string "unix_user"
     t.index ["confirmation_token"], name: "index_users_on_confirmation_token", unique: true
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
+    t.index ["unix_user"], name: "index_users_on_unix_user", unique: true
   end
 
   create_table "watchlist_configurations", force: :cascade do |t|

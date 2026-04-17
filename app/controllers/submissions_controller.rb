@@ -14,6 +14,7 @@ class SubmissionsController < ApplicationController
                                           view release_student_grade unrelease_student_grade
                                           tweak_total]
   before_action :get_submission_file, only: %i[download view]
+  after_action :cleanup_temp_submission_files
 
   action_auth_level :index, :instructor
   def index
@@ -489,8 +490,10 @@ class SubmissionsController < ApplicationController
   # try to send the file at that position in the archive.
   action_auth_level :download, :student
   def download
-    if Archive.archive?(@filename) && params[:header_position]
-      file, pathname = Archive.get_nth_file(@filename, params[:header_position].to_i)
+    archive_path = readable_submission_archive_path(@submission)
+
+    if archive_path && params[:header_position]
+      file, pathname = Archive.get_nth_file(archive_path, params[:header_position].to_i)
       unless file && pathname
         flash[:error] = "Could not read archive."
         redirect_to course_assessment_path(@course, @assessment) and return
@@ -545,9 +548,16 @@ class SubmissionsController < ApplicationController
                 disposition: "inline"
 
     else
-      send_file @filename,
-                filename: @basename,
-                disposition: "inline"
+      handin_file = @submission.handin_file
+      if handin_file.is_a?(StringIO)
+        send_data handin_file.read,
+                  filename: @basename,
+                  disposition: "inline"
+      else
+        send_file @filename,
+                  filename: @basename,
+                  disposition: "inline"
+      end
     end
   end
 
@@ -558,11 +568,12 @@ class SubmissionsController < ApplicationController
   action_auth_level :view, :student
   def view
     flash[:error] = "Cannot manage nil course" if @course.nil?
+    archive_path = readable_submission_archive_path(@submission)
 
     # Pull the files with their hierarchy info for the file tree
-    if Archive.archive? @filename
+    if archive_path
       begin
-        @files = Archive.get_file_hierarchy(@filename).sort! do |a, b|
+        @files = Archive.get_file_hierarchy(archive_path).sort! do |a, b|
           a[:pathname] <=> b[:pathname]
         end
         @header_position = params[:header_position].to_i
@@ -594,8 +605,8 @@ class SubmissionsController < ApplicationController
     if viewing_autograder_output
       file = get_autograder_output(@submission)
       @displayFilename = "Autograder Output"
-    elsif params.include?(:header_position) && Archive.archive?(@submission.handin_file_path)
-      file, pathname = Archive.get_nth_file(@submission.handin_file_path,
+    elsif params.include?(:header_position) && archive_path
+      file, pathname = Archive.get_nth_file(archive_path,
                                             params[:header_position].to_i)
       file = "" if file.nil?
 
@@ -607,8 +618,8 @@ class SubmissionsController < ApplicationController
       @displayFilename = pathname
     else
       # auto-set header position for archives
-      if Archive.archive?(@submission.handin_file_path)
-        firstFile = Archive.get_files(@submission.handin_file_path).find do |archive_file|
+      if archive_path
+        firstFile = Archive.get_files(archive_path).find do |archive_file|
           archive_file[:mac_bs_file] == false and archive_file[:directory] == false
         end || { header_position: 0 }
         redirect_to(view_course_assessment_submission_path(
@@ -625,7 +636,24 @@ class SubmissionsController < ApplicationController
                     )) && return
       end
 
-      file = @submission.handin_file.read
+      handin_file = @submission.handin_file
+      if handin_file
+        file = handin_file.read
+      else
+        file = begin
+          if File.exist?(@filename) && File.readable?(@filename)
+            File.binread(@filename)
+          end
+        rescue Errno::EACCES, Errno::EPERM
+          nil
+        end
+
+        unless file
+          flash[:error] = "Could not find submission file."
+          redirect_to course_assessment_path(@course, @assessment) and return false
+        end
+      end
+
       @displayFilename = @submission.filename
     end
 
@@ -640,7 +668,7 @@ class SubmissionsController < ApplicationController
       # Try extracting a symbol tree
       begin
         codePath = @filename
-        if Archive.archive?(@submission.handin_file_path)
+        if archive_path
           # If the submission is an archive, write the open file's code
           # to a temp file so we can pass it into ctags
 
@@ -727,8 +755,8 @@ class SubmissionsController < ApplicationController
       @annotations = []
     end
 
-    files = if Archive.archive? @filename
-              Archive.get_files(@filename)
+    files = if archive_path
+              Archive.get_files(archive_path)
             end
 
     @problems = @assessment.problems.ordered.to_a
@@ -889,6 +917,37 @@ class SubmissionsController < ApplicationController
 
 private
 
+  def readable_submission_archive_path(submission)
+    path = submission.handin_file_path
+    begin
+      return path if path && Archive.archive?(path) && File.exist?(path) && File.readable?(path)
+    rescue Errno::EACCES, Errno::EPERM
+      # Fall through to delegate-backed content.
+    end
+
+    handin_file = submission.handin_file
+    return nil unless handin_file.is_a?(StringIO)
+
+    tempfile = Tempfile.new(["autolab_submission_archive", File.extname(path.to_s)])
+    tempfile.binmode
+    tempfile.write(handin_file.read)
+    tempfile.flush
+    handin_file.rewind
+    @temp_submission_files ||= []
+    @temp_submission_files << tempfile
+    tempfile.path
+  end
+
+  def cleanup_temp_submission_files
+    return unless @temp_submission_files
+
+    @temp_submission_files.each do |tmp|
+      tmp.close!
+    rescue StandardError
+      nil
+    end
+  end
+
   def appropriate_redirect_path
     if @cud.course_assistant
       course_assessment_path(@course, @assessment)
@@ -932,7 +991,15 @@ private
                                               @submission.course_user_datum.user.email)
     end
 
-    unless File.exist? @filename
+    handin_file = @submission.handin_file
+    file_available = begin
+      File.exist?(@filename)
+    rescue Errno::EACCES, Errno::EPERM
+      false
+    end
+    file_available ||= !handin_file.nil?
+
+    unless file_available
       flash[:error] = "Could not find submission file."
       redirect_to course_assessment_path(@course, @assessment) and return false
     end
@@ -944,11 +1011,11 @@ private
   def find_versions_with_file(pathname, versions, current_version)
     matchedVersions = []
     versions.each do |submission|
-      submission_path = submission.handin_file_path
+      archive_path = readable_submission_archive_path(submission)
 
       # Find corresponding header position
-      header_position = if Archive.archive? submission_path
-                          submission_files = Archive.get_files(submission_path)
+      header_position = if archive_path
+                          submission_files = Archive.get_files(archive_path)
                           matched_file = submission_files.detect { |submission_file|
                             submission_file[:pathname] == pathname
                           }
@@ -996,12 +1063,12 @@ private
   end
 
   def get_file(submission, header_position)
-    handin_file_path = submission.handin_file_path
+    archive_path = readable_submission_archive_path(submission)
 
     if header_position == -1
       get_autograder_output(submission)
-    elsif Archive.archive?(handin_file_path)
-      file, = Archive.get_nth_file(handin_file_path, header_position.to_i)
+    elsif archive_path
+      file, = Archive.get_nth_file(archive_path, header_position.to_i)
       file
     else
       handin_file = submission.handin_file
