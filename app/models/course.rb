@@ -547,7 +547,7 @@ class Course < ApplicationRecord
         # Directory is locked down, use delegate to read file
         Rails.logger.info("File not readable, using delegate to read with root privileges")
         content = UnixGroupManager.read_file_via_delegate(source_config_file_path)
-        lines = content.split("\n")
+        lines = content.lines
         Rails.logger.info("Successfully read #{lines.length} lines from " \
                             "source config file via delegate")
       else
@@ -620,6 +620,7 @@ class Course < ApplicationRecord
           d.write(line)
         end
       end
+      d.write("\n") unless lines.empty? || lines.last.end_with?("\n")
       d.write("end")
       d.close
       Rails.logger.info("Successfully wrote processed config file")
