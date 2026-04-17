@@ -1,0 +1,7 @@
+<% @title = "Manage Autograder Images" %>
+
+<h3>Manage Autograder Images</h3>
+<hr>
+
+<%= render partial: "manage_images",
+           locals: {container_images: @container_images, course: @course, admin: false}%>
