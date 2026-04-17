@@ -97,7 +97,7 @@ module Admin
         updated_status = resp["status"]
         @container_image.update!(
           status: updated_status,
-          build_logs: resp["logs"].join
+          build_logs: resp["logs"]
         )
         if updated_status == 2
           @container_image.update!(image_uri: resp["image_uri"])
