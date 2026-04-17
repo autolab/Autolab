@@ -2,6 +2,7 @@ require "archive"
 require "csv"
 require "fileutils"
 require "pathname"
+require "tempfile"
 require "statistics"
 
 class CoursesController < ApplicationController
@@ -1395,6 +1396,7 @@ private
 
     imported_users.each do |user_attrs|
       email = user_attrs["email"]&.strip
+      normalized_email = email&.downcase
       if email.blank?
         new_users.each(&:destroy)
         raise StandardError, "User #{email} has no email"
@@ -1405,9 +1407,9 @@ private
         raise StandardError, "User #{email} does not have an id"
       end
 
-      user = User.find_by(email:)
+      user = User.where("lower(email) = ?", normalized_email).first
       if user.nil?
-        user = User.roster_create(email,
+        user = User.roster_create(normalized_email,
                                   user_attrs["first_name"].to_s,
                                   user_attrs["last_name"].to_s,
                                   user_attrs["school"].to_s,
@@ -1538,7 +1540,13 @@ private
       submission.submitted_by = imported_cuds_by_id[old_submitter_id] || cud
       submission.save!(validate: false)
 
-      submission.save_file(submission_files_lookup[old_submission_number])
+      Tempfile.create(["submission_import", File.extname(submission.filename.to_s)]) do |tempfile|
+        tempfile.binmode
+        tempfile.write(submission_files_lookup[old_submission_number])
+        tempfile.rewind
+
+        submission.save_file("local_submit_file" => tempfile.path)
+      end
     end
   end
 
