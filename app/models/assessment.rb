@@ -533,6 +533,48 @@ class Assessment < ApplicationRecord
         end
       end
     end
+  rescue Errno::EACCES, Errno::EPERM => e
+    raise unless UnixGroupManager.delegate_enabled?
+
+    Rails.logger.warn("Falling back to delegate tar export for #{File.join(dir_path, asmt_dir)}: #{e.class} - #{e.message}")
+    load_dir_to_tar_via_delegate(dir_path, asmt_dir, tar, filters, export_dir)
+  end
+
+  def load_dir_to_tar_via_delegate(dir_path, asmt_dir, tar, filters = [], export_dir = "")
+    absolute_path = File.join(dir_path, asmt_dir)
+    entries = UnixGroupManager.list_dir_via_delegate(absolute_path)
+
+    if entries.nil?
+      raise Errno::EACCES, "Permission denied listing #{absolute_path} via delegate"
+    end
+
+    entries.each do |entry|
+      entry_name = entry.to_s
+      child_path = File.join(absolute_path, entry_name)
+      relative_path = child_path.sub(%r{^#{Regexp.escape dir_path}/?}, "")
+      export_path = if export_dir == ""
+                      relative_path
+                    else
+                      File.join(export_dir, relative_path)
+                    end
+
+      child_entries = UnixGroupManager.list_dir_via_delegate(child_path)
+      if child_entries.is_a?(Array)
+        if filters.all? { |filter|
+          !Archive.in_dir?(Pathname.new(filter), Pathname.new(child_path), strict: false)
+        }
+          tar.mkdir export_path, 0o2770
+          load_dir_to_tar_via_delegate(dir_path, relative_path, tar, filters, export_dir)
+        end
+      else
+        content = UnixGroupManager.read_file_via_delegate(child_path)
+        content = File.binread(child_path) if content.nil?
+
+        tar.add_file export_path, 0o660 do |tarFile|
+          tarFile.write(content)
+        end
+      end
+    end
   end
 
 private

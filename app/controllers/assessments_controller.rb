@@ -562,7 +562,12 @@ class AssessmentsController < ApplicationController
       # Pack assessment directory into a tarball.
       tarStream = StringIO.new("")
       Gem::Package::TarWriter.new(tarStream) do |tar|
-        tar.mkdir asmt_dir, File.stat(File.join(dir_path, asmt_dir)).mode
+        asmt_mode = begin
+          File.stat(File.join(dir_path, asmt_dir)).mode
+        rescue Errno::EACCES, Errno::EPERM
+          0o2770
+        end
+        tar.mkdir asmt_dir, asmt_mode
         filter = [@assessment.handin_directory_path]
         @assessment.load_dir_to_tar(dir_path, asmt_dir, tar, filter)
       end
