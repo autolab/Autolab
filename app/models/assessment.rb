@@ -536,7 +536,8 @@ class Assessment < ApplicationRecord
   rescue Errno::EACCES, Errno::EPERM => e
     raise unless UnixGroupManager.delegate_enabled?
 
-    Rails.logger.warn("Falling back to delegate tar export for #{File.join(dir_path, asmt_dir)}: #{e.class} - #{e.message}")
+    Rails.logger.warn("Falling back to delegate tar export for #{File.join(dir_path, asmt_dir)}: " \
+                        "#{e.class} - #{e.message}")
     load_dir_to_tar_via_delegate(dir_path, asmt_dir, tar, filters, export_dir)
   end
 

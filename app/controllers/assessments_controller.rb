@@ -225,7 +225,9 @@ class AssessmentsController < ApplicationController
       tar_extract.close
       FilesystemEnforcer.fix_tree(assessment_path.to_s)
     rescue StandardError => e
-      Rails.logger.error("Tarball extraction failed for course=#{@course.name}, tar=#{tarFile.respond_to?(:original_filename) ? tarFile.original_filename : 'unknown'}: #{e.class} - #{e.message}")
+      tar_name = tarFile.respond_to?(:original_filename) ? tarFile.original_filename : "unknown"
+      Rails.logger.error("Tarball extraction failed for course=#{@course.name}, " \
+                           "tar=#{tar_name}: #{e.class} - #{e.message}")
       Rails.logger.error(e.backtrace.first(10).join("\n")) if e.backtrace
       flash[:error] = "Error while extracting tarball to server -- #{e.message}."
       redirect_to(action: "install_assessment") && return
@@ -591,7 +593,8 @@ class AssessmentsController < ApplicationController
                     content_type: "application/x-tar"
           return
         rescue Errno::EACCES, Errno::EPERM => retry_error
-          flash[:error] = "Unable to export assessment due to filesystem permission error: #{retry_error.message}"
+          flash[:error] =
+            "Unable to export assessment due to filesystem permission error: #{retry_error.message}"
           redirect_to action: "index"
           return
         end
@@ -820,8 +823,10 @@ class AssessmentsController < ApplicationController
         @files = Archive.get_files(handin_path)
       end
     rescue Errno::EACCES, Errno::EPERM => e
-      COURSE_LOGGER.log("viewFeedback could not read handin archive #{handin_path}: #{e.class} (#{e.message})")
-      Rails.logger.warn("viewFeedback could not read handin archive #{handin_path}: #{e.class} (#{e.message})")
+      err_msg = "viewFeedback could not read handin archive #{handin_path}: " \
+        "#{e.class} (#{e.message})"
+      COURSE_LOGGER.log(err_msg)
+      Rails.logger.warn(err_msg)
 
       if UnixGroupManager.delegate_enabled?
         delegate_content = UnixGroupManager.read_file_via_delegate(handin_path.to_s)
@@ -1141,7 +1146,8 @@ protected
               filename: File.basename(filename))
     true
   rescue ActionController::MissingFile, Errno::ENOENT, Errno::EACCES, Errno::EPERM => e
-    Rails.logger.warn("Failed to stream writeup for assessment #{@assessment.id}: #{e.class} - #{e.message}")
+    Rails.logger.warn("Failed to stream writeup for assessment #{@assessment.id}: " \
+                        "#{e.class} - #{e.message}")
 
     content = UnixGroupManager.read_file_via_delegate(filename.to_s)
     return false if content.nil?
@@ -1374,7 +1380,9 @@ private
           Dir.children(dir_path)
         rescue Errno::EACCES
           flash.now[:error] =
-            "Cannot access course directory #{dir_path}. Ensure UnixOps daemon is running with the latest code and verify course group membership for app/user9999."
+            "Cannot access course directory #{dir_path}. Ensure UnixOps daemon is " \
+              "running with the latest code and verify course group membership " \
+              "for app/user9999."
           flash.now[:html_safe] = true
           return
         end
@@ -1399,14 +1407,12 @@ private
                      end
       next unless is_directory
 
-      unless use_delegated_metadata
-        unless File.readable?(entry_path) && File.executable?(entry_path)
-          flash.now[:error] = flash.now[:error] ? "#{flash.now[:error]} <br>" : ""
-          flash.now[:error] += "An error occurred while trying to display an existing assessment " \
-            "from file directory #{filename}: cannot access directory due to filesystem permissions"
-          flash.now[:html_safe] = true
-          next
-        end
+      if !use_delegated_metadata && !(File.readable?(entry_path) && File.executable?(entry_path))
+        flash.now[:error] = flash.now[:error] ? "#{flash.now[:error]} <br>" : ""
+        flash.now[:error] += "An error occurred while trying to display an existing assessment " \
+          "from file directory #{filename}: cannot access directory due to filesystem permissions"
+        flash.now[:html_safe] = true
+        next
       end
 
       # assessment names must be only lowercase letters and digits
@@ -1431,8 +1437,9 @@ private
 
       if yml_exists.nil?
         flash.now[:error] = flash.now[:error] ? "#{flash.now[:error]} <br>" : ""
-        flash.now[:error] += "An error occurred while trying to display an existing assessment " \
-          "from file directory #{filename}: unable to verify #{filename}.yml due to filesystem permissions"
+        flash.now[:error] += "An error occurred while trying to display an existing " \
+          "assessment from file directory #{filename}: unable to " \
+          "verify #{filename}.yml due to filesystem permissions"
         flash.now[:html_safe] = true
         next
       end

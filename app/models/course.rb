@@ -126,7 +126,8 @@ class Course < ApplicationRecord
     default_user = Course.default_group_instructor_user
 
     unless default_user
-      Rails.logger.warn("Default group instructor '#{identifier}' not found; skipping auto-enrollment for course #{name}")
+      Rails.logger.warn("Default group instructor '#{identifier}' not found; " \
+                          "skipping auto-enrollment for course #{name}")
       return
     end
 
@@ -137,10 +138,13 @@ class Course < ApplicationRecord
     return unless cud.new_record? || cud.changed?
 
     unless cud.save
-      Rails.logger.warn("Failed to enroll default instructor #{default_user.email} for course #{name}: #{cud.errors.full_messages.join(', ')}")
+      Rails.logger.warn("Failed to enroll default instructor #{default_user.email} " \
+                          "for course #{name}: " \
+                          "#{cud.errors.full_messages.join(', ')}")
     end
   rescue StandardError => e
-    Rails.logger.warn("Failed to ensure default instructor for course #{name}: #{e.class} - #{e.message}")
+    Rails.logger.warn("Failed to ensure default instructor for course #{name}: " \
+                        "#{e.class} - #{e.message}")
   end
 
   # generate course folder
@@ -171,7 +175,9 @@ class Course < ApplicationRecord
       rescue StandardError
         "gid:#{current_gid}"
       end
-      Rails.logger.info("Course directory #{dir_path} created with ownership: #{current_user}:#{current_group} (uid:#{current_uid}, gid:#{current_gid})")
+      Rails.logger.info("Course directory #{dir_path} created with ownership: " \
+                          "#{current_user}:#{current_group} " \
+                          "(uid:#{current_uid}, gid:#{current_gid})")
     rescue StandardError => e
       Rails.logger.warn("Could not get current ownership of #{dir_path}: #{e.message}")
     end
@@ -198,12 +204,21 @@ class Course < ApplicationRecord
     end
 
     # Log file creation
-    Rails.logger.info("Course files created: autolab.log=#{autolab_log_path}, course.rb=#{course_rb_path}")
+    Rails.logger.info("Course files created: autolab.log=#{autolab_log_path}, " \
+                        "course.rb=#{course_rb_path}")
     begin
       log_stat = File.stat(autolab_log_path) if File.exist?(autolab_log_path)
       rb_stat = File.stat(course_rb_path) if File.exist?(course_rb_path)
-      Rails.logger.info("File ownership after creation - autolab.log: uid=#{log_stat.uid}, gid=#{log_stat.gid}, mode=#{log_stat.mode.to_s(8)}") if log_stat
-      Rails.logger.info("File ownership after creation - course.rb: uid=#{rb_stat.uid}, gid=#{rb_stat.gid}, mode=#{rb_stat.mode.to_s(8)}") if rb_stat
+      if log_stat
+        Rails.logger.info("File ownership after creation - autolab.log: " \
+                            "uid=#{log_stat.uid}, gid=#{log_stat.gid}, " \
+                            "mode=#{log_stat.mode.to_s(8)}")
+      end
+
+      if rb_stat
+        Rails.logger.info("File ownership after creation - course.rb: " \
+                            "uid=#{rb_stat.uid}, gid=#{rb_stat.gid}, mode=#{rb_stat.mode.to_s(8)}")
+      end
     rescue StandardError => e
       Rails.logger.warn("Could not get file stats after creation: #{e.message}")
     end
@@ -223,7 +238,8 @@ class Course < ApplicationRecord
         # so it can read course.rb during reload_course_config. Ownership will be
         # changed to root:<course-group> after config loads (by FilesystemEnforcer.fix_tree)
 
-        Rails.logger.info("Setting group ownership on directory and files via delegate (keeping Rails process as owner)")
+        Rails.logger.info("Setting group ownership on directory and files via " \
+                            "delegate (keeping Rails process as owner)")
         Rails.logger.info("Directory path: #{dir_path}, Group: #{group_name}")
 
         # Set group ownership on directory (keep current owner = Rails process)
@@ -235,7 +251,9 @@ class Course < ApplicationRecord
           # Log current state before chmod
           begin
             stat_before_chmod = File.stat(dir_path)
-            Rails.logger.info("Directory before chmod: uid=#{stat_before_chmod.uid}, gid=#{stat_before_chmod.gid}, mode=#{stat_before_chmod.mode.to_s(8)}")
+            Rails.logger.info("Directory before chmod: uid=#{stat_before_chmod.uid}, " \
+                                "gid=#{stat_before_chmod.gid}, " \
+                                "mode=#{stat_before_chmod.mode.to_s(8)}")
           rescue StandardError => e
             Rails.logger.warn("Could not stat directory before chmod: #{e.message}")
           end
@@ -248,7 +266,9 @@ class Course < ApplicationRecord
           # Log state after chmod
           begin
             stat_after_chmod = File.stat(dir_path)
-            Rails.logger.info("Directory after chmod: uid=#{stat_after_chmod.uid}, gid=#{stat_after_chmod.gid}, mode=#{stat_after_chmod.mode.to_s(8)}")
+            Rails.logger.info("Directory after chmod: uid=#{stat_after_chmod.uid}, " \
+                                "gid=#{stat_after_chmod.gid}, " \
+                                "mode=#{stat_after_chmod.mode.to_s(8)}")
           rescue StandardError => e
             Rails.logger.warn("Could not stat directory after chmod: #{e.message}")
           end
@@ -258,10 +278,12 @@ class Course < ApplicationRecord
           if File.exist?(autolab_log_path)
             file_chgrp_success = UnixGroupManager.chgrp_path(autolab_log_path, group_name,
                                                              owner: nil)
-            Rails.logger.info("autolab.log chgrp result: #{file_chgrp_success ? 'success' : 'failed'}")
+            Rails.logger.info("autolab.log chgrp result: " \
+                                "#{file_chgrp_success ? 'success' : 'failed'}")
             begin
               log_stat = File.stat(autolab_log_path)
-              Rails.logger.info("autolab.log after chgrp: uid=#{log_stat.uid}, gid=#{log_stat.gid}, mode=#{log_stat.mode.to_s(8)}")
+              Rails.logger.info("autolab.log after chgrp: uid=#{log_stat.uid}, " \
+                                  "gid=#{log_stat.gid}, mode=#{log_stat.mode.to_s(8)}")
             rescue StandardError => e
               Rails.logger.warn("Could not stat autolab.log: #{e.message}")
             end
@@ -269,16 +291,19 @@ class Course < ApplicationRecord
 
           if File.exist?(course_rb_path)
             file_chgrp_success = UnixGroupManager.chgrp_path(course_rb_path, group_name, owner: nil)
-            Rails.logger.info("course.rb chgrp result: #{file_chgrp_success ? 'success' : 'failed'}")
+            Rails.logger.info("course.rb chgrp result: " \
+                                "#{file_chgrp_success ? 'success' : 'failed'}")
             begin
               rb_stat = File.stat(course_rb_path)
-              Rails.logger.info("course.rb after chgrp: uid=#{rb_stat.uid}, gid=#{rb_stat.gid}, mode=#{rb_stat.mode.to_s(8)}")
+              Rails.logger.info("course.rb after chgrp: uid=#{rb_stat.uid}, " \
+                                  "gid=#{rb_stat.gid}, mode=#{rb_stat.mode.to_s(8)}")
 
               # Test if file is readable
               if File.readable?(course_rb_path)
                 Rails.logger.info("course.rb is readable by current process")
               else
-                Rails.logger.warn("course.rb is NOT readable by current process - this will cause reload_config_file to fail!")
+                Rails.logger.warn("course.rb is NOT readable by current process - " \
+                                  "this will cause reload_config_file to fail!")
               end
             rescue StandardError => e
               Rails.logger.warn("Could not stat course.rb: #{e.message}")
@@ -292,22 +317,27 @@ class Course < ApplicationRecord
             stat_after = File.stat(dir_path)
             gid = UnixGroupManager.get_group_gid(group_name)
             if gid && stat_after.gid == gid
-              Rails.logger.info("Successfully set group #{group_name} (gid #{gid}) on course directory #{dir_path} via delegate (owner remains Rails process for now)")
+              Rails.logger.info("Successfully set group #{group_name} (gid #{gid}) on course " \
+                                  "directory #{dir_path} via delegate " \
+                                  "(owner remains Rails process for now)")
             else
-              Rails.logger.warn("Group ownership mismatch - expected gid #{gid}, got #{stat_after.gid}")
+              Rails.logger.warn("Group ownership mismatch - expected gid #{gid}, " \
+                                  "got #{stat_after.gid}")
             end
 
             # Test if directory is accessible
             if File.readable?(dir_path) && File.executable?(dir_path)
               Rails.logger.info("Directory is readable and executable by current process")
             else
-              Rails.logger.warn("Directory is NOT readable/executable by current process - this will cause reload_config_file to fail!")
+              Rails.logger.warn("Directory is NOT readable/executable by current process - " \
+                                  "this will cause reload_config_file to fail!")
             end
           rescue StandardError => e
             Rails.logger.warn("Could not verify group ownership: #{e.message}")
           end
         else
-          Rails.logger.error("Failed to set group #{group_name} via delegate chgrp. Ensure UnixOps daemon is running and accessible.")
+          Rails.logger.error("Failed to set group #{group_name} via delegate chgrp. " \
+                               "Ensure UnixOps daemon is running and accessible.")
         end
       else
         # Not using delegate - look up locally (only works if groups exist in container)
@@ -319,9 +349,11 @@ class Course < ApplicationRecord
           File.chmod(0o775, dir_path.to_s)
           File.chown(nil, gid, autolab_log_path) if File.exist?(autolab_log_path)
           File.chown(nil, gid, course_rb_path) if File.exist?(course_rb_path)
-          Rails.logger.info("Successfully set group #{group_name} (gid #{gid}) on course directory #{dir_path}")
-        rescue ArgumentError => e
-          Rails.logger.error("Group #{group_name} not found locally. Delegate is not enabled, so local lookup is required.")
+          Rails.logger.info("Successfully set group #{group_name} (gid #{gid}) on " \
+                              "course directory #{dir_path}")
+        rescue ArgumentError
+          Rails.logger.error("Group #{group_name} not found locally. Delegate is not " \
+                               "enabled, so local lookup is required.")
         end
       end
     end
@@ -338,7 +370,8 @@ class Course < ApplicationRecord
       FilesystemEnforcer.fix_path(autolab_log_path, group_name:)
       begin
         log_stat = File.stat(autolab_log_path)
-        Rails.logger.info("autolab.log after FilesystemEnforcer: uid=#{log_stat.uid}, gid=#{log_stat.gid}, mode=#{log_stat.mode.to_s(8)}")
+        Rails.logger.info("autolab.log after FilesystemEnforcer: uid=#{log_stat.uid}, " \
+                            "gid=#{log_stat.gid}, mode=#{log_stat.mode.to_s(8)}")
       rescue StandardError => e
         Rails.logger.warn("Could not stat autolab.log after FilesystemEnforcer: #{e.message}")
       end
@@ -348,17 +381,21 @@ class Course < ApplicationRecord
       FilesystemEnforcer.fix_path(course_rb_path, group_name:)
       begin
         rb_stat = File.stat(course_rb_path)
-        Rails.logger.info("course.rb after FilesystemEnforcer: uid=#{rb_stat.uid}, gid=#{rb_stat.gid}, mode=#{rb_stat.mode.to_s(8)}")
-        Rails.logger.info("course.rb readable? #{File.readable?(course_rb_path)}, executable? #{File.executable?(course_rb_path)}")
+        path = course_rb_path
+        Rails.logger.info("course.rb after FilesystemEnforcer: uid=#{rb_stat.uid}, " \
+                            "gid=#{rb_stat.gid}, mode=#{rb_stat.mode.to_s(8)}")
+        Rails.logger.info("course.rb readable? #{File.readable?(path)}, " \
+                            "executable? #{File.executable?(path)}")
       rescue StandardError => e
-        Rails.logger.warn("Could not stat course.rb after FilesystemEnforcer: #{e.message}")
+        Rails.logger.warn("Could not stat course.rb after FilesystemEnforcer: " \
+                            "#{e.message}")
       end
     else
       Rails.logger.error("course.rb does not exist when trying to apply FilesystemEnforcer!")
     end
 
-    # Note: We intentionally do NOT set strict directory permissions (drwxrws---) here
-    # because the Rails process needs to access the directory to read course.rb during reload_course_config
+    # Note: We intentionally do NOT set strict directory permissions (drwxrws---) here because
+    # the Rails process needs to access the directory to read course.rb during reload_course_config
     # The directory permissions will be properly locked down by FilesystemEnforcer.fix_tree
     # which is called from courses_controller after reload_course_config succeeds
 
@@ -379,7 +416,8 @@ class Course < ApplicationRecord
     autolab_group = ENV.fetch("COURSE_FS_GROUP", "autolab")
     rails_uid = Process.uid
 
-    Rails.logger.info("Ensuring courseConfig and assessmentConfig are writable via delegate (Rails uid=#{rails_uid}, group=#{autolab_group})")
+    Rails.logger.info("Ensuring courseConfig and assessmentConfig are writable " \
+                        "via delegate (Rails uid=#{rails_uid}, group=#{autolab_group})")
 
     [course_config_dir, assessment_config_dir].each do |dir|
       next unless Dir.exist?(dir)
@@ -389,7 +427,8 @@ class Course < ApplicationRecord
       UnixGroupManager.chgrp_path(dir, autolab_group, owner: rails_uid.to_s)
       UnixGroupManager.chmod_path(dir, 0o775)
 
-      Rails.logger.info("Set #{dir} via delegate: owner=#{rails_uid}, group=#{autolab_group}, mode=775")
+      Rails.logger.info("Set #{dir} via delegate: owner=#{rails_uid}, " \
+                          "group=#{autolab_group}, mode=775")
     end
 
     # If delegate not enabled, Rails process must have permission to set these itself
@@ -464,7 +503,8 @@ class Course < ApplicationRecord
     Rails.logger.info("=== Starting reload_config_file for course: #{name} ===")
     Rails.logger.info("Source config path: #{source_config_file_path}")
     Rails.logger.info("Config file path: #{config_file_path}")
-    Rails.logger.info("Current process: uid=#{Process.uid}, gid=#{Process.gid}, euid=#{Process.euid}, egid=#{Process.egid}")
+    Rails.logger.info("Current process: uid=#{Process.uid}, gid=#{Process.gid}, " \
+                        "euid=#{Process.euid}, egid=#{Process.egid}")
 
     # Verify source config file exists and is readable
     unless File.exist?(source_config_file_path)
@@ -476,15 +516,18 @@ class Course < ApplicationRecord
     # Check file permissions
     begin
       stat = File.stat(source_config_file_path)
-      Rails.logger.info("Source file stats: uid=#{stat.uid}, gid=#{stat.gid}, mode=#{stat.mode.to_s(8)}")
+      Rails.logger.info("Source file stats: uid=#{stat.uid}, gid=#{stat.gid}, " \
+                          "mode=#{stat.mode.to_s(8)}")
       Rails.logger.info("Source file readable? #{File.readable?(source_config_file_path)}")
       Rails.logger.info("Source file executable? #{File.executable?(source_config_file_path)}")
 
       # Check directory permissions
       dir_stat = File.stat(File.dirname(source_config_file_path))
-      Rails.logger.info("Source directory stats: uid=#{dir_stat.uid}, gid=#{dir_stat.gid}, mode=#{dir_stat.mode.to_s(8)}")
-      Rails.logger.info("Source directory readable? #{File.readable?(File.dirname(source_config_file_path))}")
-      Rails.logger.info("Source directory executable? #{File.executable?(File.dirname(source_config_file_path))}")
+      dir_path = File.dirname(source_config_file_path)
+      Rails.logger.info("Source directory stats: uid=#{dir_stat.uid}, " \
+                          "gid=#{dir_stat.gid}, mode=#{dir_stat.mode.to_s(8)}")
+      Rails.logger.info("Source directory readable? #{File.readable?(dir_path)}")
+      Rails.logger.info("Source directory executable? #{File.executable?(dir_path)}")
     rescue StandardError => e
       Rails.logger.warn("Could not stat source config file or directory: #{e.message}")
     end
@@ -498,18 +541,22 @@ class Course < ApplicationRecord
         s = File.open(source_config_file_path, "r")
         lines = s.readlines
         s.close
-        Rails.logger.info("Successfully read #{lines.length} lines from source config file directly")
+        Rails.logger.info("Successfully read #{lines.length} lines from " \
+                            "source config file directly")
       elsif UnixGroupManager.delegate_enabled?
         # Directory is locked down, use delegate to read file
         Rails.logger.info("File not readable, using delegate to read with root privileges")
         content = UnixGroupManager.read_file_via_delegate(source_config_file_path)
         lines = content.split("\n")
-        Rails.logger.info("Successfully read #{lines.length} lines from source config file via delegate")
+        Rails.logger.info("Successfully read #{lines.length} lines from " \
+                            "source config file via delegate")
       else
-        raise "Cannot read #{source_config_file_path} - permission denied and delegate not available"
+        raise "Cannot read #{source_config_file_path} - " \
+                "permission denied and delegate not available"
       end
     rescue Errno::EACCES => e
-      error_msg = "Permission denied reading #{source_config_file_path}: #{e.message}. Check file permissions and directory permissions."
+      error_msg = "Permission denied reading #{source_config_file_path}: #{e.message}. " \
+        "Check file permissions and directory permissions."
       Rails.logger.error(error_msg)
       Rails.logger.error("File stats: #{begin
         File.stat(source_config_file_path).inspect
@@ -543,7 +590,10 @@ class Course < ApplicationRecord
 
     begin
       config_dir_stat = File.stat(config_dir) if Dir.exist?(config_dir)
-      Rails.logger.info("courseConfig directory stats: uid=#{config_dir_stat.uid}, gid=#{config_dir_stat.gid}, mode=#{config_dir_stat.mode.to_s(8)}") if config_dir_stat
+      if config_dir_stat
+        Rails.logger.info("courseConfig directory stats: uid=#{config_dir_stat.uid}, " \
+                            "gid=#{config_dir_stat.gid}, mode=#{config_dir_stat.mode.to_s(8)}")
+      end
       Rails.logger.info("courseConfig directory writable? #{File.writable?(config_dir)}")
     rescue StandardError => e
       Rails.logger.warn("Could not stat courseConfig directory: #{e.message}")
@@ -574,7 +624,8 @@ class Course < ApplicationRecord
       d.close
       Rails.logger.info("Successfully wrote processed config file")
     rescue Errno::EACCES => e
-      error_msg = "Permission denied writing to #{config_file_path}: #{e.message}. Check courseConfig directory permissions."
+      error_msg = "Permission denied writing to #{config_file_path}: #{e.message}. " \
+        "Check courseConfig directory permissions."
       Rails.logger.error(error_msg)
       raise error_msg
     rescue StandardError => e
@@ -608,7 +659,8 @@ class Course < ApplicationRecord
     # Evaluate the module name to get the actual Module object
     begin
       eval_result = eval(config_module_name)
-      Rails.logger.info("eval(#{config_module_name}) returned: #{eval_result.class} - #{eval_result.inspect[0..100]}")
+      Rails.logger.info("eval(#{config_module_name}) returned: " \
+                          "#{eval_result.class} - #{eval_result.inspect[0..100]}")
     rescue StandardError => e
       Rails.logger.error("eval(#{config_module_name}) failed: #{e.class} - #{e.message}")
       raise
@@ -619,16 +671,19 @@ class Course < ApplicationRecord
       mod = eval_result
       Rails.logger.info("eval returned a Module directly: #{mod}")
     else
-      Rails.logger.info("eval returned #{eval_result.class}, trying Object.const_get(#{config_module_name})")
+      Rails.logger.info("eval returned #{eval_result.class}, " \
+                          "trying Object.const_get(#{config_module_name})")
       begin
         mod = Object.const_get(config_module_name)
         Rails.logger.info("Object.const_get succeeded, got module: #{mod.class}")
       rescue NameError => e
-        Rails.logger.error("Object.const_get(#{config_module_name}) failed: #{e.class} - #{e.message}")
+        Rails.logger.error("Object.const_get(#{config_module_name}) failed: " \
+                             "#{e.class} - #{e.message}")
         Rails.logger.error("Module #{config_module_name} not found in Object constants")
         raise "Module #{config_module_name} not found after loading config file"
       rescue StandardError => e
-        Rails.logger.error("Object.const_get(#{config_module_name}) failed: #{e.class} - #{e.message}")
+        Rails.logger.error("Object.const_get(#{config_module_name}) failed: " \
+                             "#{e.class} - #{e.message}")
         raise
       end
     end
@@ -639,14 +694,16 @@ class Course < ApplicationRecord
       raise TypeError, error_msg
     end
     # rubocop:enable Security/Eval
-    Rails.logger.info("=== Successfully completed reload_config_file for course: #{name}, returning module: #{mod.class} (#{mod}) ===")
+    Rails.logger.info("=== Successfully completed reload_config_file for course: #{name}, " \
+                        "returning module: #{mod.class} (#{mod}) ===")
     mod
   end
 
   # Reload the course config file and extend the loaded methods to AdminsController
   def reload_course_config
     Rails.logger.info("=== STARTING reload_course_config for course: #{name} ===")
-    Rails.logger.info("This will call reload_config_file, then extend AdminsController with the module")
+    Rails.logger.info("This will call reload_config_file, then extend " \
+                        "AdminsController with the module")
     begin
       Rails.logger.info("Step 1: Calling reload_config_file...")
       mod = reload_config_file
@@ -658,7 +715,8 @@ class Course < ApplicationRecord
       end}, class=#{mod.class}, instance_of?(Module)=#{mod.is_a?(Module)}")
 
       unless mod.is_a?(Module)
-        error_msg = "reload_config_file did not return a Module, got: #{mod.class} - #{mod.inspect[0..200]}"
+        error_msg = "reload_config_file did not return a Module, " \
+          "got: #{mod.class} - #{mod.inspect[0..200]}"
         Rails.logger.error(error_msg)
         raise TypeError, error_msg
       end
@@ -808,6 +866,7 @@ private
   rescue StandardError
     DEFAULT_GROUP_INSTRUCTOR_IDENTIFIER
   end
+  private_class_method :default_group_instructor_identifier
 
   def self.default_group_instructor_user
     identifier = default_group_instructor_identifier
@@ -823,6 +882,7 @@ private
       User.where("LOWER(email) LIKE ?", pattern).first
     end
   end
+  private_class_method :default_group_instructor_user
 
   def saved_change_to_grade_related_fields?
     saved_change_to_late_slack? || saved_change_to_grace_days? ||
@@ -855,8 +915,10 @@ private
     if success
       Rails.logger.info("Unix group #{group_name} creation delegated for course #{name}")
     else
-      Rails.logger.error("Failed to create Unix group #{group_name} via delegate for course #{name}")
-      Rails.logger.error("Check that UnixOps daemon is running and accessible at #{ENV['UNIX_OPS_DELEGATE_URL']}")
+      Rails.logger.error("Failed to create Unix group #{group_name} via delegate " \
+                           "for course #{name}")
+      delegate_url = ENV['UNIX_OPS_DELEGATE_URL']
+      Rails.logger.error("Check that UnixOps daemon is running and accessible at #{delegate_url}")
     end
   end
 
@@ -869,7 +931,8 @@ private
                   "user9999"].compact.map(&:to_s).map(&:strip).reject(&:empty?).uniq
 
     if sync_users.empty?
-      Rails.logger.warn("Course #{name}: unable to determine service user(s) for filesystem permissions")
+      Rails.logger.warn("Course #{name}: unable to determine service user(s) " \
+                          "for filesystem permissions")
       return false
     end
 
@@ -893,15 +956,18 @@ private
     }
 
     if all_success
-      Rails.logger.info("Course #{name}: dual-synced users #{sync_users.join(', ')} in group #{group_name}")
+      Rails.logger.info("Course #{name}: dual-synced users " \
+                          "#{sync_users.join(', ')} in group #{group_name}")
       true
     else
       failed = per_user_results.reject { |result|
         result[:remote_success] && result[:local_success]
       }
-      Rails.logger.warn("Course #{name}: failed to fully sync group membership for #{failed.map { |r|
-                                                                                       "#{r[:username]}(remote=#{r[:remote_success]},local=#{r[:local_success]})"
-                                                                                     }.join(', ')}")
+      Rails.logger.warn("Course #{name}: failed to fully sync group membership for " \
+                          "#{failed.map { |r|
+                               "#{r[:username]}(remote=#{r[:remote_success]}," \
+                                                         "local=#{r[:local_success]})"
+                             }.join(', ')}")
       false
     end
   end

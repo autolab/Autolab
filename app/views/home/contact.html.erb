@@ -40,9 +40,9 @@
                   <div class="contact-course">
                     <strong><%= course.display_name || course.name %></strong>
                     <%= mail_to instructors.join(","),
-                              "Email instructors",
-                              subject: subject,
-                              class: "btn-flat waves-effect contact-mailto" %>
+                                "Email instructors",
+                                subject:,
+                                class: "btn-flat waves-effect contact-mailto" %>
                   </div>
                 </li>
               <% end %>
