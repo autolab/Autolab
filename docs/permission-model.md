@@ -90,6 +90,7 @@ This implementation is aligned with the Autolab authorization model in [security
 Run these in order.
 
 1. **Bootstrap course Unix groups and permissions**
+   - `sudo chmod o+x /home/ubuntu`  # Ensure parent directory is traversable for group members
    - `docker compose exec autolab bundle exec rails runner -e production script/bootstrap_course_groups.rb`
 
 2. **Run verification harness**

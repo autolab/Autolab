@@ -1,8 +1,3 @@
-unless system('chmod o+x /home/ubuntu')
-  puts '[WARN] Failed to set o+x on /home/ubuntu (parent directory may not be traversable for group members)'
-else
-  puts '[INFO] Ensured /home/ubuntu is o+x (traversable)'
-end
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 #
