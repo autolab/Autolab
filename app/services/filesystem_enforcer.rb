@@ -47,7 +47,8 @@ class FilesystemEnforcer
     end
 
     begin
-      mode = File.directory?(path) ? MODE_DIR : MODE_FILE
+      # Always enforce 2770 for directories, never allow world access
+      mode = File.directory?(path) ? 0o2770 : MODE_FILE
       # Skip symlinks to avoid lchmod issues on some platforms
       unless File.symlink?(path)
         # When using delegate, use delegate chmod (runs on host with proper privileges)
