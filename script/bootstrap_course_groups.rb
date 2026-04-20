@@ -101,16 +101,27 @@ scope.find_each do |course|
   course_dir = course.directory_path.to_s
   if Dir.exist?(course_dir)
     if DRY_RUN
-      say "  [SYS] chgrp -R #{group_name} #{course_dir}"
-      say "  [SYS] find #{course_dir} -type d -exec chmod 2770 {} +"
-      say "  [SYS] find #{course_dir} -type f -exec chmod 660 {} +"
+      if UnixGroupManager.delegate_enabled?
+        say "  [DELEGATE] FilesystemEnforcer.fix_tree(#{course_dir})"
+      else
+        say "  [SYS] chgrp -R #{group_name} #{course_dir}"
+        say "  [SYS] find #{course_dir} -type d -exec chmod 2770 {} +"
+        say "  [SYS] find #{course_dir} -type f -exec chmod 660 {} +"
+      end
     else
-      sys("chgrp -R #{group_name} #{course_dir}")
-      sys("find #{course_dir} -type d -exec chmod 2770 {} +")
-      sys("find #{course_dir} -type f -exec chmod 660 {} +")
+      if UnixGroupManager.delegate_enabled?
+        # In delegate mode, group operations occur on the host via delegate.
+        # Running local chgrp inside the Rails container can fail with
+        # "invalid group" because the group database is host-scoped.
+        FilesystemEnforcer.fix_tree(course_dir)
+      else
+        sys("chgrp -R #{group_name} #{course_dir}")
+        sys("find #{course_dir} -type d -exec chmod 2770 {} +")
+        sys("find #{course_dir} -type f -exec chmod 660 {} +")
 
-      # Also use FilesystemEnforcer to ensure consistency
-      FilesystemEnforcer.fix_tree(course_dir)
+        # Also use FilesystemEnforcer to ensure consistency
+        FilesystemEnforcer.fix_tree(course_dir)
+      end
     end
   else
     say "  [WARN] Course directory #{course_dir} does not exist"
