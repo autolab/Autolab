@@ -394,6 +394,7 @@ class Course < ApplicationRecord
         if export_configs&.include?('assessments')
           tar.mkdir File.join(course_dir, "assessments"), mode
           tar.mkdir File.join(course_dir, "handout_files"), mode
+          tar.mkdir File.join(course_dir, "writeup_files"), mode
 
           assessments.each do |assessment|
             asmt_data = assessment.attributes.except("late_penalty_id", "version_penalty_id")
@@ -405,16 +406,27 @@ class Course < ApplicationRecord
               tar_file.write(asmt_data.to_yaml)
             end
 
-            # export handout files
-            handout_path = Rails.root.join("courses", name, assessment.name, "handout")
-            if Dir.exist?(handout_path)
-              Dir.foreach(handout_path) do |filename|
-                next if filename == "." || filename == ".."
-                full_path = File.join(handout_path, filename)
-                next unless File.file?(full_path)
+            # export handout file (single file within assessment folder, URLs skipped)
+            if assessment.handout_is_file?
+              handout_file_path = assessment.handout_path
+              if File.file?(handout_file_path)
+                File.open(handout_file_path, "rb") do |f|
+                  tar.add_file File.join(course_dir, "handout_files",
+                                         "assessment_handout_#{assessment.id}_#{File.basename(assessment.handout)}"),
+                               mode do |tar_file|
+                    tar_file.write(f.read)
+                  end
+                end
+              end
+            end
 
-                File.open(full_path, "rb") do |f|
-                  tar.add_file File.join(course_dir, "handout_files", "assessment_handout_#{assessment.id}_#{filename}"),
+            # export writeup file (single file within assessment folder, URL skipped)
+            if assessment.writeup_is_file?
+              writeup_file_path = assessment.writeup_path
+              if File.file?(writeup_file_path)
+                File.open(writeup_file_path, "rb") do |f|
+                  tar.add_file File.join(course_dir, "writeup_files",
+                                         "assessment_writeup_#{assessment.id}_#{File.basename(assessment.writeup)}"),
                                mode do |tar_file|
                     tar_file.write(f.read)
                   end
