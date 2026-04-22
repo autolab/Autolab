@@ -305,6 +305,7 @@ class CoursesController < ApplicationController
         files[relative] = entry.read
       end
       tar_extract.close
+      COURSE_LOGGER.setCourse(@newCourse)
       imported_assessments_by_id = import_assessments(files)
       import_submissions(files, imported_cuds_by_id, imported_assessments_by_id)
     rescue StandardError => e
@@ -1666,6 +1667,20 @@ private
       asmt_dir = Rails.root.join("courses", @newCourse.name, config["name"])
       FileUtils.mkdir_p(asmt_dir)
 
+      # Copy handout and writeup files before save so validations pass
+      old_assessment_id = config["id"]
+      {
+        "handout_files/assessment_handout_#{old_assessment_id}_" => asmt_dir,
+        "writeup_files/assessment_writeup_#{old_assessment_id}_" => asmt_dir
+      }.each do |prefix, dest_dir|
+        files.each do |path, contents|
+          next unless path.start_with?(prefix)
+
+          filename = path.delete_prefix(prefix)
+          File.open(File.join(dest_dir, filename), "wb") { |f| f.write(contents) }
+        end
+      end
+
       # Create penalty records from inline data if present
       if config["late_penalty"].is_a?(Hash)
         assessment.late_penalty = Penalty.new(config["late_penalty"])
@@ -1680,8 +1695,8 @@ private
       end
 
       assessment.construct_folder
+      assessment.load_config_file
 
-      old_assessment_id = config["id"]
       imported_assessments_by_id[old_assessment_id] = assessment if old_assessment_id.present?
     end
 
