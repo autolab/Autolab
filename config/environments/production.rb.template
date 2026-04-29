@@ -89,10 +89,10 @@ Autolab3::Application.configure do
   config.x.docker_image_upload_enabled = false
 
   # Feature flag for EC2 Docker autograder
-  config.x.ec2_docker = false
+  config.x.ec2_docker = true
 
   # Feature flag for EC2 SSH autograder
-  config.x.ec2_ssh = false
+  config.x.ec2_ssh = true
 
   # ID for Heap Analytics
   config.x.analytics_id = nil
