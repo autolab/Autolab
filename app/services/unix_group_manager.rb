@@ -438,8 +438,10 @@ class UnixGroupManager
     self.add_user_to_group(username, username)
 
     # PATH DEFINITIONS
-    # Use the host path so links are valid via SSH on the AWS machine
-    host_courses_root = "/home/autolab/autolab-docker/Autolab/courses"
+    # Use the host path so links are valid via SSH on the AWS machine.
+    # Override with AUTOLAB_HOST_COURSES_ROOT when deployments use a different
+    # checkout location (for example, /home/ubuntu/autolab-docker/Autolab/courses).
+    host_courses_root = ENV.fetch("AUTOLAB_HOST_COURSES_ROOT", "/home/autolab/docker/Autolab/courses")
     user_courses_dir = File.join(home_dir, "courses")
 
     # 1. Clean up the user's courses folder entirely

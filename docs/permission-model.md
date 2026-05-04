@@ -81,6 +81,7 @@ This implementation is aligned with the Autolab authorization model in [security
 - `UNIX_OPS_DELEGATE_URL`
 - `UNIX_OPS_SHARED_SECRET`
 - optional: `UNIX_OPS_DELEGATE_TIMEOUT`
+- optional: `AUTOLAB_HOST_COURSES_ROOT` (default: `/home/autolab/docker/Autolab/courses`)
 
 ---
 
@@ -89,6 +90,7 @@ This implementation is aligned with the Autolab authorization model in [security
 Run these in order.
 
 1. **Bootstrap course Unix groups and permissions**
+   - `sudo chmod o+x /home/ubuntu`  # Ensure parent directory is traversable for group members
    - `docker compose exec autolab bundle exec rails runner -e production script/bootstrap_course_groups.rb`
 
 2. **Run verification harness**
@@ -110,3 +112,18 @@ Run these in order.
 - Course group exists and instructor membership is correct.
 - User home and `authorized_keys` are created with secure ownership.
 - Course directory modes are locked down and setgid is preserved.
+
+---
+
+## Troubleshooting
+
+- **`cd <course>` returns `No such file or directory` from `~/courses`**
+   - This usually means the per-user course link points to the wrong host path.
+   - Verify the link target:
+      - `readlink -f ~/courses/<course-name>`
+   - Ensure `AUTOLAB_HOST_COURSES_ROOT` matches your host checkout path (for example, `/home/ubuntu/autolab-docker/Autolab/courses` on some deployments).
+   - Recreate user links by re-syncing SSH keys/provisioning (or trigger `ensure_courses_directory` via key update flow).
+
+- **Bootstrap prints `chgrp: invalid group` inside the Rails container**
+   - In delegate mode, groups are host-scoped and may not exist in the container's group database.
+   - This is handled by delegate-backed permission enforcement; use the updated bootstrap script that applies delegated filesystem enforcement.
