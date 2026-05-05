@@ -14,7 +14,7 @@ class AdminsController < ApplicationController
 
     @email = CourseMailer.system_announcement(
       params[:from],
-      make_dlist(@cuds),
+      make_dlist(@users),
       params[:subject],
       params[:body]
     )
