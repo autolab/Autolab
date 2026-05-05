@@ -2,6 +2,8 @@
   <h1><%= t('.title') %></h1>
 </div>
 
+<% future_course_names = Course.where("end_date > ?", Time.current).order(:display_name).pluck(:name) %>
+
 <p><%= link_to t('.new'), new_oauth_application_path, class: 'btn btn-success' %></p>
 
 <table class="table table-striped">
@@ -55,7 +57,7 @@
         client_id: this.dataset.clientId,
         client_secret: this.dataset.clientSecret,
         redirect_uri: matchingUri,
-        courses: []
+        courses: <%= raw json_escape(future_course_names.to_json) %>
       };
 
       var blob = new Blob([JSON.stringify(config, null, 4)], { type: 'application/json' });
