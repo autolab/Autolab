@@ -1,14 +1,12 @@
 <% @title = "Export Course" %>
 
-<% content_for :stylesheets do %>
-  <%= stylesheet_link_tag "export" %>
-<% end %>
-
-<% content_for :javascripts do %>
-  <%= javascript_include_tag "export_course" %>
-<% end %>
-
 <h2>Export Course</h2>
-<p id="export_description">Select fields to include in the export:</p>
 
-<%= render partial: "exportForm" %>
+<div class="card-panel grey lighten-4">
+  <p style="margin: 0;">
+    Looking for the old export page, or exporting for an older Autolab version?
+    Visit
+    <%= link_to "Legacy Export", legacy_export_course_path(@course) %>
+    here.
+  </p>
+</div>

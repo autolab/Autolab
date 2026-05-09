@@ -1,0 +1,23 @@
+<% @title = "Legacy Export" %>
+
+<% content_for :stylesheets do %>
+  <%= stylesheet_link_tag "export" %>
+<% end %>
+
+<% content_for :javascripts do %>
+  <%= javascript_include_tag "export_course" %>
+<% end %>
+
+<h2>Legacy Export</h2>
+
+<div class="card-panel yellow lighten-4">
+  <p style="margin: 0;">
+    <strong>Warning:</strong> This export path is deprecated and should only be used
+    when exporting for older Autolab installations. It has fewer features than the
+    <%= link_to "new Export Course", export_course_path(@course) %> flow.
+  </p>
+</div>
+
+<p id="export_description">Select fields to include in the export:</p>
+
+<%= render partial: "exportForm" %>

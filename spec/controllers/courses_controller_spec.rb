@@ -374,6 +374,7 @@ RSpec.describe CoursesController, type: :controller do
       get :export, params: { name: @course.name }
       expect(response).to be_successful
       expect(response.body).to match(/Export Course/m)
+      expect(response.body).to match(/Legacy Export/m)
     end
   end
 
@@ -415,59 +416,111 @@ RSpec.describe CoursesController, type: :controller do
     end
   end
 
-  shared_examples "export_selected_success" do
+  shared_examples "legacy_export_success" do
+    before(:each) do
+      sign_in(user)
+    end
+    it "renders successfully" do
+      get :legacy_export, params: { name: @course.name }
+      expect(response).to be_successful
+      expect(response.body).to match(/Legacy Export/m)
+      expect(response.body).to match(/deprecated/m)
+      expect(response.body).to match(/Select fields to include in the export/m)
+    end
+  end
+
+  shared_examples "legacy_export_failure" do |login: false|
+    before(:each) do
+      sign_in(user) if login
+    end
+    it "renders with failure" do
+      get :legacy_export, params: { name: @course.name }
+      expect(response).not_to be_successful
+      expect(response.body).not_to match(/Legacy Export/m)
+    end
+  end
+
+  describe "#legacy_export" do
+    include_context "controllers shared context"
+    context "when user is Autolab admin" do
+      it_behaves_like "legacy_export_success" do
+        let!(:user) { admin_user }
+      end
+    end
+
+    context "when user is Autolab instructor" do
+      it_behaves_like "legacy_export_success" do
+        let!(:user) { instructor_user }
+      end
+    end
+
+    context "when user is Autolab user" do
+      it_behaves_like "legacy_export_failure", login: true do
+        let!(:user) { student_user }
+      end
+    end
+
+    context "when user is not logged in" do
+      it_behaves_like "legacy_export_failure", login: false do
+        let!(:user) { student_user }
+      end
+    end
+  end
+
+  shared_examples "legacy_export_selected_success" do
     before(:each) do
       sign_in(user)
     end
 
     it "exports default course configs and attachments" do
       default_tar = (@course.generate_tar []).string.force_encoding("binary")
-      post :export_selected, params: { name: @course.name }
+      post :legacy_export_selected, params: { name: @course.name }
       expect(response).to be_successful
       expect(response.body).to eq(default_tar)
     end
 
     it "exports metric configs" do
       metrics_tar = (@course.generate_tar ["metrics_config"]).string.force_encoding("binary")
-      post :export_selected, params: { name: @course.name, export_configs: ["metrics_config"] }
+      post :legacy_export_selected, params: { name: @course.name, export_configs: ["metrics_config"] }
       expect(response).to be_successful
       expect(response.body).to eq(metrics_tar)
     end
 
     it "exports assessments" do
       assessments_tar = (@course.generate_tar ["assessments"]).string.force_encoding("binary")
-      post :export_selected, params: { name: @course.name, export_configs: ["assessments"] }
+      post :legacy_export_selected, params: { name: @course.name, export_configs: ["assessments"] }
       expect(response).to be_successful
       expect(response.body).to eq(assessments_tar)
     end
 
     it "handles StandardError during export" do
       allow_any_instance_of(Course).to receive(:generate_tar).and_raise(StandardError)
-      post :export_selected, params: { name: @course.name }
+      post :legacy_export_selected, params: { name: @course.name }
       expect(response).to have_http_status(302)
+      expect(response).to redirect_to(action: :legacy_export)
       expect(flash[:error]).to be_present
       expect(flash[:error]).to match(/StandardError/m)
     end
   end
 
-  shared_examples "export_selected_failure" do
+  shared_examples "legacy_export_selected_failure" do
     before(:each) do
       sign_in(user)
     end
 
     it "does not export a course" do
       default_tar = (@course.generate_tar []).string.force_encoding("binary")
-      post :export_selected, params: { name: @course.name }
+      post :legacy_export_selected, params: { name: @course.name }
       expect(response).not_to be_successful
       expect(response.body).not_to eq(default_tar)
     end
   end
 
-  describe "#export_selected" do
+  describe "#legacy_export_selected" do
     context "when user is instructor with no attachment" do
       include_context "controllers shared context"
 
-      it_behaves_like "export_selected_success" do
+      it_behaves_like "legacy_export_selected_success" do
         let!(:user) { instructor_user }
       end
     end
@@ -477,7 +530,7 @@ RSpec.describe CoursesController, type: :controller do
         create_course_with_attachment_as_hash
       end
 
-      it_behaves_like "export_selected_success" do
+      it_behaves_like "legacy_export_selected_success" do
         let!(:user) { course_hash[:instructor_user] }
       end
     end
@@ -485,7 +538,7 @@ RSpec.describe CoursesController, type: :controller do
     context "when user is Autolab user" do
       include_context "controllers shared context"
 
-      it_behaves_like "export_selected_failure" do
+      it_behaves_like "legacy_export_selected_failure" do
         let!(:user) { student_user }
       end
     end

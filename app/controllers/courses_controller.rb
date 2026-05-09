@@ -14,7 +14,8 @@ class CoursesController < ApplicationController
   # if there's no course, there are no persistent announcements for that course
   skip_before_action :update_persistent_announcements,
                      only: %i[courses_redirect index new create create_from_tar join_course]
-  before_action :set_manage_course_breadcrumb, only: %i[edit users moss email upload_roster export]
+  before_action :set_manage_course_breadcrumb,
+                only: %i[edit users moss email upload_roster export legacy_export]
   before_action :set_manage_course_users_breadcrumb, only: %i[upload_roster]
 
   def index
@@ -919,8 +920,11 @@ class CoursesController < ApplicationController
   action_auth_level :export, :instructor
   def export; end
 
-  action_auth_level :export_selected, :instructor
-  def export_selected
+  action_auth_level :legacy_export, :instructor
+  def legacy_export; end
+
+  action_auth_level :legacy_export_selected, :instructor
+  def legacy_export_selected
     tar_stream = @course.generate_tar(params[:export_configs])
 
     send_data tar_stream.string.force_encoding("binary"),
@@ -929,10 +933,10 @@ class CoursesController < ApplicationController
               disposition: 'attachment'
   rescue SystemCallError => e
     flash[:error] = "Unable to create the config YAML file: #{e.message}"
-    redirect_to(action: :export)
+    redirect_to(action: :legacy_export)
   rescue StandardError => e
     flash[:error] = "Unable to generate tarball -- #{e.message}"
-    redirect_to(action: :export)
+    redirect_to(action: :legacy_export)
   end
 
 private
