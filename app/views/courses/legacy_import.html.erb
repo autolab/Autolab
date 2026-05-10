@@ -1,0 +1,38 @@
+<% @title = "Legacy Import" %>
+
+<h2>Legacy Import</h2>
+
+<div class="card-panel yellow lighten-4">
+  <p style="margin: 0;">
+    <strong>Note:</strong> This import path is for older Autolab course export packages.
+  </p>
+</div>
+
+<% if @pending.present? %>
+  <div class="card-panel grey lighten-4">
+    <p style="margin: 0 0 0.5rem 0;"><strong>Staged package</strong></p>
+    <ul style="margin: 0;">
+      <li>Name: <%= @pending["original_filename"] %></li>
+      <li>Size: <%= number_to_human_size(@pending["byte_size"].to_i) %></li>
+      <li>
+        Uploaded:
+        <%= begin
+              Time.zone.parse(@pending["uploaded_at"].to_s)&.strftime("%Y-%m-%d %H:%M %Z") ||
+                @pending["uploaded_at"]
+            rescue StandardError
+              @pending["uploaded_at"]
+            end %>
+      </li>
+    </ul>
+  </div>
+<% end %>
+
+<%= form_with url: create_from_tar_courses_path, method: :post, builder: FormBuilderWithDateTimeInput do |f| %>
+  <div class="input-field">
+    <label class="control-label" for="instructor_email">Instructor Email</label>
+    <%= email_field_tag :instructor_email, nil, class: "validate", placeholder: "", required: true, autocomplete: "email" %>
+    <p class="help-block">Email of an Instructor, they will set up the course from here!</p>
+  </div>
+
+  <%= f.submit "Create Course", { class: "btn primary" } %>
+<% end %>

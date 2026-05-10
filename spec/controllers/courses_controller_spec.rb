@@ -366,6 +366,89 @@ RSpec.describe CoursesController, type: :controller do
     end
   end
 
+  describe "#import_upload" do
+    context "when user is administrator" do
+      before(:each) do
+        @admin = FactoryBot.create(:user, administrator: true)
+        sign_in(@admin)
+      end
+
+      after(:each) do
+        CourseTransfer::StagedUpload.clear_user!(@admin) if @admin
+        session.delete(:course_import)
+      end
+
+      it "stages a legacy tar and redirects to legacy import" do
+        file = fixture_file_upload("courses/course-valid.tar")
+        post :import_upload, params: { tarFile: file }
+        expect(response).to redirect_to(legacy_import_courses_path)
+        expect(session[:course_import]).to be_present
+        expect(session[:course_import]["version"]).to eq(CourseTransfer::Version::LEGACY)
+        token = session[:course_import]["token"]
+        staged = CourseTransfer::StagedUpload.find!(@admin, token)
+        expect(staged.path).to be_a(Pathname)
+        expect(File).to exist(staged.path)
+      end
+
+      it "stages a new-format tar and redirects to import" do
+        tar_path = Rails.root.join("tmp", "course-new-format-#{SecureRandom.hex(4)}.tar")
+        File.open(tar_path, "wb") do |f|
+          Gem::Package::TarWriter.new(f) do |tar|
+            tar.add_file("manifest.yml", 0o644) do |io|
+              io.write({
+                "format" => CourseTransfer::Version::FORMAT_ID,
+                "version" => "1.0.0",
+                "parts" => []
+              }.to_yaml)
+            end
+          end
+        end
+        file = Rack::Test::UploadedFile.new(tar_path, "application/x-tar", true)
+        post :import_upload, params: { tarFile: file }
+        FileUtils.rm_f(tar_path)
+        expect(response).to redirect_to(import_courses_path)
+        expect(session[:course_import]["version"]).to eq("1.0.0")
+      end
+
+      it "uses the staged package for create_from_tar without tarFile param" do
+        file = fixture_file_upload("courses/course-valid.tar")
+        post :import_upload, params: { tarFile: file }
+        token = session[:course_import]["token"]
+        staged = CourseTransfer::StagedUpload.find!(@admin, token)
+
+        opened_staged = false
+        allow(File).to receive(:open).and_call_original
+        allow(File).to receive(:open).with(staged.path, "rb").and_wrap_original do |method, *args, &block|
+          opened_staged = true
+          method.call(*args, &block)
+        end
+
+        post :create_from_tar, params: { instructor_email: "instructor@gmail.com" }
+
+        expect(opened_staged).to be(true)
+        expect(flash[:error].to_s).not_to match(/Please select a course tarball/)
+      end
+
+      it "cleans up staged files after a successful create_from_tar" do
+        file = fixture_file_upload("courses/course-valid.tar")
+        post :import_upload, params: { tarFile: file }
+        token = session[:course_import]["token"]
+        staged_path = CourseTransfer::StagedUpload.find!(@admin, token).path
+
+        # Force the success cleanup path without relying on full course lifecycle
+        # (Unix group setup is unavailable on some hosts).
+        allow_any_instance_of(CoursesController).to receive(:create_from_tar) do |controller|
+          controller.send(:cleanup_course_import_session!)
+          controller.redirect_to("/")
+        end
+
+        post :create_from_tar, params: { instructor_email: "instructor@gmail.com" }
+        expect(session[:course_import]).to be_nil
+        expect(File).not_to exist(staged_path)
+      end
+    end
+  end
+
   shared_examples "export_success" do
     before(:each) do
       sign_in(user)

@@ -7,13 +7,16 @@ require_relative "../services/unix_group_manager"
 
 class CoursesController < ApplicationController
   skip_before_action :set_course,
-                     only: %i[courses_redirect index new create create_from_tar join_course]
+                     only: %i[courses_redirect index new create create_from_tar
+                              import import_upload legacy_import join_course]
   # you need to be able to pick a course to be authorized for it
   skip_before_action :authorize_user_for_course,
-                     only: %i[courses_redirect index new create create_from_tar join_course]
+                     only: %i[courses_redirect index new create create_from_tar
+                              import import_upload legacy_import join_course]
   # if there's no course, there are no persistent announcements for that course
   skip_before_action :update_persistent_announcements,
-                     only: %i[courses_redirect index new create create_from_tar join_course]
+                     only: %i[courses_redirect index new create create_from_tar
+                              import import_upload legacy_import join_course]
   before_action :set_manage_course_breadcrumb,
                 only: %i[edit users moss email upload_roster export legacy_export]
   before_action :set_manage_course_users_breadcrumb, only: %i[upload_roster]
@@ -248,17 +251,92 @@ class CoursesController < ApplicationController
     end
   end
 
-  action_auth_level :create_from_tar, :administrator
-  def create_from_tar
-    tarFile = params[:tarFile]
-    if tarFile.nil?
+  action_auth_level :import_upload, :administrator
+  def import_upload
+    if params[:tarFile].blank?
       flash[:error] = "Please select a course tarball for uploading."
-      render(action: "new") && return
+      redirect_to(new_course_path) && return
     end
 
     begin
-      tarFile = File.new(tarFile.open, "rb")
-      tar_extract = Gem::Package::TarReader.new(tarFile)
+      staged = CourseTransfer::StagedUpload.stage!(current_user, params[:tarFile])
+      version = CourseTransfer::Version.detect_from_tar_file(staged.path)
+
+      session[:course_import] = {
+        "token" => staged.token,
+        "user_id" => current_user.id,
+        "original_filename" => staged.original_filename,
+        "byte_size" => staged.byte_size,
+        "uploaded_at" => staged.uploaded_at.utc.iso8601,
+        "version" => version
+      }
+
+      if CourseTransfer::Version.legacy?(version)
+        redirect_to(legacy_import_courses_path) && return
+      end
+
+      redirect_to(import_courses_path) && return
+    rescue CourseTransfer::Version::InvalidManifest => e
+      CourseTransfer::StagedUpload.clear_user!(current_user)
+      session.delete(:course_import)
+      flash[:error] = "Invalid course export package: #{e.message}"
+      redirect_to(new_course_path) && return
+    rescue StandardError => e
+      CourseTransfer::StagedUpload.clear_user!(current_user)
+      session.delete(:course_import)
+      flash[:error] = "Error while reading the tarball -- #{e.message}."
+      redirect_to(new_course_path) && return
+    end
+  end
+
+  action_auth_level :import, :administrator
+  def import
+    @pending = course_import_session
+  end
+
+  action_auth_level :legacy_import, :administrator
+  def legacy_import
+    @pending = course_import_session
+    unless @pending
+      flash[:error] = "No staged course package found. Please upload a tarball first."
+      redirect_to(new_course_path) && return
+    end
+
+    begin
+      CourseTransfer::StagedUpload.find!(current_user, @pending["token"])
+    rescue CourseTransfer::StagedUpload::Expired, CourseTransfer::StagedUpload::NotFound
+      cleanup_course_import_session!
+      flash[:error] = "Your uploaded package expired or is missing. Please upload again."
+      redirect_to(new_course_path) && return
+    end
+  end
+
+  action_auth_level :create_from_tar, :administrator
+  def create_from_tar
+    @used_staging = false
+    tar_io = nil
+
+    pending = course_import_session
+    if pending
+      begin
+        staged = CourseTransfer::StagedUpload.find!(current_user, pending["token"])
+        tar_io = File.open(staged.path, "rb")
+        @used_staging = true
+        @pending = pending
+      rescue CourseTransfer::StagedUpload::Expired, CourseTransfer::StagedUpload::NotFound
+        cleanup_course_import_session!
+        flash[:error] = "Your uploaded package expired or is missing. Please upload again."
+        redirect_to(new_course_path) && return
+      end
+    elsif params[:tarFile].present?
+      tar_io = File.new(params[:tarFile].open, "rb")
+    else
+      flash[:error] = "Please select a course tarball for uploading."
+      render_create_from_tar_error && return
+    end
+
+    begin
+      tar_extract = Gem::Package::TarReader.new(tar_io)
       tar_extract.rewind
       unless valid_course_tar(tar_extract)
         flash[:error] +=
@@ -266,34 +344,36 @@ class CoursesController < ApplicationController
             "directory that's named after the course, containing a "\
             "course yaml file"
         flash[:html_safe] = true
-        render(action: "new") && return
+        render_create_from_tar_error && return
       end
-      tar_extract.close
     rescue SyntaxError => e
       flash[:error] = "Error parsing course configuration file:"
       # escape so that <compiled> doesn't get treated as a html tag
       flash[:error] += "<br><pre>#{CGI.escapeHTML e.to_s}</pre>"
       flash[:html_safe] = true
-      render(action: "new") && return
+      render_create_from_tar_error && return
     rescue StandardError => e
       flash[:error] = "Error while reading the tarball -- #{e.message}."
-      render(action: "new") && return
+      render_create_from_tar_error && return
     end
 
     begin
+      tar_io.rewind
+      tar_extract = Gem::Package::TarReader.new(tar_io)
       tar_extract.rewind
       @newCourse = get_course_from_config(tar_extract)
       # save assessment directories
       save_assessments_from_tar(tar_extract)
-      tar_extract.close
     rescue StandardError => e
       flash[:error] = "Error while extracting course to server -- #{e.message}."
-      render(action: "new") && return
+      render_create_from_tar_error && return
+    ensure
+      tar_io.close if tar_io && !tar_io.closed?
     end
 
     unless @newCourse.save
       flash[:error] = "Course creation failed. Please review all fields below."
-      render(action: "new") && return
+      render_create_from_tar_error && return
     end
 
     instructor = User.where(email: params[:instructor_email]).first
@@ -307,7 +387,7 @@ class CoursesController < ApplicationController
         # roll back course creation
         @newCourse.destroy
         flash[:error] = "Can't create instructor for the course: #{e}"
-        render(action: "new") && return
+        render_create_from_tar_error && return
       end
     end
 
@@ -319,7 +399,7 @@ class CoursesController < ApplicationController
       # roll back course creation
       @newCourse.destroy
       flash[:error] = "Can't create instructor for the course."
-      render(action: "new") && return
+      render_create_from_tar_error && return
     end
 
     @newCourse.ensure_default_group_instructor!
@@ -435,10 +515,11 @@ class CoursesController < ApplicationController
         Rails.logger.error("Failed to destroy Course: #{e2.message}")
       end
       flash[:error] = "Can't load course config for #{@newCourse.name}: #{e.message}"
-      render(action: "new") && return
+      render_create_from_tar_error && return
     else
       Rails.logger.info("=== COURSE CREATION: SUCCESS - " \
                           "Course #{@newCourse.name} created successfully! ===")
+      cleanup_course_import_session! if @used_staging
       flash[:success] = "New Course #{@newCourse.name} successfully created!"
       redirect_to(course_onboard_install_asmt_course_assessments_path(@newCourse)) && return
     end
@@ -940,6 +1021,31 @@ class CoursesController < ApplicationController
   end
 
 private
+
+  def course_import_session
+    data = session[:course_import]
+    return nil unless data.is_a?(Hash)
+    return nil unless data["user_id"] == current_user.id
+    return nil if data["token"].blank?
+
+    data
+  end
+
+  def cleanup_course_import_session!
+    data = session.delete(:course_import)
+    return if data.blank?
+
+    CourseTransfer::StagedUpload.cleanup!(current_user, data["token"])
+  end
+
+  def render_create_from_tar_error
+    if @used_staging
+      @pending = course_import_session
+      render(action: "legacy_import")
+    else
+      render(action: "new")
+    end
+  end
 
   def new_course_params
     params.require(:newCourse).permit(:name, :semester)

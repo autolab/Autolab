@@ -1,0 +1,27 @@
+<% @title = "Import Course" %>
+
+<h2>Import Course</h2>
+
+<% if @pending.present? %>
+  <p>
+    Detected a new-format course export
+    <% if @pending["version"].present? && @pending["version"] != "legacy" %>
+      (version <%= @pending["version"] %>)
+    <% end %>.
+  </p>
+  <p>
+    Package:
+    <strong><%= @pending["original_filename"] %></strong>
+    <% if @pending["byte_size"].present? %>
+      (<%= number_to_human_size(@pending["byte_size"].to_i) %>)
+    <% end %>.
+  </p>
+<% end %>
+
+<p>
+  Import for this format is not available yet. Full options will appear here in a future update.
+</p>
+
+<p>
+  <%= link_to "Back to create course", new_course_path %>
+</p>

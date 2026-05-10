@@ -1,8 +1,8 @@
 <h3>Create New Course from Tarball</h3>
 
-<%= form_with url: { action: :create_from_tar }, builder: FormBuilderWithDateTimeInput do |f| %>
+<%= form_with url: import_courses_path, method: :post, builder: FormBuilderWithDateTimeInput do |f| %>
   <p>
-    If you have an existing Autolab course, then you can import it into this course:
+    If you have an existing Autolab course export, upload the tarball to continue:
   </p>
   <ul>
     <li>
@@ -12,18 +12,14 @@
       2: On the left sidebar, click “Export course”
     </li>
     <li>
-      3: Open Legacy Export (for older Autolab formats), select the fields you would like to
-      export, and click the export button.
+      3: Export with the current export page, or use Legacy Export for older Autolab formats
+    </li>
+    <li>
+      4: Upload the tarball here. You will be guided to the right import form for the package version.
     </li>
   </ul>
   <%= f.file_field :tarFile, required: true,
                              help_text: "This tarball should have come from Autolab, and contains course configuration data" %>
 
-  <div class="input-field">
-    <label class="control-label" for="instructor_email">Instructor Email</label>
-    <%= email_field_tag :instructor_email, nil, class: "validate", placeholder: "", required: true, autocomplete: "email" %>
-    <p class="help-block">Email of an Instructor, they will set up the course from here!</p>
-  </div>
-
-  <%= f.submit "Create Course", { class: "btn primary" } %>
+  <%= f.submit "Continue", { class: "btn primary" } %>
 <% end %>
