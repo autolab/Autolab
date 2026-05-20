@@ -40,6 +40,12 @@
       ['r5.large - 2 vCPU, 16 GiB RAM (memory-optimized, for large datasets)', 'r5.large'],
       ['r5.xlarge - 4 vCPU, 32 GiB RAM (high memory capacity)', 'r5.xlarge'],
       ['r5.2xlarge - 8 vCPU, 64 GiB RAM (very high memory capacity)', 'r5.2xlarge']
+    ]],
+    # Accelerated Computing - GPU
+    ['G - Accelerated Computing (GPU)', [
+      ['g4dn.xlarge - 4 vCPU, 16 GiB RAM, 1 NVIDIA T4 GPU (cost-effective ML/CUDA)', 'g4dn.xlarge'],
+      ['g4dn.2xlarge - 8 vCPU, 32 GiB RAM, 1 NVIDIA T4 GPU (balanced GPU/CPU)', 'g4dn.2xlarge'],
+      ['g5.xlarge - 4 vCPU, 16 GiB RAM, 1 NVIDIA A10G GPU (high-performance ML)', 'g5.xlarge']
     ]]
   ]
 %>
@@ -64,6 +70,7 @@
     <li><strong>T3 instances</strong>: Newer generation with better baseline performance than T2</li>
     <li><strong>C5 (Compute-optimized)</strong>: Best for CPU-bound tasks like compilation, testing algorithms</li>
     <li><strong>R5 (Memory-optimized)</strong>: Best for memory-intensive operations with large datasets</li>
+    <li><strong>G4dn/G5 (GPU-accelerated)</strong>: Best for CUDA/ML workloads and GPU-dependent grading tasks</li>
   </ul>
   <div class="recommendation-box" style="background-color: #f5f5f5; padding: 10px; border-left: 4px solid #2196F3; margin-top: 10px;">
     <strong>Recommendations:</strong>
@@ -72,6 +79,7 @@
       <li>Use <strong>t2.medium</strong> or <strong>t3.medium</strong> for most standard programming assignments</li>
       <li>Choose <strong>c5.xlarge</strong> for computationally intensive tasks (e.g., compiler projects)</li>
       <li>Select <strong>r5.large</strong> for memory-intensive workloads (e.g., large datasets, ML)</li>
+      <li>Use <strong>g4dn.xlarge</strong> or <strong>g5.xlarge</strong> when assignments require GPU acceleration</li>
     </ul>
   </div>
   <small>Note: Larger instances incur higher AWS costs. <a href='https://aws.amazon.com/ec2/pricing/on-demand/' target='_blank'>View EC2 pricing</a></small>
