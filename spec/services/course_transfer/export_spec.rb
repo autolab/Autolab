@@ -101,4 +101,21 @@ RSpec.describe CourseTransfer::Export do
     expect(context.staging_path.join(result.fetch("file"))).to be_file
     expect(YAML.safe_load(context.staging_path.join(result.fetch("file")).read)["name"]).to eq("assessment")
   end
+
+  it "copies a source file into staging and returns its natural key" do
+    source_path = Pathname.new(Dir.mktmpdir).join("submission.txt")
+    source_path.write("submission contents")
+    exporter = CourseTransfer::Export::FileCopyExporter.new(
+      source_path: source_path,
+      filename: "submissions/submission.txt",
+      memo_key: :submission
+    )
+
+    result = CourseTransfer::Export::Runner.new(context: context).export(exporter)
+
+    expect(result).to eq("file" => "submissions/submission.txt")
+    expect(context.staging_path.join(result.fetch("file")).read).to eq("submission contents")
+  ensure
+    FileUtils.rm_rf(source_path.dirname) if source_path
+  end
 end

@@ -156,6 +156,42 @@ module CourseTransfer
       end
     end
 
+    # Copies an arbitrary source file into the export staging directory. The
+    # source is resolved independently of staging; callers can pass an
+    # absolute path or a path relative to the application's working directory.
+    class FileCopyExporter < Exporter
+      def initialize(source_path:, filename:, memo_key: nil)
+        super()
+        @source_path = Pathname.new(source_path)
+        @filename = Pathname.new(filename)
+        @memo_key = memo_key
+      end
+
+      def memo_key(_context: nil)
+        @memo_key
+      end
+
+      def post_export_hook(_dependency_values, _context: nil)
+        context = _context
+        raise ArgumentError, "a staging_path is required for file copies" unless context&.staging_path
+        raise ArgumentError, "the copy destination must be relative to staging" if invalid_destination?
+        raise ArgumentError, "source path is not a file: #{@source_path}" unless @source_path.file?
+
+        staging_path = Pathname.new(context.staging_path)
+        destination = staging_path.join(@filename)
+        FileUtils.mkdir_p(destination.dirname)
+        FileUtils.cp(@source_path, destination)
+
+        { file: @filename.to_s }
+      end
+
+      private
+
+      def invalid_destination?
+        @filename.absolute? || @filename.each_filename.include?("..")
+      end
+    end
+
     # This is the shape a caller would use from a course exporter:
     #
     #   runner = CourseTransfer::Export::Runner.new(
