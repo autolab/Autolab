@@ -292,6 +292,7 @@ Rails.application.routes.draw do
       patch "update_lti_settings"
       match "email", via: [:get, :post]
       get "export"
+      post "export", action: :export_selected
       get "legacy_export"
       post "legacy_export_selected"
       get "manage"

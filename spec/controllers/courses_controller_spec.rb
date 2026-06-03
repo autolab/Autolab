@@ -453,11 +453,30 @@ RSpec.describe CoursesController, type: :controller do
     before(:each) do
       sign_in(user)
     end
-    it "renders successfully" do
+    it "renders the new-format export page" do
       get :export, params: { name: @course.name }
       expect(response).to be_successful
-      expect(response.body).to match(/Export Course/m)
-      expect(response.body).to match(/Legacy Export/m)
+      expect(response.body).to match(/Select fields to include in the export/m)
+      expect(response.body).to match(/Metrics configuration/m)
+      expect(response.body).to match(/Assessments/m)
+    end
+
+    it "exports a new-format course package after submission" do
+      post :export_selected, params: { name: @course.name, export_parts: ["bundle"] }
+      expect(response).to be_successful
+
+      entries = {}
+      Gem::Package::TarReader.new(StringIO.new(response.body)) do |tar|
+        tar.each do |entry|
+          entries[entry.full_name] = entry.read unless entry.directory?
+        end
+      end
+
+      expect(entries.keys).to contain_exactly("bundle.yaml", "manifest.yml")
+      expect(YAML.safe_load(entries.fetch("bundle.yaml"))).to eq("course" => {})
+      manifest = YAML.safe_load(entries.fetch("manifest.yml"))
+      expect(manifest["format"]).to eq(CourseTransfer::Version::FORMAT_ID)
+      expect(manifest["parts"]).to eq(["bundle"])
     end
   end
 

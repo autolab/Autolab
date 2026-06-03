@@ -1,6 +1,63 @@
 <% @title = "Export Course" %>
 
+<% content_for :stylesheets do %>
+  <%= stylesheet_link_tag "export" %>
+<% end %>
+
+<% content_for :javascripts do %>
+  <%= javascript_include_tag "export_course" %>
+<% end %>
+
 <h2>Export Course</h2>
+
+<p id="export_description">Select fields to include in the export:</p>
+
+<%= form_tag export_course_path(@course), method: :post do %>
+  <table class="prettyBorder" id="course_fields">
+    <colgroup>
+      <col span="1" style="width: 50px;">
+      <col span="1">
+    </colgroup>
+    <tbody id="course_fields">
+      <tr class="course-field checked">
+        <td>
+          <label>
+            <%= check_box_tag "export_parts[]", "course_config", true,
+                              class: "cbox", id: "course_config_checkbox", disabled: true %>
+            <span id="checkbox" />
+          </label>
+        </td>
+        <td>Course configuration</td>
+      </tr>
+      <tr class="course-field">
+        <td>
+          <label>
+            <%= check_box_tag "export_parts[]", "metrics_config", false,
+                              class: "cbox", id: "metrics_config_checkbox" %>
+            <span id="checkbox" />
+          </label>
+        </td>
+        <td>Metrics configuration</td>
+      </tr>
+      <tr class="course-field">
+        <td>
+          <label>
+            <%= check_box_tag "export_parts[]", "assessments", false,
+                              class: "cbox", id: "assessments_checkbox" %>
+            <span id="checkbox" />
+          </label>
+        </td>
+        <td>Assessments</td>
+      </tr>
+    </tbody>
+  </table>
+  <br>
+  <div class="row">
+    <div>
+      <%= submit_tag "Export", class: "btn", id: "export_btn", data: { disable_with: false } %>
+    </div>
+  </div>
+<% end %>
 
 <div class="card-panel grey lighten-4">
   <p style="margin: 0;">

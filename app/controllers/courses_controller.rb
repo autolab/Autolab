@@ -2,8 +2,11 @@ require "archive"
 require "csv"
 require "fileutils"
 require "pathname"
+require "rubygems/package"
 require "statistics"
+require "stringio"
 require_relative "../services/unix_group_manager"
+require_relative "../services/course_transfer/course_exporters/bundle_exporter"
 
 class CoursesController < ApplicationController
   skip_before_action :set_course,
@@ -18,7 +21,7 @@ class CoursesController < ApplicationController
                      only: %i[courses_redirect index new create create_from_tar
                               import import_upload legacy_import join_course]
   before_action :set_manage_course_breadcrumb,
-                only: %i[edit users moss email upload_roster export legacy_export]
+                only: %i[edit users moss email upload_roster export export_selected legacy_export]
   before_action :set_manage_course_users_breadcrumb, only: %i[upload_roster]
 
   def index
@@ -1001,6 +1004,20 @@ class CoursesController < ApplicationController
   action_auth_level :export, :instructor
   def export; end
 
+  action_auth_level :export_selected, :instructor
+  def export_selected
+    send_data build_new_export_tar,
+              filename: "#{@course.name}_#{Time.current.strftime('%Y%m%d')}.tar",
+              type: "application/x-tar",
+              disposition: "attachment"
+  rescue SystemCallError => e
+    flash[:error] = "Unable to create the course export: #{e.message}"
+    redirect_to(action: :export)
+  rescue StandardError => e
+    flash[:error] = "Unable to generate course export: #{e.message}"
+    redirect_to(action: :export)
+  end
+
   action_auth_level :legacy_export, :instructor
   def legacy_export; end
 
@@ -1021,6 +1038,37 @@ class CoursesController < ApplicationController
   end
 
 private
+
+  def build_new_export_tar
+    Dir.mktmpdir("autolab-course-export-") do |staging_dir|
+      staging_path = Pathname.new(staging_dir)
+      context = CourseTransfer::Context.new(
+        staging_path: staging_path,
+        course: @course,
+        version: CourseTransfer::Version::CURRENT,
+        mode: :export,
+        selected_parts: ["bundle"]
+      )
+
+      CourseTransfer::Export.export(
+        CourseTransfer::BundleExporter.new(@course),
+        context: context
+      )
+
+      tar_stream = StringIO.new("".b)
+      Gem::Package::TarWriter.new(tar_stream) do |tar|
+        staging_path.glob("**/*").sort.each do |path|
+          next unless path.file?
+
+          relative_path = path.relative_path_from(staging_path).to_s
+          tar.add_file(relative_path, File.stat(path).mode) do |tar_file|
+            tar_file.write(path.binread)
+          end
+        end
+      end
+      tar_stream.string
+    end
+  end
 
   def course_import_session
     data = session[:course_import]

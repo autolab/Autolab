@@ -23,7 +23,7 @@ module CourseTransfer
       payload = {
         "format" => FORMAT_ID,
         "version" => context.version.to_s,
-        "min_target_version" => MIN_SUPPORTED_TARGET,
+        "min_target_version" => MIN_SUPPORTED_TARGET.to_s,
         "created_at" => Time.current.utc.iso8601,
         "parts" => Array(context.selected_parts).map(&:to_s)
       }
