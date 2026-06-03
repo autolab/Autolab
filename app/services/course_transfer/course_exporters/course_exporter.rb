@@ -10,7 +10,7 @@ module CourseTransfer
     end
 
     def dependencies(_context: nil)
-      { late_slack: Export::InlineValueExporter.new(@course.late_slack) }
+      { late_slack: Export::InlineValueExporter.new(@course[:late_slack]) }
     end
   end
 end

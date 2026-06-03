@@ -473,7 +473,9 @@ RSpec.describe CoursesController, type: :controller do
       end
 
       expect(entries.keys).to contain_exactly("bundle.yaml", "manifest.yml")
-      expect(YAML.safe_load(entries.fetch("bundle.yaml"))).to eq("course" => {})
+      expect(YAML.safe_load(entries.fetch("bundle.yaml"))).to eq(
+        "course" => { "late_slack" => @course[:late_slack] }
+      )
       manifest = YAML.safe_load(entries.fetch("manifest.yml"))
       expect(manifest["format"]).to eq(CourseTransfer::Version::FORMAT_ID)
       expect(manifest["parts"]).to eq(["bundle"])

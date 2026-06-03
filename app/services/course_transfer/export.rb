@@ -76,6 +76,7 @@ module CourseTransfer
 
         value = exporter.post_export_hook(dependency_values, _context: @context)
         memo[key] = value unless key.nil?
+        value
       ensure
         @visiting.delete(visiting_key) if visiting_key
       end
@@ -134,9 +135,24 @@ module CourseTransfer
 
         path = Pathname.new(context.staging_path).join(@filename)
         FileUtils.mkdir_p(path.dirname)
-        path.write(YAML.dump(dependency_values))
+        path.write(YAML.dump(stringify_keys(dependency_values)))
 
         { "file" => path.relative_path_from(Pathname.new(context.staging_path)).to_s }
+      end
+
+      private
+
+      def stringify_keys(value)
+        case value
+        when Hash
+          value.each_with_object({}) do |(key, nested_value), result|
+            result[key.to_s] = stringify_keys(nested_value)
+          end
+        when Array
+          value.map { |nested_value| stringify_keys(nested_value) }
+        else
+          value
+        end
       end
     end
 
