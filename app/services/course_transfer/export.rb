@@ -5,200 +5,89 @@ require "pathname"
 require "yaml"
 
 module CourseTransfer
-  # Shared machinery for dependency-based course exports. Individual course
-  # parts can define exporters by inheriting from Export::Exporter.
-  class Export
-    def self.export(exporter, memo: {}, context: nil)
-      Runner.new(memo: memo, context: context).export(exporter)
+  class Exporter
+    # @param values [ActiveRecord::Relation]
+    # @return [Array<(Symbol, ActiveRecord::Relation)>]
+    def dependencies(values)
+      raise NotImplementedError
     end
 
-    # Exporters describe one part of the graph. Dependencies are represented
-    # as a hash from a dependency key to another exporter, rather than as
-    # already-exported values, so the runner can walk the graph in one place.
-    class Exporter
-      def memo_key(_context: nil)
-        raise NotImplementedError, "#{self.class} must implement #memo_key"
-      end
 
-      def dependencies(_context: nil)
-        {}
-      end
-
-      def pre_export_hook(_context: nil)
-        # Override when the part needs to be prepared before its dependencies.
-      end
-
-      def post_export_hook(_dependencies, _context: nil)
-        # Override when the value needs to be finalized after its dependencies.
-      end
+    # @return [Array<(Symbol, Symbol)>]
+    def included_fields
+      raise NotImplementedError
     end
 
-    # The only method that knows how to traverse the graph. The memo is
-    # intentionally supplied by the caller, making it possible to share
-    # exported values across multiple roots.
-    class Runner
-      attr_reader :memo
+    # @param record [ApplicationRecord]
+    def natural_id(record)
+      raise NotImplementedError
+    end
 
-      def initialize(memo: {}, context: nil)
-        @memo = memo
-        @context = context
-        @visiting = []
+    # @return [Boolean]
+    def inline?
+      true
+    end
+
+    # @param record [ApplicationRecord]
+    def other_export(record) end
+
+    # @param record [ApplicationRecord]
+    def other_import(record) end
+  end
+
+  class ExportManager
+    def initialize
+      # @type [Hash{Symbol=>Exporter}]
+      @exporter_map = {}
+      # @type [Hash{Symbol=>ActiveRecord::Relation}]
+      @relation_map = {}
+
+      # @type [Array<Symbol>]
+      @export_search_order = []
+    end
+
+    # @param name [Symbol]
+    # @param exporter [Exporter]
+    # @param base_relation [ActiveRecord::Relation]
+    def register_exporter(name, exporter, base_relation)
+      @exporter_map[name] = exporter
+      @relation_map[name] = base_relation
+      @export_search_order << name
+    end
+
+    # @param values [Array<(Symbol, ActiveRecord::Relation)>]
+    def export(values)
+      # load values planned to be exported
+      to_be_exported = {}
+      @relation_map.each do |name, relation|
+        to_be_exported[name] = relation
+      end
+      values.each do |name, relation|
+        to_be_exported[name] = to_be_exported[name].or(relation)
       end
 
-      def export(exporter)
-        key = exporter.memo_key(_context: @context)
-        return memo[key] if !key.nil? && memo.key?(key)
-
-        # A nil memo key disables caching, but the exporter still participates
-        # in cycle detection for the duration of this traversal.
-        visiting_key = key.nil? ? [:exporter, exporter.object_id] : [:memo_key, key]
-
-        if @visiting.include?(visiting_key)
-          cycle = (@visiting.drop_while { |item| item != visiting_key } + [visiting_key]).join(" -> ")
-          raise ArgumentError, "cycle detected while exporting: #{cycle}"
+      # go through dependency order, searching for records to export via dependency
+      @export_search_order.each do |name|
+        next_exports = @exporter_map[name].dependencies(to_be_exported[name])
+        next_exports.each do |sub_name, sub_relation|
+          to_be_exported[sub_name] = to_be_exported[sub_name].or(sub_relation)
         end
+      end
 
-        @visiting << visiting_key
-        exporter.pre_export_hook(_context: @context)
+      @export_search_order.each do |name|
 
-        dependencies = exporter.dependencies(_context: @context)
-        unless dependencies.is_a?(Hash)
-          raise ArgumentError, "dependencies must be a Hash of keys to exporters"
-        end
-
-        dependency_values = dependencies.each_with_object({}) do |(key, dependency_exporter), values|
-          unless dependency_exporter.is_a?(Exporter)
-            raise ArgumentError, "dependency values must be CourseTransfer::Export::Exporter objects"
-          end
-
-          values[key] = export(dependency_exporter)
-        end
-
-        value = exporter.post_export_hook(dependency_values, _context: @context)
-        memo[key] = value unless key.nil?
-        value
-      ensure
-        @visiting.delete(visiting_key) if visiting_key
       end
     end
 
-    # A simple value, including a String, still has an exporter so it can
-    # participate in the same dependency graph. It remains a Ruby value until
-    # the final course/package serializer writes the composed structure.
-    class InlineValueExporter < Exporter
-      def initialize(value, memo_key: nil)
-        super()
-        @value = value
-        @memo_key = memo_key
-      end
-
-      def memo_key(_context: nil)
-        @memo_key
-      end
-
-      def post_export_hook(_dependency_values, _context: nil)
-        @value
-      end
-    end
-
-    class InlineDependencyExporter < Exporter
-      def initialize(memo_key: nil)
-        super()
-        @memo_key = memo_key
-      end
-
-      def memo_key(_context: nil)
-        @memo_key
-      end
-
-      def post_export_hook(dependency_values, _context: nil)
-        dependency_values
-      end
-    end
-
-    # A larger value can be written to its own YAML file. The value returned to
-    # the parent is a natural key that an eventual importer can resolve.
-    class FileYamlExporter < Exporter
-      def initialize(filename:, memo_key: nil)
-        super()
-        @filename = filename
-        @memo_key = memo_key
-      end
-
-      def memo_key(_context: nil)
-        @memo_key
-      end
-
-      def post_export_hook(dependency_values, _context: nil)
-        context = _context
-        raise ArgumentError, "a staging_path is required for file exports" unless context&.staging_path
-
-        path = Pathname.new(context.staging_path).join(@filename)
-        FileUtils.mkdir_p(path.dirname)
-        path.write(YAML.dump(stringify_keys(dependency_values)))
-
-        { "file" => path.relative_path_from(Pathname.new(context.staging_path)).to_s }
-      end
-
-      private
-
-      def stringify_keys(value)
-        case value
-        when Hash
-          value.each_with_object({}) do |(key, nested_value), result|
-            result[key.to_s] = stringify_keys(nested_value)
-          end
-        when Array
-          value.map { |nested_value| stringify_keys(nested_value) }
-        else
-          value
+    # @param file [File]
+    # @param relation [ActiveRecord::Relation]
+    private def export_relation(file, relation, fields, included_fields)
+      relation.in_batches(of: 1000) do |batch|
+        batch.pluck(*fields).each do |values|
+          row = fields.zip(values).to_h
+          file.write(row.to_yaml)
         end
       end
     end
-
-    # Copies an arbitrary source file into the export staging directory. The
-    # source is resolved independently of staging; callers can pass an
-    # absolute path or a path relative to the application's working directory.
-    class FileCopyExporter < Exporter
-      def initialize(source_path:, filename:, memo_key: nil)
-        super()
-        @source_path = Pathname.new(source_path)
-        @filename = Pathname.new(filename)
-        @memo_key = memo_key
-      end
-
-      def memo_key(_context: nil)
-        @memo_key
-      end
-
-      def post_export_hook(_dependency_values, _context: nil)
-        context = _context
-        raise ArgumentError, "a staging_path is required for file copies" unless context&.staging_path
-        raise ArgumentError, "the copy destination must be relative to staging" if invalid_destination?
-        raise ArgumentError, "source path is not a file: #{@source_path}" unless @source_path.file?
-
-        staging_path = Pathname.new(context.staging_path)
-        destination = staging_path.join(@filename)
-        FileUtils.mkdir_p(destination.dirname)
-        FileUtils.cp(@source_path, destination)
-
-        { file: @filename.to_s }
-      end
-
-      private
-
-      def invalid_destination?
-        @filename.absolute? || @filename.each_filename.include?("..")
-      end
-    end
-
-    # This is the shape a caller would use from a course exporter:
-    #
-    #   runner = CourseTransfer::Export::Runner.new(
-    #     memo: {}, context: context
-    #   )
-    #   result = runner.export(course_exporter)
-    #
-    # Exporting another root with the same runner reuses the memoized value.
   end
 end
