@@ -1,6 +1,7 @@
 require "yaml"
 
 module CourseTransfer
+  # Defines package format compatibility and manifest operations.
   class Version
     CURRENT = "1.0.0".freeze
     FORMAT_ID = "autolab_course_export".freeze
@@ -19,17 +20,23 @@ module CourseTransfer
     class Unsupported < StandardError; end
     class InvalidManifest < StandardError; end
 
-    def self.write_manifest!(context)
+    # Writes the package compatibility manifest.
+    #
+    # @param context [CourseTransfer::Context]
+    # @param parts [Array<String, Symbol>, nil] table files in the package
+    # @return [Pathname]
+    def self.write_manifest!(context, parts: nil)
       payload = {
         "format" => FORMAT_ID,
         "version" => context.version.to_s,
         "min_target_version" => MIN_SUPPORTED_TARGET.to_s,
         "created_at" => Time.current.utc.iso8601,
-        "parts" => Array(context.selected_parts).map(&:to_s)
+        "parts" => Array(parts || context.selected_parts).map(&:to_s)
       }
 
       path = context.staging_path.join(MANIFEST_FILENAME)
       path.write(payload.to_yaml)
+      path
     end
 
     # Detect format version from an extracted package root directory.
@@ -63,7 +70,7 @@ module CourseTransfer
     end
 
     def self.parse_manifest_yaml(contents)
-      data = YAML.safe_load(contents, permitted_classes: [Time, Date, DateTime], aliases: true)
+      data = YAML.safe_load(contents, permitted_classes: [Time, Date, DateTime], aliases: false)
       raise InvalidManifest, "manifest.yml is empty" if data.blank?
       raise InvalidManifest, "unknown format" unless data["format"] == FORMAT_ID
       raise InvalidManifest, "missing version" if data["version"].blank?
@@ -74,11 +81,15 @@ module CourseTransfer
     end
     private_class_method :parse_manifest_yaml
 
+    # Reads a manifest from an extracted package.
+    #
+    # @param staging_path [String, Pathname]
+    # @return [Hash, nil]
     def self.read_manifest(staging_path)
       path = Pathname.new(staging_path).join(MANIFEST_FILENAME)
       return nil unless path.file?
 
-      YAML.safe_load(path.read, permitted_classes: [Time, Date, DateTime], aliases: true)
+      YAML.safe_load(path.read, permitted_classes: [Time, Date, DateTime], aliases: false)
     end
 
     def self.legacy?(version)

@@ -19,8 +19,31 @@
 <% end %>
 
 <p>
-  Import for this format is not available yet. Full options will appear here in a future update.
+  Importing creates the exported course, assessments, memberships, submissions, and grading
+  records in one transaction. Existing users are matched by email. Submission and attachment
+  file contents are not included yet. The selected instructor will be enrolled in the imported
+  course, and a new account will be created if necessary.
 </p>
+
+<% if @pending.present? %>
+  <%= form_tag complete_import_courses_path, method: :post do %>
+    <div class="form-group">
+      <%= label_tag :course_identifier, "New course identifier" %>
+      <%= text_field_tag :course_identifier, params[:course_identifier], required: true,
+                         pattern: "[A-Za-z0-9_-]+", class: "form-control" %>
+      <small>This becomes the course URL identifier and must not already exist.</small>
+    </div>
+
+    <div class="form-group">
+      <%= label_tag :instructor_email, "New instructor email" %>
+      <%= email_field_tag :instructor_email, params[:instructor_email], required: true,
+                          class: "form-control" %>
+    </div>
+
+    <%= submit_tag "Import Course", class: "btn primary",
+                   data: { confirm: "Import this course package?" } %>
+  <% end %>
+<% end %>
 
 <p>
   <%= link_to "Back to create course", new_course_path %>

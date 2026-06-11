@@ -410,6 +410,41 @@ RSpec.describe CoursesController, type: :controller do
         expect(session[:course_import]["version"]).to eq("1.0.0")
       end
 
+      it "imports a staged new-format package and cleans up the upload" do
+        tar_path = Rails.root.join("tmp", "course-import-action-#{SecureRandom.hex(4)}.tar")
+        File.open(tar_path, "wb") do |file|
+          Gem::Package::TarWriter.new(file) do |tar|
+            tar.add_file("manifest.yml", 0o644) do |entry|
+              entry.write({
+                "format" => CourseTransfer::Version::FORMAT_ID,
+                "version" => CourseTransfer::Version::CURRENT,
+                "min_target_version" => CourseTransfer::Version::MIN_SUPPORTED_TARGET.to_s,
+                "parts" => []
+              }.to_yaml)
+            end
+          end
+        end
+        upload = Rack::Test::UploadedFile.new(tar_path, "application/x-tar", true)
+        post :import_upload, params: { tarFile: upload }
+        FileUtils.rm_f(tar_path)
+        staged_path = CourseTransfer::StagedUpload.find!(
+          @admin,
+          session[:course_import]["token"]
+        ).path
+        imported_course = FactoryBot.create(:course)
+        manager = instance_double(CourseTransfer::ImportManager, import: imported_course)
+        allow(CourseTransfer::ImportManager).to receive(:new).and_return(manager)
+
+        post :complete_import, params: {
+          course_identifier: "imported-course",
+          instructor_email: "new-instructor@example.com"
+        }
+
+        expect(response).to redirect_to(course_path(imported_course.name))
+        expect(session[:course_import]).to be_nil
+        expect(File).not_to exist(staged_path)
+      end
+
       it "uses the staged package for create_from_tar without tarFile param" do
         file = fixture_file_upload("courses/course-valid.tar")
         post :import_upload, params: { tarFile: file }
@@ -418,10 +453,12 @@ RSpec.describe CoursesController, type: :controller do
 
         opened_staged = false
         allow(File).to receive(:open).and_call_original
-        allow(File).to receive(:open).with(staged.path, "rb").and_wrap_original do |method, *args, &block|
-          opened_staged = true
-          method.call(*args, &block)
-        end
+        allow(File).to receive(:open)
+          .with(staged.path, "rb")
+          .and_wrap_original do |method, *args, &block|
+            opened_staged = true
+            method.call(*args, &block)
+          end
 
         post :create_from_tar, params: { instructor_email: "instructor@gmail.com" }
 
@@ -456,8 +493,8 @@ RSpec.describe CoursesController, type: :controller do
     it "renders the new-format export page" do
       get :export, params: { name: @course.name }
       expect(response).to be_successful
-      expect(response.body).to match(/Select fields to include in the export/m)
-      expect(response.body).to match(/Metrics configuration/m)
+      expect(response.body).to match(/Select the users and assessments to include/m)
+      expect(response.body).to match(/submissions are exported only when both/m)
       expect(response.body).to match(/Assessments/m)
     end
 
@@ -472,13 +509,15 @@ RSpec.describe CoursesController, type: :controller do
         end
       end
 
-      expect(entries.keys).to contain_exactly("bundle.yaml", "manifest.yml")
-      expect(YAML.safe_load(entries.fetch("bundle.yaml"))).to eq(
-        "course" => { "late_slack" => @course[:late_slack] }
+      expect(entries.keys).to include(
+        "courses.yml", "users.yml", "assessments.yml", "submissions.yml", "manifest.yml"
       )
+      course_rows = YAML.load_stream(entries.fetch("courses.yml"))
+      expect(course_rows.one?).to be(true)
+      expect(course_rows.first.fetch("late_slack")).to eq(@course[:late_slack])
       manifest = YAML.safe_load(entries.fetch("manifest.yml"))
       expect(manifest["format"]).to eq(CourseTransfer::Version::FORMAT_ID)
-      expect(manifest["parts"]).to eq(["bundle"])
+      expect(manifest["parts"]).to include("courses", "users", "assessments", "submissions")
     end
   end
 
@@ -585,7 +624,8 @@ RSpec.describe CoursesController, type: :controller do
 
     it "exports metric configs" do
       metrics_tar = (@course.generate_tar ["metrics_config"]).string.force_encoding("binary")
-      post :legacy_export_selected, params: { name: @course.name, export_configs: ["metrics_config"] }
+      post :legacy_export_selected,
+           params: { name: @course.name, export_configs: ["metrics_config"] }
       expect(response).to be_successful
       expect(response.body).to eq(metrics_tar)
     end

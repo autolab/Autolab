@@ -10,60 +10,135 @@
 
 <h2>Export Course</h2>
 
-<p id="export_description">Select fields to include in the export:</p>
+<p id="export_description">
+  The course configuration is always exported. Select the users and assessments to include;
+  submissions are exported only when both their user and assessment are selected.
+</p>
 
-<%= form_tag export_course_path(@course), method: :post do %>
-  <table class="prettyBorder" id="course_fields">
-    <colgroup>
-      <col span="1" style="width: 50px;">
-      <col span="1">
-    </colgroup>
-    <tbody id="course_fields">
-      <tr class="course-field checked">
-        <td>
-          <label>
-            <%= check_box_tag "export_parts[]", "course_config", true,
-                              class: "cbox", id: "course_config_checkbox", disabled: true %>
-            <span id="checkbox" />
-          </label>
-        </td>
-        <td>Course configuration</td>
-      </tr>
-      <tr class="course-field">
-        <td>
-          <label>
-            <%= check_box_tag "export_parts[]", "metrics_config", false,
-                              class: "cbox", id: "metrics_config_checkbox" %>
-            <span id="checkbox" />
-          </label>
-        </td>
-        <td>Metrics configuration</td>
-      </tr>
-      <tr class="course-field">
-        <td>
-          <label>
-            <%= check_box_tag "export_parts[]", "assessments", false,
-                              class: "cbox", id: "assessments_checkbox" %>
-            <span id="checkbox" />
-          </label>
-        </td>
-        <td>Assessments</td>
-      </tr>
-    </tbody>
-  </table>
-  <br>
-  <div class="row">
-    <div>
-      <%= submit_tag "Export", class: "btn", id: "export_btn", data: { disable_with: false } %>
-    </div>
-  </div>
+<%= form_tag export_course_path(@course), method: :post, id: "course_export_form" do %>
+  <h3>Course</h3>
+  <p><%= @course.display_name %> (always included)</p>
+
+  <% if @export_users.any? %>
+    <section class="export-selection" data-export-selection>
+      <div class="export-selection-header">
+        <h3>Users</h3>
+        <span class="export-selection-count" data-selection-count="users"></span>
+      </div>
+      <div class="export-selection-controls">
+        <label class="export-search-label" for="export_user_search">Search users</label>
+        <input type="search" id="export_user_search" class="export-search"
+               data-export-search="users" placeholder="Name or email" autocomplete="off">
+        <button type="button" class="btn-flat" data-select-visible="users">Select visible</button>
+        <button type="button" class="btn-flat" data-unselect-visible="users">Unselect visible</button>
+      </div>
+      <div class="export-selection-table-wrapper">
+        <table class="prettyBorder export-selection-table" data-export-table="users">
+          <thead>
+            <tr>
+              <th class="export-checkbox-column">
+                <label class="export-checkbox-label" title="Select visible users">
+                  <input type="checkbox" data-select-all="users" aria-label="Select visible users">
+                  <span></span>
+                </label>
+              </th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Role</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @export_users.each do |membership| %>
+              <tr class="export-selection-row" data-export-row="users">
+                <td class="export-checkbox-column">
+                  <label class="export-checkbox-label">
+                    <%= check_box_tag "user_ids[]", membership.user_id, true,
+                                      class: "export-selection-checkbox export-user",
+                                      id: "export_user_#{membership.user_id}",
+                                      data: { export_item: "users" } %>
+                    <span></span>
+                  </label>
+                </td>
+                <td><%= membership.user.display_name %></td>
+                <td><%= membership.user.email %></td>
+                <td>
+                  <% if membership.instructor? %>
+                    Instructor
+                  <% elsif membership.course_assistant? %>
+                    Course Assistant (TA)
+                  <% else %>
+                    Student
+                  <% end %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  <% else %>
+    <h3>Users</h3>
+    <p>This course has no users.</p>
+  <% end %>
+
+  <% if @export_assessments.any? %>
+    <section class="export-selection" data-export-selection>
+      <div class="export-selection-header">
+        <h3>Assessments</h3>
+        <span class="export-selection-count" data-selection-count="assessments"></span>
+      </div>
+      <div class="export-selection-controls">
+        <label class="export-search-label" for="export_assessment_search">Search assessments</label>
+        <input type="search" id="export_assessment_search" class="export-search"
+               data-export-search="assessments" placeholder="Name" autocomplete="off">
+        <button type="button" class="btn-flat" data-select-visible="assessments">Select visible</button>
+        <button type="button" class="btn-flat" data-unselect-visible="assessments">Unselect visible</button>
+      </div>
+      <div class="export-selection-table-wrapper">
+        <table class="prettyBorder export-selection-table" data-export-table="assessments">
+          <thead>
+            <tr>
+              <th class="export-checkbox-column">
+                <label class="export-checkbox-label" title="Select visible assessments">
+                  <input type="checkbox" data-select-all="assessments" aria-label="Select visible assessments">
+                  <span></span>
+                </label>
+              </th>
+              <th>Assessment</th>
+              <th>Identifier</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @export_assessments.each do |assessment| %>
+              <tr class="export-selection-row" data-export-row="assessments">
+                <td class="export-checkbox-column">
+                  <label class="export-checkbox-label">
+                    <%= check_box_tag "assessment_ids[]", assessment.id, true,
+                                      class: "export-selection-checkbox export-assessment",
+                                      id: "export_assessment_#{assessment.id}",
+                                      data: { export_item: "assessments" } %>
+                    <span></span>
+                  </label>
+                </td>
+                <td><%= assessment.display_name %></td>
+                <td><%= assessment.name %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  <% else %>
+    <h3>Assessments</h3>
+    <p>This course has no assessments.</p>
+  <% end %>
+
+  <%= submit_tag "Export", class: "btn", id: "export_btn", data: { disable_with: false } %>
 <% end %>
 
 <div class="card-panel grey lighten-4">
   <p style="margin: 0;">
     Looking for the old export page, or exporting for an older Autolab version?
-    Visit
-    <%= link_to "Legacy Export", legacy_export_course_path(@course) %>
-    here.
+    Visit <%= link_to "Legacy Export", legacy_export_course_path(@course) %>.
   </p>
 </div>

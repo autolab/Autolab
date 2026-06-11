@@ -6,20 +6,22 @@ require "rubygems/package"
 require "statistics"
 require "stringio"
 require_relative "../services/unix_group_manager"
-require_relative "../services/course_transfer/course_exporters/bundle_exporter"
+require_relative "../services/course_transfer/core_exporters"
+require_relative "../services/course_transfer/import"
+require_relative "../services/course_transfer/package"
 
 class CoursesController < ApplicationController
   skip_before_action :set_course,
                      only: %i[courses_redirect index new create create_from_tar
-                              import import_upload legacy_import join_course]
+                              import import_upload complete_import legacy_import join_course]
   # you need to be able to pick a course to be authorized for it
   skip_before_action :authorize_user_for_course,
                      only: %i[courses_redirect index new create create_from_tar
-                              import import_upload legacy_import join_course]
+                              import import_upload complete_import legacy_import join_course]
   # if there's no course, there are no persistent announcements for that course
   skip_before_action :update_persistent_announcements,
                      only: %i[courses_redirect index new create create_from_tar
-                              import import_upload legacy_import join_course]
+                              import import_upload complete_import legacy_import join_course]
   before_action :set_manage_course_breadcrumb,
                 only: %i[edit users moss email upload_roster export export_selected legacy_export]
   before_action :set_manage_course_users_breadcrumb, only: %i[upload_roster]
@@ -295,6 +297,65 @@ class CoursesController < ApplicationController
   action_auth_level :import, :administrator
   def import
     @pending = course_import_session
+    return if @pending
+
+    flash[:error] = "No staged course package found. Please upload a tarball first."
+    redirect_to(new_course_path)
+  end
+
+  action_auth_level :complete_import, :administrator
+  def complete_import
+    pending = course_import_session
+    unless pending
+      flash[:error] = "No staged course package found. Please upload a tarball first."
+      redirect_to(new_course_path) && return
+    end
+
+    course_identifier = params[:course_identifier].to_s.strip
+    instructor_email = params[:instructor_email].to_s.strip
+    if course_identifier.blank? || instructor_email.blank?
+      @pending = pending
+      flash.now[:error] = "Course identifier and instructor email are required."
+      render(action: :import, status: :unprocessable_entity) && return
+    end
+
+    staged = CourseTransfer::StagedUpload.find!(current_user, pending.fetch("token"))
+    imported_course = nil
+
+    Dir.mktmpdir("autolab-course-import-") do |directory|
+      staging_path = CourseTransfer::Package.extract(staged.path, directory)
+      context = CourseTransfer::Context.new(
+        staging_path:,
+        course: nil,
+        version: pending.fetch("version"),
+        mode: :import,
+        selected_parts: [],
+        course_identifier:,
+        instructor_email:
+      )
+      imported_course = CourseTransfer::ImportManager.new(
+        registry: CourseTransfer::CoreExporters.registry,
+        context:
+      ).import
+    end
+
+    cleanup_course_import_session!
+    flash[:success] = "Imported course #{imported_course.display_name}."
+    redirect_to course_path(imported_course.name)
+  rescue CourseTransfer::StagedUpload::Expired, CourseTransfer::StagedUpload::NotFound
+    cleanup_course_import_session!
+    flash[:error] = "Your uploaded package expired or is missing. Please upload again."
+    redirect_to(new_course_path)
+  rescue CourseTransfer::ImportError, CourseTransfer::Version::Unsupported,
+         CourseTransfer::Package::UnsafeEntry => e
+    @pending = course_import_session
+    flash.now[:error] = "Unable to import course: #{e.message}"
+    render(action: :import, status: :unprocessable_entity)
+  rescue StandardError => e
+    @pending = course_import_session
+    Rails.logger.error("Course import failed: #{e.class}: #{e.message}")
+    flash.now[:error] = "Unable to import course: #{e.message}"
+    render(action: :import, status: :unprocessable_entity)
   end
 
   action_auth_level :legacy_import, :administrator
@@ -1002,7 +1063,10 @@ class CoursesController < ApplicationController
   end
 
   action_auth_level :export, :instructor
-  def export; end
+  def export
+    @export_users = @course.course_user_data.includes(:user).order(:id)
+    @export_assessments = @course.assessments.ordered
+  end
 
   action_auth_level :export_selected, :instructor
   def export_selected
@@ -1043,30 +1107,29 @@ private
     Dir.mktmpdir("autolab-course-export-") do |staging_dir|
       staging_path = Pathname.new(staging_dir)
       context = CourseTransfer::Context.new(
-        staging_path: staging_path,
+        staging_path:,
         course: @course,
         version: CourseTransfer::Version::CURRENT,
         mode: :export,
-        selected_parts: ["bundle"]
+        selected_parts: []
       )
 
-      CourseTransfer::Export.export(
-        CourseTransfer::BundleExporter.new(@course),
-        context: context
+      selected_users = User.where(id: Array(params[:user_ids]).reject(&:blank?))
+      selected_assessments = Assessment.where(
+        id: Array(params[:assessment_ids]).reject(&:blank?)
       )
+      registry = CourseTransfer::CoreExporters.registry
+      manager = CourseTransfer::ExportManager.new(registry:, context:)
+      plan = manager.build_plan(
+        CourseTransfer::ExportSelection.new(
+          course: @course,
+          users: selected_users,
+          assessments: selected_assessments
+        )
+      )
+      manager.export(plan)
 
-      tar_stream = StringIO.new("".b)
-      Gem::Package::TarWriter.new(tar_stream) do |tar|
-        staging_path.glob("**/*").sort.each do |path|
-          next unless path.file?
-
-          relative_path = path.relative_path_from(staging_path).to_s
-          tar.add_file(relative_path, File.stat(path).mode) do |tar_file|
-            tar_file.write(path.binread)
-          end
-        end
-      end
-      tar_stream.string
+      CourseTransfer::Package.pack(staging_path)
     end
   end
 

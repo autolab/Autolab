@@ -310,6 +310,7 @@ Rails.application.routes.draw do
     collection do
       post "import", action: :import_upload
       get "import"
+      post "complete_import"
       get "legacy_import"
       post "create_from_tar"
     end
