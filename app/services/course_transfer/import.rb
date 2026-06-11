@@ -1,5 +1,6 @@
 require "json"
 require "yaml"
+require_relative "file_transfer"
 
 module CourseTransfer
   # Base error for package import failures.
@@ -91,6 +92,7 @@ module CourseTransfer
     def import
       package = read_package
       @course_identifier = destination_course_identifier(package)
+      cleanup = nil
 
       ApplicationRecord.transaction(requires_new: true) do
         key_maps = Hash.new { |hash, name| hash[name] = {} }
@@ -102,10 +104,19 @@ module CourseTransfer
         resolve_deferred_references(key_maps:)
         imported = imported_course(key_maps)
         ensure_import_instructor(imported) if context.instructor_email.present?
+        cleanup = FileTransfer.import(
+          registry,
+          context:,
+          imported_ids: @imported_ids,
+          key_maps:
+        )
         validate_import
         run_other_import_hooks
         imported
       end
+    rescue StandardError
+      cleanup&.cleanup!
+      raise
     end
 
   private
@@ -413,6 +424,7 @@ module CourseTransfer
           last_name: course.name
         )
         User.assign_random_password(user)
+        user.save!
         @imported_ids[:users] << user.id
       end
 

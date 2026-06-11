@@ -2,6 +2,7 @@ require "bigdecimal"
 require "fileutils"
 require "json"
 require "yaml"
+require_relative "file_transfer"
 
 # Services for portable, normalized course packages.
 module CourseTransfer
@@ -127,7 +128,16 @@ module CourseTransfer
       columns.map(&:to_s).zip(values).to_h
     end
 
-    # File/blob export work is intentionally deferred.
+    # Returns file mappings owned by records in +relation+.
+    #
+    # @param _relation [ActiveRecord::Relation]
+    # @param direction [:export, :import]
+    # @return [Array<CourseTransfer::FileMapping>]
+    def file_mappings(_relation, **)
+      []
+    end
+
+    # Auxiliary export work remains available for future non-file data.
     #
     # @param _relation [ActiveRecord::Relation]
     # @param context [CourseTransfer::Context]
@@ -323,6 +333,7 @@ module CourseTransfer
       end
 
       Version.write_manifest!(context, parts: plan.names)
+      FileTransfer.export(plan, registry, context:, key_maps:)
       plan.each do |name, relation|
         registry.fetch(name).other_export(relation, context:)
       end

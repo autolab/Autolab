@@ -67,6 +67,8 @@ RSpec.describe "normalized course transfer" do
       max_submissions: 10,
       max_grace_days: 2,
       group_size: 1,
+      handin_directory: "handin",
+      handin_filename: "handin.tar",
       disable_handins: true,
       github_submission_enabled: true,
       allow_student_assign_group: true,
@@ -142,102 +144,152 @@ RSpec.describe "normalized course transfer" do
       global_comment: false,
       created_at: Time.zone.parse("2026-08-20 10:00:00")
     )
+    attachment = insert_record(
+      Attachment,
+      course_id: course.id,
+      assessment_id: assessment.id,
+      filename: "reference.txt",
+      mime_type: "text/plain",
+      name: "Reference",
+      category_name: "General",
+      release_at: Time.zone.parse("2026-08-10 12:00:00")
+    )
+    attachment_blob = ActiveStorage::Blob.create_and_upload!(
+      io: StringIO.new("attachment contents\n"),
+      filename: attachment.filename,
+      content_type: attachment.mime_type
+    )
+    attachment.attachment_file.attach(attachment_blob)
 
-    Dir.mktmpdir("course-transfer-spec-") do |directory|
-      export_context = CourseTransfer::Context.new(
-        staging_path: directory,
-        course:,
-        version: CourseTransfer::Version::CURRENT,
-        mode: :export,
-        selected_parts: []
-      )
-      registry = CourseTransfer::CoreExporters.registry
-      export_manager = CourseTransfer::ExportManager.new(registry:, context: export_context)
-      selection = CourseTransfer::ExportSelection.new(
-        course:,
-        users: User.where(id: user.id),
-        assessments: Assessment.where(id: assessment.id)
-      )
+    source_tree = course.directory_path
+    destination_tree = Rails.root.join("courses/imported-transfer-course")
+    begin
+      FileUtils.rm_rf(destination_tree)
+      FileUtils.mkdir_p(source_tree.join("lab", "handin", user.email))
+      source_tree.join("course.rb").write("course source\n")
+      source_tree.join("lab", "assessment.rb").write("assessment source\n")
+      source_tree.join("lab", "handout.txt").write("handout\n")
+      source_tree.join("lab", "handin", user.email, "handin.tar").write("handin\n")
+      source_tree.join("lab", "handin", user.email, "annotated_handin.tar")
+                 .write("annotated\n")
+      source_tree.join("lab", "handin", user.email, "1_autograde.txt")
+                 .write("feedback\n")
 
-      plan = export_manager.build_plan(selection)
-      export_manager.export(plan)
+      Dir.mktmpdir("course-transfer-spec-") do |directory|
+        export_context = CourseTransfer::Context.new(
+          staging_path: directory,
+          course:,
+          version: CourseTransfer::Version::CURRENT,
+          mode: :export,
+          selected_parts: []
+        )
+        registry = CourseTransfer::CoreExporters.registry
+        export_manager = CourseTransfer::ExportManager.new(registry:, context: export_context)
+        selection = CourseTransfer::ExportSelection.new(
+          course:,
+          users: User.where(id: user.id),
+          assessments: Assessment.where(id: assessment.id)
+        )
 
-      adjustment_yaml = Pathname.new(directory).join("score_adjustments.yml").read
-      expect(adjustment_yaml.scan(/^---$/).size).to eq(2)
-      expect(YAML.load_stream(adjustment_yaml).size).to eq(2)
-      expect(adjustment_yaml).not_to include("records:")
+        plan = export_manager.build_plan(selection)
+        export_manager.export(plan)
 
-      exported_submissions = YAML.load_stream(
-        Pathname.new(directory).join("submissions.yml").read
-      )
-      expect(exported_submissions.size).to eq(1)
-      exported_submission = exported_submissions.first
-      expect(exported_submission.fetch("assessment_id")).to include(
-        "table" => "assessments",
-        "key" => {
-          "course_id" => { "name" => "transfer-course" },
-          "name" => "lab"
-        }
-      )
+        adjustment_yaml = Pathname.new(directory).join("score_adjustments.yml").read
+        expect(adjustment_yaml.scan(/^---$/).size).to eq(2)
+        expect(YAML.load_stream(adjustment_yaml).size).to eq(2)
+        expect(adjustment_yaml).not_to include("records:")
 
-      Annotation.where(id: annotation.id).delete_all
-      Score.where(id: score.id).delete_all
-      Extension.where(id: extension.id).delete_all
-      AssessmentUserDatum.where(id: assessment_user_datum.id).delete_all
-      Submission.where(id: submission.id).delete_all
-      Problem.where(id: problem.id).delete_all
-      Group.where(id: group.id).delete_all
-      CourseUserDatum.where(id: membership.id).delete_all
-      Assessment.where(id: assessment.id).delete_all
-      Course.where(id: course.id).delete_all
-      User.where(id: user.id).delete_all
+        exported_submissions = YAML.load_stream(
+          Pathname.new(directory).join("submissions.yml").read
+        )
+        expect(exported_submissions.size).to eq(1)
+        exported_submission = exported_submissions.first
+        expect(exported_submission.fetch("assessment_id")).to include(
+          "table" => "assessments",
+          "key" => {
+            "course_id" => { "name" => "transfer-course" },
+            "name" => "lab"
+          }
+        )
 
-      import_context = CourseTransfer::Context.new(
-        staging_path: directory,
-        course: nil,
-        version: CourseTransfer::Version::CURRENT,
-        mode: :import,
-        selected_parts: [],
-        course_identifier: "imported-transfer-course",
-        instructor_email: "new-instructor@example.com"
-      )
-      imported_course = CourseTransfer::ImportManager.new(
-        registry: CourseTransfer::CoreExporters.registry,
-        context: import_context
-      ).import
+        Annotation.where(id: annotation.id).delete_all
+        Score.where(id: score.id).delete_all
+        Extension.where(id: extension.id).delete_all
+        AssessmentUserDatum.where(id: assessment_user_datum.id).delete_all
+        Submission.where(id: submission.id).delete_all
+        Problem.where(id: problem.id).delete_all
+        Group.where(id: group.id).delete_all
+        attachment.attachment_file.purge
+        Attachment.where(id: attachment.id).delete_all
+        CourseUserDatum.where(id: membership.id).delete_all
+        Assessment.where(id: assessment.id).delete_all
+        Course.where(id: course.id).delete_all
+        User.where(id: user.id).delete_all
 
-      imported_user = User.find_by!(email: "transfer@example.com")
-      imported_instructor = User.find_by!(email: "new-instructor@example.com")
-      imported_membership = imported_course.course_user_data.find_by!(user: imported_user)
-      imported_assessment = imported_course.assessments.find_by!(name: "lab")
-      imported_submission = Submission.find_by!(
-        assessment: imported_assessment,
-        course_user_datum: imported_membership,
-        version: 1
-      )
-      imported_problem = imported_assessment.problems.find_by!(name: "code")
-      imported_aud = AssessmentUserDatum.find_by!(
-        assessment: imported_assessment,
-        course_user_datum: imported_membership
-      )
+        import_context = CourseTransfer::Context.new(
+          staging_path: directory,
+          course: nil,
+          version: CourseTransfer::Version::CURRENT,
+          mode: :import,
+          selected_parts: [],
+          course_identifier: "imported-transfer-course",
+          instructor_email: "new-instructor@example.com"
+        )
+        imported_course = CourseTransfer::ImportManager.new(
+          registry: CourseTransfer::CoreExporters.registry,
+          context: import_context
+        ).import
 
-      expect(imported_course.name).to eq("imported-transfer-course")
-      expect(imported_course.display_name).to eq("Transfer Course")
-      expect(imported_course.course_user_data.find_by!(user: imported_instructor).instructor?)
-        .to be(true)
-      expect(imported_submission.notes).to eq("first")
-      expect(imported_aud.latest_submission).to eq(imported_submission)
-      expect(imported_aud.group.name).to eq("Team One")
-      expect(
-        Extension.find_by!(
+        imported_user = User.find_by!(email: "transfer@example.com")
+        imported_instructor = User.find_by!(email: "new-instructor@example.com")
+        imported_membership = imported_course.course_user_data.find_by!(user: imported_user)
+        imported_assessment = imported_course.assessments.find_by!(name: "lab")
+        imported_submission = Submission.find_by!(
+          assessment: imported_assessment,
+          course_user_datum: imported_membership,
+          version: 1
+        )
+        imported_problem = imported_assessment.problems.find_by!(name: "code")
+        imported_aud = AssessmentUserDatum.find_by!(
           assessment: imported_assessment,
           course_user_datum: imported_membership
-        ).days
-      ).to eq(1)
-      expect(Score.find_by!(submission: imported_submission,
-                            problem: imported_problem).score).to eq(9.0)
-      expect(Annotation.find_by!(submission: imported_submission,
-                                 problem: imported_problem).comment).to eq("nice")
+        )
+
+        expect(imported_course.name).to eq("imported-transfer-course")
+        expect(imported_course.display_name).to eq("Transfer Course")
+        expect(imported_course.course_user_data.find_by!(user: imported_instructor).instructor?)
+          .to be(true)
+        expect(imported_submission.notes).to eq("first")
+        expect(imported_aud.latest_submission).to eq(imported_submission)
+        expect(imported_aud.group.name).to eq("Team One")
+        expect(
+          Extension.find_by!(
+            assessment: imported_assessment,
+            course_user_datum: imported_membership
+          ).days
+        ).to eq(1)
+        expect(Score.find_by!(submission: imported_submission,
+                              problem: imported_problem).score).to eq(9.0)
+        expect(Annotation.find_by!(submission: imported_submission,
+                                   problem: imported_problem).comment).to eq("nice")
+        expect(imported_course.directory_path.join("course.rb").read).to eq("course source\n")
+        expect(imported_assessment.folder_path.join("assessment.rb").read)
+          .to eq("assessment source\n")
+        expect(imported_assessment.folder_path.join("handout.txt").read).to eq("handout\n")
+        expect(Pathname.new(imported_submission.handin_file_path)).to be_file
+        expect(Pathname.new(imported_submission.handin_file_path).read).to eq("handin\n")
+        expect(Pathname.new(imported_submission.handin_annotated_file_path).read)
+          .to eq("annotated\n")
+        expect(Pathname.new(imported_submission.autograde_feedback_path).read)
+          .to eq("feedback\n")
+        expect(
+          Attachment.find_by!(assessment: imported_assessment, name: "Reference")
+                    .attachment_file.download
+        ).to eq("attachment contents\n")
+      end
+    ensure
+      FileUtils.rm_rf(source_tree)
+      FileUtils.rm_rf(destination_tree)
     end
   end
 

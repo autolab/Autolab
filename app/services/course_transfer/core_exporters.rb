@@ -84,7 +84,13 @@ module CourseTransfer
                                          id: relation.select(:version_penalty_id)
                                        )
                                      )
-        { score_adjustments: adjustments }
+        {
+          score_adjustments: adjustments,
+          attachments: Attachment.where(
+            course_id: relation.select(:id),
+            assessment_id: nil
+          )
+        }
       end
 
       # @return [Hash{Symbol => Symbol}]
@@ -105,6 +111,27 @@ module CourseTransfer
       # @return [Object]
       def normalize_key_value(field, value)
         field == :name ? value.to_s.downcase : value
+      end
+
+      # Maps files rooted directly in the course directory. Assessment folders
+      # are owned by AssessmentExporter, so they are excluded here.
+      #
+      # @param relation [ActiveRecord::Relation<Course>]
+      # @param direction [:export, :import]
+      # @return [Array<CourseTransfer::FileMapping>]
+      def file_mappings(relation, direction:)
+        relation.find_each.flat_map do |course|
+          excluded = course.assessments.pluck(:name).map do |assessment_name|
+            course.directory_path.join(assessment_name)
+          end
+          excluded << course.directory_path.join("autolab.log")
+          FileTransfer.tree_mappings(
+            course,
+            root: course.directory_path,
+            exclude: excluded,
+            direction:
+          )
+        end
       end
     end
 
@@ -191,7 +218,8 @@ module CourseTransfer
                                      )
         {
           score_adjustments: adjustments,
-          problems: Problem.where(assessment_id: relation.select(:id))
+          problems: Problem.where(assessment_id: relation.select(:id)),
+          attachments: Attachment.where(assessment_id: relation.select(:id))
         }
       end
 
@@ -214,6 +242,79 @@ module CourseTransfer
       # @return [Object]
       def normalize_key_value(field, value)
         field == :name ? value.to_s.downcase : value
+      end
+
+      # Maps all assessment-directory files outside the handin directory.
+      #
+      # @param relation [ActiveRecord::Relation<Assessment>]
+      # @param direction [:export, :import]
+      # @return [Array<CourseTransfer::FileMapping>]
+      def file_mappings(relation, direction:)
+        relation.find_each.flat_map do |assessment|
+          exclude = assessment.handin_directory.present? ? [assessment.handin_directory_path] : []
+          FileTransfer.tree_mappings(
+            assessment,
+            root: assessment.folder_path,
+            exclude:,
+            direction:
+          )
+        end
+      end
+    end
+
+    # Transfers course and assessment attachment records and contents.
+    class AttachmentExporter < Exporter
+      def initialize
+        super(name: :attachments, model_class: Attachment)
+      end
+
+      # @return [Array<Symbol>]
+      def fields
+        %i[filename mime_type name created_at updated_at course_id assessment_id
+           category_name release_at]
+      end
+
+      # Course and assessment rows are the records that introduce an
+      # attachment into the dependency graph. Returning them here would create
+      # a cycle back to those exporters.
+      #
+      # @return [Hash]
+      def dependencies(_relation)
+        {}
+      end
+
+      # @return [Hash{Symbol => Symbol}]
+      def ref_fields
+        { course_id: :courses, assessment_id: :assessments }
+      end
+
+      # @return [Array<Symbol>]
+      def key_fields
+        %i[course_id assessment_id name filename release_at]
+      end
+
+      # @param relation [ActiveRecord::Relation<Attachment>]
+      # @param direction [:export, :import]
+      # @return [Array<CourseTransfer::FileMapping>]
+      def file_mappings(relation, direction:)
+        relation.find_each.filter_map do |attachment|
+          if direction == :export
+            source = if attachment.attachment_file.attached?
+                       FileTransfer::BlobSource.new(attachment)
+                     else
+                       Rails.root.join("attachments", attachment.filename.to_s)
+                     end
+            next if source.is_a?(Pathname) && !source.file?
+
+            FileMapping.new(record: attachment, kind: "content", source:)
+          else
+            FileMapping.new(
+              record: attachment,
+              kind: "content",
+              destination_type: :active_storage
+            )
+          end
+        end
       end
     end
 
@@ -293,6 +394,53 @@ module CourseTransfer
       # @return [Array<Symbol>]
       def key_fields
         %i[assessment_id course_user_datum_id version]
+      end
+
+      # Maps live submission, annotation, and autograder feedback files.
+      #
+      # @param relation [ActiveRecord::Relation<Submission>]
+      # @param direction [:export, :import]
+      # @return [Array<CourseTransfer::FileMapping>]
+      def file_mappings(relation, direction:)
+        relation.find_each.flat_map do |submission|
+          next [] unless submission.filename.present? &&
+                         submission.assessment.handin_directory.present?
+
+          paths = {
+            "handin" => if direction == :export
+                          submission.handin_file_path
+                        else
+                          submission.new_handin_file_path
+                        end,
+            "annotated" => if direction == :export
+                             submission.handin_annotated_file_path
+                           else
+                             File.join(
+                               submission.assessment.handin_directory_path,
+                               submission.course_user_datum.email,
+                               "annotated_#{submission.filename}"
+                             )
+                           end,
+            "autograde_feedback" => if direction == :export
+                                      submission.autograde_feedback_path
+                                    else
+                                      submission.new_autograde_feedback_path
+                                    end
+          }
+
+          paths.map do |kind, path|
+            if direction == :export
+              FileMapping.new(record: submission, kind:, source: path)
+            else
+              FileMapping.new(
+                record: submission,
+                kind:,
+                destination: path,
+                destination_root: submission.assessment.handin_directory_path
+              )
+            end
+          end
+        end
       end
     end
 
@@ -430,6 +578,7 @@ module CourseTransfer
                     .register(CourseUserDatumExporter.new)
                     .register(GroupExporter.new)
                     .register(AssessmentExporter.new)
+                    .register(AttachmentExporter.new)
                     .register(ProblemExporter.new)
                     .register(SubmissionExporter.new)
                     .register(AssessmentUserDatumExporter.new)
