@@ -131,25 +131,10 @@ module CourseTransfer
     # Returns file mappings owned by records in +relation+.
     #
     # @param _relation [ActiveRecord::Relation]
-    # @param direction [:export, :import]
     # @return [Array<CourseTransfer::FileMapping>]
-    def file_mappings(_relation, **)
+    def file_mappings(_relation)
       []
     end
-
-    # Auxiliary export work remains available for future non-file data.
-    #
-    # @param _relation [ActiveRecord::Relation]
-    # @param context [CourseTransfer::Context]
-    # @return [void]
-    def other_export(_relation, context:); end
-
-    # File/blob import work is intentionally deferred.
-    #
-    # @param _relation [ActiveRecord::Relation]
-    # @param context [CourseTransfer::Context]
-    # @return [void]
-    def other_import(_relation, context:); end
   end
 
   # Holds the exporter for every table file in a package.
@@ -334,9 +319,6 @@ module CourseTransfer
 
       Version.write_manifest!(context, parts: plan.names)
       FileTransfer.export(plan, registry, context:, key_maps:)
-      plan.each do |name, relation|
-        registry.fetch(name).other_export(relation, context:)
-      end
       plan
     end
 

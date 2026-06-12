@@ -1,6 +1,7 @@
 require "json"
 require "yaml"
 require_relative "file_transfer"
+require_relative "yaml_stream"
 
 module CourseTransfer
   # Base error for package import failures.
@@ -111,7 +112,6 @@ module CourseTransfer
           key_maps:
         )
         validate_import
-        run_other_import_hooks
         imported
       end
     rescue StandardError
@@ -154,7 +154,7 @@ module CourseTransfer
       path = context.staging_path.join(exporter.filename)
       raise InvalidPackage, "#{exporter.filename} is missing" unless path.file?
 
-      documents = safely_load_documents(path.read, filename: exporter.filename)
+      documents = YamlStream.load(path.read, filename: exporter.filename)
       unless documents.all?(Hash)
         raise InvalidPackage,
               "each document in #{exporter.filename} must contain one record mapping"
@@ -163,29 +163,6 @@ module CourseTransfer
       documents
     rescue Psych::Exception => e
       raise InvalidPackage, "#{exporter.filename} is invalid YAML: #{e.message}"
-    end
-
-    # Safely deserializes every document in one YAML stream. Psych does not
-    # expose a safe_load_stream helper, so this applies the same restricted
-    # visitor used by Psych.safe_load to each parsed document.
-    #
-    # @param contents [String]
-    # @param filename [String]
-    # @return [Array<Object>]
-    def safely_load_documents(contents, filename:)
-      stream = Psych.parse_stream(contents, filename:)
-
-      stream.children.map do |document|
-        class_loader = Psych::ClassLoader::Restricted.new([], [])
-        scanner = Psych::ScalarScanner.new(class_loader)
-        visitor = Psych::Visitors::NoAliasRuby.new(
-          scanner,
-          class_loader,
-          symbolize_names: false,
-          freeze: false
-        )
-        visitor.accept(document)
-      end
     end
 
     def import_table(exporter, documents, key_maps:)
@@ -378,13 +355,6 @@ module CourseTransfer
       return if errors.empty?
 
       raise ImportValidationError, errors.first(20).join("; ")
-    end
-
-    def run_other_import_hooks
-      registry.each do |exporter|
-        ids = @imported_ids.fetch(exporter.name, []).uniq
-        exporter.other_import(exporter.model_class.where(id: ids), context:)
-      end
     end
 
     def imported_course(key_maps)

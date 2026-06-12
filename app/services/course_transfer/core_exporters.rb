@@ -117,19 +117,18 @@ module CourseTransfer
       # are owned by AssessmentExporter, so they are excluded here.
       #
       # @param relation [ActiveRecord::Relation<Course>]
-      # @param direction [:export, :import]
       # @return [Array<CourseTransfer::FileMapping>]
-      def file_mappings(relation, direction:)
-        relation.find_each.flat_map do |course|
+      def file_mappings(relation)
+        relation.find_each.map do |course|
           excluded = course.assessments.pluck(:name).map do |assessment_name|
             course.directory_path.join(assessment_name)
           end
           excluded << course.directory_path.join("autolab.log")
-          FileTransfer.tree_mappings(
+          FileMapping.tree(
             course,
-            root: course.directory_path,
-            exclude: excluded,
-            direction:
+            course.directory_path,
+            within: Rails.root.join("courses"),
+            exclude: excluded
           )
         end
       end
@@ -247,16 +246,15 @@ module CourseTransfer
       # Maps all assessment-directory files outside the handin directory.
       #
       # @param relation [ActiveRecord::Relation<Assessment>]
-      # @param direction [:export, :import]
       # @return [Array<CourseTransfer::FileMapping>]
-      def file_mappings(relation, direction:)
-        relation.find_each.flat_map do |assessment|
+      def file_mappings(relation)
+        relation.find_each.map do |assessment|
           exclude = assessment.handin_directory.present? ? [assessment.handin_directory_path] : []
-          FileTransfer.tree_mappings(
+          FileMapping.tree(
             assessment,
-            root: assessment.folder_path,
-            exclude:,
-            direction:
+            assessment.folder_path,
+            within: assessment.course.directory_path,
+            exclude:
           )
         end
       end
@@ -274,15 +272,6 @@ module CourseTransfer
            category_name release_at]
       end
 
-      # Course and assessment rows are the records that introduce an
-      # attachment into the dependency graph. Returning them here would create
-      # a cycle back to those exporters.
-      #
-      # @return [Hash]
-      def dependencies(_relation)
-        {}
-      end
-
       # @return [Hash{Symbol => Symbol}]
       def ref_fields
         { course_id: :courses, assessment_id: :assessments }
@@ -294,26 +283,15 @@ module CourseTransfer
       end
 
       # @param relation [ActiveRecord::Relation<Attachment>]
-      # @param direction [:export, :import]
       # @return [Array<CourseTransfer::FileMapping>]
-      def file_mappings(relation, direction:)
-        relation.find_each.filter_map do |attachment|
-          if direction == :export
-            source = if attachment.attachment_file.attached?
-                       FileTransfer::BlobSource.new(attachment)
-                     else
-                       Rails.root.join("attachments", attachment.filename.to_s)
-                     end
-            next if source.is_a?(Pathname) && !source.file?
-
-            FileMapping.new(record: attachment, kind: "content", source:)
-          else
-            FileMapping.new(
-              record: attachment,
-              kind: "content",
-              destination_type: :active_storage
-            )
-          end
+      def file_mappings(relation)
+        relation.find_each.map do |attachment|
+          FileMapping.active_storage(
+            attachment,
+            attachment.attachment_file,
+            fallback: Rails.root.join("attachments", attachment.filename.to_s),
+            within: Rails.root.join("attachments")
+          )
         end
       end
     end
@@ -399,46 +377,25 @@ module CourseTransfer
       # Maps live submission, annotation, and autograder feedback files.
       #
       # @param relation [ActiveRecord::Relation<Submission>]
-      # @param direction [:export, :import]
       # @return [Array<CourseTransfer::FileMapping>]
-      def file_mappings(relation, direction:)
+      def file_mappings(relation)
         relation.find_each.flat_map do |submission|
           next [] unless submission.filename.present? &&
                          submission.assessment.handin_directory.present?
 
-          paths = {
-            "handin" => if direction == :export
-                          submission.handin_file_path
-                        else
-                          submission.new_handin_file_path
-                        end,
-            "annotated" => if direction == :export
-                             submission.handin_annotated_file_path
-                           else
-                             File.join(
-                               submission.assessment.handin_directory_path,
-                               submission.course_user_datum.email,
-                               "annotated_#{submission.filename}"
-                             )
-                           end,
-            "autograde_feedback" => if direction == :export
-                                      submission.autograde_feedback_path
-                                    else
-                                      submission.new_autograde_feedback_path
-                                    end
-          }
-
-          paths.map do |kind, path|
-            if direction == :export
-              FileMapping.new(record: submission, kind:, source: path)
-            else
-              FileMapping.new(
-                record: submission,
-                kind:,
-                destination: path,
-                destination_root: submission.assessment.handin_directory_path
-              )
-            end
+          root = submission.assessment.handin_directory_path
+          {
+            "handin" => submission.handin_file_path,
+            "annotated" => submission.handin_annotated_file_path,
+            "autograde_feedback" => submission.autograde_feedback_path
+          }.map do |name, path|
+            FileMapping.file(
+              submission,
+              name,
+              path,
+              root:,
+              within: submission.assessment.folder_path
+            )
           end
         end
       end
