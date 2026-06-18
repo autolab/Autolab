@@ -1,0 +1,692 @@
+#!/usr/bin/env ruby
+# Opt-in, disposable fuzz harness for the normalized course transfer system.
+# Run with:
+#   bundle exec ruby script/course_transfer_fuzzer --attempts 50 --average-objects 100
+
+ENV["RAILS_ENV"] = "test"
+
+require "optparse"
+require "pp"
+require "stringio"
+require "tmpdir"
+require_relative "../config/environment"
+require_relative "../app/services/course_transfer/core_exporters"
+require_relative "../app/services/course_transfer/import"
+
+module CourseTransferFuzzer
+  class Mismatch < StandardError; end
+
+  Options = Struct.new(:attempts, :average_objects, :seed, keyword_init: true)
+
+  class Generator
+    SAFE_WORDS = %w[alpha beta gamma delta epsilon lambda omega transfer course fuzz].freeze
+
+    attr_reader :rng, :run_id, :target_size, :created_blob_ids
+
+    def initialize(rng:, run_id:, target_size:)
+      @rng = rng
+      @run_id = run_id
+      @target_size = [target_size, 8].max
+      @created_blob_ids = []
+    end
+
+    def call
+      penalties = create_penalties
+      course = create_course(penalties)
+      users = create_users(course)
+      assessments = create_assessments(course, penalties)
+      problems = create_problems(assessments)
+      submissions = create_submissions(users, assessments)
+      groups = create_groups
+      create_assessment_user_data(users, assessments, submissions, groups)
+      create_extensions(users, assessments)
+      create_scores_and_annotations(users, problems, submissions)
+      create_attachments(course, assessments)
+      create_files(course, assessments, submissions)
+      course
+    end
+
+  private
+
+    def create_penalties
+      2.times.map do |index|
+        attributes = {
+          type: "Penalty",
+          kind: rng.rand(0..1),
+          value: (rng.rand * 25 + index / 1000.0).round(3)
+        }
+        insert(ScoreAdjustment, attributes, attributes)
+      end
+    end
+
+    def create_course(penalties)
+      name = "fuzz-source-#{run_id}"
+      insert(
+        Course,
+        {
+          name:,
+          display_name: text("Course"),
+          semester: %w[f26 s27 m27].sample(random: rng),
+          late_slack: rng.rand(0..86_400),
+          grace_days: rng.rand(0..10),
+          start_date: Date.new(2026, 8, 1),
+          end_date: Date.new(2027, 5, 30),
+          disabled: rng.rand < 0.15,
+          exam_in_progress: rng.rand < 0.1,
+          version_threshold: rng.rand(-1..10),
+          late_penalty_id: penalties.first.id,
+          version_penalty_id: penalties.last.id,
+          gb_message: nullable_text("Gradebook"),
+          website: rng.rand < 0.5 ? "https://example.test/#{run_id}" : nil,
+          access_code: rng.rand < 0.5 ? random_token(6).upcase : nil,
+          disable_on_end: rng.rand < 0.5
+        },
+        name:
+      )
+    end
+
+    def create_users(course)
+      count = graph_width
+      Array.new(count) do |index|
+        user = insert(
+          User,
+          {
+            email: "fuzz-#{run_id}-#{index}@example.test",
+            first_name: text("First"),
+            last_name: text("Last"),
+            school: nullable_text("School"),
+            major: nullable_text("Major"),
+            year: rng.rand < 0.5 ? rng.rand(2020..2035).to_s : nil,
+            hover_assessment_date: rng.rand < 0.5,
+            created_at: timestamp(index),
+            updated_at: timestamp(index + 1)
+          },
+          email: "fuzz-#{run_id}-#{index}@example.test"
+        )
+        insert(
+          CourseUserDatum,
+          {
+            course_id: course.id,
+            user_id: user.id,
+            lecture: nullable_text("Lecture"),
+            section: random_token(rng.rand(0..8)),
+            grade_policy: nullable_text("Policy"),
+            instructor: false,
+            course_assistant: false,
+            dropped: rng.rand < 0.15,
+            nickname: rng.rand < 0.5 ? random_token(rng.rand(1..16)) : nil,
+            course_number: random_token(rng.rand(0..8)),
+            created_at: timestamp(index + 2),
+            updated_at: timestamp(index + 3)
+          },
+          course_id: course.id, user_id: user.id
+        )
+      end
+    end
+
+    def create_assessments(course, penalties)
+      count = graph_width
+      Array.new(count) do |index|
+        name = "assessment-#{index}"
+        start_at = timestamp(index * 10)
+        insert(
+          Assessment,
+          {
+            course_id: course.id,
+            name:,
+            display_name: text("Assessment"),
+            description: nullable_text("Description"),
+            start_at:,
+            due_at: start_at + rng.rand(1..20).days,
+            end_at: start_at + rng.rand(21..30).days,
+            created_at: timestamp(index + 20),
+            updated_at: timestamp(index + 21),
+            handin_filename: "handin-#{index}.txt",
+            handin_directory: "handin",
+            max_grace_days: rng.rand(0..10),
+            max_submissions: rng.rand(1..30),
+            disable_handins: false,
+            max_size: rng.rand(1..5_000_000),
+            version_threshold: rng.rand(-1..10),
+            late_penalty_id: rng.rand < 0.5 ? penalties.first.id : nil,
+            version_penalty_id: rng.rand < 0.5 ? penalties.last.id : nil,
+            category_name: text("Category"),
+            group_size: rng.rand(1..5),
+            github_submission_enabled: rng.rand < 0.5,
+            allow_student_assign_group: rng.rand < 0.5,
+            is_positive_grading: rng.rand < 0.5,
+            disable_network: rng.rand < 0.5
+          },
+          course_id: course.id, name:
+        )
+      end
+    end
+
+    def create_problems(assessments)
+      budget = [remaining_budget(assessments.size), assessments.size].max
+      count = [rng.rand(assessments.size..(budget + assessments.size)), budget].min
+      Array.new(count) do |index|
+        assessment = assessments[index % assessments.size]
+        name = "problem-#{index}"
+        insert(
+          Problem,
+          {
+            assessment_id: assessment.id,
+            name:,
+            description: text("Problem"),
+            max_score: (rng.rand * 100).round(3),
+            optional: rng.rand < 0.2,
+            starred: rng.rand < 0.2,
+            created_at: timestamp(index + 50),
+            updated_at: timestamp(index + 51)
+          },
+          assessment_id: assessment.id, name:
+        )
+      end
+    end
+
+    def create_submissions(users, assessments)
+      count = [remaining_budget(users.size + assessments.size) / 3, 1].max
+      versions = Hash.new(0)
+      Array.new(count) do |index|
+        membership = users.sample(random: rng)
+        assessment = assessments.sample(random: rng)
+        pair = [membership.id, assessment.id]
+        versions[pair] += 1
+        version = versions[pair]
+        insert(
+          Submission,
+          {
+            assessment_id: assessment.id,
+            course_user_datum_id: membership.id,
+            submitted_by_id: users.sample(random: rng).id,
+            version:,
+            filename: assessment.handin_filename,
+            notes: text("Note")[0, 255],
+            mime_type: "text/plain",
+            detected_mime_type: "text/plain",
+            special_type: rng.rand(0..2),
+            ignored: rng.rand < 0.1,
+            group_key: random_token(rng.rand(0..10)),
+            submitter_ip: "192.0.2.#{rng.rand(1..254)}",
+            created_at: timestamp(index + 100),
+            updated_at: timestamp(index + 101)
+          },
+          assessment_id: assessment.id, course_user_datum_id: membership.id, version:
+        )
+      end
+    end
+
+    def create_groups
+      Array.new(rng.rand(0..graph_width)) do |index|
+        name = "fuzz-group-#{run_id}-#{index}"
+        created_at = timestamp(index + 150)
+        insert(Group, { name:, created_at:, updated_at: created_at + 1 }, name:, created_at:)
+      end
+    end
+
+    def create_assessment_user_data(users, assessments, submissions, groups)
+      users.product(assessments).each_with_index do |(membership, assessment), index|
+        candidates = submissions.select do |submission|
+          submission.course_user_datum_id == membership.id &&
+            submission.assessment_id == assessment.id && !submission.ignored?
+        end
+        latest = candidates.max_by(&:version)
+        insert(
+          AssessmentUserDatum,
+          {
+            course_user_datum_id: membership.id,
+            assessment_id: assessment.id,
+            latest_submission_id: latest&.id,
+            group_id: groups.empty? || rng.rand < 0.6 ? nil : groups.sample(random: rng).id,
+            grade_type: rng.rand(0..2),
+            membership_status: rng.rand(0..3),
+            version_number: latest&.version,
+            created_at: timestamp(index + 200),
+            updated_at: timestamp(index + 201)
+          },
+          course_user_datum_id: membership.id, assessment_id: assessment.id
+        )
+      end
+    end
+
+    def create_extensions(users, assessments)
+      users.product(assessments).sample(rng.rand(0..[users.size, assessments.size].max),
+                                        random: rng).each do |membership, assessment|
+        infinite = rng.rand < 0.2
+        insert(
+          Extension,
+          {
+            course_user_datum_id: membership.id,
+            assessment_id: assessment.id,
+            days: infinite ? nil : rng.rand(0..10),
+            infinite:
+          },
+          course_user_datum_id: membership.id, assessment_id: assessment.id
+        )
+      end
+    end
+
+    def create_scores_and_annotations(users, problems, submissions)
+      submissions.each_with_index do |submission, index|
+        matching = problems.select { |problem| problem.assessment_id == submission.assessment_id }
+        next if matching.empty?
+
+        problem = matching.sample(random: rng)
+        if rng.rand < 0.75
+          insert(
+            Score,
+            {
+              submission_id: submission.id,
+              problem_id: problem.id,
+              grader_id: users.sample(random: rng).id,
+              score: (rng.rand * problem.max_score).round(3),
+              feedback: text("Feedback"),
+              released: rng.rand < 0.5,
+              created_at: timestamp(index + 300),
+              updated_at: timestamp(index + 301)
+            },
+            submission_id: submission.id, problem_id: problem.id
+          )
+        end
+        next unless rng.rand < 0.6
+
+        comment = "#{text('Comment')} #{index}"
+        insert(
+          Annotation,
+          {
+            submission_id: submission.id,
+            problem_id: problem.id,
+            filename: "file-#{index}.txt",
+            position: rng.rand(0..1_000),
+            line: rng.rand(1..1_000),
+            submitted_by: "grader-#{rng.rand(1..20)}@example.test",
+            comment:,
+            value: (rng.rand * 10).round(3),
+            coordinate: rng.rand < 0.5 ? nil : "#{rng.rand(1..20)},#{rng.rand(1..20)}",
+            shared_comment: rng.rand < 0.5,
+            global_comment: rng.rand < 0.5,
+            created_at: timestamp(index + 350),
+            updated_at: timestamp(index + 351)
+          },
+          submission_id: submission.id, problem_id: problem.id, comment:
+        )
+      end
+    end
+
+    def create_attachments(course, assessments)
+      rng.rand(0..graph_width).times do |index|
+        assessment = rng.rand < 0.7 ? assessments.sample(random: rng) : nil
+        filename = "attachment-#{index}.txt"
+        name = "Attachment #{run_id} #{index}"
+        attachment = insert(
+          Attachment,
+          {
+            course_id: course.id,
+            assessment_id: assessment&.id,
+            filename:,
+            mime_type: "text/plain",
+            name:,
+            category_name: text("Files"),
+            release_at: timestamp(index + 400),
+            created_at: timestamp(index + 401),
+            updated_at: timestamp(index + 402)
+          },
+          course_id: course.id, name:, filename:
+        )
+        blob = ActiveStorage::Blob.create_and_upload!(
+          io: StringIO.new(text("Attachment payload #{index}")),
+          filename:,
+          content_type: "text/plain"
+        )
+        created_blob_ids << blob.id
+        attachment.attachment_file.attach(blob)
+      end
+    end
+
+    def create_files(course, assessments, submissions)
+      FileUtils.mkdir_p(course.directory_path)
+      course.directory_path.join("course.rb").write("module FuzzCourseConfig\nend\n")
+      course.directory_path.join("fuzz-marker.txt").write(text("Course file"))
+
+      assessments.each_with_index do |assessment, index|
+        FileUtils.mkdir_p(assessment.handin_directory_path)
+        assessment.unique_source_config_file_path.write("module FuzzAssessment#{index}\nend\n")
+        assessment.folder_path.join("fuzz-marker.txt").write(text("Assessment file #{index}"))
+      end
+      submissions.each_with_index do |submission, index|
+        path = Pathname.new(submission.handin_file_path)
+        FileUtils.mkdir_p(path.dirname)
+        path.write(text("Submission file #{index}"))
+      end
+    end
+
+    def graph_width
+      @graph_width ||= [[Math.sqrt(target_size / 3.0).round, 1].max, 20].min
+    end
+
+    def remaining_budget(reserved)
+      [target_size - (3 + graph_width * graph_width + reserved), 1].max
+    end
+
+    def insert(model, attributes, lookup)
+      # Callback-free creation keeps fuzz runs isolated from host/Unix setup.
+      # rubocop:disable Rails/SkipsModelValidations
+      model.insert_all!([attributes])
+      # rubocop:enable Rails/SkipsModelValidations
+      model.find_by!(lookup)
+    end
+
+    def timestamp(offset)
+      Time.zone.local(2026, 1, 1, 12) + rng.rand(0..1_000_000) + offset
+    end
+
+    def nullable_text(prefix)
+      rng.rand < 0.3 ? nil : text(prefix)
+    end
+
+    def text(prefix)
+      words = Array.new(rng.rand(1..5)) { SAFE_WORDS.sample(random: rng) }.join(" ")
+      punctuation = ["", " 'quoted'", " : colon", "\nsecond line", " — unicode ✓"]
+                    .sample(random: rng)
+      "#{prefix} #{words}#{punctuation}"
+    end
+
+    def random_token(length)
+      Array.new(length) { ("a".."z").to_a.sample(random: rng) }.join
+    end
+  end
+
+  class Runner
+    PLACEHOLDER_NAME = "__FUZZ_COURSE__".freeze
+
+    def initialize(options, output: $stdout)
+      @options = options
+      @output = output
+      @output.sync = true if @output.respond_to?(:sync=)
+    end
+
+    def call
+      abort "This fuzzer may only run in the test environment." unless Rails.env.test?
+
+      output.puts "course-transfer fuzzer seed=#{options.seed} " \
+                  "attempts=#{options.attempts} average_objects=#{options.average_objects}"
+      master = Random.new(options.seed)
+      failures = []
+      options.attempts.times do |index|
+        attempt_seed = master.rand(0...(2**63))
+        run_attempt(index + 1, attempt_seed)
+      rescue StandardError => e
+        warn_failure(index + 1, attempt_seed, e)
+        failures << { attempt: index + 1, seed: attempt_seed, error: e }
+      end
+
+      passed = options.attempts - failures.size
+      if failures.empty?
+        output.puts "PASS: #{passed} course transfer attempts"
+        return 0
+      end
+
+      output.puts "DONE: #{passed} passed, #{failures.size} failed, " \
+                  "#{options.attempts} total"
+      output.puts "Failing attempt seeds: #{failures.map { |failure| failure[:seed] }.join(', ')}"
+      1
+    end
+
+  private
+
+    attr_reader :options, :output
+
+    def run_attempt(number, seed)
+      rng = Random.new(seed)
+      target = randomized_target(rng)
+      run_id = "#{Process.pid}-#{number}-#{seed.to_s(36)}"
+      generator = Generator.new(rng:, run_id:, target_size: target)
+      cleanup_paths = []
+      course_ids = []
+      actual_size = nil
+
+      ApplicationRecord.transaction(requires_new: true) do
+        begin
+          source = generator.call
+          course_ids << source.id
+          destination_name = "fuzz-imported-#{run_id}"
+          cleanup_paths.concat(paths_for(source))
+
+          Dir.mktmpdir("course-transfer-fuzz-export-") do |first_directory|
+            plan = export_course(source, first_directory)
+            before = snapshot(first_directory, source.name)
+            actual_size = count_records(plan)
+
+            # Non-reusable natural keys (notably groups) cannot be imported
+            # while their source rows still exist. The portable snapshot above
+            # is the source of truth from this point onward.
+            remove_exported_records(plan)
+
+            imported = import_course(first_directory, destination_name)
+            course_ids << imported.id
+            cleanup_paths.concat(paths_for(imported))
+            verify_marker_files(source, imported)
+
+            Dir.mktmpdir("course-transfer-fuzz-reexport-") do |second_directory|
+              export_course(imported, second_directory)
+              after = snapshot(second_directory, imported.name)
+              compare_snapshots(before, after)
+            end
+          end
+        ensure
+          purge_created_attachments(course_ids, generator.created_blob_ids)
+          cleanup_paths.uniq.each { |path| remove_path(path) }
+        end
+        raise ActiveRecord::Rollback
+      end
+
+      message = "[%<number>d/%<total>d] ok seed=%<seed>d " \
+                "objects=%<objects>d target=%<target>d"
+      output.puts format(message,
+                         number:, total: options.attempts, seed:, objects: actual_size, target:)
+    end
+
+    def export_course(course, directory)
+      registry = CourseTransfer::CoreExporters.registry
+      context = CourseTransfer::Context.new(
+        staging_path: directory,
+        version: CourseTransfer::Version::CURRENT
+      )
+      manager = CourseTransfer::ExportManager.new(registry:, context:)
+      users = User.where(id: course.course_user_data.select(:user_id))
+      selection = CourseTransfer::ExportSelection.new(
+        course:,
+        users:,
+        assessments: course.assessments
+      )
+      plan = manager.build_plan(selection)
+      manager.export(plan)
+      plan
+    end
+
+    def import_course(directory, destination_name)
+      context = CourseTransfer::Context.new(
+        staging_path: directory,
+        version: CourseTransfer::Version::CURRENT,
+        course_identifier: destination_name
+      )
+      CourseTransfer::ImportManager.new(
+        registry: CourseTransfer::CoreExporters.registry,
+        context:
+      ).import
+    end
+
+    def snapshot(directory, course_name)
+      root = Pathname.new(directory)
+      manifest = YAML.safe_load(root.join("manifest.yml").read)
+      manifest.delete("created_at")
+      tables = manifest.fetch("parts").to_h do |part|
+        filename = CourseTransfer::CoreExporters.registry.fetch(part.to_sym).filename
+        documents = YAML.load_stream(root.join(filename).read).map do |document|
+          normalize_document(part, document, course_name)
+        end
+        [part, documents.sort_by { |document| CourseTransfer::Serialization.canonical(document) }]
+      end
+      {
+        "manifest" => manifest,
+        "tables" => tables,
+        "attachments" => file_digests(root.join("files", "attachments"))
+      }
+    end
+
+    def normalize_document(part, document, course_name)
+      normalized = normalize(document, course_name)
+      # Import finalization reloads assessment configs, which intentionally
+      # invalidates cached scores by touching the assessment.
+      # Attaching the restored Active Storage blob likewise touches attachment
+      # metadata without changing the exported attachment itself.
+      normalized.delete("updated_at") if %w[assessments attachments].include?(part.to_s)
+      normalized
+    end
+
+    def normalize(value, course_name)
+      case value
+      when Hash
+        value.to_h { |key, child| [normalize(key, course_name), normalize(child, course_name)] }
+      when Array
+        value.map { |child| normalize(child, course_name) }
+      when String
+        value == course_name ? PLACEHOLDER_NAME : value
+      else
+        value
+      end
+    end
+
+    def file_digests(root)
+      return [] unless root.directory?
+
+      # Attachment directories are addressed by a digest of their portable
+      # natural key, which includes the renamed course. Compare payloads rather
+      # than those intentionally different storage paths.
+      root.glob("**/*").select(&:file?).map do |path|
+        Digest::SHA256.file(path).hexdigest
+      end.sort
+    end
+
+    def compare_snapshots(before, after)
+      return if before == after
+
+      differing = before.keys.reject { |key| before[key] == after[key] }
+      details = differing.index_with { |key| { before: before[key], after: after[key] } }
+      raise Mismatch, "round-trip mismatch in #{differing.join(', ')}:\n#{PP.pp(details, +'')}"
+    end
+
+    def verify_marker_files(source, imported)
+      source_markers = marker_files(source.directory_path)
+      imported_markers = marker_files(imported.directory_path)
+      return if source_markers == imported_markers
+
+      raise Mismatch, "course file markers changed:\n" \
+                      "#{PP.pp({ before: source_markers, after: imported_markers }, +'')}"
+    end
+
+    def marker_files(root)
+      root.glob("**/fuzz-marker.txt").to_h do |path|
+        [path.relative_path_from(root).to_s, Digest::SHA256.file(path).hexdigest]
+      end
+    end
+
+    def count_records(plan)
+      plan.names.sum { |name| plan.relation_for(name).distinct.count }
+    end
+
+    def remove_exported_records(plan)
+      registry = CourseTransfer::CoreExporters.registry
+      ids_by_name = plan.names.to_h do |name|
+        model = registry.fetch(name).model_class
+        [name, plan.relation_for(name).pluck(model.primary_key)]
+      end
+      CourseTransfer::DependencyOrder.new(registry).call.reverse_each do |exporter|
+        next unless plan.include?(exporter.name)
+
+        # Materialize every relation before deleting anything. Dependency
+        # scopes use subqueries into parent tables and would otherwise become
+        # empty as earlier tables are removed.
+        # The attempt transaction restores these rows after the attempt. Using
+        # delete_all avoids callbacks that mutate Unix users and course files.
+        exporter.model_class.where(id: ids_by_name.fetch(exporter.name)).delete_all
+      end
+    end
+
+    def paths_for(course)
+      [
+        course.directory_path,
+        course.config_file_path,
+        course.config_backup_file_path,
+        *course.assessments.flat_map do |assessment|
+          [assessment.unique_config_file_path, assessment.unique_config_backup_file_path]
+        end
+      ]
+    end
+
+    def purge_created_attachments(course_ids, blob_ids)
+      Attachment.where(course_id: course_ids).find_each do |item|
+        item.attachment_file.purge if item.attachment_file.attached?
+      rescue StandardError => e
+        warn "attachment cleanup warning: #{e.class}: #{e.message}"
+      end
+      ActiveStorage::Blob.where(id: blob_ids).find_each(&:purge)
+    end
+
+    def remove_path(path)
+      path = Pathname.new(path)
+      path.directory? ? FileUtils.rm_rf(path) : FileUtils.rm_f(path)
+    end
+
+    def randomized_target(rng)
+      low = [options.average_objects / 2, 8].max
+      high = [options.average_objects * 3 / 2, low].max
+      rng.rand(low..high)
+    end
+
+    def warn_failure(number, seed, error)
+      warn "FAIL attempt=#{number} seed=#{seed} master_seed=#{options.seed}"
+      message = error.message
+      message = "#{message[0, 4_000]}\n... failure details truncated ..." if message.length > 4_000
+      warn "#{error.class}: #{message}"
+      warn error.backtrace.first(15).join("\n")
+      warn "Replay with: bundle exec ruby script/course_transfer_fuzzer " \
+           "--attempts #{number} --average-objects #{options.average_objects} " \
+           "--seed #{options.seed}"
+    end
+  end
+
+  def self.parse_options(arguments)
+    options = Options.new(attempts: 25, average_objects: 100, seed: Random.new_seed)
+    parser = OptionParser.new do |cli|
+      cli.banner = "Usage: bundle exec ruby script/course_transfer_fuzzer [options]"
+      cli.on("-n", "--attempts COUNT", Integer, "number of randomized round trips") do |value|
+        options.attempts = value
+      end
+      cli.on("-o", "--average-objects COUNT", Integer,
+             "approximate average number of transferred records per course") do |value|
+        options.average_objects = value
+      end
+      cli.on("-s", "--seed SEED", Integer, "master seed for deterministic replay") do |value|
+        options.seed = value
+      end
+      cli.on("-h", "--help", "show this help") do
+        puts cli
+        exit 0
+      end
+    end
+    parser.parse!(arguments)
+    unless options.attempts.positive?
+      raise OptionParser::InvalidArgument, "attempts must be positive"
+    end
+    unless options.average_objects >= 8
+      raise OptionParser::InvalidArgument, "average objects must be at least 8"
+    end
+
+    options
+  end
+end
+
+options = CourseTransferFuzzer.parse_options(ARGV)
+exit CourseTransferFuzzer::Runner.new(options).call
