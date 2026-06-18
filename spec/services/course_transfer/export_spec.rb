@@ -62,6 +62,36 @@ RSpec.describe CourseTransfer::ExportPlan do
   end
 end
 
+RSpec.describe CourseTransfer::ExportManager do
+  it "preserves a null foreign key when it is part of a natural key" do
+    exporter = CourseTransfer::CoreExporters::AttachmentExporter.new
+    manager = described_class.new(
+      registry: CourseTransfer::CoreExporters.registry,
+      context: nil
+    )
+    row = exporter.fields.index_with { nil }.transform_keys(&:to_s).merge(
+      "id" => 7,
+      "course_id" => 11,
+      "name" => "Syllabus",
+      "filename" => "syllabus.pdf"
+    )
+    course_key = { "name" => "transfer-course" }
+
+    document, natural_key = manager.send(
+      :serialize_row,
+      exporter,
+      row,
+      { courses: { 11 => course_key }, assessments: {} }
+    )
+
+    expect(natural_key).to include(
+      "course_id" => course_key,
+      "assessment_id" => nil
+    )
+    expect(document.fetch("assessment_id")).to be_nil
+  end
+end
+
 RSpec.describe CourseTransfer::ExportSelection do
   # Selection only needs persisted rows; callbacks would add unrelated course
   # and assessment records to this query-level contract spec.

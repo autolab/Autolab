@@ -48,4 +48,23 @@ RSpec.describe CourseTransfer::FileTransfer do
       expect(destination.join("excluded")).not_to exist
     end
   end
+
+  it "copies course trees concurrently when an atomic move crosses filesystems" do
+    Dir.mktmpdir("course-transfer-files-") do |directory|
+      root = Pathname.new(directory)
+      source = root.join("source")
+      destination = root.join("destination")
+      FileUtils.mkdir_p(source.join("empty"))
+      source.join("first.txt").write("first")
+      source.join("second.txt").write("second")
+      allow(File).to receive(:rename).with(source, destination).and_raise(Errno::EXDEV)
+
+      transfer(root).send(:move_tree, source, destination)
+
+      expect(source).not_to exist
+      expect(destination.join("first.txt").read).to eq("first")
+      expect(destination.join("second.txt").read).to eq("second")
+      expect(destination.join("empty")).to be_directory
+    end
+  end
 end

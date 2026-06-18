@@ -433,6 +433,7 @@ module CourseTransfer
     end
 
     def reference_key(target_name, source_id, key_maps)
+      return nil if source_id.nil?
       return source_id if source_id.respond_to?(:negative?) && source_id <= 0
 
       key_maps.fetch(target_name).fetch(source_id.to_s) do

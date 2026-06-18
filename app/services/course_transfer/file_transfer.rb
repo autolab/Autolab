@@ -3,6 +3,7 @@ require "fileutils"
 require "find"
 require "pathname"
 require_relative "errors"
+require_relative "file_pool"
 require_relative "serialization"
 
 module CourseTransfer
@@ -55,9 +56,11 @@ module CourseTransfer
                               .where.not(user_id: exported_user_ids)
                               .pluck("users.email")
 
-      copy_course_root(course, assessments, destination)
-      copy_assessments(assessments, exported_user_ids, excluded_emails, destination)
-      export_attachments(plan)
+      FilePool.open do |pool|
+        copy_course_root(course, assessments, destination, pool)
+        copy_assessments(assessments, exported_user_ids, excluded_emails, destination, pool)
+        export_attachments(plan, pool)
+      end
     rescue ActiveRecord::ActiveRecordError, SystemCallError => e
       raise FileTransferError, "unable to export course files: #{e.message}"
     end
@@ -82,10 +85,10 @@ module CourseTransfer
 
   private
 
-    def copy_course_root(course, assessments, destination)
+    def copy_course_root(course, assessments, destination, pool)
       excluded = course.assessments.pluck(:name).map { |name| course.directory_path.join(name) }
       excluded << course.directory_path.join("autolab.log")
-      copy_tree(course.directory_path, destination) do |path|
+      copy_tree(course.directory_path, destination, pool:) do |path|
         excluded.any? { |root| within?(path, root) }
       end
 
@@ -93,7 +96,7 @@ module CourseTransfer
       assessments.each { |assessment| FileUtils.mkdir_p(destination.join(assessment.name)) }
     end
 
-    def copy_assessments(assessments, exported_user_ids, excluded_emails, destination)
+    def copy_assessments(assessments, exported_user_ids, excluded_emails, destination, pool)
       assessment_ids = assessments.map(&:id)
       excluded_paths = excluded_submission_paths(
         assessment_ids, assessments.first&.course_id, exported_user_ids
@@ -104,7 +107,7 @@ module CourseTransfer
         handin = if assessment.handin_directory.present?
                    assessment.handin_directory_path.expand_path
                  end
-        copy_tree(assessment.folder_path, destination.join(assessment.name)) do |path|
+        copy_tree(assessment.folder_path, destination.join(assessment.name), pool:) do |path|
           excluded_handin_path?(path, handin, excluded_paths, excluded_emails)
         end
       end
@@ -138,7 +141,7 @@ module CourseTransfer
       excluded_emails.any? { |email| path.basename.to_s.downcase.include?(email) }
     end
 
-    def copy_tree(source, destination)
+    def copy_tree(source, destination, pool: nil)
       source = Pathname.new(source).expand_path
       return unless source.directory?
       raise FileTransferError, "symbolic links are not exportable: #{source}" if source.symlink?
@@ -158,7 +161,11 @@ module CourseTransfer
         if path.directory?
           FileUtils.mkdir_p(target)
         elsif path.file?
-          link_or_copy(path, target)
+          if pool
+            pool.post(path, target) { |from, to| link_or_copy(from, to) }
+          else
+            link_or_copy(path, target)
+          end
         else
           raise FileTransferError, "special files are not exportable: #{path}"
         end
@@ -172,7 +179,7 @@ module CourseTransfer
       FileUtils.copy_file(source, destination)
     end
 
-    def export_attachments(plan)
+    def export_attachments(plan, pool)
       return unless plan.include?(:attachments)
 
       plan.relation_for(:attachments)
@@ -181,14 +188,20 @@ module CourseTransfer
         destination = attachment_path(key, attachment.filename)
         FileUtils.mkdir_p(destination.dirname)
 
-        if attachment.attachment_file.attached?
-          File.open(destination, "wb") do |output|
-            attachment.attachment_file.blob.download { |chunk| output.write(chunk) }
-          end
-        else
-          fallback = Rails.root.join("attachments", attachment.filename.to_s)
-          link_or_copy(fallback, destination) if fallback.file? && !fallback.symlink?
+        pool.post(attachment, destination) do |record, target|
+          export_attachment(record, target)
         end
+      end
+    end
+
+    def export_attachment(attachment, destination)
+      if attachment.attachment_file.attached?
+        File.open(destination, "wb") do |output|
+          attachment.attachment_file.blob.download { |chunk| output.write(chunk) }
+        end
+      else
+        fallback = Rails.root.join("attachments", attachment.filename.to_s)
+        link_or_copy(fallback, destination) if fallback.file? && !fallback.symlink?
       end
     end
 
@@ -205,17 +218,26 @@ module CourseTransfer
       end
 
       FileUtils.mkdir_p(destination.dirname)
-      FileUtils.mv(source, destination)
       @restored_course = destination
+      move_tree(source, destination)
     rescue ActiveRecord::ActiveRecordError, SystemCallError => e
       raise FileTransferError, "unable to restore course files: #{e.message}"
+    end
+
+    def move_tree(source, destination)
+      File.rename(source, destination)
+    rescue Errno::EXDEV
+      FileUtils.mkdir_p(destination)
+      FilePool.open do |pool|
+        copy_tree(source, destination, pool:)
+      end
+      FileUtils.rm_rf(source)
     end
 
     def restore_attachments(attachment_ids)
       expected = Set.new
       keys_by_id = @key_maps.fetch(:attachments, {}).to_h { |key, id| [id, key] }
-
-      Attachment.where(id: attachment_ids).find_each do |attachment|
+      transfers = Attachment.where(id: attachment_ids).map do |attachment|
         key = keys_by_id.fetch(attachment.id) do
           raise FileTransferError, "missing portable attachment key"
         end
@@ -223,20 +245,47 @@ module CourseTransfer
         next unless source.file? && !source.symlink?
 
         expected << source.expand_path
-        File.open(source, "rb") do |input|
-          blob = ActiveStorage::Blob.create_and_upload!(
-            io: input,
-            filename: attachment.filename,
-            content_type: attachment.mime_type
-          )
-          @uploaded_blobs << blob
-          attachment.attachment_file.attach(blob)
-        end
+        [attachment, source]
+      end.compact
+
+      blobs = prepare_attachment_blobs(transfers)
+      blobs.each(&:save!)
+      @uploaded_blobs.concat(blobs)
+      upload_attachment_blobs(transfers, blobs)
+      transfers.zip(blobs).each do |(attachment, _source), blob|
+        attachment.attachment_file.attach(blob)
       end
 
       actual = attachment_files
       unknown = actual - expected
       raise FileTransferError, "package contains an unknown attachment file" if unknown.any?
+    end
+
+    def prepare_attachment_blobs(transfers)
+      blobs = Array.new(transfers.length)
+      FilePool.open do |pool|
+        transfers.each_with_index do |(attachment, source), index|
+          pool.post(attachment, source, index) do |record, path, position|
+            blob = ActiveStorage::Blob.new(
+              filename: record.filename,
+              content_type: record.mime_type
+            )
+            File.open(path, "rb") { |input| blob.unfurl(input, identify: false) }
+            blobs[position] = blob
+          end
+        end
+      end
+      blobs
+    end
+
+    def upload_attachment_blobs(transfers, blobs)
+      FilePool.open do |pool|
+        transfers.zip(blobs).each do |(_attachment, source), blob|
+          pool.post(source, blob) do |path, uploaded_blob|
+            File.open(path, "rb") { |input| uploaded_blob.upload_without_unfurling(input) }
+          end
+        end
+      end
     end
 
     def attachment_files
