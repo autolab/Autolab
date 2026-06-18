@@ -11,7 +11,7 @@ module CourseTransfer
     DEFAULT_BATCH_SIZE = 1_000
 
     PreparedRow = Struct.new(
-      :document, :package_key, :attributes, :database_key,
+      :package_key, :attributes, :database_key,
       keyword_init: true
     )
     private_constant :PreparedRow
@@ -24,7 +24,8 @@ module CourseTransfer
     def initialize(registry:, context:, batch_size: DEFAULT_BATCH_SIZE)
       @registry = registry
       @context = context
-      @batch_size = batch_size
+      @batch_size = Integer(batch_size)
+      raise ArgumentError, "batch size must be positive" unless @batch_size.positive?
     end
 
     # @return [Array<CourseTransfer::Exporter>]
@@ -52,9 +53,8 @@ module CourseTransfer
 
         course = imported_course(key_maps)
         ensure_import_instructor(course) if context.instructor_email.present?
-        validate_import
         cleanup = FileTransfer.import(
-          registry, context:, imported_ids: @imported_ids, key_maps:
+          context:, imported_ids: @imported_ids, key_maps:
         )
         finalizer = ImportFinalizer.new(course, imported_ids: @imported_ids)
         finalizer.finalize!
@@ -77,9 +77,8 @@ module CourseTransfer
         version: manifest.fetch("version"),
         min_target: manifest.fetch("min_target_version")
       )
-      parts = Array(manifest.fetch("parts")).map(&:to_sym)
+      parts = manifest.fetch("parts").map(&:to_sym).to_set
       parts.each { |name| registry.fetch(name) }
-      raise InvalidPackage, "manifest contains duplicate table files" unless parts.uniq == parts
       raise InvalidPackage, "manifest must include courses" unless parts.include?(:courses)
 
       parts
@@ -132,7 +131,7 @@ module CourseTransfer
         # rubocop:enable Rails/SkipsModelValidations
       end
       resolved = existing.merge(find_database_ids(exporter, missing))
-      inserted = missing.to_h { |row| [database_key_signature(exporter, row.database_key), true] }
+      inserted = missing.to_set { |row| database_key_signature(exporter, row.database_key) }
 
       rows.each do |row|
         signature = database_key_signature(exporter, row.database_key)
@@ -141,7 +140,7 @@ module CourseTransfer
                 "could not find imported #{exporter.name} record #{row.package_key.inspect}"
         end
         key_maps[exporter.name][Serialization.canonical(row.package_key)] = id
-        @imported_ids[exporter.name] << id if inserted[signature]
+        @imported_ids[exporter.name] << id if inserted.include?(signature)
       end
     end
 
@@ -170,7 +169,7 @@ module CourseTransfer
           end
           attributes[:name] = @course_identifier if exporter.name == :courses
           database_key = exporter.key_fields.index_with { |field| attributes.fetch(field) }
-          rows << PreparedRow.new(document:, package_key:, attributes:, database_key:)
+          rows << PreparedRow.new(package_key:, attributes:, database_key:)
         end
       end
     end
@@ -220,9 +219,7 @@ module CourseTransfer
       columns = [exporter.model_class.primary_key, *exporter.key_fields]
       lookup_field = exporter.key_fields.find { |field| exporter.ref_fields.key?(field) } ||
                      exporter.key_fields.first
-      desired = rows.to_h do |row|
-        [database_key_signature(exporter, row.database_key), true]
-      end
+      desired = rows.to_set { |row| database_key_signature(exporter, row.database_key) }
       found = {}
 
       lookup_values = rows.map { |row| row.database_key.fetch(lookup_field) }.uniq
@@ -230,7 +227,7 @@ module CourseTransfer
         exporter.records_matching(lookup_field, values).pluck(*columns).each do |id, *key_values|
           database_key = exporter.key_fields.zip(key_values).to_h
           signature = database_key_signature(exporter, database_key)
-          next unless desired[signature]
+          next unless desired.include?(signature)
 
           if found.key?(signature) && found.fetch(signature) != id
             if exporter.reuse_existing?

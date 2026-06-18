@@ -53,11 +53,7 @@ module CourseTransfer
         File.open(tar_path, "wb") do |out|
           source = uploaded_file.tempfile
           source.rewind if source.respond_to?(:rewind)
-          if source.respond_to?(:size) && source.size > MAX_UPLOAD_BYTES
-            raise TooLarge, "uploaded package exceeds the size limit"
-          end
-
-          copied = IO.copy_stream(source, out)
+          copied = IO.copy_stream(source, out, MAX_UPLOAD_BYTES + 1)
           raise TooLarge, "uploaded package exceeds the size limit" if copied > MAX_UPLOAD_BYTES
         end
 

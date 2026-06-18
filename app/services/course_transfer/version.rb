@@ -6,17 +6,17 @@ require_relative "errors"
 module CourseTransfer
   # Defines package format compatibility and manifest operations.
   class Version
-    CURRENT = "1.0.0".freeze
+    CURRENT = "2.0.0".freeze
     FORMAT_ID = "autolab_course_export".freeze
     MANIFEST_FILENAME = "manifest.yml".freeze
     LEGACY = "legacy".freeze
 
     # Oldest version this app can import (inclusive bounds as Gem::Version).
     # (should be in the past or current version)
-    MIN_SUPPORTED_IMPORT = Gem::Version.new("1.0.0")
+    MIN_SUPPORTED_IMPORT = Gem::Version.new("2.0.0")
 
     # Oldest version that can import the current version (should be in the past or current version)
-    MIN_SUPPORTED_TARGET = Gem::Version.new("1.0.0")
+    MIN_SUPPORTED_TARGET = Gem::Version.new("2.0.0")
 
     CURRENT_VERSION = Gem::Version.new(CURRENT)
 
@@ -45,10 +45,10 @@ module CourseTransfer
     # Detect format version from an extracted package root directory.
     # Returns LEGACY when no manifest is present (old course tar layout).
     def self.detect(staging_path)
-      path = Pathname.new(staging_path).join(MANIFEST_FILENAME)
-      return LEGACY unless path.file?
+      manifest = read_manifest(staging_path)
+      return LEGACY unless manifest
 
-      parse_manifest_yaml(path.read).fetch("version").to_s
+      manifest.fetch("version").to_s
     end
 
     # Detect format version from a packed course tar without full extract.
@@ -77,7 +77,7 @@ module CourseTransfer
     end
 
     def self.parse_manifest_yaml(contents)
-      data = YAML.safe_load(contents, permitted_classes: [Time, Date, DateTime], aliases: false)
+      data = YAML.safe_load(contents, aliases: false)
       raise InvalidManifest, "manifest.yml must contain a mapping" unless data.is_a?(Hash)
       raise InvalidManifest, "manifest.yml is empty" if data.empty?
       raise InvalidManifest, "unknown format" unless data["format"] == FORMAT_ID
@@ -114,7 +114,6 @@ module CourseTransfer
     end
 
     def self.legacy?(version)
-      version = version.version if version.respond_to?(:version) && !version.is_a?(String)
       version.to_s == LEGACY
     end
 
@@ -141,13 +140,6 @@ module CourseTransfer
       end
 
       true
-    end
-
-    def self.compatible?(version:, min_target:)
-      assert_importable!(version:, min_target:)
-      true
-    rescue Unsupported
-      false
     end
   end
 end

@@ -2,7 +2,7 @@ require "rails_helper"
 require Rails.root.join("app/services/course_transfer/core_exporters")
 require Rails.root.join("app/services/course_transfer/import")
 
-RSpec.describe CourseTransfer::ImportOrder do
+RSpec.describe CourseTransfer::DependencyOrder do
   it "orders the core graph so every foreign-key target is inserted first" do
     registry = CourseTransfer::CoreExporters.registry
     order = described_class.new(registry).call.map(&:name)

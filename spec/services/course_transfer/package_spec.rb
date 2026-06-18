@@ -8,6 +8,7 @@ RSpec.describe CourseTransfer::Package do
       source_path = Pathname.new(source)
       source_path.join("manifest.yml").write("manifest")
       FileUtils.mkdir_p(source_path.join("nested"))
+      FileUtils.mkdir_p(source_path.join("empty"))
       source_path.join("nested", "records.yml").write("records")
 
       Dir.mktmpdir("course-package-target-") do |target|
@@ -19,6 +20,7 @@ RSpec.describe CourseTransfer::Package do
 
           expect(Pathname.new(extracted).join("manifest.yml").read).to eq("manifest")
           expect(Pathname.new(extracted).join("nested", "records.yml").read).to eq("records")
+          expect(Pathname.new(extracted).join("empty")).to be_directory
         end
       end
     end
@@ -50,6 +52,21 @@ RSpec.describe CourseTransfer::Package do
 
       expect { described_class.extract(tar_path, Pathname.new(directory).join("target")) }
         .to raise_error(CourseTransfer::Package::UnsafeEntry, /duplicate/)
+    end
+  end
+
+  it "rejects a file that conflicts with an earlier child entry" do
+    Dir.mktmpdir("course-package-conflict-") do |directory|
+      tar_path = Pathname.new(directory).join("conflict.tar")
+      File.open(tar_path, "wb") do |file|
+        Gem::Package::TarWriter.new(file) do |tar|
+          tar.add_file("records/first.yml", 0o644) { |entry| entry.write("one") }
+          tar.add_file("records", 0o644) { |entry| entry.write("two") }
+        end
+      end
+
+      expect { described_class.extract(tar_path, Pathname.new(directory).join("target")) }
+        .to raise_error(CourseTransfer::Package::UnsafeEntry, /conflicting/)
     end
   end
 

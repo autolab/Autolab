@@ -54,6 +54,20 @@ RSpec.describe "normalized course transfer" do
       course_assistant: false,
       dropped: false
     )
+    excluded_user = insert_record(
+      User,
+      email: "excluded@example.com",
+      first_name: "Excluded",
+      last_name: "Student"
+    )
+    excluded_membership = insert_record(
+      CourseUserDatum,
+      course_id: course.id,
+      user_id: excluded_user.id,
+      instructor: false,
+      course_assistant: false,
+      dropped: false
+    )
     assessment = insert_record(
       Assessment,
       course_id: course.id,
@@ -69,11 +83,26 @@ RSpec.describe "normalized course transfer" do
       group_size: 1,
       handin_directory: "handin",
       handin_filename: "handin.tar",
-      disable_handins: true,
+      disable_handins: false,
       github_submission_enabled: true,
       allow_student_assign_group: true,
       is_positive_grading: false,
       disable_network: false
+    )
+    excluded_assessment = insert_record(
+      Assessment,
+      course_id: course.id,
+      name: "private-lab",
+      display_name: "Private Lab",
+      category_name: "Labs",
+      start_at: Time.zone.parse("2026-08-10 12:00:00"),
+      due_at: Time.zone.parse("2026-08-20 12:00:00"),
+      end_at: Time.zone.parse("2026-08-21 12:00:00"),
+      max_size: 1_024,
+      max_submissions: 10,
+      handin_directory: "handin",
+      handin_filename: "handin.tar",
+      disable_handins: true
     )
     problem = insert_record(
       Problem,
@@ -163,24 +192,35 @@ RSpec.describe "normalized course transfer" do
 
     source_tree = course.directory_path
     destination_tree = Rails.root.join("courses/imported-transfer-course")
-    generated_configs = [
-      Rails.root.join("courseConfig/importedtransfercourse.rb"),
-      Rails.root.join("courseConfig/importedtransfercourse.rb.bak"),
-      Rails.root.join("assessmentConfig/imported-transfer-course-lab-2.rb"),
-      Rails.root.join("assessmentConfig/imported-transfer-course-lab-2.rb.bak")
-    ]
+    generated_configs = lambda do
+      [Rails.root.join("courseConfig/importedtransfercourse.rb"),
+       Rails.root.join("courseConfig/importedtransfercourse.rb.bak"),
+       *Rails.root.glob("assessmentConfig/imported-transfer-course-lab-*.rb*")]
+    end
     begin
       FileUtils.rm_rf(destination_tree)
-      FileUtils.rm_f(generated_configs)
-      FileUtils.mkdir_p(source_tree.join("lab", "handin", user.email))
+      FileUtils.rm_f(generated_configs.call)
+      FileUtils.mkdir_p([
+                          source_tree.join("lab", "handin", user.email),
+                          source_tree.join("lab", "handin", excluded_user.email),
+                          source_tree.join("private-lab")
+                        ])
       source_tree.join("course.rb").write("module CourseSource\nend\n")
+      source_tree.join("random-course-file.txt").write("course extra\n")
       source_tree.join("lab", "assessment.rb").write("module AssessmentSource\nend\n")
       source_tree.join("lab", "handout.txt").write("handout\n")
+      source_tree.join("lab", "random-assessment-file.txt").write("assessment extra\n")
       source_tree.join("lab", "handin", user.email, "handin.tar").write("handin\n")
+      source_tree.join("lab", "handin", user.email, "random.txt").write("user extra\n")
+      source_tree.join("lab", "handin", excluded_user.email, "private.txt")
+                 .write("excluded\n")
+      source_tree.join("lab", "handin", "#{excluded_user.email}_legacy.tar")
+                 .write("excluded legacy\n")
       source_tree.join("lab", "handin", user.email, "annotated_handin.tar")
                  .write("annotated\n")
       source_tree.join("lab", "handin", user.email, "1_autograde.txt")
                  .write("feedback\n")
+      source_tree.join("private-lab", "private.txt").write("private assessment\n")
 
       Dir.mktmpdir("course-transfer-spec-") do |directory|
         export_context = CourseTransfer::Context.new(
@@ -197,6 +237,19 @@ RSpec.describe "normalized course transfer" do
 
         plan = export_manager.build_plan(selection)
         export_manager.export(plan)
+
+        exported_tree = Pathname.new(directory).join("files", "course")
+        expect(Pathname.new(directory).join("files.yml")).not_to exist
+        expect(Pathname.new(directory).join("files", course.name)).not_to exist
+        expect(exported_tree.join("random-course-file.txt")).to exist
+        expect(exported_tree.join("lab", "random-assessment-file.txt")).to exist
+        expect(exported_tree.join("lab", "handin", user.email, "random.txt")).to exist
+        expect(exported_tree.join("lab", "handin", excluded_user.email)).not_to exist
+        expect(exported_tree.join("lab", "handin", "#{excluded_user.email}_legacy.tar"))
+          .not_to exist
+        expect(exported_tree.join("private-lab")).not_to exist
+        expect(Pathname.new(directory).join("files", "attachments").glob("**/reference.txt").one?)
+          .to be(true)
 
         adjustment_yaml = Pathname.new(directory).join("score_adjustments.yml").read
         expect(adjustment_yaml.scan(/^---$/).size).to eq(2)
@@ -226,9 +279,12 @@ RSpec.describe "normalized course transfer" do
         attachment.attachment_file.purge
         Attachment.where(id: attachment.id).delete_all
         CourseUserDatum.where(id: membership.id).delete_all
+        CourseUserDatum.where(id: excluded_membership.id).delete_all
         Assessment.where(id: assessment.id).delete_all
+        Assessment.where(id: excluded_assessment.id).delete_all
         Course.where(id: course.id).delete_all
         User.where(id: user.id).delete_all
+        User.where(id: excluded_user.id).delete_all
 
         import_context = CourseTransfer::Context.new(
           staging_path: directory,
@@ -278,6 +334,16 @@ RSpec.describe "normalized course transfer" do
         expect(imported_assessment.folder_path.join("assessment.rb").read)
           .to eq("module AssessmentSource\nend\n")
         expect(imported_assessment.folder_path.join("handout.txt").read).to eq("handout\n")
+        expect(imported_course.directory_path.join("random-course-file.txt").read)
+          .to eq("course extra\n")
+        expect(imported_assessment.folder_path.join("random-assessment-file.txt").read)
+          .to eq("assessment extra\n")
+        random_user_file = imported_assessment.handin_directory_path
+                                              .join(imported_user.email, "random.txt")
+        expect(random_user_file.read)
+          .to eq("user extra\n")
+        expect(imported_assessment.handin_directory_path.join(excluded_user.email)).not_to exist
+        expect(imported_course.directory_path.join("private-lab")).not_to exist
         expect(Pathname.new(imported_submission.handin_file_path)).to be_file
         expect(Pathname.new(imported_submission.handin_file_path).read).to eq("handin\n")
         expect(Pathname.new(imported_submission.handin_annotated_file_path).read)
@@ -292,7 +358,7 @@ RSpec.describe "normalized course transfer" do
     ensure
       FileUtils.rm_rf(source_tree)
       FileUtils.rm_rf(destination_tree)
-      FileUtils.rm_f(generated_configs)
+      FileUtils.rm_f(generated_configs.call)
     end
   end
 

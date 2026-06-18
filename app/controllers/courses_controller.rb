@@ -323,7 +323,7 @@ class CoursesController < ApplicationController
     staged = CourseTransfer::StagedUpload.find!(current_user, pending.fetch("token"))
     imported_course = nil
 
-    Dir.mktmpdir("autolab-course-import-") do |directory|
+    Dir.mktmpdir("autolab-course-import-", Rails.root.join("tmp")) do |directory|
       staging_path = CourseTransfer::Package.extract(staged.path, directory)
       context = CourseTransfer::Context.new(
         staging_path:,
@@ -1073,10 +1073,6 @@ class CoursesController < ApplicationController
               filename: "#{@course.name}_#{Time.current.strftime('%Y%m%d')}.tar",
               type: "application/x-tar",
               disposition: "attachment"
-  rescue SystemCallError => e
-    tar_file&.close!
-    flash[:error] = "Unable to create the course export: #{e.message}"
-    redirect_to(action: :export)
   rescue StandardError => e
     tar_file&.close!
     flash[:error] = "Unable to generate course export: #{e.message}"
@@ -1106,7 +1102,7 @@ private
 
   def build_new_export_tar
     tar_file = Tempfile.new(["autolab-course-export-", ".tar"])
-    Dir.mktmpdir("autolab-course-export-") do |staging_dir|
+    Dir.mktmpdir("autolab-course-export-", Rails.root.join("tmp")) do |staging_dir|
       staging_path = Pathname.new(staging_dir)
       context = CourseTransfer::Context.new(
         staging_path:,

@@ -1,30 +1,31 @@
+require "digest"
 require "fileutils"
 require "find"
 require "pathname"
-require "tempfile"
-require_relative "file_manifest"
-require_relative "file_mapping"
+require_relative "errors"
+require_relative "serialization"
 
 module CourseTransfer
-  # Copies exporter-declared files into and out of a transfer package.
+  # Builds and restores the filesystem-shaped portion of a course package.
   class FileTransfer
+    COURSE_DIRECTORY = Pathname.new("files/course").freeze
+    ATTACHMENTS_DIRECTORY = Pathname.new("files/attachments").freeze
+
     # @param plan [CourseTransfer::ExportPlan]
-    # @param registry [CourseTransfer::ExportRegistry]
     # @param context [CourseTransfer::Context]
     # @param key_maps [Hash]
     # @return [void]
-    def self.export(plan, registry, context:, key_maps:)
-      new(context:, key_maps:).export(plan, registry)
+    def self.export(plan, context:, key_maps:)
+      new(context:, key_maps:).export(plan)
     end
 
-    # @param registry [CourseTransfer::ExportRegistry]
     # @param context [CourseTransfer::Context]
     # @param imported_ids [Hash{Symbol => Array<Integer>}]
     # @param key_maps [Hash]
     # @return [CourseTransfer::FileTransfer] cleanup handle
-    def self.import(registry, context:, imported_ids:, key_maps:)
+    def self.import(context:, imported_ids:, key_maps:)
       transfer = new(context:, key_maps:)
-      transfer.import(registry, imported_ids)
+      transfer.import(imported_ids)
       transfer
     rescue StandardError
       transfer&.cleanup!
@@ -32,252 +33,236 @@ module CourseTransfer
     end
 
     def initialize(context:, key_maps:)
-      @manifest = FileManifest.new(context.staging_path)
+      @root = context.staging_path
       @key_maps = key_maps
-      @written_files = []
       @uploaded_blobs = []
+      @restored_course = nil
     end
 
+    # Copies the course tree with unselected assessments and users filtered out.
+    # Files are hard-linked into staging when possible and copied otherwise.
+    #
     # @param plan [CourseTransfer::ExportPlan]
-    # @param registry [CourseTransfer::ExportRegistry]
     # @return [void]
-    def export(plan, registry)
-      @sequence = 0
-      @manifest.prepare!
+    def export(plan)
+      course = plan.relation_for(:courses).first!
+      destination = @root.join(COURSE_DIRECTORY)
+      FileUtils.mkdir_p(destination)
 
-      plan.each do |table, relation|
-        registry.fetch(table).file_mappings(relation).each do |mapping|
-          each_source(mapping) do |source, relative_path|
-            export_file(table, mapping, source, relative_path)
-          end
-        end
-      end
+      assessments = plan.relation_for(:assessments).includes(:course).to_a
+      exported_user_ids = plan.relation_for(:users).pluck(:id)
+      excluded_emails = course.course_user_data.joins(:user)
+                              .where.not(user_id: exported_user_ids)
+                              .pluck("users.email")
+
+      copy_course_root(course, assessments, destination)
+      copy_assessments(assessments, exported_user_ids, excluded_emails, destination)
+      export_attachments(plan)
+    rescue ActiveRecord::ActiveRecordError, SystemCallError => e
+      raise FileTransferError, "unable to export course files: #{e.message}"
     end
 
-    # @param registry [CourseTransfer::ExportRegistry]
+    # Restores the course tree under the imported identifier and uploads
+    # exported attachment files through Active Storage.
+    #
     # @param imported_ids [Hash{Symbol => Array<Integer>}]
     # @return [void]
-    def import(registry, imported_ids)
-      documents = @manifest.read
-      by_table = documents.group_by { |document| document.fetch("table") }
-      unknown_tables = by_table.keys -
-                       registry.names.map(&:to_s)
-      unless unknown_tables.empty?
-        raise FileTransferError, "files reference unknown table #{unknown_tables.first.inspect}"
-      end
-
-      registry.each do |exporter|
-        table_documents = by_table.delete(exporter.name.to_s) || []
-        next if table_documents.empty?
-
-        ids = imported_ids.fetch(exporter.name, []).uniq
-        if ids.empty?
-          raise FileTransferError, "files reference an unimported #{exporter.name} record"
-        end
-
-        mappings = exporter.file_mappings(exporter.model_class.where(id: ids)).index_by do |mapping|
-          [mapping.record.id, mapping.name]
-        end
-
-        table_documents.each { |document| import_file(exporter.name, mappings, document) }
-      end
+    def import(imported_ids)
+      restore_course(imported_ids.fetch(:courses).uniq)
+      restore_attachments(imported_ids.fetch(:attachments, []).uniq)
     end
 
-    # Removes external files written by a database transaction that rolled
-    # back. Database rows themselves are removed by the transaction.
+    # Removes external files created by an import whose transaction rolled back.
     #
     # @return [void]
     def cleanup!
       cleanup_each(@uploaded_blobs) { |blob| blob.service.delete(blob.key) }
-      cleanup_each(@written_files.reverse_each) { |path| FileUtils.rm_f(path) }
+      FileUtils.rm_rf(@restored_course) if @restored_course
     end
 
   private
 
-    def each_source(mapping, &block)
-      validate_path_mapping(mapping) unless mapping.type == :active_storage
+    def copy_course_root(course, assessments, destination)
+      excluded = course.assessments.pluck(:name).map { |name| course.directory_path.join(name) }
+      excluded << course.directory_path.join("autolab.log")
+      copy_tree(course.directory_path, destination) do |path|
+        excluded.any? { |root| within?(path, root) }
+      end
 
-      case mapping.type
-      when :tree
-        each_tree_file(mapping, &block)
-      when :file
-        yield_path(mapping.path, nil, &block)
-      when :active_storage
-        if mapping.attachment.attached?
-          yield mapping.attachment.blob, nil
-        else
-          validate_source_path(mapping.path, mapping.root)
-          yield_path(mapping.path, nil, &block)
+      # Selected assessment directories are copied separately with handin filters.
+      assessments.each { |assessment| FileUtils.mkdir_p(destination.join(assessment.name)) }
+    end
+
+    def copy_assessments(assessments, exported_user_ids, excluded_emails, destination)
+      assessment_ids = assessments.map(&:id)
+      excluded_paths = excluded_submission_paths(
+        assessment_ids, assessments.first&.course_id, exported_user_ids
+      )
+      excluded_emails = excluded_emails.compact.map(&:downcase).to_set
+
+      assessments.each do |assessment|
+        handin = if assessment.handin_directory.present?
+                   assessment.handin_directory_path.expand_path
+                 end
+        copy_tree(assessment.folder_path, destination.join(assessment.name)) do |path|
+          excluded_handin_path?(path, handin, excluded_paths, excluded_emails)
         end
-      else
-        raise FileTransferError, "unknown file mapping type #{mapping.type.inspect}"
       end
     end
 
-    def each_tree_file(mapping)
-      root = pathname(mapping.path)
-      return unless root.directory?
-      raise FileTransferError, "symbolic links are not exportable: #{root}" if root.symlink?
+    def excluded_submission_paths(assessment_ids, course_id, exported_user_ids)
+      return Set.new if assessment_ids.empty?
 
-      excluded = mapping.exclude.map { |path| pathname(path) }
-      Find.find(root.to_s) do |entry|
+      unexported_memberships = CourseUserDatum.where(course_id:)
+                                              .where.not(user_id: exported_user_ids).select(:id)
+      paths = Set.new
+      Submission.includes(:assessment, course_user_datum: :user)
+                .where(assessment_id: assessment_ids, course_user_datum_id: unexported_memberships)
+                .find_each do |submission|
+        [submission.handin_file_path, submission.handin_annotated_file_path,
+         submission.autograde_feedback_path].compact.each do |path|
+          paths << Pathname.new(path).expand_path
+        end
+      end
+      paths
+    end
+
+    def excluded_handin_path?(path, handin, excluded_paths, excluded_emails)
+      return false unless handin && within?(path, handin) && path != handin
+      return true if excluded_paths.include?(path.expand_path)
+
+      relative_parts = path.relative_path_from(handin).each_filename.map(&:downcase)
+      return true if relative_parts.any? { |part| excluded_emails.include?(part) }
+      return false if path.directory?
+
+      excluded_emails.any? { |email| path.basename.to_s.downcase.include?(email) }
+    end
+
+    def copy_tree(source, destination)
+      source = Pathname.new(source).expand_path
+      return unless source.directory?
+      raise FileTransferError, "symbolic links are not exportable: #{source}" if source.symlink?
+
+      Find.find(source.to_s) do |entry|
         path = Pathname.new(entry)
-        next if path == root
+        next if path == source
 
-        if excluded.any? { |excluded_path| within?(path, excluded_path) }
+        if block_given? && yield(path)
           Find.prune if path.directory?
           next
         end
 
         raise FileTransferError, "symbolic links are not exportable: #{path}" if path.symlink?
-        next if path.directory?
-        raise FileTransferError, "special files are not exportable: #{path}" unless path.file?
 
-        yield path, path.relative_path_from(root).to_s
+        target = destination.join(path.relative_path_from(source))
+        if path.directory?
+          FileUtils.mkdir_p(target)
+        elsif path.file?
+          link_or_copy(path, target)
+        else
+          raise FileTransferError, "special files are not exportable: #{path}"
+        end
       end
     end
 
-    def yield_path(value, relative_path)
-      return if value.blank?
-
-      path = pathname(value)
-      return unless path.exist?
-      raise FileTransferError, "symbolic links are not exportable: #{path}" if path.symlink?
-      raise FileTransferError, "special files are not exportable: #{path}" unless path.file?
-
-      yield path, relative_path
+    def link_or_copy(source, destination)
+      FileUtils.mkdir_p(destination.dirname)
+      File.link(source, destination)
+    rescue Errno::EXDEV, Errno::EPERM, Errno::EACCES, Errno::EOPNOTSUPP
+      FileUtils.copy_file(source, destination)
     end
 
-    def export_file(table, mapping, source, relative_path)
-      payload = @manifest.payload(@sequence)
-      @sequence += 1
+    def export_attachments(plan)
+      return unless plan.include?(:attachments)
 
-      open_source(source) do |input|
-        File.open(payload, "wb") { |output| IO.copy_stream(input, output) }
-      end
+      plan.relation_for(:attachments)
+          .includes(attachment_file_attachment: :blob).find_each do |attachment|
+        key = @key_maps.fetch(:attachments).fetch(attachment.id)
+        destination = attachment_path(key, attachment.filename)
+        FileUtils.mkdir_p(destination.dirname)
 
-      @manifest.append(
-        table:,
-        key: @key_maps.fetch(table).fetch(mapping.record.id),
-        name: mapping.name,
-        relative_path:,
-        payload:
-      )
-    rescue KeyError => e
-      raise FileTransferError, "missing portable file owner key: #{e.message}"
-    rescue SystemCallError => e
-      raise FileTransferError, "unable to export file: #{e.message}"
-    end
-
-    def import_file(table, mappings, document)
-      owner_id = @key_maps.fetch(table).fetch(Serialization.canonical(document.fetch("key"))) do
-        raise FileTransferError, "file references missing #{table} owner"
-      end
-      mapping = mappings.fetch([owner_id, document.fetch("name")]) do
-        raise FileTransferError, "no import mapping for #{table} file"
-      end
-      payload = @manifest.verified_payload(document)
-
-      if mapping.type == :active_storage
-        import_attachment(mapping, payload)
-      else
-        import_path(mapping, document, payload)
+        if attachment.attachment_file.attached?
+          File.open(destination, "wb") do |output|
+            attachment.attachment_file.blob.download { |chunk| output.write(chunk) }
+          end
+        else
+          fallback = Rails.root.join("attachments", attachment.filename.to_s)
+          link_or_copy(fallback, destination) if fallback.file? && !fallback.symlink?
+        end
       end
     end
 
-    def import_attachment(mapping, payload)
-      File.open(payload, "rb") do |input|
-        blob = ActiveStorage::Blob.create_and_upload!(
-          io: input,
-          filename: mapping.record.filename,
-          content_type: mapping.record.mime_type
-        )
-        @uploaded_blobs << blob
-        mapping.attachment.attach(blob)
-      end
-    end
+    def restore_course(course_ids)
+      raise FileTransferError, "a package must restore exactly one course" unless course_ids.one?
 
-    def import_path(mapping, document, payload)
-      validate_path_mapping(mapping)
-      root = pathname(mapping.root)
-      destination = if mapping.type == :tree
-                      root.join(@manifest.relative_path(document.fetch("relative_path")))
-                    else
-                      pathname(mapping.path)
-                    end
-      unless within?(destination, root) && destination != root
-        raise FileTransferError, "file destination escapes owner directory"
-      end
+      source = @root.join(COURSE_DIRECTORY)
+      raise FileTransferError, "course file payload is missing" unless source.exist?
+      raise FileTransferError, "course file payload is not a directory" unless source.directory?
 
-      reject_symlink_ancestors(destination, pathname(mapping.base))
+      destination = Course.find(course_ids.first).directory_path
       if destination.exist?
-        raise FileTransferError,
-              "destination file already exists: #{destination}"
+        raise FileTransferError, "course directory already exists: #{destination}"
       end
 
       FileUtils.mkdir_p(destination.dirname)
-      Tempfile.create("course-transfer", destination.dirname) do |temporary|
-        temporary.binmode
-        File.open(payload, "rb") { |input| IO.copy_stream(input, temporary) }
-        temporary.flush
-        File.link(temporary.path, destination)
-      end
-      @written_files << destination
-    rescue SystemCallError => e
-      raise FileTransferError, "unable to restore file: #{e.message}"
+      FileUtils.mv(source, destination)
+      @restored_course = destination
+    rescue ActiveRecord::ActiveRecordError, SystemCallError => e
+      raise FileTransferError, "unable to restore course files: #{e.message}"
     end
 
-    def open_source(source, &block)
-      source.is_a?(Pathname) ? File.open(source, "rb", &block) : source.open(&block)
-    end
+    def restore_attachments(attachment_ids)
+      expected = Set.new
+      keys_by_id = @key_maps.fetch(:attachments, {}).to_h { |key, id| [id, key] }
 
-    def reject_symlink_ancestors(path, base)
-      path.ascend do |ancestor|
-        break unless within?(ancestor, base)
-
-        if ancestor.symlink?
-          raise FileTransferError, "file destination contains a symbolic link"
+      Attachment.where(id: attachment_ids).find_each do |attachment|
+        key = keys_by_id.fetch(attachment.id) do
+          raise FileTransferError, "missing portable attachment key"
         end
-        break if ancestor == base
+        source = attachment_path(key, attachment.filename)
+        next unless source.file? && !source.symlink?
+
+        expected << source.expand_path
+        File.open(source, "rb") do |input|
+          blob = ActiveStorage::Blob.create_and_upload!(
+            io: input,
+            filename: attachment.filename,
+            content_type: attachment.mime_type
+          )
+          @uploaded_blobs << blob
+          attachment.attachment_file.attach(blob)
+        end
       end
+
+      actual = attachment_files
+      unknown = actual - expected
+      raise FileTransferError, "package contains an unknown attachment file" if unknown.any?
     end
 
-    def validate_path_mapping(mapping)
-      base = pathname(mapping.base)
-      root = pathname(mapping.root)
-      unless within?(root, base) && root != base
-        raise FileTransferError, "file root escapes its course directory"
-      end
+    def attachment_files
+      root = @root.join(ATTACHMENTS_DIRECTORY)
+      return Set.new unless root.exist?
+      raise FileTransferError, "attachment payload is not a directory" unless root.directory?
 
-      return unless mapping.type == :file
-
-      validate_source_path(mapping.path, root)
+      root.glob("**/*").select(&:file?).map(&:expand_path).to_set
     end
 
-    def validate_source_path(value, root)
-      return if value.blank?
-
-      path = pathname(value)
-      return if within?(path, pathname(root)) && path != pathname(root)
-
-      raise FileTransferError, "file path escapes its owner directory"
+    def attachment_path(key, filename)
+      address = Digest::SHA256.hexdigest(key.is_a?(String) ? key : Serialization.canonical(key))
+      @root.join(ATTACHMENTS_DIRECTORY, address, File.basename(filename.to_s))
     end
 
     def cleanup_each(items)
       items.each do |item|
         yield item
       rescue StandardError => e
-        Rails.logger.error("Course transfer file cleanup failed: #{e.class}: #{e.message}")
+        Rails.logger.error("Course transfer cleanup failed: #{e.class}: #{e.message}")
       end
     end
 
-    def pathname(value)
-      Pathname.new(value).expand_path
-    end
-
     def within?(path, root)
-      path = pathname(path).to_s
-      root = pathname(root).to_s
+      path = Pathname.new(path).expand_path.to_s
+      root = Pathname.new(root).expand_path.to_s
       path == root || path.start_with?("#{root}#{File::SEPARATOR}")
     end
   end

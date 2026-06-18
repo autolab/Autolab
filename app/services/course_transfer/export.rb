@@ -10,7 +10,7 @@ module CourseTransfer
   # Concrete exporters contain declarations and lazy dependency scopes only;
   # orchestration and serialization are shared by all tables.
   class Exporter
-    attr_reader :name, :model_class, :filename
+    attr_reader :name, :model_class
 
     class << self
       attr_reader :table_name, :table_model, :declared_fields,
@@ -45,13 +45,16 @@ module CourseTransfer
 
     # @param name [Symbol] stable package name for this table
     # @param model_class [Class<ApplicationRecord>] exported Active Record model
-    # @param filename [String, nil] package-relative YAML filename
-    def initialize(name: self.class.table_name, model_class: self.class.table_model, filename: nil)
+    def initialize(name: self.class.table_name, model_class: self.class.table_model)
       raise ArgumentError, "exporter table and model are required" unless name && model_class
 
       @name = name.to_sym
       @model_class = model_class
-      @filename = filename || "#{name}.yml"
+    end
+
+    # @return [String] package-relative YAML filename
+    def filename
+      "#{name}.yml"
     end
 
     # Returns records in other table files required by +relation+.
@@ -141,12 +144,17 @@ module CourseTransfer
       columns.map(&:to_s).zip(values).to_h
     end
 
-    # Returns file mappings owned by records in +relation+.
+  protected
+
+    # Builds one relation containing records referenced by any of +fields+.
     #
-    # @param _relation [ActiveRecord::Relation]
-    # @return [Array<CourseTransfer::FileMapping>]
-    def file_mappings(_relation)
-      []
+    # @param model [Class<ApplicationRecord>]
+    # @param relation [ActiveRecord::Relation]
+    # @param fields [Array<Symbol>]
+    # @return [ActiveRecord::Relation]
+    def referenced_records(model, relation, *fields)
+      fields.map { |field| model.where(id: relation.select(field)) }
+            .reduce { |combined, scope| combined.or(scope) }
     end
   end
 
@@ -175,12 +183,6 @@ module CourseTransfer
       @exporters.fetch(name.to_sym) do
         raise UnknownExporter, "no exporter registered for #{name.inspect}"
       end
-    end
-
-    # @param name [String, Symbol]
-    # @return [Boolean]
-    def key?(name)
-      @exporters.key?(name.to_sym)
     end
 
     # @yieldparam exporter [CourseTransfer::Exporter]
@@ -248,8 +250,6 @@ module CourseTransfer
 
   # Immutable collection of lazy relations selected for table-file export.
   class ExportPlan
-    include Enumerable
-
     # @param relations [Hash{Symbol => ActiveRecord::Relation}]
     def initialize(relations)
       @relations = relations.transform_keys(&:to_sym).freeze
@@ -261,11 +261,10 @@ module CourseTransfer
       @relations.fetch(name.to_sym)
     end
 
-    # @yieldparam name [Symbol]
-    # @yieldparam relation [ActiveRecord::Relation]
-    # @return [Enumerator, Hash]
-    def each(&block)
-      @relations.each(&block)
+    # @param name [String, Symbol]
+    # @return [Boolean]
+    def include?(name)
+      @relations.key?(name.to_sym)
     end
 
     # @return [Array<Symbol>]
@@ -286,7 +285,8 @@ module CourseTransfer
     def initialize(registry:, context:, batch_size: DEFAULT_BATCH_SIZE)
       @registry = registry
       @context = context
-      @batch_size = batch_size
+      @batch_size = Integer(batch_size)
+      raise ArgumentError, "batch size must be positive" unless @batch_size.positive?
     end
 
     # Recursively expands a configured selection into all supporting records.
@@ -295,7 +295,7 @@ module CourseTransfer
     # @param selection [CourseTransfer::ExportSelection]
     # @return [CourseTransfer::ExportPlan]
     def build_plan(selection)
-      DependencyOrder.new(registry).call
+      dependency_order
       fragments = Hash.new { |hash, name| hash[name] = [] }
       queue = selection.seed_relations.to_a
       visited = Set.new
@@ -328,15 +328,15 @@ module CourseTransfer
       FileUtils.mkdir_p(context.staging_path)
       key_maps = Hash.new { |hash, name| hash[name] = {} }
 
-      DependencyOrder.new(registry).call.each do |exporter|
-        next unless plan.names.include?(exporter.name)
+      dependency_order.each do |exporter|
+        next unless plan.include?(exporter.name)
 
         key_maps[exporter.name]
         write_table(exporter, plan.relation_for(exporter.name), key_maps)
       end
 
       Version.write_manifest!(context, parts: plan.names)
-      FileTransfer.export(plan, registry, context:, key_maps:)
+      FileTransfer.export(plan, context:, key_maps:)
       plan
     end
 
@@ -350,17 +350,18 @@ module CourseTransfer
         each_plucked_row(exporter, relation) do |row|
           document, natural_key = serialize_row(exporter, row, key_maps)
           signature = Serialization.canonical(natural_key)
+          canonical_document = Serialization.canonical(document)
           key_maps[exporter.name][row.fetch(exporter.model_class.primary_key)] = natural_key
 
           if seen_documents.key?(signature)
-            unless seen_documents.fetch(signature) == document
+            unless seen_documents.fetch(signature) == canonical_document
               raise DuplicateNaturalKey,
                     "#{exporter.name} contains conflicting records for #{natural_key.inspect}"
             end
             next
           end
 
-          seen_documents[signature] = document
+          seen_documents[signature] = canonical_document
           Serialization.dump_document(file, document)
         end
       end
@@ -440,6 +441,10 @@ module CourseTransfer
                 "#{target_name} record #{source_id.inspect} was referenced but not exported"
         end
       end
+    end
+
+    def dependency_order
+      @dependency_order ||= DependencyOrder.new(registry).call
     end
   end
 end

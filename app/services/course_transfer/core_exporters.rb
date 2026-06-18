@@ -41,39 +41,15 @@ module CourseTransfer
       # @param relation [ActiveRecord::Relation<Course>]
       # @return [Hash{Symbol => ActiveRecord::Relation}]
       def dependencies(relation)
-        adjustments = ScoreAdjustment.where(id: relation.select(:late_penalty_id))
-                                     .or(
-                                       ScoreAdjustment.where(
-                                         id: relation.select(:version_penalty_id)
-                                       )
-                                     )
         {
-          score_adjustments: adjustments,
+          score_adjustments: referenced_records(
+            ScoreAdjustment, relation, :late_penalty_id, :version_penalty_id
+          ),
           attachments: Attachment.where(
             course_id: relation.select(:id),
             assessment_id: nil
           )
         }
-      end
-
-      # Maps files rooted directly in the course directory. Assessment folders
-      # are owned by AssessmentExporter, so they are excluded here.
-      #
-      # @param relation [ActiveRecord::Relation<Course>]
-      # @return [Array<CourseTransfer::FileMapping>]
-      def file_mappings(relation)
-        relation.includes(:assessments).find_each.map do |course|
-          excluded = course.assessments.map(&:name).map do |assessment_name|
-            course.directory_path.join(assessment_name)
-          end
-          excluded << course.directory_path.join("autolab.log")
-          FileMapping.tree(
-            course,
-            course.directory_path,
-            within: Rails.root.join("courses"),
-            exclude: excluded
-          )
-        end
       end
     end
 
@@ -124,33 +100,13 @@ module CourseTransfer
       # @param relation [ActiveRecord::Relation<Assessment>]
       # @return [Hash{Symbol => ActiveRecord::Relation}]
       def dependencies(relation)
-        adjustments = ScoreAdjustment.where(id: relation.select(:late_penalty_id))
-                                     .or(
-                                       ScoreAdjustment.where(
-                                         id: relation.select(:version_penalty_id)
-                                       )
-                                     )
         {
-          score_adjustments: adjustments,
+          score_adjustments: referenced_records(
+            ScoreAdjustment, relation, :late_penalty_id, :version_penalty_id
+          ),
           problems: Problem.where(assessment_id: relation.select(:id)),
           attachments: Attachment.where(assessment_id: relation.select(:id))
         }
-      end
-
-      # Maps all assessment-directory files outside the handin directory.
-      #
-      # @param relation [ActiveRecord::Relation<Assessment>]
-      # @return [Array<CourseTransfer::FileMapping>]
-      def file_mappings(relation)
-        relation.includes(:course).find_each.map do |assessment|
-          exclude = assessment.handin_directory.present? ? [assessment.handin_directory_path] : []
-          FileMapping.tree(
-            assessment,
-            assessment.folder_path,
-            within: assessment.course.directory_path,
-            exclude:
-          )
-        end
       end
     end
 
@@ -161,19 +117,6 @@ module CourseTransfer
                     :course_id, :assessment_id, :category_name, :release_at
       references course_id: :courses, assessment_id: :assessments
       natural_key :course_id, :assessment_id, :name, :filename, :release_at
-
-      # @param relation [ActiveRecord::Relation<Attachment>]
-      # @return [Array<CourseTransfer::FileMapping>]
-      def file_mappings(relation)
-        relation.includes(attachment_file_attachment: :blob).find_each.map do |attachment|
-          FileMapping.active_storage(
-            attachment,
-            attachment.attachment_file,
-            fallback: Rails.root.join("attachments", attachment.filename.to_s),
-            within: Rails.root.join("attachments")
-          )
-        end
-      end
     end
 
     # Transfers assessment problem definitions.
@@ -203,45 +146,15 @@ module CourseTransfer
       # @param relation [ActiveRecord::Relation<Submission>]
       # @return [Hash{Symbol => ActiveRecord::Relation}]
       def dependencies(relation)
-        memberships = CourseUserDatum.where(id: relation.select(:course_user_datum_id))
-                                     .or(
-                                       CourseUserDatum.where(
-                                         id: relation.select(:submitted_by_id)
-                                       )
-                                     )
         {
-          course_user_data: memberships,
+          course_user_data: referenced_records(
+            CourseUserDatum, relation, :course_user_datum_id, :submitted_by_id
+          ),
           assessments: Assessment.where(id: relation.select(:assessment_id)),
           score_adjustments: ScoreAdjustment.where(id: relation.select(:tweak_id)),
           scores: Score.where(submission_id: relation.select(:id)),
           annotations: Annotation.where(submission_id: relation.select(:id))
         }
-      end
-
-      # Maps live submission, annotation, and autograder feedback files.
-      #
-      # @param relation [ActiveRecord::Relation<Submission>]
-      # @return [Array<CourseTransfer::FileMapping>]
-      def file_mappings(relation)
-        relation.includes(:assessment, course_user_datum: :user).find_each.flat_map do |submission|
-          next [] unless submission.filename.present? &&
-                         submission.assessment.handin_directory.present?
-
-          root = submission.assessment.handin_directory_path
-          {
-            "handin" => submission.handin_file_path,
-            "annotated" => submission.handin_annotated_file_path,
-            "autograde_feedback" => submission.autograde_feedback_path
-          }.map do |name, path|
-            FileMapping.file(
-              submission,
-              name,
-              path,
-              root:,
-              within: submission.assessment.folder_path
-            )
-          end
-        end
       end
     end
 

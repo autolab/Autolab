@@ -16,7 +16,7 @@ module CourseTransfer
     # Raised when a tar contains traversal, link, or special entries.
     class UnsafeEntry < Error; end
 
-    # Packs every regular file under +staging_path+ into +destination+.
+    # Packs the complete directory tree under +staging_path+ into +destination+.
     #
     # @param staging_path [String, Pathname]
     # @param destination [String, Pathname]
@@ -30,27 +30,30 @@ module CourseTransfer
       limits = archive_limits.merge(limits.transform_keys(&:to_sym))
       entries = 0
       bytes = 0
-      paths = Dir.glob(root.join("**", "*").to_s, File::FNM_DOTMATCH).sort.filter_map do |name|
-        path = Pathname.new(name)
-        next if path == root || path.expand_path == output.expand_path
-
-        raise UnsafeEntry, "symbolic links are not supported: #{path}" if path.symlink?
-        next if path.directory?
-        raise UnsafeEntry, "special files are not supported: #{path}" unless path.file?
-
-        path
-      end
-
       FileUtils.mkdir_p(output.dirname)
       File.open(output, "wb") do |stream|
         Gem::Package::TarWriter.new(stream) do |tar|
-          paths.each do |path|
-            size = path.lstat.size
+          Find.find(root.to_s) do |name|
+            path = Pathname.new(name)
+            next if path == root || path.expand_path == output.expand_path
+
+            raise UnsafeEntry, "symbolic links are not supported: #{path}" if path.symlink?
+            unless path.directory? || path.file?
+              raise UnsafeEntry, "special files are not supported: #{path}"
+            end
+
             entries += 1
+            relative_path = path.relative_path_from(root).to_s
+            if path.directory?
+              enforce_limits!(entries, 0, bytes, limits)
+              tar.mkdir(relative_path, path.lstat.mode & 0o7777)
+              next
+            end
+
+            size = path.lstat.size
             bytes += size
             enforce_limits!(entries, size, bytes, limits)
 
-            relative_path = path.relative_path_from(root).to_s
             tar.add_file(relative_path, path.lstat.mode & 0o7777) do |tar_file|
               File.open(path, "rb") { |input| IO.copy_stream(input, tar_file) }
             end
@@ -74,6 +77,7 @@ module CourseTransfer
       FileUtils.mkdir_p(root)
       limits = archive_limits.merge(limits.transform_keys(&:to_sym))
       seen = {}
+      required_directories = Set.new
       entries = 0
       bytes = 0
 
@@ -85,15 +89,19 @@ module CourseTransfer
             relative = safe_relative_path(entry.full_name)
             key = relative.to_s
             raise UnsafeEntry, "duplicate tar entry: #{entry.full_name}" if seen.key?(key)
-            if seen.any? { |seen_key, type| conflicting_entry?(seen_key, type, key) }
+
+            ancestors = relative.each_filename.to_a[0...-1]
+                                .each_with_object([]) do |part, paths|
+              paths << [paths.last, part].compact.join(File::SEPARATOR)
+            end
+            if ancestors.any? { |ancestor| seen[ancestor] == :file } ||
+               (entry.file? && required_directories.include?(key))
               raise UnsafeEntry, "conflicting tar entries: #{entry.full_name}"
             end
 
+            required_directories.merge(ancestors)
             seen[key] = entry.directory? ? :directory : :file
             target = root.join(relative).expand_path
-            unless target.to_s == root.to_s || target.to_s.start_with?("#{root}#{File::SEPARATOR}")
-              raise UnsafeEntry, "tar entry escapes package root: #{entry.full_name}"
-            end
 
             if entry.directory?
               ensure_safe_target!(root, relative)
@@ -154,23 +162,18 @@ module CourseTransfer
 
     def self.ensure_safe_target!(root, relative)
       current = root
-      relative.each_filename.with_index do |part, index|
+      parts = relative.each_filename.to_a
+      parts.each_with_index do |part, index|
         current = current.join(part)
         next unless File.exist?(current) || File.symlink?(current)
 
         stat = File.lstat(current)
         raise UnsafeEntry, "tar entry uses a symbolic link: #{relative}" if stat.symlink?
-        if index < relative.each_filename.count - 1 && !stat.directory?
+        if index < parts.length - 1 && !stat.directory?
           raise UnsafeEntry, "tar entry conflicts with a file: #{relative}"
         end
       end
     end
-
-    def self.conflicting_entry?(seen_key, type, key)
-      (type == :file && key.start_with?("#{seen_key}/")) ||
-        seen_key.start_with?("#{key}/")
-    end
-    private_class_method :safe_relative_path, :enforce_limits!, :ensure_safe_target!,
-                         :conflicting_entry?
+    private_class_method :safe_relative_path, :enforce_limits!, :ensure_safe_target!
   end
 end

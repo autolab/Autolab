@@ -33,6 +33,4 @@ module CourseTransfer
       @ordered << exporter
     end
   end
-
-  ImportOrder = DependencyOrder
 end
