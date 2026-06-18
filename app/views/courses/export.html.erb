@@ -14,6 +14,12 @@
   The course configuration is always exported. Select the users and assessments to include;
   submissions are exported only when both their user and assessment are selected.
 </p>
+<p>
+  The package includes related enrollments, problems, attachments, assessment-user data,
+  extensions, scores, annotations, penalties, groups, and declared course files. Announcements,
+  scheduler entries, autograder and scoreboard records, LTI data, watchlists, and container images
+  are outside this format.
+</p>
 
 <%= form_tag export_course_path(@course), method: :post, id: "course_export_form" do %>
   <h3>Course</h3>

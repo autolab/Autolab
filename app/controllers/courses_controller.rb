@@ -5,6 +5,7 @@ require "pathname"
 require "rubygems/package"
 require "statistics"
 require "stringio"
+require "tempfile"
 require_relative "../services/unix_group_manager"
 require_relative "../services/course_transfer/core_exporters"
 require_relative "../services/course_transfer/import"
@@ -326,10 +327,7 @@ class CoursesController < ApplicationController
       staging_path = CourseTransfer::Package.extract(staged.path, directory)
       context = CourseTransfer::Context.new(
         staging_path:,
-        course: nil,
         version: pending.fetch("version"),
-        mode: :import,
-        selected_parts: [],
         course_identifier:,
         instructor_email:
       )
@@ -346,8 +344,7 @@ class CoursesController < ApplicationController
     cleanup_course_import_session!
     flash[:error] = "Your uploaded package expired or is missing. Please upload again."
     redirect_to(new_course_path)
-  rescue CourseTransfer::ImportError, CourseTransfer::Version::Unsupported,
-         CourseTransfer::Package::UnsafeEntry => e
+  rescue CourseTransfer::Error => e
     @pending = course_import_session
     flash.now[:error] = "Unable to import course: #{e.message}"
     render(action: :import, status: :unprocessable_entity)
@@ -1070,14 +1067,18 @@ class CoursesController < ApplicationController
 
   action_auth_level :export_selected, :instructor
   def export_selected
-    send_data build_new_export_tar,
+    tar_file = build_new_export_tar
+    (request.env["rack.tempfiles"] ||= []) << tar_file
+    send_file tar_file.path,
               filename: "#{@course.name}_#{Time.current.strftime('%Y%m%d')}.tar",
               type: "application/x-tar",
               disposition: "attachment"
   rescue SystemCallError => e
+    tar_file&.close!
     flash[:error] = "Unable to create the course export: #{e.message}"
     redirect_to(action: :export)
   rescue StandardError => e
+    tar_file&.close!
     flash[:error] = "Unable to generate course export: #{e.message}"
     redirect_to(action: :export)
   end
@@ -1104,14 +1105,12 @@ class CoursesController < ApplicationController
 private
 
   def build_new_export_tar
+    tar_file = Tempfile.new(["autolab-course-export-", ".tar"])
     Dir.mktmpdir("autolab-course-export-") do |staging_dir|
       staging_path = Pathname.new(staging_dir)
       context = CourseTransfer::Context.new(
         staging_path:,
-        course: @course,
-        version: CourseTransfer::Version::CURRENT,
-        mode: :export,
-        selected_parts: []
+        version: CourseTransfer::Version::CURRENT
       )
 
       selected_users = User.where(id: Array(params[:user_ids]).reject(&:blank?))
@@ -1129,8 +1128,12 @@ private
       )
       manager.export(plan)
 
-      CourseTransfer::Package.pack(staging_path)
+      CourseTransfer::Package.pack(staging_path, tar_file.path)
     end
+    tar_file
+  rescue StandardError
+    tar_file&.close!
+    raise
   end
 
   def course_import_session

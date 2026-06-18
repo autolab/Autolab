@@ -398,6 +398,7 @@ RSpec.describe CoursesController, type: :controller do
               io.write({
                 "format" => CourseTransfer::Version::FORMAT_ID,
                 "version" => "1.0.0",
+                "min_target_version" => "1.0.0",
                 "parts" => []
               }.to_yaml)
             end

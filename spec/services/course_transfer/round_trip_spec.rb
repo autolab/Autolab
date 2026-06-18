@@ -163,11 +163,18 @@ RSpec.describe "normalized course transfer" do
 
     source_tree = course.directory_path
     destination_tree = Rails.root.join("courses/imported-transfer-course")
+    generated_configs = [
+      Rails.root.join("courseConfig/importedtransfercourse.rb"),
+      Rails.root.join("courseConfig/importedtransfercourse.rb.bak"),
+      Rails.root.join("assessmentConfig/imported-transfer-course-lab-2.rb"),
+      Rails.root.join("assessmentConfig/imported-transfer-course-lab-2.rb.bak")
+    ]
     begin
       FileUtils.rm_rf(destination_tree)
+      FileUtils.rm_f(generated_configs)
       FileUtils.mkdir_p(source_tree.join("lab", "handin", user.email))
-      source_tree.join("course.rb").write("course source\n")
-      source_tree.join("lab", "assessment.rb").write("assessment source\n")
+      source_tree.join("course.rb").write("module CourseSource\nend\n")
+      source_tree.join("lab", "assessment.rb").write("module AssessmentSource\nend\n")
       source_tree.join("lab", "handout.txt").write("handout\n")
       source_tree.join("lab", "handin", user.email, "handin.tar").write("handin\n")
       source_tree.join("lab", "handin", user.email, "annotated_handin.tar")
@@ -178,10 +185,7 @@ RSpec.describe "normalized course transfer" do
       Dir.mktmpdir("course-transfer-spec-") do |directory|
         export_context = CourseTransfer::Context.new(
           staging_path: directory,
-          course:,
-          version: CourseTransfer::Version::CURRENT,
-          mode: :export,
-          selected_parts: []
+          version: CourseTransfer::Version::CURRENT
         )
         registry = CourseTransfer::CoreExporters.registry
         export_manager = CourseTransfer::ExportManager.new(registry:, context: export_context)
@@ -228,10 +232,7 @@ RSpec.describe "normalized course transfer" do
 
         import_context = CourseTransfer::Context.new(
           staging_path: directory,
-          course: nil,
           version: CourseTransfer::Version::CURRENT,
-          mode: :import,
-          selected_parts: [],
           course_identifier: "imported-transfer-course",
           instructor_email: "new-instructor@example.com"
         )
@@ -272,9 +273,10 @@ RSpec.describe "normalized course transfer" do
                               problem: imported_problem).score).to eq(9.0)
         expect(Annotation.find_by!(submission: imported_submission,
                                    problem: imported_problem).comment).to eq("nice")
-        expect(imported_course.directory_path.join("course.rb").read).to eq("course source\n")
+        expect(imported_course.directory_path.join("course.rb").read)
+          .to eq("module CourseSource\nend\n")
         expect(imported_assessment.folder_path.join("assessment.rb").read)
-          .to eq("assessment source\n")
+          .to eq("module AssessmentSource\nend\n")
         expect(imported_assessment.folder_path.join("handout.txt").read).to eq("handout\n")
         expect(Pathname.new(imported_submission.handin_file_path)).to be_file
         expect(Pathname.new(imported_submission.handin_file_path).read).to eq("handin\n")
@@ -290,6 +292,7 @@ RSpec.describe "normalized course transfer" do
     ensure
       FileUtils.rm_rf(source_tree)
       FileUtils.rm_rf(destination_tree)
+      FileUtils.rm_f(generated_configs)
     end
   end
 
@@ -317,10 +320,7 @@ RSpec.describe "normalized course transfer" do
     Dir.mktmpdir("course-transfer-collision-") do |directory|
       context = CourseTransfer::Context.new(
         staging_path: directory,
-        course:,
-        version: CourseTransfer::Version::CURRENT,
-        mode: :export,
-        selected_parts: []
+        version: CourseTransfer::Version::CURRENT
       )
       registry = CourseTransfer::CoreExporters.registry
       manager = CourseTransfer::ExportManager.new(registry:, context:)
@@ -328,10 +328,7 @@ RSpec.describe "normalized course transfer" do
 
       import_context = CourseTransfer::Context.new(
         staging_path: directory,
-        course: nil,
-        version: CourseTransfer::Version::CURRENT,
-        mode: :import,
-        selected_parts: []
+        version: CourseTransfer::Version::CURRENT
       )
 
       course_count = Course.count

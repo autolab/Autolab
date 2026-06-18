@@ -1,14 +1,10 @@
 require "digest"
 require "fileutils"
-require "json"
 require "pathname"
-require "yaml"
-require_relative "yaml_stream"
+require_relative "errors"
+require_relative "serialization"
 
 module CourseTransfer
-  # Raised when a package file cannot be copied or restored safely.
-  class FileTransferError < StandardError; end
-
   # Reads and writes the portable file manifest and verifies its payloads.
   class FileManifest
     NAME = "files.yml".freeze
@@ -41,18 +37,20 @@ module CourseTransfer
         "payload" => payload.relative_path_from(@root).to_s,
         "sha256" => Digest::SHA256.file(payload).hexdigest
       }
-      File.open(path, "a") { |file| file.write(YAML.dump(normalize(document))) }
+      File.open(path, "a") { |file| Serialization.dump_document(file, document) }
     end
 
     # @return [Array<Hash>]
     def read
       raise FileTransferError, "#{NAME} is missing" unless path.file?
 
-      YamlStream.load(path.read, filename: NAME).tap do |documents|
-        valid = documents.all? do |document|
-          document.is_a?(Hash) && (REQUIRED_FIELDS - document.keys).empty?
+      File.open(path, "rb") do |input|
+        Serialization.each_document(input, filename: NAME).to_a.tap do |documents|
+          valid = documents.all? do |document|
+            document.is_a?(Hash) && document.keys.sort == REQUIRED_FIELDS.sort
+          end
+          raise FileTransferError, "#{NAME} contains an invalid file record" unless valid
         end
-        raise FileTransferError, "#{NAME} contains an invalid file record" unless valid
       end
     rescue Psych::Exception => e
       raise FileTransferError, "#{NAME} is invalid YAML: #{e.message}"
@@ -89,23 +87,6 @@ module CourseTransfer
       relative
     end
 
-    # @param value [Object]
-    # @return [String]
-    def self.canonical(value)
-      JSON.generate(normalize(value))
-    end
-
-    def self.normalize(value)
-      case value
-      when Time, DateTime then value.iso8601(6)
-      when Date then value.iso8601
-      when Hash then value.sort.to_h.transform_values { |nested| normalize(nested) }
-      when Array then value.map { |nested| normalize(nested) }
-      else value
-      end
-    end
-    private_class_method :normalize
-
   private
 
     def path
@@ -116,10 +97,6 @@ module CourseTransfer
       path = Pathname.new(path).expand_path.to_s
       root = Pathname.new(root).expand_path.to_s
       path == root || path.start_with?("#{root}#{File::SEPARATOR}")
-    end
-
-    def normalize(value)
-      self.class.send(:normalize, value)
     end
   end
 end

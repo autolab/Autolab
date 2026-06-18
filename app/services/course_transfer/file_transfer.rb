@@ -59,22 +59,27 @@ module CourseTransfer
     # @return [void]
     def import(registry, imported_ids)
       documents = @manifest.read
-      unknown_tables = documents.map { |document| document.fetch("table") }.uniq -
+      by_table = documents.group_by { |document| document.fetch("table") }
+      unknown_tables = by_table.keys -
                        registry.names.map(&:to_s)
       unless unknown_tables.empty?
         raise FileTransferError, "files reference unknown table #{unknown_tables.first.inspect}"
       end
 
       registry.each do |exporter|
+        table_documents = by_table.delete(exporter.name.to_s) || []
+        next if table_documents.empty?
+
         ids = imported_ids.fetch(exporter.name, []).uniq
-        next if ids.empty?
+        if ids.empty?
+          raise FileTransferError, "files reference an unimported #{exporter.name} record"
+        end
 
         mappings = exporter.file_mappings(exporter.model_class.where(id: ids)).index_by do |mapping|
           [mapping.record.id, mapping.name]
         end
 
-        documents.select { |document| document.fetch("table") == exporter.name.to_s }
-                 .each { |document| import_file(exporter.name, mappings, document) }
+        table_documents.each { |document| import_file(exporter.name, mappings, document) }
       end
     end
 
@@ -165,7 +170,7 @@ module CourseTransfer
     end
 
     def import_file(table, mappings, document)
-      owner_id = @key_maps.fetch(table).fetch(FileManifest.canonical(document.fetch("key"))) do
+      owner_id = @key_maps.fetch(table).fetch(Serialization.canonical(document.fetch("key"))) do
         raise FileTransferError, "file references missing #{table} owner"
       end
       mapping = mappings.fetch([owner_id, document.fetch("name")]) do

@@ -35,20 +35,16 @@ RSpec.describe CourseTransfer::ImportOrder do
       .to raise_error(CourseTransfer::CyclicImportDependencies, /left -> right -> left/)
   end
 
-  it "excludes explicitly deferred references from import ordering" do
+  it "orders references before dependents regardless of registration order" do
     parent = CourseTransfer::Exporter.new(name: :parents, model_class: User)
     child = Class.new(CourseTransfer::Exporter) do
       def ref_fields
         { parent_id: :parents }
       end
-
-      def deferred_ref_fields
-        %i[parent_id]
-      end
     end.new(name: :children, model_class: User)
 
     registry = CourseTransfer::ExportRegistry.new.register(child).register(parent)
 
-    expect(described_class.new(registry).call.map(&:name)).to eq(%i[children parents])
+    expect(described_class.new(registry).call.map(&:name)).to eq(%i[parents children])
   end
 end

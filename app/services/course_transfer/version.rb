@@ -1,4 +1,7 @@
 require "yaml"
+require "pathname"
+require "rubygems/package"
+require_relative "errors"
 
 module CourseTransfer
   # Defines package format compatibility and manifest operations.
@@ -17,8 +20,8 @@ module CourseTransfer
 
     CURRENT_VERSION = Gem::Version.new(CURRENT)
 
-    class Unsupported < StandardError; end
-    class InvalidManifest < StandardError; end
+    class Unsupported < Error; end
+    class InvalidManifest < Error; end
 
     # Writes the package compatibility manifest.
     #
@@ -31,7 +34,7 @@ module CourseTransfer
         "version" => context.version.to_s,
         "min_target_version" => MIN_SUPPORTED_TARGET.to_s,
         "created_at" => Time.current.utc.iso8601,
-        "parts" => Array(parts || context.selected_parts).map(&:to_s)
+        "parts" => Array(parts).map(&:to_s)
       }
 
       path = context.staging_path.join(MANIFEST_FILENAME)
@@ -45,24 +48,28 @@ module CourseTransfer
       path = Pathname.new(staging_path).join(MANIFEST_FILENAME)
       return LEGACY unless path.file?
 
-      parse_manifest_yaml(path.read)
+      parse_manifest_yaml(path.read).fetch("version").to_s
     end
 
     # Detect format version from a packed course tar without full extract.
     # Root-level manifest.yml indicates a new-format export; otherwise legacy.
     def self.detect_from_tar_file(tar_path)
-      require "rubygems/package"
-
       File.open(tar_path, "rb") do |io|
         Gem::Package::TarReader.new(io) do |tar|
+          found = false
+          version = nil
           tar.each do |entry|
             next if entry.directory?
 
-            name = entry.full_name.to_s.delete_prefix("./")
+            name = Pathname.new(entry.full_name.to_s).cleanpath.to_s
             next unless name == MANIFEST_FILENAME
+            raise InvalidManifest, "manifest.yml appears more than once" if found
+            raise InvalidManifest, "manifest.yml must be a regular file" unless entry.file?
 
-            return parse_manifest_yaml(entry.read)
+            found = true
+            version = parse_manifest_yaml(entry.read).fetch("version").to_s
           end
+          return version if found
         end
       end
 
@@ -71,12 +78,26 @@ module CourseTransfer
 
     def self.parse_manifest_yaml(contents)
       data = YAML.safe_load(contents, permitted_classes: [Time, Date, DateTime], aliases: false)
-      raise InvalidManifest, "manifest.yml is empty" if data.blank?
+      raise InvalidManifest, "manifest.yml must contain a mapping" unless data.is_a?(Hash)
+      raise InvalidManifest, "manifest.yml is empty" if data.empty?
       raise InvalidManifest, "unknown format" unless data["format"] == FORMAT_ID
-      raise InvalidManifest, "missing version" if data["version"].blank?
 
-      data["version"].to_s
-    rescue Psych::SyntaxError => e
+      %w[version min_target_version].each do |field|
+        value = data[field]
+        raise InvalidManifest, "manifest is missing #{field.inspect}" if value.blank?
+      end
+      unless data["parts"].is_a?(Array)
+        raise InvalidManifest, "manifest is missing \"parts\""
+      end
+      unless data["parts"].all? { |part| part.is_a?(String) }
+        raise InvalidManifest, "manifest parts must be an array of strings"
+      end
+      if data["parts"].uniq.length != data["parts"].length
+        raise InvalidManifest, "manifest parts must be unique"
+      end
+
+      data
+    rescue Psych::Exception => e
       raise InvalidManifest, "invalid manifest.yml: #{e.message}"
     end
     private_class_method :parse_manifest_yaml
@@ -89,7 +110,7 @@ module CourseTransfer
       path = Pathname.new(staging_path).join(MANIFEST_FILENAME)
       return nil unless path.file?
 
-      YAML.safe_load(path.read, permitted_classes: [Time, Date, DateTime], aliases: false)
+      parse_manifest_yaml(path.read)
     end
 
     def self.legacy?(version)

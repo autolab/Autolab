@@ -17,7 +17,6 @@ RSpec.describe CourseTransfer::Exporter do
   it "leaves relations lazy and unchanged by default" do
     relation = User.where(administrator: false)
 
-    expect(exporter.query(relation)).to equal(relation)
     expect(exporter.dependencies(relation)).to eq({})
   end
 
@@ -156,10 +155,7 @@ RSpec.describe CourseTransfer::ExportSelection do
     Dir.mktmpdir("course-transfer-empty-") do |directory|
       context = CourseTransfer::Context.new(
         staging_path: directory,
-        course:,
-        version: CourseTransfer::Version::CURRENT,
-        mode: :export,
-        selected_parts: []
+        version: CourseTransfer::Version::CURRENT
       )
       manager = CourseTransfer::ExportManager.new(
         registry: CourseTransfer::CoreExporters.registry,

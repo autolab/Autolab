@@ -1,32 +1,54 @@
-require "bigdecimal"
 require "fileutils"
-require "json"
-require "yaml"
+require_relative "dependency_order"
+require_relative "errors"
 require_relative "file_transfer"
+require_relative "serialization"
 
 # Services for portable, normalized course packages.
 module CourseTransfer
-  # Base error for export planning and writing failures.
-  class ExportError < StandardError; end
-  # Raised when a package table has no registered exporter.
-  class UnknownExporter < ExportError; end
-  # Raised when two exporters claim the same package table.
-  class DuplicateExporter < ExportError; end
-  # Raised when a row references a record outside the export plan.
-  class MissingExportReference < ExportError; end
-  # Raised when different rows produce one portable key.
-  class DuplicateNaturalKey < ExportError; end
-
   # Describes one database table and its corresponding package file.
   # Concrete exporters contain declarations and lazy dependency scopes only;
   # orchestration and serialization are shared by all tables.
   class Exporter
     attr_reader :name, :model_class, :filename
 
+    class << self
+      attr_reader :table_name, :table_model, :declared_fields,
+                  :declared_references, :declared_key, :normalized_key_fields
+
+      def table(name, model)
+        @table_name = name
+        @table_model = model
+      end
+
+      def export_fields(*fields)
+        @declared_fields = fields
+      end
+
+      def references(**references)
+        @declared_references = references
+      end
+
+      def natural_key(*fields, case_insensitive: [])
+        @declared_key = fields
+        @normalized_key_fields = Array(case_insensitive)
+      end
+
+      def reuse_existing
+        @reuse_existing = true
+      end
+
+      def reuse_existing?
+        @reuse_existing || false
+      end
+    end
+
     # @param name [Symbol] stable package name for this table
     # @param model_class [Class<ApplicationRecord>] exported Active Record model
     # @param filename [String, nil] package-relative YAML filename
-    def initialize(name:, model_class:, filename: nil)
+    def initialize(name: self.class.table_name, model_class: self.class.table_model, filename: nil)
+      raise ArgumentError, "exporter table and model are required" unless name && model_class
+
       @name = name.to_sym
       @model_class = model_class
       @filename = filename || "#{name}.yml"
@@ -41,20 +63,12 @@ module CourseTransfer
       {}
     end
 
-    # Adds any joins or SQL transformations required before plucking rows.
-    #
-    # @param relation [ActiveRecord::Relation]
-    # @return [ActiveRecord::Relation]
-    def query(relation)
-      relation
-    end
-
     # Database columns exported for each record, excluding the primary key.
     # Foreign-key columns must also occur in {#ref_fields}.
     #
     # @return [Array<Symbol>]
     def fields
-      []
+      self.class.declared_fields || []
     end
 
     # Qualified fields plucked by the shared writer. The primary key is used
@@ -72,7 +86,7 @@ module CourseTransfer
     #
     # @return [Hash{Symbol => Symbol}]
     def ref_fields
-      {}
+      self.class.declared_references || {}
     end
 
     # Columns forming this table's portable natural key. Foreign-key
@@ -80,24 +94,17 @@ module CourseTransfer
     #
     # @return [Array<Symbol>]
     def key_fields
-      []
+      self.class.declared_key || []
     end
 
     # Normalizes a direct natural-key component. Exporters with
     # case-insensitive uniqueness override this for stable matching.
     #
-    # @param _field [Symbol]
+    # @param field [Symbol]
     # @param value [Object]
     # @return [Object]
-    def normalize_key_value(_field, value)
-      value
-    end
-
-    # References resolved after normal insertion for genuinely cyclic tables.
-    #
-    # @return [Array<Symbol>]
-    def deferred_ref_fields
-      []
+    def normalize_key_value(field, value)
+      self.class.normalized_key_fields&.include?(field) ? value.to_s.downcase : value
     end
 
     # Whether an existing database record with the same natural key may be
@@ -105,18 +112,24 @@ module CourseTransfer
     #
     # @return [Boolean]
     def reuse_existing?
-      false
+      self.class.reuse_existing?
     end
 
     # Table files that must be imported before this one.
     #
     # @return [Array<Symbol>]
     def import_dependencies
-      immediate_refs = ref_fields.reject do |field, _exporter_name|
-        deferred_ref_fields.include?(field)
-      end
+      ref_fields.values.uniq
+    end
 
-      immediate_refs.values.uniq
+    # Narrows a natural-key lookup. Exporters may override this when the
+    # database treats a key component case-insensitively.
+    #
+    # @param field [Symbol]
+    # @param values [Array<Object>]
+    # @return [ActiveRecord::Relation]
+    def records_matching(field, values)
+      model_class.where(field => values)
     end
 
     # Converts plucked values to a column-keyed row.
@@ -282,16 +295,21 @@ module CourseTransfer
     # @param selection [CourseTransfer::ExportSelection]
     # @return [CourseTransfer::ExportPlan]
     def build_plan(selection)
+      DependencyOrder.new(registry).call
       fragments = Hash.new { |hash, name| hash[name] = [] }
       queue = selection.seed_relations.to_a
+      visited = Set.new
 
       until queue.empty?
         name, relation = queue.shift
         name = name.to_sym
-        registry.fetch(name)
+        signature = [name, relation.to_sql]
+        next unless visited.add?(signature)
+
+        exporter = registry.fetch(name)
         fragments[name] << relation
 
-        registry.fetch(name).dependencies(relation).each do |dependency_name, dependency_relation|
+        exporter.dependencies(relation).each do |dependency_name, dependency_relation|
           queue << [dependency_name.to_sym, dependency_relation]
         end
       end
@@ -310,7 +328,7 @@ module CourseTransfer
       FileUtils.mkdir_p(context.staging_path)
       key_maps = Hash.new { |hash, name| hash[name] = {} }
 
-      registry.each do |exporter|
+      DependencyOrder.new(registry).call.each do |exporter|
         next unless plan.names.include?(exporter.name)
 
         key_maps[exporter.name]
@@ -331,7 +349,7 @@ module CourseTransfer
       File.open(path, "w") do |file|
         each_plucked_row(exporter, relation) do |row|
           document, natural_key = serialize_row(exporter, row, key_maps)
-          signature = canonical_key(natural_key)
+          signature = Serialization.canonical(natural_key)
           key_maps[exporter.name][row.fetch(exporter.model_class.primary_key)] = natural_key
 
           if seen_documents.key?(signature)
@@ -343,14 +361,14 @@ module CourseTransfer
           end
 
           seen_documents[signature] = document
-          file.write(YAML.dump(normalize(document)))
+          Serialization.dump_document(file, document)
         end
       end
     end
 
     def each_plucked_row(exporter, relation)
       primary_key = exporter.model_class.primary_key
-      scope = exporter.query(relation).reorder(primary_key => :asc)
+      scope = relation.reorder(primary_key => :asc)
       last_id = nil
 
       loop do
@@ -365,6 +383,7 @@ module CourseTransfer
 
         values.each { |row_values| yield exporter.row_from(row_values) }
         last_id = values.last.first
+        break if values.length < batch_size
       end
     end
 
@@ -421,29 +440,6 @@ module CourseTransfer
                 "#{target_name} record #{source_id.inspect} was referenced but not exported"
         end
       end
-    end
-
-    def normalize(value)
-      case value
-      when BigDecimal
-        value.to_s
-      when ActiveSupport::TimeWithZone
-        value.iso8601(6)
-      when Time, DateTime
-        value.iso8601(6)
-      when Date
-        value.iso8601
-      when Hash
-        value.transform_values { |nested| normalize(nested) }
-      when Array
-        value.map { |nested| normalize(nested) }
-      else
-        value
-      end
-    end
-
-    def canonical_key(value)
-      JSON.generate(normalize(value))
     end
   end
 end

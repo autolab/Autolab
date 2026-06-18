@@ -39,13 +39,10 @@ end
 RSpec.describe CourseTransfer::FileTransfer do
   after { CourseTransferFileTransferSpec::FakeModel.records = [] }
 
-  def context_for(path, mode)
+  def context_for(path, _mode)
     CourseTransfer::Context.new(
       staging_path: path,
-      course: nil,
-      version: CourseTransfer::Version::CURRENT,
-      mode:,
-      selected_parts: []
+      version: CourseTransfer::Version::CURRENT
     )
   end
 

@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 require "rails_helper"
 
 RSpec.describe CourseTransfer::StagedUpload do
@@ -46,5 +44,13 @@ RSpec.describe CourseTransfer::StagedUpload do
     staged = described_class.stage!(user, upload)
     described_class.cleanup!(user, staged.token)
     expect(File).not_to exist(staged.path)
+  end
+
+  it "rejects uploads over the configured limit" do
+    stub_const("CourseTransfer::StagedUpload::MAX_UPLOAD_BYTES", 1)
+
+    expect { described_class.stage!(user, upload) }
+      .to raise_error(CourseTransfer::StagedUpload::TooLarge)
+    expect(described_class::STAGING_ROOT.join(user.id.to_s).glob("*")).to be_empty
   end
 end

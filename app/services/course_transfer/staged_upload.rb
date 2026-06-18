@@ -1,15 +1,20 @@
 require "fileutils"
 require "json"
 require "securerandom"
+require_relative "errors"
 
 module CourseTransfer
   class StagedUpload
     STAGING_ROOT = Rails.root.join("tmp/course_imports")
     TTL = 30.minutes
+    MAX_UPLOAD_BYTES = Integer(
+      ENV.fetch("AUTOLAB_COURSE_TRANSFER_MAX_UPLOAD_BYTES", "536870912")
+    )
     TOKEN_PATTERN = /\A[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\z/i
 
-    class NotFound < StandardError; end
-    class Expired < StandardError; end
+    class NotFound < Error; end
+    class Expired < Error; end
+    class TooLarge < Error; end
 
     Staged = Struct.new(
       :token, :path, :original_filename, :byte_size, :uploaded_at,
@@ -44,19 +49,29 @@ module CourseTransfer
       FileUtils.mkdir_p(dir)
 
       tar_path = dir.join("#{token}.tar")
-      File.open(tar_path, "wb") do |out|
-        source = uploaded_file.tempfile
-        source.rewind if source.respond_to?(:rewind)
-        IO.copy_stream(source, out)
-      end
+      begin
+        File.open(tar_path, "wb") do |out|
+          source = uploaded_file.tempfile
+          source.rewind if source.respond_to?(:rewind)
+          if source.respond_to?(:size) && source.size > MAX_UPLOAD_BYTES
+            raise TooLarge, "uploaded package exceeds the size limit"
+          end
 
-      uploaded_at = Time.current
-      meta = {
-        "original_filename" => uploaded_file.original_filename.to_s,
-        "byte_size" => File.size(tar_path),
-        "uploaded_at" => uploaded_at.utc.iso8601
-      }
-      dir.join("#{token}.json").write(JSON.generate(meta))
+          copied = IO.copy_stream(source, out)
+          raise TooLarge, "uploaded package exceeds the size limit" if copied > MAX_UPLOAD_BYTES
+        end
+
+        uploaded_at = Time.current
+        meta = {
+          "original_filename" => uploaded_file.original_filename.to_s,
+          "byte_size" => File.size(tar_path),
+          "uploaded_at" => uploaded_at.utc.iso8601
+        }
+        dir.join("#{token}.json").write(JSON.generate(meta))
+      rescue StandardError
+        FileUtils.rm_f(tar_path)
+        raise
+      end
 
       Staged.new(
         token:,
