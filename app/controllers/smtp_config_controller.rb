@@ -29,8 +29,24 @@ class SmtpConfigController < ApplicationController
 
     yaml_hash = smtp_settings.merge default_url_options
     yaml_hash.merge! default_options
-    File.open("#{Rails.configuration.config_location}/smtp_config.yml", "w") do |file|
-      file.write(YAML.dump(yaml_hash.deep_stringify_keys))
+    config_path = "#{Rails.configuration.config_location}/smtp_config.yml"
+    config_contents = YAML.dump(yaml_hash.deep_stringify_keys)
+
+    begin
+      File.open(config_path, "w") do |file|
+        file.write(config_contents)
+      end
+    rescue Errno::EACCES, Errno::EPERM => e
+      Rails.logger.warn("Local SMTP config write failed (#{e.class}): #{e.message}; attempting UnixOps delegate fallback")
+
+      if UnixGroupManager.delegate_enabled? &&
+         UnixGroupManager.write_file_via_delegate(config_path, config_contents)
+        Rails.logger.info("SMTP config write succeeded via UnixOps delegate for #{config_path}")
+      else
+        Rails.logger.error("Failed to write SMTP config locally and via UnixOps delegate for #{config_path}")
+        flash[:error] = "Could not write SMTP configuration file. Check write permissions or UnixOps delegate settings."
+        redirect_to(autolab_config_admin_path(active: :smtp)) && return
+      end
     end
 
     flash[:success] = "SMTP configuration was successfully updated"
