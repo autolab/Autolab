@@ -1,3 +1,4 @@
+##
 # Each Assessment can have an autograder, which is modified with this controller
 
 require 'pathname'
@@ -36,9 +37,19 @@ class AutogradersController < ApplicationController
     tar_path = Rails.root.join("courses", @course.name, @assessment.name, "autograde.tar")
     @makefile_exists = File.exist?(makefile_path) ? makefile_path : nil
     @tar_exists = File.exist?(tar_path) ? tar_path : nil
+
+    @allowed_instance_types = @course.allowed_ec2_instances.presence || ["t2.micro", "t3.micro"]
     @container_images = ContainerImage.ready.where(course: @course)
                                       .or(ContainerImage.ready.where(is_public: true))
                                       .order(created_at: :desc)
+    config_path = "#{Rails.configuration.config_location}/ec2_config.yml"
+
+    if File.exist?(config_path) && File.size?(config_path)
+      ec2_config_hash = YAML.safe_load(File.read(config_path))
+      @allowed_instance_types = ec2_config_hash["allowed_instances"] || Autograder::INSTANCE_TYPES
+    else
+      @allowed_instance_types = Autograder::INSTANCE_TYPES
+    end
   end
 
   action_auth_level :update, :instructor
