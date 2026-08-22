@@ -16,6 +16,9 @@ class AutogradersController < ApplicationController
       a.autograde_timeout = 180
       a.autograde_image = "autograding_image"
       a.release_score = true
+      a.access_key_id = nil if a.respond_to?(:access_key_id=)
+      a.access_key = nil if a.respond_to?(:access_key=)
+      a.instance_type = "t3.micro" if a.respond_to?(:instance_type=)
     end
     if @autograder.save
       flash[:success] = "Autograder created."
@@ -34,15 +37,58 @@ class AutogradersController < ApplicationController
     tar_path = Rails.root.join("courses", @course.name, @assessment.name, "autograde.tar")
     @makefile_exists = File.exist?(makefile_path) ? makefile_path : nil
     @tar_exists = File.exist?(tar_path) ? tar_path : nil
+
+    @allowed_instance_types = @course.allowed_ec2_instances.presence || ["t2.micro", "t3.micro"]
+    @container_images = ContainerImage.ready.where(course: @course)
+                                      .or(ContainerImage.ready.where(is_public: true))
+                                      .order(created_at: :desc)
+    config_path = "#{Rails.configuration.config_location}/ec2_config.yml"
+
+    if File.exist?(config_path) && File.size?(config_path)
+      ec2_config_hash = YAML.safe_load(File.read(config_path))
+      @allowed_instance_types = ec2_config_hash["allowed_instances"] || Autograder::INSTANCE_TYPES
+    else
+      @allowed_instance_types = Autograder::INSTANCE_TYPES
+    end
   end
 
   action_auth_level :update, :instructor
   def update
-    if @autograder.update(autograder_params) && @assessment.update(assessment_params)
+    # Clear secrets if use_access_key is disabled
+    params_to_update = autograder_params.to_h.symbolize_keys
+    if @autograder.respond_to?(:use_access_key)
+      use_access_key_enabled =
+        ActiveModel::Type::Boolean.new.cast(params_to_update[:use_access_key])
+      params_to_update[:use_access_key] = use_access_key_enabled
+
+      if use_access_key_enabled
+        params_to_update.delete(:access_key) if params_to_update[:access_key].blank?
+        params_to_update.delete(:access_key_id) if params_to_update[:access_key_id].blank?
+      else
+        params_to_update[:access_key] = nil
+        params_to_update[:access_key_id] = nil
+      end
+    else
+      params_to_update.delete(:use_access_key)
+      params_to_update.delete(:access_key)
+      params_to_update.delete(:access_key_id)
+    end
+
+    params_to_update.delete(:instance_type) unless @autograder.respond_to?(:instance_type)
+
+    if @autograder.update(params_to_update) && @assessment.update(assessment_params)
       flash[:success] = "Autograder saved."
       begin
         upload
-      rescue StandardError
+      rescue Errno::EACCES, Errno::EPERM => e
+        Rails.logger.error("Autograder upload permission error for " \
+                             "course=#{@course.name}, assessment=#{@assessment.name}: " \
+                             "#{e.class}: #{e.message}")
+        flash[:error] = "Autograder could not be uploaded due to filesystem permissions."
+      rescue StandardError => e
+        Rails.logger.error("Autograder upload failed for course=#{@course.name}, " \
+                             "assessment=#{@assessment.name}: " \
+                             "#{e.class}: #{e.message}")
         flash[:error] = "Autograder could not be uploaded."
       end
     else
@@ -68,21 +114,28 @@ class AutogradersController < ApplicationController
 
   action_auth_level :upload, :instructor
   def upload
-    uploaded_makefile = params[:autograder][:makefile]
-    uploaded_tar = params[:autograder][:tar]
+    uploaded = params.fetch(:autograder, {})
+    uploaded_makefile = uploaded[:makefile]
+    uploaded_tar = uploaded[:tar]
+    return if uploaded_makefile.nil? && uploaded_tar.nil?
+
+    assessment_dir = autograder_directory_path
+    unless assessment_dir.directory?
+      raise Errno::ENOENT, "Assessment directory does not exist: #{assessment_dir}"
+    end
+
+    if UnixGroupManager.delegate_enabled? &&
+       !UnixGroupManager.mkdir_p_via_delegate(assessment_dir.to_s)
+      raise Errno::EACCES, "Permission denied creating #{assessment_dir}"
+    end
+
+    FilesystemEnforcer.fix_path(assessment_dir.to_s)
+
     unless uploaded_makefile.nil?
-      File.open(Rails.root.join("courses", @course.name, @assessment.name, "autograde-Makefile"),
-                "wb") do |file|
-        file.write(uploaded_makefile.read) unless uploaded_makefile.nil?
-      end
+      write_uploaded_file(uploaded_makefile,
+                          assessment_dir.join("autograde-Makefile"))
     end
-
-    return if uploaded_tar.nil?
-
-    File.open(Rails.root.join("courses", @course.name, @assessment.name, "autograde.tar"),
-              "wb") do |file|
-      file.write(uploaded_tar.read) unless uploaded_tar.nil?
-    end
+    write_uploaded_file(uploaded_tar, assessment_dir.join("autograde.tar")) unless uploaded_tar.nil?
   end
 
   action_auth_level :download_file, :instructor
@@ -112,10 +165,32 @@ private
   end
 
   def autograder_params
-    params[:autograder].permit(:autograde_timeout, :autograde_image, :release_score)
+    params.require(:autograder).permit(
+      :autograde_timeout, :autograde_image, :release_score,
+      :use_access_key, :access_key, :access_key_id, :instance_type
+    )
   end
 
   def assessment_params
     params.fetch(:autograder, {}).fetch(:assessment, {}).permit(:disable_network)
+  end
+
+  def autograder_directory_path
+    Rails.root.join("courses", @course.name, @assessment.name)
+  end
+
+  def write_uploaded_file(uploaded_file, destination_path)
+    file_content = uploaded_file.read
+
+    if UnixGroupManager.delegate_enabled?
+      success = UnixGroupManager.write_file_via_delegate(destination_path.to_s, file_content)
+      raise Errno::EACCES, "Permission denied writing #{destination_path}" unless success
+    else
+      File.open(destination_path, "wb") do |file|
+        file.write(file_content)
+      end
+    end
+
+    FilesystemEnforcer.fix_path(destination_path.to_s)
   end
 end

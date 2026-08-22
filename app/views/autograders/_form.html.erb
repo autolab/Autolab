@@ -1,40 +1,34 @@
-<%= form_for @autograder, url: course_assessment_autograder_path(@course, @assessment, @autograder),
-                          builder: FormBuilderWithDateTimeInput,
-                          html: { multipart: true } do |f| %>
-  <%= f.text_field :autograde_image, display_name: "VM Image",
-                                     help_text: "VM image for autograding (e.g. <kbd>rhel.img</kbd>). #{link_to 'Click here', tango_status_course_jobs_path} to view the list of VM images and pools currently being used".html_safe +
-                                                (Rails.configuration.x.docker_image_upload_enabled.presence ? ", or #{link_to 'click here', course_dockers_path} to upload a new docker image.".html_safe : "."),
-                                     required: true, maxlength: 64 %>
+<div class="row">
+  <div class="col s12">
+    <ul id="tabs" class="tabs tabs-fixed-width">
+      <% list = ["basic"] %>
+      <% if Rails.configuration.x.ec2_ssh.presence %>
+        <% list.append("ec2") %>
+      <% end %>
+      <% list.each do |tab_name| %>
+        <%= if tab_name == params[:active_tab]
+              tag.li(link_to(tab_name.titleize, "#tab_#{tab_name}"), class: "active tab")
+            else
+              tag.li(link_to(tab_name.titleize, "#tab_#{tab_name}"), class: :tab)
+            end %>
+      <% end %>
+    </ul>
+  </div>
+</div>
 
-  <%= f.number_field :autograde_timeout, display_name: "Timeout",
-                                         help_text: "Timeout for autograding jobs (secs). Must be between 10s and 900s, inclusive.", min: 10, max: 900 %>
-  <%= f.check_box :release_score,
-                  display_name: "Release Scores?",
-                  help_text: "Check to release autograded scores to students immediately after autograding (strongly recommended)." %>
-
-  <% help_tar_text = "Tar file exists, upload a file to override." %>
-  <% help_makefile_text = "Makefile exists, upload a file to override." %>
-  <%= f.file_field :makefile, label_text: "Autograder Makefile", action: :upload, file_exists_text: help_makefile_text, class: "form-file-field", file_exists: @makefile_exists %>
-  <%= f.file_field :tar, label_text: "Autograder Tar", action: :upload, file_exists_text: help_tar_text, class: "form-file-field", file_exists: @tar_exists %>
-  <p class="help-block">
-    Both of the above files will be renamed upon upload.
-  </p>
-
-  <%= f.fields_for :assessment, @assessment do |af| %>
-    <%= af.check_box :disable_network, help_text: "Disable network access for autograding containers." %>
-  <% end %>
-
-  <%= f.submit "Save Settings" %>
-
-  <%= link_to "Delete Autograder", course_assessment_autograder_path(@course, @assessment),
-              method: :delete, class: "btn danger",
-              data: { confirm: "Are you sure you want to delete the Autograder for this assesssment?" } %>
-
-  <% unless @makefile_exists.nil? %>
-    <%= link_to "Download Makefile", download_file_course_assessment_autograder_path(file_path: @makefile_exists, file_key: 'makefile'), class: "btn" %>
-  <% end %>
-
-  <% unless @tar_exists.nil? %>
-    <%= link_to "Download Tar", download_file_course_assessment_autograder_path(file_path: @tar_exists, file_key: 'tar'), class: "btn" %>
-  <% end %>
-<% end %>
+<div class="row">
+  <div class="col s12">
+    <%= form_for @autograder, url: course_assessment_autograder_path(@course, @assessment, @autograder),
+                              builder: FormBuilderWithDateTimeInput,
+                              html: { multipart: true } do |f| %>
+      <div id="tab_basic">
+        <%= render "basic_settings", f: %>
+      </div>
+      <% if Rails.configuration.x.ec2_ssh.presence %>
+        <div id="tab_ec2">
+          <%= render "ec2_settings", f: %>
+        </div>
+      <% end %>
+    <% end %>
+  </div>
+</div>

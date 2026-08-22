@@ -548,7 +548,7 @@ DEPENDENCIES
   yard
 
 RUBY VERSION
-   ruby 3.2.2p53
+   ruby 3.2.10p266
 
 BUNDLED WITH
    2.5.3

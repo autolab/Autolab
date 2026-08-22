@@ -1,0 +1,42 @@
+<% content_for :javascripts do %>
+  <%= javascript_include_tag "autograder" %>
+<% end %>
+
+<h4>EC2 Settings</h4>
+<% if @autograder.respond_to?(:use_access_key) %>
+  <%= f.check_box :use_access_key,
+                  display_name: "Enable Access Key",
+                  help_text: "(Optional) Use your own provided access key to authenticate to different EC2 instances than the default one on Tango" %>
+  <%= f.password_field :access_key,
+                       display_name: "Access Key",
+                       value: nil,
+                       autocomplete: "new-password",
+                       placeholder: "Leave blank to keep existing secret" %>
+  <%= f.text_field :access_key_id,
+                   display_name: "Access Key ID",
+                   value: nil,
+                   autocomplete: "off",
+                   title: "Looks like an invalid AWS Access Key ID",
+                   placeholder: "Leave blank to keep existing secret" %>
+
+  <p class="help-text">Leave blank to keep existing secret.</p>
+<% end %>
+
+<div style="margin-bottom: 5px;"><strong>EC2 Instance Type</strong></div>
+
+<%= f.select :instance_type,
+             options_for_select(@allowed_instance_types, @autograder.instance_type),
+             { include_blank: false, label: "EC2 Instance Type" },
+             { class: 'browser-default' } %>
+<div class="help-text">
+  Choose a compute tier based on your autograding requirements.
+  <div class="recommendation-box" style="background-color: #f5f5f5; padding: 10px; border-left: 4px solid #2196F3; margin-top: 10px;">
+    <small><strong>Note:</strong> The options available in this dropdown have been pre-approved for this course. If you need a higher compute tier for computationally intensive tasks, please contact your administrator.</small>
+  </div>
+</div>
+<br>
+<%= f.submit "Save Settings" %>
+
+<%= link_to "Delete Autograder", course_assessment_autograder_path(@course, @assessment),
+            method: :delete, class: "btn danger",
+            data: { confirm: "Are you sure you want to delete the Autograder for this assesssment?" } %>

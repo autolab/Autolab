@@ -1,0 +1,139 @@
+.status-cell {
+  font-size: 18px;
+}
+
+.material-icons.status-icon {
+  font-size: 24px;
+}
+
+.center-column {
+  height: 100%;
+  border: 0;
+  outline: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-content: center;
+}
+
+.log-link {
+  font-size: 14px;
+  display: flex;
+  justify-content: center;
+  align-content: center;
+}
+
+.all-icon {
+  display: flex;
+  justify-content: center;
+  align-content: center;
+}
+
+.error-icon {
+  color: red;
+}
+
+.hourglass-icon {
+  color: lightgray;
+}
+
+.draft-icon {
+  color: gray;
+}
+
+.building-icon {
+  color: gray;
+}
+
+.success-icon {
+  color: limegreen;
+}
+
+.source-table {
+  margin-bottom: 36px;
+}
+
+.mr-8 {
+  margin-right: 8px;
+}
+
+.status-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+
+  padding: 0.2rem 0.5rem;
+  border: 1px solid currentColor;
+  border-radius: 0.2rem;
+
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.status-chip__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 0.8rem;
+  height: 0.8rem;
+  flex-shrink: 0;
+}
+
+.status-chip--draft {
+  color: #d9534f;
+  background-color: #fdf1f1;
+}
+
+.status-chip--building {
+  color: #21b5b0;
+  background-color: #eefbfa;
+}
+
+.status-chip--ready {
+  color: limegreen;
+  background-color: #f1fdf1;
+}
+
+.status-chip--disabled {
+  color: gray;
+  background-color: #fdfdfd;
+}
+
+.status-chip--error {
+  color: #8A0000;
+  background-color: #f8f1f1;
+}
+
+.tooltip {
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+}
+
+.tooltip-hover {
+  visibility: hidden;
+  opacity: 0;
+
+  position: absolute;
+  bottom: 125%;
+  left: 50%;
+  transform: translateX(-50%);
+
+  background-color: #333;
+  color: #fff;
+  padding: 6px 8px;
+  border-radius: 4px;
+
+  font-size: 0.75rem;
+  white-space: nowrap;
+
+  transition: opacity 0.2s;
+  z-index: 10;
+}
+
+.tooltip:hover .tooltip-hover {
+  visibility: visible;
+  opacity: 1;
+}

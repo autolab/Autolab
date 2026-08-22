@@ -38,6 +38,8 @@ nav:
         - Tango CLI: tango-cli.md
     - Reference: 
         - Reference Overview: reference.md
+        - Security Model: security-model.md
+        - Filesystem & SSH Operations: permission-model.md
         - Autolab Frontend API:
             - Overview: api-overview.md
             - Endpoints: api-interface.md

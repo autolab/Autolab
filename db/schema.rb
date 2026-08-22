@@ -10,13 +10,13 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2024_04_06_174050) do
+ActiveRecord::Schema.define(version: 2026_08_22_163030) do
 
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
-    t.bigint "record_id", null: false
-    t.bigint "blob_id", null: false
+    t.integer "record_id", null: false
+    t.integer "blob_id", null: false
     t.datetime "created_at", null: false
     t.index ["blob_id"], name: "index_active_storage_attachments_on_blob_id"
     t.index ["record_type", "record_id", "name", "blob_id"], name: "index_active_storage_attachments_uniqueness", unique: true
@@ -27,7 +27,7 @@ ActiveRecord::Schema.define(version: 2024_04_06_174050) do
     t.string "filename", null: false
     t.string "content_type"
     t.text "metadata"
-    t.bigint "byte_size", null: false
+    t.integer "byte_size", null: false
     t.string "checksum", null: false
     t.datetime "created_at", null: false
     t.string "service_name", null: false
@@ -35,9 +35,53 @@ ActiveRecord::Schema.define(version: 2024_04_06_174050) do
   end
 
   create_table "active_storage_variant_records", force: :cascade do |t|
-    t.bigint "blob_id", null: false
+    t.integer "blob_id", null: false
     t.string "variation_digest", null: false
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
+  end
+
+  create_table "ami_images", force: :cascade do |t|
+    t.string "name"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.integer "status", default: 0, null: false
+    t.string "ami_id"
+    t.string "execution_arn"
+    t.string "pipeline_arn"
+    t.string "recipe_arn"
+    t.string "component_arn"
+    t.integer "course_id"
+    t.boolean "is_public", default: false, null: false
+    t.index ["ami_id"], name: "index_ami_images_on_ami_id", unique: true
+    t.index ["course_id"], name: "index_ami_images_on_course_id"
+    t.index ["execution_arn"], name: "index_ami_images_on_execution_arn"
+    t.index ["is_public"], name: "index_ami_images_on_is_public"
+  end
+
+  create_table "ami_package_sources", force: :cascade do |t|
+    t.integer "ami_image_id", null: false
+    t.integer "source_type", default: 0, null: false
+    t.string "name"
+    t.string "deb_url"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["ami_image_id"], name: "index_ami_package_sources_on_ami_image_id"
+  end
+
+  create_table "ami_packages", force: :cascade do |t|
+    t.integer "ami_image_id", null: false
+    t.string "name", null: false
+    t.string "version"
+    t.integer "install_type", default: 0
+    t.integer "ami_package_source_id"
+    t.boolean "validated", default: false
+    t.text "validation_error"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index "\"deb_url\"", name: "index_ami_packages_on_deb_url"
+    t.index ["ami_image_id", "name"], name: "index_ami_packages_on_ami_image_id_and_name"
+    t.index ["ami_image_id"], name: "index_ami_packages_on_ami_image_id"
+    t.index ["ami_package_source_id"], name: "index_ami_packages_on_ami_package_source_id"
   end
 
   create_table "annotations", force: :cascade do |t|
@@ -130,7 +174,7 @@ ActiveRecord::Schema.define(version: 2024_04_06_174050) do
     t.integer "course_id"
     t.integer "assessment_id"
     t.string "category_name", default: "General"
-    t.datetime "release_at", default: -> { "CURRENT_TIMESTAMP" }
+    t.datetime "release_at"
     t.string "slug"
     t.index ["assessment_id"], name: "index_attachments_on_assessment_id"
     t.index ["slug"], name: "index_attachments_on_slug", unique: true
@@ -149,6 +193,35 @@ ActiveRecord::Schema.define(version: 2024_04_06_174050) do
     t.integer "autograde_timeout"
     t.string "autograde_image"
     t.boolean "release_score"
+    t.string "instance_type", default: ""
+    t.boolean "use_access_key", default: false
+    t.string "ami", default: ""
+    t.string "security_group", default: ""
+    t.text "access_key_ciphertext"
+    t.text "access_key_id_ciphertext"
+    t.boolean "use_ami_image", default: false, null: false
+    t.integer "ami_image_id"
+    t.index ["ami_image_id"], name: "index_autograders_on_ami_image_id"
+  end
+
+  create_table "container_images", force: :cascade do |t|
+    t.string "name", null: false
+    t.integer "status", default: 0, null: false
+    t.string "image_uri"
+    t.integer "build_id"
+    t.integer "course_id"
+    t.boolean "is_public", default: false, null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.text "build_logs", default: "", null: false
+    t.text "dockerfile_contents"
+    t.integer "public_template_id"
+    t.index ["course_id"], name: "index_container_images_on_course_id"
+    t.index ["image_uri"], name: "index_container_images_on_image_uri", unique: true
+    t.index ["is_public"], name: "index_container_images_on_is_public"
+    t.index ["name"], name: "index_container_images_on_name_public_only", unique: true, where: "is_public = true"
+    t.index ["public_template_id"], name: "index_container_images_on_public_template_id"
+    t.index ["status"], name: "index_container_images_on_status"
   end
 
   create_table "course_user_data", force: :cascade do |t|
@@ -185,6 +258,7 @@ ActiveRecord::Schema.define(version: 2024_04_06_174050) do
     t.string "website"
     t.string "access_code"
     t.boolean "disable_on_end", default: false
+    t.text "allowed_ec2_instances"
   end
 
   create_table "extensions", force: :cascade do |t|
@@ -194,14 +268,14 @@ ActiveRecord::Schema.define(version: 2024_04_06_174050) do
     t.boolean "infinite", default: false, null: false
   end
 
-  create_table "friendly_id_slugs", charset: "utf8mb3", force: :cascade do |t|
+  create_table "friendly_id_slugs", force: :cascade do |t|
     t.string "slug", null: false
     t.integer "sluggable_id", null: false
     t.string "sluggable_type", limit: 50
     t.string "scope"
     t.datetime "created_at"
-    t.index ["slug", "sluggable_type", "scope"], name: "index_friendly_id_slugs_on_slug_and_sluggable_type_and_scope", unique: true, length: { slug: 70, scope: 70 }
-    t.index ["slug", "sluggable_type"], name: "index_friendly_id_slugs_on_slug_and_sluggable_type", length: { slug: 140 }
+    t.index ["slug", "sluggable_type", "scope"], name: "index_friendly_id_slugs_on_slug_and_sluggable_type_and_scope", unique: true
+    t.index ["slug", "sluggable_type"], name: "index_friendly_id_slugs_on_slug_and_sluggable_type"
     t.index ["sluggable_type", "sluggable_id"], name: "index_friendly_id_slugs_on_sluggable_type_and_sluggable_id"
   end
 
@@ -326,7 +400,7 @@ ActiveRecord::Schema.define(version: 2024_04_06_174050) do
     t.integer "course_id"
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.datetime "until", default: -> { "CURRENT_TIMESTAMP" }
+    t.datetime "until"
     t.boolean "disabled", default: false
   end
 
@@ -338,15 +412,15 @@ ActiveRecord::Schema.define(version: 2024_04_06_174050) do
 
   create_table "scoreboards", force: :cascade do |t|
     t.integer "assessment_id"
-    t.text "banner"
-    t.text "colspec"
+    t.text "banner", limit: 65535
+    t.text "colspec", limit: 65535
     t.boolean "include_instructors", default: false
   end
 
   create_table "scores", force: :cascade do |t|
     t.integer "submission_id"
     t.float "score"
-    t.text "feedback", size: :medium
+    t.text "feedback", limit: 16777215
     t.integer "problem_id"
     t.datetime "created_at"
     t.datetime "updated_at"
@@ -354,6 +428,20 @@ ActiveRecord::Schema.define(version: 2024_04_06_174050) do
     t.integer "grader_id"
     t.index ["problem_id", "submission_id"], name: "problem_submission_unique", unique: true
     t.index ["submission_id"], name: "index_scores_on_submission_id"
+  end
+
+  create_table "ssh_keys", force: :cascade do |t|
+    t.integer "user_id", null: false
+    t.text "public_key", null: false
+    t.string "comment"
+    t.string "key_type"
+    t.string "fingerprint"
+    t.boolean "active", default: true, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["active"], name: "index_ssh_keys_on_active"
+    t.index ["fingerprint"], name: "index_ssh_keys_on_fingerprint", unique: true
+    t.index ["user_id"], name: "index_ssh_keys_on_user_id"
   end
 
   create_table "submissions", force: :cascade do |t|
@@ -372,7 +460,7 @@ ActiveRecord::Schema.define(version: 2024_04_06_174050) do
     t.string "submitter_ip", limit: 40
     t.integer "tweak_id"
     t.boolean "ignored", default: false, null: false
-    t.string "dave"
+    t.string "dave", limit: 255
     t.text "embedded_quiz_form_answer"
     t.integer "submitted_by_app_id"
     t.string "group_key", default: ""
@@ -406,9 +494,11 @@ ActiveRecord::Schema.define(version: 2024_04_06_174050) do
     t.string "major"
     t.string "year"
     t.boolean "hover_assessment_date", default: false, null: false
+    t.string "unix_user"
     t.index ["confirmation_token"], name: "index_users_on_confirmation_token", unique: true
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
+    t.index ["unix_user"], name: "index_users_on_unix_user", unique: true
   end
 
   create_table "watchlist_configurations", force: :cascade do |t|
@@ -437,4 +527,15 @@ ActiveRecord::Schema.define(version: 2024_04_06_174050) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "ami_images", "courses"
+  add_foreign_key "ami_package_sources", "ami_images"
+  add_foreign_key "ami_packages", "ami_images"
+  add_foreign_key "ami_packages", "ami_package_sources"
+  add_foreign_key "autograders", "ami_images"
+  add_foreign_key "container_images", "container_images", column: "public_template_id"
+  add_foreign_key "github_integrations", "users"
+  add_foreign_key "oauth_access_grants", "oauth_applications", column: "application_id"
+  add_foreign_key "oauth_access_tokens", "oauth_applications", column: "application_id"
+  add_foreign_key "oauth_device_flow_requests", "oauth_applications", column: "application_id"
+  add_foreign_key "ssh_keys", "users"
 end
