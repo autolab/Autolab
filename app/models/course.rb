@@ -14,6 +14,8 @@ class Course < ApplicationRecord
   validate :valid_website?
   validates :access_code, uniqueness: true, allow_nil: true
 
+  serialize :allowed_ec2_instances, Array
+
   has_many :course_user_data, dependent: :destroy
   has_many :assessments, dependent: :destroy
   has_many :scheduler, dependent: :destroy

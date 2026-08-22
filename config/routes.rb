@@ -14,6 +14,7 @@ Rails.application.routes.draw do
   post 'smtp_config/update_config', to: "smtp_config#update_config"
   post 'smtp_config/send_test_email', to: "smtp_config#send_test_email"
   post 'oauth_config/update_oauth', to: "oauth_config#update_oauth_config"
+  post 'admins/ec2_config/update', to: 'ec2_config#update', as: :update_ec2_config_admins
 
   namespace :oauth, { defaults: { format: :json } } do
     get "device_flow_init", to: "device_flow#init"
