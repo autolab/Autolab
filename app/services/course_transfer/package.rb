@@ -139,13 +139,12 @@ module CourseTransfer
     # @return [Pathname]
     def self.safe_relative_path(name)
       raw = name.to_s
-      path = Pathname.new(raw).cleanpath
       if raw.empty? || raw.include?("\0") || path.absolute? || path.to_s == "." ||
          raw.split("/").include?("..")
         raise UnsafeEntry, "unsafe tar entry: #{name}"
       end
 
-      path
+      Pathname.new(raw).cleanpath
     end
 
     def self.enforce_limits!(entries, entry_bytes, total_bytes, limits)

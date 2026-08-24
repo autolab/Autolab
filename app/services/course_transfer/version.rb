@@ -6,17 +6,17 @@ require_relative "errors"
 module CourseTransfer
   # Defines package format compatibility and manifest operations.
   class Version
-    CURRENT = "2.0.0".freeze
+    CURRENT = "1.0.0".freeze
     FORMAT_ID = "autolab_course_export".freeze
     MANIFEST_FILENAME = "manifest.yml".freeze
     LEGACY = "legacy".freeze
 
     # Oldest version this app can import (inclusive bounds as Gem::Version).
     # (should be in the past or current version)
-    MIN_SUPPORTED_IMPORT = Gem::Version.new("2.0.0")
+    MIN_SUPPORTED_IMPORT = Gem::Version.new("1.0.0")
 
     # Oldest version that can import the current version (should be in the past or current version)
-    MIN_SUPPORTED_TARGET = Gem::Version.new("2.0.0")
+    MIN_SUPPORTED_TARGET = Gem::Version.new("1.0.0")
 
     CURRENT_VERSION = Gem::Version.new(CURRENT)
 
