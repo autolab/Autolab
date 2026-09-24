@@ -1,5 +1,13 @@
 <% @title = "Import Course" %>
 
+<% content_for :stylesheets do %>
+  <%= stylesheet_link_tag "export" %>
+<% end %>
+
+<% content_for :javascripts do %>
+  <%= javascript_include_tag "export_course" %>
+<% end %>
+
 <h2>Import Course</h2>
 
 <% if @pending.present? %>
@@ -19,14 +27,15 @@
 <% end %>
 
 <p>
-  Importing creates the exported course, assessments, memberships, submissions, and grading
-  records in one transaction. Existing users are matched by email. Submission and attachment
-  file contents included in the package are restored. The selected instructor will be enrolled in
-  the imported course, and a new account will be created if necessary.
+  The course configuration is always imported. Select the users and assessments to include;
+  submissions are imported only when both their user and assessment are selected. Existing users
+  are matched by email. The selected instructor will be enrolled in the imported course, and a new
+  account will be created if necessary.
 </p>
 
 <% if @pending.present? %>
-  <%= form_tag complete_import_courses_path, method: :post do %>
+  <%= form_tag complete_import_courses_path, method: :post, id: "course_import_form" do %>
+    <%= hidden_field_tag :selection_submitted, "1" %>
     <div class="form-group">
       <%= label_tag :course_identifier, "New course identifier" %>
       <%= text_field_tag :course_identifier, params[:course_identifier], required: true,
@@ -39,6 +48,119 @@
       <%= email_field_tag :instructor_email, params[:instructor_email], required: true,
                           class: "form-control" %>
     </div>
+
+    <% selection_submitted = params[:selection_submitted].present? %>
+    <% selected_user_keys = Array(params[:user_keys]) %>
+    <% selected_assessment_keys = Array(params[:assessment_keys]) %>
+
+    <% if @import_users&.any? %>
+      <section class="export-selection" data-export-selection>
+        <div class="export-selection-header">
+          <h3>Users</h3>
+          <span class="export-selection-count" data-selection-count="users"></span>
+        </div>
+        <div class="export-selection-controls">
+          <label class="export-search-label" for="import_user_search">Search users</label>
+          <input type="search" id="import_user_search" class="export-search"
+                 data-export-search="users" placeholder="Name or email" autocomplete="off">
+          <button type="button" class="btn-flat" data-select-visible="users">Select visible</button>
+          <button type="button" class="btn-flat" data-unselect-visible="users">Unselect visible</button>
+        </div>
+        <div class="export-selection-table-wrapper">
+          <table class="prettyBorder export-selection-table" data-export-table="users">
+            <thead>
+              <tr>
+                <th class="export-checkbox-column">
+                  <label class="export-checkbox-label" title="Select visible users">
+                    <input type="checkbox" data-select-all="users" aria-label="Select visible users">
+                    <span></span>
+                  </label>
+                </th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Role</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @import_users.each_with_index do |user, index| %>
+                <tr class="export-selection-row" data-export-row="users">
+                  <td class="export-checkbox-column">
+                    <label class="export-checkbox-label">
+                      <%= check_box_tag "user_keys[]", user.key,
+                                        !selection_submitted || selected_user_keys.include?(user.key),
+                                        class: "export-selection-checkbox export-user",
+                                        id: "import_user_#{index}",
+                                        data: { export_item: "users" } %>
+                      <span></span>
+                    </label>
+                  </td>
+                  <td><%= user.name %></td>
+                  <td><%= user.email %></td>
+                  <td><%= user.role %></td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    <% else %>
+      <h3>Users</h3>
+      <p>This package has no users.</p>
+    <% end %>
+
+    <% if @import_assessments&.any? %>
+      <section class="export-selection" data-export-selection>
+        <div class="export-selection-header">
+          <h3>Assessments</h3>
+          <span class="export-selection-count" data-selection-count="assessments"></span>
+        </div>
+        <div class="export-selection-controls">
+          <label class="export-search-label" for="import_assessment_search">Search assessments</label>
+          <input type="search" id="import_assessment_search" class="export-search"
+                 data-export-search="assessments" placeholder="Name" autocomplete="off">
+          <button type="button" class="btn-flat" data-select-visible="assessments">Select visible</button>
+          <button type="button" class="btn-flat" data-unselect-visible="assessments">Unselect visible</button>
+        </div>
+        <div class="export-selection-table-wrapper">
+          <table class="prettyBorder export-selection-table" data-export-table="assessments">
+            <thead>
+              <tr>
+                <th class="export-checkbox-column">
+                  <label class="export-checkbox-label" title="Select visible assessments">
+                    <input type="checkbox" data-select-all="assessments"
+                           aria-label="Select visible assessments">
+                    <span></span>
+                  </label>
+                </th>
+                <th>Assessment</th>
+                <th>Identifier</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @import_assessments.each_with_index do |assessment, index| %>
+                <tr class="export-selection-row" data-export-row="assessments">
+                  <td class="export-checkbox-column">
+                    <label class="export-checkbox-label">
+                      <%= check_box_tag "assessment_keys[]", assessment.key,
+                                        !selection_submitted || selected_assessment_keys.include?(assessment.key),
+                                        class: "export-selection-checkbox export-assessment",
+                                        id: "import_assessment_#{index}",
+                                        data: { export_item: "assessments" } %>
+                      <span></span>
+                    </label>
+                  </td>
+                  <td><%= assessment.name %></td>
+                  <td><%= assessment.email %></td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    <% else %>
+      <h3>Assessments</h3>
+      <p>This package has no assessments.</p>
+    <% end %>
 
     <%= submit_tag "Import Course", class: "btn primary",
                    data: { confirm: "Import this course package?" } %>

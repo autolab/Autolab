@@ -9,6 +9,7 @@ require "tempfile"
 require_relative "../services/unix_group_manager"
 require_relative "../services/course_transfer/core_exporters"
 require_relative "../services/course_transfer/import"
+require_relative "../services/course_transfer/import_selection"
 require_relative "../services/course_transfer/package"
 
 class CoursesController < ApplicationController
@@ -298,7 +299,20 @@ class CoursesController < ApplicationController
   action_auth_level :import, :administrator
   def import
     @pending = course_import_session
-    return if @pending
+    if @pending
+      begin
+        load_import_preview
+      rescue CourseTransfer::StagedUpload::Expired, CourseTransfer::StagedUpload::NotFound
+        cleanup_course_import_session!
+        flash[:error] = "Your uploaded package expired or is missing. Please upload again."
+        redirect_to(new_course_path)
+      rescue CourseTransfer::Error => e
+        cleanup_course_import_session!
+        flash[:error] = "Unable to read course package: #{e.message}"
+        redirect_to(new_course_path)
+      end
+      return
+    end
 
     flash[:error] = "No staged course package found. Please upload a tarball first."
     redirect_to(new_course_path)
@@ -316,6 +330,7 @@ class CoursesController < ApplicationController
     instructor_email = params[:instructor_email].to_s.strip
     if course_identifier.blank? || instructor_email.blank?
       @pending = pending
+      load_import_preview
       flash.now[:error] = "Course identifier and instructor email are required."
       render(action: :import, status: :unprocessable_entity) && return
     end
@@ -333,7 +348,9 @@ class CoursesController < ApplicationController
       )
       imported_course = CourseTransfer::ImportManager.new(
         registry: CourseTransfer::CoreExporters.registry,
-        context:
+        context:,
+        user_keys: Array(params[:user_keys]),
+        assessment_keys: Array(params[:assessment_keys])
       ).import
     end
 
@@ -346,10 +363,12 @@ class CoursesController < ApplicationController
     redirect_to(new_course_path)
   rescue CourseTransfer::Error => e
     @pending = course_import_session
+    reload_import_preview if @pending
     flash.now[:error] = "Unable to import course: #{e.message}"
     render(action: :import, status: :unprocessable_entity)
   rescue StandardError => e
     @pending = course_import_session
+    reload_import_preview if @pending
     Rails.logger.error("Course import failed: #{e.class}: #{e.message}")
     flash.now[:error] = "Unable to import course: #{e.message}"
     render(action: :import, status: :unprocessable_entity)
@@ -1139,6 +1158,31 @@ private
     return nil if data["token"].blank?
 
     data
+  end
+
+  def load_import_preview
+    staged = CourseTransfer::StagedUpload.find!(current_user, @pending.fetch("token"))
+    Dir.mktmpdir("autolab-course-preview-", Rails.root.join("tmp")) do |directory|
+      staging_path = CourseTransfer::Package.extract(staged.path, directory)
+      context = CourseTransfer::Context.new(
+        staging_path:,
+        version: @pending.fetch("version")
+      )
+      preview = CourseTransfer::ImportPreview.new(
+        registry: CourseTransfer::CoreExporters.registry,
+        context:
+      )
+      @import_users = preview.users
+      @import_assessments = preview.assessments
+    end
+  end
+
+  def reload_import_preview
+    load_import_preview
+  rescue CourseTransfer::Error => e
+    Rails.logger.warn("Unable to reload course import preview: #{e.class}: #{e.message}")
+    @import_users = []
+    @import_assessments = []
   end
 
   def cleanup_course_import_session!

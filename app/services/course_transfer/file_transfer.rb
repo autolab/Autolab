@@ -24,8 +24,8 @@ module CourseTransfer
     # @param imported_ids [Hash{Symbol => Array<Integer>}]
     # @param key_maps [Hash]
     # @return [CourseTransfer::FileTransfer] cleanup handle
-    def self.import(context:, imported_ids:, key_maps:)
-      transfer = new(context:, key_maps:)
+    def self.import(context:, imported_ids:, key_maps:, selection: nil)
+      transfer = new(context:, key_maps:, selection:)
       transfer.import(imported_ids)
       transfer
     rescue StandardError
@@ -33,9 +33,10 @@ module CourseTransfer
       raise
     end
 
-    def initialize(context:, key_maps:)
+    def initialize(context:, key_maps:, selection: nil)
       @root = context.staging_path
       @key_maps = key_maps
+      @selection = selection
       @uploaded_blobs = []
       @restored_course = nil
     end
@@ -71,6 +72,7 @@ module CourseTransfer
     # @param imported_ids [Hash{Symbol => Array<Integer>}]
     # @return [void]
     def import(imported_ids)
+      prune_course_payload!
       restore_course(imported_ids.fetch(:courses).uniq)
       restore_attachments(imported_ids.fetch(:attachments, []).uniq)
     end
@@ -257,7 +259,8 @@ module CourseTransfer
       end
 
       actual = attachment_files
-      unknown = actual - expected
+      known = known_attachment_files
+      unknown = actual - (known.empty? ? expected : known)
       raise FileTransferError, "package contains an unknown attachment file" if unknown.any?
     end
 
@@ -294,6 +297,41 @@ module CourseTransfer
       raise FileTransferError, "attachment payload is not a directory" unless root.directory?
 
       root.glob("**/*").select(&:file?).map(&:expand_path).to_set
+    end
+
+    def known_attachment_files
+      return Set.new unless @selection
+
+      @selection.attachment_documents.to_set do |document|
+        attachment_path(document.fetch("_key"), document.fetch("filename")).expand_path
+      end
+    end
+
+    def prune_course_payload!
+      return unless @selection
+
+      course_root = @root.join(COURSE_DIRECTORY)
+      @selection.excluded_assessment_names.each do |name|
+        path = course_root.join(name.to_s)
+        FileUtils.rm_rf(path) if within?(path, course_root)
+      end
+
+      excluded_emails = @selection.excluded_user_emails.map(&:downcase)
+      return if excluded_emails.empty? || !course_root.directory?
+
+      Find.find(course_root.to_s) do |entry|
+        path = Pathname.new(entry)
+        next if path == course_root
+
+        parts = path.relative_path_from(course_root).each_filename.map(&:downcase)
+        next unless parts.any? do |part|
+          excluded_emails.any? { |email| part == email || part.include?(email) }
+        end
+
+        directory = path.directory?
+        directory ? FileUtils.rm_rf(path) : FileUtils.rm_f(path)
+        Find.prune if directory
+      end
     end
 
     def attachment_path(key, filename)

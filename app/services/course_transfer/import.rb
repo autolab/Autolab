@@ -2,6 +2,7 @@ require_relative "dependency_order"
 require_relative "errors"
 require_relative "file_transfer"
 require_relative "import_finalizer"
+require_relative "import_selection"
 require_relative "serialization"
 
 module CourseTransfer
@@ -21,9 +22,13 @@ module CourseTransfer
     # @param registry [CourseTransfer::ExportRegistry]
     # @param context [CourseTransfer::Context]
     # @param batch_size [Integer]
-    def initialize(registry:, context:, batch_size: DEFAULT_BATCH_SIZE)
+    def initialize(registry:, context:, batch_size: DEFAULT_BATCH_SIZE, selection: nil,
+                   user_keys: nil, assessment_keys: nil)
       @registry = registry
       @context = context
+      @selection = selection
+      @user_keys = user_keys
+      @assessment_keys = assessment_keys
       @batch_size = Integer(batch_size)
       raise ArgumentError, "batch size must be positive" unless @batch_size.positive?
     end
@@ -37,6 +42,11 @@ module CourseTransfer
     #
     # @return [Course]
     def import
+      if !@selection && (!@user_keys.nil? || !@assessment_keys.nil?)
+        @selection = ImportSelection.new(
+          registry:, context:, user_keys: @user_keys, assessment_keys: @assessment_keys
+        )
+      end
       parts = package_parts
       @course_identifier = destination_course_identifier
       @imported_ids = Hash.new { |hash, name| hash[name] = [] }
@@ -54,7 +64,7 @@ module CourseTransfer
         course = imported_course(key_maps)
         ensure_import_instructor(course) if context.instructor_email.present?
         cleanup = FileTransfer.import(
-          context:, imported_ids: @imported_ids, key_maps:
+          context:, imported_ids: @imported_ids, key_maps:, selection: @selection
         )
         finalizer = ImportFinalizer.new(course, imported_ids: @imported_ids)
         finalizer.finalize!
@@ -148,6 +158,8 @@ module CourseTransfer
       Enumerator.new do |rows|
         seen = {}
         table_documents(exporter).each do |document|
+          next if @selection && !@selection.include?(exporter.name, document)
+
           validate_document!(exporter, document)
           package_key = document.fetch("_key")
           signature = Serialization.canonical(package_key)
@@ -168,6 +180,9 @@ module CourseTransfer
             [field, value]
           end
           attributes[:name] = @course_identifier if exporter.name == :courses
+          if exporter.name == :courses && attributes[:cgdub_dependencies_updated_at].nil?
+            attributes[:cgdub_dependencies_updated_at] = Time.current
+          end
           database_key = exporter.key_fields.index_with { |field| attributes.fetch(field) }
           rows << PreparedRow.new(package_key:, attributes:, database_key:)
         end

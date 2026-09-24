@@ -1,0 +1,30 @@
+---
+_key:
+  name: democourse5
+access_code:
+cgdub_dependencies_updated_at: '2026-08-24T19:34:38.468150-04:00'
+disable_on_end: false
+disabled: false
+display_name: Test 15-267
+end_date: '2026-08-29'
+exam_in_progress: false
+gb_message: ''
+grace_days: 0
+late_penalty_id:
+  key:
+    kind: 0
+    type: Penalty
+    value: 0.0
+  table: score_adjustments
+late_slack: 0
+name: democourse5
+semester: t26
+start_date: '2026-08-23'
+version_penalty_id:
+  key:
+    kind: 0
+    type: Penalty
+    value: 0.0
+  table: score_adjustments
+version_threshold: -1
+website: ''

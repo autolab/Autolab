@@ -294,7 +294,16 @@ RSpec.describe "normalized course transfer" do
         )
         imported_course = CourseTransfer::ImportManager.new(
           registry: CourseTransfer::CoreExporters.registry,
-          context: import_context
+          context: import_context,
+          user_keys: [
+            CourseTransfer::Serialization.canonical("email" => user.email.downcase)
+          ],
+          assessment_keys: [
+            CourseTransfer::Serialization.canonical(
+              "course_id" => { "name" => course.name.downcase },
+              "name" => assessment.name.downcase
+            )
+          ]
         ).import
 
         imported_user = User.find_by!(email: "transfer@example.com")
@@ -314,6 +323,7 @@ RSpec.describe "normalized course transfer" do
 
         expect(imported_course.name).to eq("imported-transfer-course")
         expect(imported_course.display_name).to eq("Transfer Course")
+        expect(imported_course.cgdub_dependencies_updated_at).to be_present
         expect(imported_course.course_user_data.find_by!(user: imported_instructor).instructor?)
           .to be(true)
         expect(imported_submission.notes).to eq("first")
