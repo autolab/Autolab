@@ -50,8 +50,8 @@
     </div>
 
     <% selection_submitted = params[:selection_submitted].present? %>
-    <% selected_user_keys = Array(params[:user_keys]) %>
-    <% selected_assessment_keys = Array(params[:assessment_keys]) %>
+    <% selected_user_ids = Array(params[:user_ids]) %>
+    <% selected_assessment_ids = Array(params[:assessment_ids]) %>
 
     <% if @import_users&.any? %>
       <section class="export-selection" data-export-selection>
@@ -86,8 +86,8 @@
                 <tr class="export-selection-row" data-export-row="users">
                   <td class="export-checkbox-column">
                     <label class="export-checkbox-label">
-                      <%= check_box_tag "user_keys[]", user.key,
-                                        !selection_submitted || selected_user_keys.include?(user.key),
+                      <%= check_box_tag "user_ids[]", user.id,
+                                        !selection_submitted || selected_user_ids.include?(user.id),
                                         class: "export-selection-checkbox export-user",
                                         id: "import_user_#{index}",
                                         data: { export_item: "users" } %>
@@ -141,8 +141,8 @@
                 <tr class="export-selection-row" data-export-row="assessments">
                   <td class="export-checkbox-column">
                     <label class="export-checkbox-label">
-                      <%= check_box_tag "assessment_keys[]", assessment.key,
-                                        !selection_submitted || selected_assessment_keys.include?(assessment.key),
+                      <%= check_box_tag "assessment_ids[]", assessment.id,
+                                        !selection_submitted || selected_assessment_ids.include?(assessment.id),
                                         class: "export-selection-checkbox export-assessment",
                                         id: "import_assessment_#{index}",
                                         data: { export_item: "assessments" } %>

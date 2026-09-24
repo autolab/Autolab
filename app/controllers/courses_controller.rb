@@ -349,8 +349,8 @@ class CoursesController < ApplicationController
       imported_course = CourseTransfer::ImportManager.new(
         registry: CourseTransfer::CoreExporters.registry,
         context:,
-        user_keys: Array(params[:user_keys]),
-        assessment_keys: Array(params[:assessment_keys])
+        user_ids: Array(params[:user_ids]),
+        assessment_ids: Array(params[:assessment_ids])
       ).import
     end
 

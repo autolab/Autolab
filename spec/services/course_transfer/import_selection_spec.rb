@@ -4,8 +4,8 @@ require Rails.root.join("app/services/course_transfer/core_exporters")
 require Rails.root.join("app/services/course_transfer/import_selection")
 
 RSpec.describe CourseTransfer::ImportSelection do
-  def reference(table, key)
-    { "table" => table.to_s, "key" => key }
+  def reference(table, id)
+    { "table" => table.to_s, "id" => id }
   end
 
   def write_documents(root, name, documents)
@@ -17,80 +17,51 @@ RSpec.describe CourseTransfer::ImportSelection do
   it "imports only the selected user/assessment intersection and its dependencies" do
     Dir.mktmpdir("import-selection-spec-") do |directory|
       root = Pathname.new(directory)
-      course_key = { "name" => "source-course" }
-      selected_user_key = { "email" => "selected@example.com" }
-      excluded_user_key = { "email" => "excluded@example.com" }
-      selected_cud_key = {
-        "course_id" => course_key,
-        "user_id" => selected_user_key
-      }
-      excluded_cud_key = {
-        "course_id" => course_key,
-        "user_id" => excluded_user_key
-      }
-      selected_assessment_key = { "course_id" => course_key, "name" => "selected" }
-      excluded_assessment_key = { "course_id" => course_key, "name" => "excluded" }
-      included_submission_key = {
-        "assessment_id" => selected_assessment_key,
-        "course_user_datum_id" => selected_cud_key,
-        "version" => 1
-      }
-      wrong_user_submission_key = {
-        "assessment_id" => selected_assessment_key,
-        "course_user_datum_id" => excluded_cud_key,
-        "version" => 1
-      }
-      wrong_assessment_submission_key = {
-        "assessment_id" => excluded_assessment_key,
-        "course_user_datum_id" => selected_cud_key,
-        "version" => 1
-      }
-
       documents = {
-        courses: [{ "_key" => course_key }],
+        courses: [{ "_id" => 1 }],
         users: [
-          { "_key" => selected_user_key, "email" => "selected@example.com" },
-          { "_key" => excluded_user_key, "email" => "excluded@example.com" }
+          { "_id" => 1, "email" => "selected@example.com" },
+          { "_id" => 2, "email" => "excluded@example.com" }
         ],
         course_user_data: [
           {
-            "_key" => selected_cud_key,
-            "course_id" => reference(:courses, course_key),
-            "user_id" => reference(:users, selected_user_key)
+            "_id" => 1,
+            "course_id" => reference(:courses, 1),
+            "user_id" => reference(:users, 1)
           },
           {
-            "_key" => excluded_cud_key,
-            "course_id" => reference(:courses, course_key),
-            "user_id" => reference(:users, excluded_user_key)
+            "_id" => 2,
+            "course_id" => reference(:courses, 1),
+            "user_id" => reference(:users, 2)
           }
         ],
         assessments: [
           {
-            "_key" => selected_assessment_key,
-            "course_id" => reference(:courses, course_key),
+            "_id" => 1,
+            "course_id" => reference(:courses, 1),
             "name" => "selected"
           },
           {
-            "_key" => excluded_assessment_key,
-            "course_id" => reference(:courses, course_key),
+            "_id" => 2,
+            "course_id" => reference(:courses, 1),
             "name" => "excluded"
           }
         ],
         submissions: [
           {
-            "_key" => included_submission_key,
-            "course_user_datum_id" => reference(:course_user_data, selected_cud_key),
-            "assessment_id" => reference(:assessments, selected_assessment_key)
+            "_id" => 1,
+            "course_user_datum_id" => reference(:course_user_data, 1),
+            "assessment_id" => reference(:assessments, 1)
           },
           {
-            "_key" => wrong_user_submission_key,
-            "course_user_datum_id" => reference(:course_user_data, excluded_cud_key),
-            "assessment_id" => reference(:assessments, selected_assessment_key)
+            "_id" => 2,
+            "course_user_datum_id" => reference(:course_user_data, 2),
+            "assessment_id" => reference(:assessments, 1)
           },
           {
-            "_key" => wrong_assessment_submission_key,
-            "course_user_datum_id" => reference(:course_user_data, selected_cud_key),
-            "assessment_id" => reference(:assessments, excluded_assessment_key)
+            "_id" => 3,
+            "course_user_datum_id" => reference(:course_user_data, 1),
+            "assessment_id" => reference(:assessments, 2)
           }
         ]
       }
@@ -110,19 +81,13 @@ RSpec.describe CourseTransfer::ImportSelection do
       selection = described_class.new(
         registry: CourseTransfer::CoreExporters.registry,
         context:,
-        user_keys: [CourseTransfer::Serialization.canonical(selected_user_key)],
-        assessment_keys: [CourseTransfer::Serialization.canonical(selected_assessment_key)]
+        user_ids: ["1"],
+        assessment_ids: ["1"]
       )
 
-      expect(selection.included_keys.fetch(:users)).to contain_exactly(
-        CourseTransfer::Serialization.canonical(selected_user_key)
-      )
-      expect(selection.included_keys.fetch(:assessments)).to contain_exactly(
-        CourseTransfer::Serialization.canonical(selected_assessment_key)
-      )
-      expect(selection.included_keys.fetch(:submissions)).to contain_exactly(
-        CourseTransfer::Serialization.canonical(included_submission_key)
-      )
+      expect(selection.included_ids.fetch(:users)).to contain_exactly(1)
+      expect(selection.included_ids.fetch(:assessments)).to contain_exactly(1)
+      expect(selection.included_ids.fetch(:submissions)).to contain_exactly(1)
       expect(selection.excluded_user_emails).to eq(["excluded@example.com"])
       expect(selection.excluded_assessment_names).to eq(["excluded"])
     end
@@ -133,24 +98,21 @@ RSpec.describe CourseTransfer::ImportPreview do
   it "provides stable selection keys and membership roles for the import UI" do
     Dir.mktmpdir("import-preview-spec-") do |directory|
       root = Pathname.new(directory)
-      course_key = { "name" => "source-course" }
-      user_key = { "email" => "teacher@example.com" }
-      assessment_key = { "course_id" => course_key, "name" => "lab" }
       documents = {
         users: [{
-          "_key" => user_key,
+          "_id" => 1,
           "email" => "teacher@example.com",
           "first_name" => "Course",
           "last_name" => "Teacher"
         }],
         course_user_data: [{
-          "_key" => { "course_id" => course_key, "user_id" => user_key },
-          "user_id" => { "table" => "users", "key" => user_key },
+          "_id" => 1,
+          "user_id" => { "table" => "users", "id" => 1 },
           "instructor" => true,
           "course_assistant" => false
         }],
         assessments: [{
-          "_key" => assessment_key,
+          "_id" => 1,
           "name" => "lab",
           "display_name" => "Lab One"
         }]
@@ -177,13 +139,13 @@ RSpec.describe CourseTransfer::ImportPreview do
       )
 
       expect(preview.users.first.to_h).to include(
-        key: CourseTransfer::Serialization.canonical(user_key),
+        id: "1",
         name: "Course Teacher",
         email: "teacher@example.com",
         role: "Instructor"
       )
       expect(preview.assessments.first.to_h).to include(
-        key: CourseTransfer::Serialization.canonical(assessment_key),
+        id: "1",
         name: "Lab One",
         email: "lab"
       )

@@ -8,23 +8,22 @@ RSpec.describe CourseTransfer::FileTransfer do
       staging_path: root,
       version: CourseTransfer::Version::CURRENT
     )
-    described_class.new(context:, key_maps: {})
+    described_class.new(context:, id_maps: {})
   end
 
-  it "addresses attachments by natural key while retaining their normal filename" do
+  it "addresses attachments by package ID while retaining their normal filename" do
     Dir.mktmpdir("course-transfer-files-") do |directory|
       root = Pathname.new(directory)
-      key = { "name" => "Reference", "filename" => "reference.pdf" }
-      path = transfer(root).send(:attachment_path, key, "reference.pdf")
+      path = transfer(root).send(:attachment_path, 1, "reference.pdf")
       other = transfer(root).send(
         :attachment_path,
-        key.merge("name" => "Another reference"),
+        2,
         "reference.pdf"
       )
 
       expect(path.basename.to_s).to eq("reference.pdf")
       expect(path.dirname.basename.to_s)
-        .to eq(Digest::SHA256.hexdigest(CourseTransfer::Serialization.canonical(key)))
+        .to eq(Digest::SHA256.hexdigest("1"))
       expect(path.to_s).to start_with(root.join("files", "attachments").to_s)
       expect(other.basename).to eq(path.basename)
       expect(other.dirname).not_to eq(path.dirname)

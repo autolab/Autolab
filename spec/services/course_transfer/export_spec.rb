@@ -63,7 +63,7 @@ RSpec.describe CourseTransfer::ExportPlan do
 end
 
 RSpec.describe CourseTransfer::ExportManager do
-  it "preserves a null foreign key when it is part of a natural key" do
+  it "uses incremental package IDs and preserves null foreign keys" do
     exporter = CourseTransfer::CoreExporters::AttachmentExporter.new
     manager = described_class.new(
       registry: CourseTransfer::CoreExporters.registry,
@@ -75,19 +75,18 @@ RSpec.describe CourseTransfer::ExportManager do
       "name" => "Syllabus",
       "filename" => "syllabus.pdf"
     )
-    course_key = { "name" => "transfer-course" }
+    course_package_id = 1
 
-    document, natural_key = manager.send(
+    document = manager.send(
       :serialize_row,
       exporter,
       row,
-      { courses: { 11 => course_key }, assessments: {} }
+      1,
+      { courses: { 11 => course_package_id }, assessments: {} }
     )
 
-    expect(natural_key).to include(
-      "course_id" => course_key,
-      "assessment_id" => nil
-    )
+    expect(document.fetch("_id")).to eq(1)
+    expect(document.fetch("course_id")).to eq("table" => "courses", "id" => 1)
     expect(document.fetch("assessment_id")).to be_nil
   end
 end
@@ -194,7 +193,7 @@ RSpec.describe CourseTransfer::ExportSelection do
       manager.export(manager.build_plan(selection))
 
       courses_yaml = Pathname.new(directory).join("courses.yml").read
-      expect(courses_yaml).to start_with("---\n_key:\n")
+      expect(courses_yaml).to start_with("---\n_id: 1\n")
       expect(courses_yaml).not_to include("records:")
       expect(YAML.load_stream(courses_yaml).size).to eq(1)
       expect(Pathname.new(directory).join("users.yml").read).to be_empty

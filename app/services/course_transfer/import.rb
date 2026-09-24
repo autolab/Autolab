@@ -6,13 +6,13 @@ require_relative "import_selection"
 require_relative "serialization"
 
 module CourseTransfer
-  # Streams table files, resolves natural-key references, bulk-inserts rows,
+  # Streams table files, resolves package-ID references, bulk-inserts rows,
   # validates them, and commits the complete import atomically.
   class ImportManager
     DEFAULT_BATCH_SIZE = 1_000
 
     PreparedRow = Struct.new(
-      :package_key, :attributes, :database_key,
+      :package_id, :attributes, :database_match,
       keyword_init: true
     )
     private_constant :PreparedRow
@@ -23,12 +23,12 @@ module CourseTransfer
     # @param context [CourseTransfer::Context]
     # @param batch_size [Integer]
     def initialize(registry:, context:, batch_size: DEFAULT_BATCH_SIZE, selection: nil,
-                   user_keys: nil, assessment_keys: nil)
+                   user_ids: nil, assessment_ids: nil)
       @registry = registry
       @context = context
       @selection = selection
-      @user_keys = user_keys
-      @assessment_keys = assessment_keys
+      @user_ids = user_ids
+      @assessment_ids = assessment_ids
       @batch_size = Integer(batch_size)
       raise ArgumentError, "batch size must be positive" unless @batch_size.positive?
     end
@@ -42,9 +42,9 @@ module CourseTransfer
     #
     # @return [Course]
     def import
-      if !@selection && (!@user_keys.nil? || !@assessment_keys.nil?)
+      if !@selection && (!@user_ids.nil? || !@assessment_ids.nil?)
         @selection = ImportSelection.new(
-          registry:, context:, user_keys: @user_keys, assessment_keys: @assessment_keys
+          registry:, context:, user_ids: @user_ids, assessment_ids: @assessment_ids
         )
       end
       parts = package_parts
@@ -54,17 +54,17 @@ module CourseTransfer
       finalizer = nil
 
       ApplicationRecord.transaction(requires_new: true) do
-        key_maps = Hash.new { |hash, name| hash[name] = {} }
+        id_maps = Hash.new { |hash, name| hash[name] = {} }
         import_order.each do |exporter|
           next unless parts.include?(exporter.name)
 
-          import_table(exporter, key_maps:)
+          import_table(exporter, id_maps:)
         end
 
-        course = imported_course(key_maps)
+        course = imported_course(id_maps)
         ensure_import_instructor(course) if context.instructor_email.present?
         cleanup = FileTransfer.import(
-          context:, imported_ids: @imported_ids, key_maps:, selection: @selection
+          context:, imported_ids: @imported_ids, id_maps:, selection: @selection
         )
         finalizer = ImportFinalizer.new(course, imported_ids: @imported_ids)
         finalizer.finalize!
@@ -115,24 +115,24 @@ module CourseTransfer
       end
     end
 
-    def import_table(exporter, key_maps:)
-      key_maps[exporter.name]
-      prepared_rows(exporter, key_maps:).each_slice(batch_size) do |rows|
-        import_batch(exporter, rows, key_maps:)
+    def import_table(exporter, id_maps:)
+      id_maps[exporter.name]
+      prepared_rows(exporter, id_maps:).each_slice(batch_size) do |rows|
+        import_batch(exporter, rows, id_maps:)
       end
     rescue ActiveRecord::ActiveRecordError => e
       raise ImportError, "failed to import #{exporter.name}: #{e.message}"
     end
 
-    def import_batch(exporter, rows, key_maps:)
+    def import_batch(exporter, rows, id_maps:)
       existing = find_database_ids(exporter, rows)
       if !exporter.reuse_existing? && existing.any?
         raise ImportCollision,
-              "#{exporter.name} already contains natural key #{existing.first.first.inspect}"
+              "#{exporter.name} already contains matching record #{existing.first.first.inspect}"
       end
 
       missing = rows.reject do |row|
-        existing.key?(database_key_signature(exporter, row.database_key))
+        existing.key?(database_match_signature(exporter, row.database_match))
       end
       unless missing.empty?
         # All imported models are validated before the transaction commits.
@@ -141,41 +141,36 @@ module CourseTransfer
         # rubocop:enable Rails/SkipsModelValidations
       end
       resolved = existing.merge(find_database_ids(exporter, missing))
-      inserted = missing.to_set { |row| database_key_signature(exporter, row.database_key) }
+      inserted = missing.to_set { |row| database_match_signature(exporter, row.database_match) }
 
       rows.each do |row|
-        signature = database_key_signature(exporter, row.database_key)
+        signature = database_match_signature(exporter, row.database_match)
         id = resolved.fetch(signature) do
           raise ImportError,
-                "could not find imported #{exporter.name} record #{row.package_key.inspect}"
+                "could not find imported #{exporter.name} record #{row.package_id.inspect}"
         end
-        key_maps[exporter.name][Serialization.canonical(row.package_key)] = id
+        id_maps[exporter.name][row.package_id] = id
         @imported_ids[exporter.name] << id if inserted.include?(signature)
       end
     end
 
-    def prepared_rows(exporter, key_maps:)
+    def prepared_rows(exporter, id_maps:)
       Enumerator.new do |rows|
-        seen = {}
+        expected_id = 1
         table_documents(exporter).each do |document|
-          next if @selection && !@selection.include?(exporter.name, document)
-
           validate_document!(exporter, document)
-          package_key = document.fetch("_key")
-          signature = Serialization.canonical(package_key)
-          canonical_document = Serialization.canonical(document)
-          if seen.key?(signature)
-            unless seen.fetch(signature) == canonical_document
-              raise InvalidPackage,
-                    "#{exporter.filename} has conflicting rows for #{package_key.inspect}"
-            end
-            next
+          package_id = document.fetch("_id")
+          unless package_id == expected_id
+            raise InvalidPackage,
+                  "#{exporter.filename} expected _id #{expected_id}, got #{package_id.inspect}"
           end
-          seen[signature] = canonical_document
+          expected_id += 1
+
+          next if @selection && !@selection.include?(exporter.name, document)
 
           attributes = exporter.fields.to_h do |field|
             value = document.fetch(field.to_s)
-            value = resolve_reference(exporter.ref_fields.fetch(field), value, key_maps) if
+            value = resolve_reference(exporter.ref_fields.fetch(field), value, id_maps) if
               exporter.ref_fields.key?(field)
             [field, value]
           end
@@ -183,8 +178,8 @@ module CourseTransfer
           if exporter.name == :courses && attributes[:cgdub_dependencies_updated_at].nil?
             attributes[:cgdub_dependencies_updated_at] = Time.current
           end
-          database_key = exporter.key_fields.index_with { |field| attributes.fetch(field) }
-          rows << PreparedRow.new(package_key:, attributes:, database_key:)
+          database_match = exporter.match_fields.index_with { |field| attributes.fetch(field) }
+          rows << PreparedRow.new(package_id:, attributes:, database_match:)
         end
       end
     end
@@ -195,7 +190,7 @@ module CourseTransfer
       end
 
       fields = exporter.fields.map(&:to_s)
-      expected = ["_key", *fields]
+      expected = ["_id", *fields]
       unknown = document.keys - expected
       missing = expected - document.keys
       raise InvalidPackage, "#{exporter.filename} contains unknown fields: #{unknown.join(', ')}" if
@@ -203,45 +198,40 @@ module CourseTransfer
       raise InvalidPackage, "#{exporter.filename} is missing fields: #{missing.join(', ')}" if
         missing.any?
 
-      natural_key = exporter.key_fields.to_h do |field|
-        value = document.fetch(field.to_s)
-        value = value.fetch("key") if exporter.ref_fields.key?(field) && value.is_a?(Hash)
-        [field.to_s, exporter.normalize_key_value(field, value)]
-      end
-      return if Serialization.canonical(natural_key) ==
-                Serialization.canonical(document.fetch("_key"))
+      package_id = document.fetch("_id")
+      return if package_id.is_a?(Integer) && package_id.positive?
 
-      raise InvalidPackage, "#{exporter.filename} contains a row with an invalid _key"
+      raise InvalidPackage, "#{exporter.filename} contains an invalid _id"
     end
 
-    def resolve_reference(expected_table, value, key_maps)
+    def resolve_reference(expected_table, value, id_maps)
       return nil if value.nil?
       return value if value.is_a?(Numeric) && value <= 0
 
       valid = value.is_a?(Hash) && value["table"].to_s == expected_table.to_s &&
-              value.key?("key")
+              value["id"].is_a?(Integer) && value["id"].positive?
       raise InvalidPackage, "invalid reference to #{expected_table}" unless valid
 
-      key_maps.fetch(expected_table).fetch(Serialization.canonical(value.fetch("key"))) do
+      id_maps.fetch(expected_table).fetch(value.fetch("id")) do
         raise MissingImportReference,
-              "reference to missing #{expected_table} #{value.fetch('key').inspect}"
+              "reference to missing #{expected_table} ID #{value.fetch('id').inspect}"
       end
     end
 
     def find_database_ids(exporter, rows)
       return {} if rows.empty?
 
-      columns = [exporter.model_class.primary_key, *exporter.key_fields]
-      lookup_field = exporter.key_fields.find { |field| exporter.ref_fields.key?(field) } ||
-                     exporter.key_fields.first
-      desired = rows.to_set { |row| database_key_signature(exporter, row.database_key) }
+      columns = [exporter.model_class.primary_key, *exporter.match_fields]
+      lookup_field = exporter.match_fields.find { |field| exporter.ref_fields.key?(field) } ||
+                     exporter.match_fields.first
+      desired = rows.to_set { |row| database_match_signature(exporter, row.database_match) }
       found = {}
 
-      lookup_values = rows.map { |row| row.database_key.fetch(lookup_field) }.uniq
+      lookup_values = rows.map { |row| row.database_match.fetch(lookup_field) }.uniq
       lookup_values.each_slice(batch_size) do |values|
         exporter.records_matching(lookup_field, values).pluck(*columns).each do |id, *key_values|
-          database_key = exporter.key_fields.zip(key_values).to_h
-          signature = database_key_signature(exporter, database_key)
+          database_match = exporter.match_fields.zip(key_values).to_h
+          signature = database_match_signature(exporter, database_match)
           next unless desired.include?(signature)
 
           if found.key?(signature) && found.fetch(signature) != id
@@ -250,7 +240,7 @@ module CourseTransfer
               next
             end
             raise ImportCollision,
-                  "#{exporter.name} has an ambiguous natural key #{database_key.inspect}"
+                  "#{exporter.name} has ambiguous matching fields #{database_match.inspect}"
           end
           found[signature] = id
         end
@@ -270,8 +260,8 @@ module CourseTransfer
       raise ImportValidationError, errors.first(20).join("; ") if errors.any?
     end
 
-    def imported_course(key_maps)
-      ids = key_maps.fetch(:courses).values.uniq
+    def imported_course(id_maps)
+      ids = id_maps.fetch(:courses).values.uniq
       raise InvalidPackage, "a package must contain exactly one course" unless ids.one?
 
       Course.find(ids.first)
@@ -324,9 +314,9 @@ module CourseTransfer
       raise ImportError, "failed to create import instructor: #{e.message}"
     end
 
-    def database_key_signature(exporter, database_key)
-      normalized = database_key.to_h do |field, value|
-        value = exporter.normalize_key_value(field, value) unless exporter.ref_fields.key?(field)
+    def database_match_signature(exporter, database_match)
+      normalized = database_match.to_h do |field, value|
+        value = exporter.normalize_match_value(field, value) unless exporter.ref_fields.key?(field)
         [field, value]
       end
       Serialization.canonical(normalized)

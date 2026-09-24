@@ -14,7 +14,7 @@ module CourseTransfer
 
     class << self
       attr_reader :table_name, :table_model, :declared_fields,
-                  :declared_references, :declared_key, :normalized_key_fields
+                  :declared_references, :declared_match_fields, :normalized_match_fields
 
       def table(name, model)
         @table_name = name
@@ -29,9 +29,11 @@ module CourseTransfer
         @declared_references = references
       end
 
-      def natural_key(*fields, case_insensitive: [])
-        @declared_key = fields
-        @normalized_key_fields = Array(case_insensitive)
+      # Database fields used after a bulk insert to locate the generated row.
+      # These values are never exposed as identifiers in the package.
+      def match_by(*fields, case_insensitive: [])
+        @declared_match_fields = fields
+        @normalized_match_fields = Array(case_insensitive)
       end
 
       def reuse_existing
@@ -92,25 +94,22 @@ module CourseTransfer
       self.class.declared_references || {}
     end
 
-    # Columns forming this table's portable natural key. Foreign-key
-    # components are replaced with the referenced record's natural key.
-    #
+    # Database columns used to locate an inserted (or reusable) row.
     # @return [Array<Symbol>]
-    def key_fields
-      self.class.declared_key || []
+    def match_fields
+      self.class.declared_match_fields || []
     end
 
-    # Normalizes a direct natural-key component. Exporters with
-    # case-insensitive uniqueness override this for stable matching.
+    # Normalizes a database match component.
     #
     # @param field [Symbol]
     # @param value [Object]
     # @return [Object]
-    def normalize_key_value(field, value)
-      self.class.normalized_key_fields&.include?(field) ? value.to_s.downcase : value
+    def normalize_match_value(field, value)
+      self.class.normalized_match_fields&.include?(field) ? value.to_s.downcase : value
     end
 
-    # Whether an existing database record with the same natural key may be
+    # Whether an existing database record with the same match fields may be
     # reused instead of treating it as an import collision.
     #
     # @return [Boolean]
@@ -125,7 +124,7 @@ module CourseTransfer
       ref_fields.values.uniq
     end
 
-    # Narrows a natural-key lookup. Exporters may override this when the
+    # Narrows a database lookup. Exporters may override this when the
     # database treats a key component case-insensitively.
     #
     # @param field [Symbol]
@@ -326,42 +325,31 @@ module CourseTransfer
     # @return [CourseTransfer::ExportPlan]
     def export(plan)
       FileUtils.mkdir_p(context.staging_path)
-      key_maps = Hash.new { |hash, name| hash[name] = {} }
+      id_maps = Hash.new { |hash, name| hash[name] = {} }
 
       dependency_order.each do |exporter|
         next unless plan.include?(exporter.name)
 
-        key_maps[exporter.name]
-        write_table(exporter, plan.relation_for(exporter.name), key_maps)
+        id_maps[exporter.name]
+        write_table(exporter, plan.relation_for(exporter.name), id_maps)
       end
 
       Version.write_manifest!(context, parts: plan.names)
-      FileTransfer.export(plan, context:, key_maps:)
+      FileTransfer.export(plan, context:, id_maps:)
       plan
     end
 
   private
 
-    def write_table(exporter, relation, key_maps)
+    def write_table(exporter, relation, id_maps)
       path = context.staging_path.join(exporter.filename)
-      seen_documents = {}
 
       File.open(path, "w") do |file|
+        package_id = 0
         each_plucked_row(exporter, relation) do |row|
-          document, natural_key = serialize_row(exporter, row, key_maps)
-          signature = Serialization.canonical(natural_key)
-          canonical_document = Serialization.canonical(document)
-          key_maps[exporter.name][row.fetch(exporter.model_class.primary_key)] = natural_key
-
-          if seen_documents.key?(signature)
-            unless seen_documents.fetch(signature) == canonical_document
-              raise DuplicateNaturalKey,
-                    "#{exporter.name} contains conflicting records for #{natural_key.inspect}"
-            end
-            next
-          end
-
-          seen_documents[signature] = canonical_document
+          package_id += 1
+          id_maps[exporter.name][row.fetch(exporter.model_class.primary_key)] = package_id
+          document = serialize_row(exporter, row, package_id, id_maps)
           Serialization.dump_document(file, document)
         end
       end
@@ -388,56 +376,38 @@ module CourseTransfer
       end
     end
 
-    def serialize_row(exporter, row, key_maps)
-      natural_key = natural_key_for(exporter, row, key_maps)
-      document = { "_key" => natural_key }
+    def serialize_row(exporter, row, package_id, id_maps)
+      document = { "_id" => package_id }
 
       exporter.fields.each do |field|
         field_name = field.to_s
         target_name = exporter.ref_fields[field]
         document[field_name] = if target_name
-                                 reference_document(target_name, row[field_name], key_maps)
+                                 reference_document(target_name, row[field_name], id_maps)
                                else
                                  row[field_name]
                                end
       end
 
-      [document, natural_key]
+      document
     end
 
-    def natural_key_for(exporter, row, key_maps)
-      if exporter.key_fields.empty?
-        raise ExportError, "#{exporter.name} does not declare a natural key"
-      end
-
-      exporter.key_fields.to_h do |field|
-        value = row.fetch(field.to_s)
-        target_name = exporter.ref_fields[field]
-        key_value = if target_name
-                      reference_key(target_name, value, key_maps)
-                    else
-                      exporter.normalize_key_value(field, value)
-                    end
-        [field.to_s, key_value]
-      end
-    end
-
-    def reference_document(target_name, source_id, key_maps)
+    def reference_document(target_name, source_id, id_maps)
       return nil if source_id.nil?
       return source_id if source_id.respond_to?(:negative?) && source_id <= 0
 
       {
         "table" => target_name.to_s,
-        "key" => reference_key(target_name, source_id, key_maps)
+        "id" => reference_id(target_name, source_id, id_maps)
       }
     end
 
-    def reference_key(target_name, source_id, key_maps)
+    def reference_id(target_name, source_id, id_maps)
       return nil if source_id.nil?
       return source_id if source_id.respond_to?(:negative?) && source_id <= 0
 
-      key_maps.fetch(target_name).fetch(source_id.to_s) do
-        key_maps.fetch(target_name).fetch(source_id) do
+      id_maps.fetch(target_name).fetch(source_id.to_s) do
+        id_maps.fetch(target_name).fetch(source_id) do
           raise MissingExportReference,
                 "#{target_name} record #{source_id.inspect} was referenced but not exported"
         end

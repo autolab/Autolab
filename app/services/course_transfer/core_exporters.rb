@@ -7,7 +7,7 @@ module CourseTransfer
     class ScoreAdjustmentExporter < Exporter
       table :score_adjustments, ScoreAdjustment
       export_fields :kind, :value, :type
-      natural_key :type, :kind, :value
+      match_by :type, :kind, :value
       reuse_existing
     end
 
@@ -16,7 +16,7 @@ module CourseTransfer
       table :users, User
       export_fields :email, :first_name, :last_name, :created_at, :updated_at,
                     :school, :major, :year, :hover_assessment_date
-      natural_key :email, case_insensitive: :email
+      match_by :email, case_insensitive: :email
       reuse_existing
 
       def records_matching(field, values)
@@ -36,7 +36,7 @@ module CourseTransfer
                     :access_code, :disable_on_end
       references late_penalty_id: :score_adjustments,
                  version_penalty_id: :score_adjustments
-      natural_key :name, case_insensitive: :name
+      match_by :name, case_insensitive: :name
 
       # @param relation [ActiveRecord::Relation<Course>]
       # @return [Hash{Symbol => ActiveRecord::Relation}]
@@ -61,7 +61,7 @@ module CourseTransfer
                     :course_assistant, :tweak_id, :user_id, :course_number
       references course_id: :courses, user_id: :users,
                  tweak_id: :score_adjustments
-      natural_key :course_id, :user_id
+      match_by :course_id, :user_id
 
       # @param relation [ActiveRecord::Relation<CourseUserDatum>]
       # @return [Hash{Symbol => ActiveRecord::Relation}]
@@ -77,7 +77,7 @@ module CourseTransfer
     class GroupExporter < Exporter
       table :groups, Group
       export_fields :name, :created_at, :updated_at
-      natural_key :name, :created_at
+      match_by :name, :created_at
     end
 
     # Transfers assessment configuration rows and discovers problems.
@@ -95,7 +95,7 @@ module CourseTransfer
                     :disable_network
       references course_id: :courses, late_penalty_id: :score_adjustments,
                  version_penalty_id: :score_adjustments
-      natural_key :course_id, :name, case_insensitive: :name
+      match_by :course_id, :name, case_insensitive: :name
 
       # @param relation [ActiveRecord::Relation<Assessment>]
       # @return [Hash{Symbol => ActiveRecord::Relation}]
@@ -116,7 +116,7 @@ module CourseTransfer
       export_fields :filename, :mime_type, :name, :created_at, :updated_at,
                     :course_id, :assessment_id, :category_name, :release_at
       references course_id: :courses, assessment_id: :assessments
-      natural_key :course_id, :assessment_id, :name, :filename, :release_at
+      match_by :course_id, :assessment_id, :name, :filename, :release_at
     end
 
     # Transfers assessment problem definitions.
@@ -125,7 +125,7 @@ module CourseTransfer
       export_fields :name, :description, :assessment_id, :created_at,
                     :updated_at, :max_score, :optional, :starred
       references assessment_id: :assessments
-      natural_key :assessment_id, :name, case_insensitive: :name
+      match_by :assessment_id, :name, case_insensitive: :name
     end
 
     # Transfers submission metadata and discovers grading children.
@@ -141,7 +141,7 @@ module CourseTransfer
                  assessment_id: :assessments,
                  submitted_by_id: :course_user_data,
                  tweak_id: :score_adjustments
-      natural_key :assessment_id, :course_user_datum_id, :version
+      match_by :assessment_id, :course_user_datum_id, :version
 
       # @param relation [ActiveRecord::Relation<Submission>]
       # @return [Hash{Symbol => ActiveRecord::Relation}]
@@ -167,7 +167,7 @@ module CourseTransfer
       references course_user_datum_id: :course_user_data,
                  assessment_id: :assessments, latest_submission_id: :submissions,
                  group_id: :groups
-      natural_key :course_user_datum_id, :assessment_id
+      match_by :course_user_datum_id, :assessment_id
 
       # @param relation [ActiveRecord::Relation<AssessmentUserDatum>]
       # @return [Hash{Symbol => ActiveRecord::Relation}]
@@ -185,7 +185,7 @@ module CourseTransfer
       export_fields :course_user_datum_id, :assessment_id, :days, :infinite
       references course_user_datum_id: :course_user_data,
                  assessment_id: :assessments
-      natural_key :course_user_datum_id, :assessment_id
+      match_by :course_user_datum_id, :assessment_id
     end
 
     # Transfers per-problem submission scores.
@@ -195,7 +195,7 @@ module CourseTransfer
                     :updated_at, :released, :grader_id
       references submission_id: :submissions, problem_id: :problems,
                  grader_id: :course_user_data
-      natural_key :submission_id, :problem_id
+      match_by :submission_id, :problem_id
 
       # @param relation [ActiveRecord::Relation<Score>]
       # @return [Hash{Symbol => ActiveRecord::Relation}]
@@ -211,8 +211,8 @@ module CourseTransfer
                     :updated_at, :submitted_by, :comment, :value, :problem_id,
                     :coordinate, :shared_comment, :global_comment
       references submission_id: :submissions, problem_id: :problems
-      natural_key :submission_id, :problem_id, :filename, :position, :line,
-                  :coordinate, :submitted_by, :comment, :value, :created_at
+      match_by :submission_id, :problem_id, :filename, :position, :line,
+               :coordinate, :submitted_by, :comment, :value, :created_at
     end
 
     # Builds the registry in foreign-key-safe import/export order.

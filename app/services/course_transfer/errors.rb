@@ -8,7 +8,6 @@ module CourseTransfer
   class UnknownExporter < ExportError; end
   class DuplicateExporter < ExportError; end
   class MissingExportReference < ExportError; end
-  class DuplicateNaturalKey < ExportError; end
 
   class CyclicImportDependencies < ImportError; end
   class InvalidPackage < ImportError; end

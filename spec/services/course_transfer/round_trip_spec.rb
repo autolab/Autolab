@@ -253,7 +253,9 @@ RSpec.describe "normalized course transfer" do
 
         adjustment_yaml = Pathname.new(directory).join("score_adjustments.yml").read
         expect(adjustment_yaml.scan(/^---$/).size).to eq(2)
-        expect(YAML.load_stream(adjustment_yaml).size).to eq(2)
+        exported_adjustments = YAML.load_stream(adjustment_yaml)
+        expect(exported_adjustments.size).to eq(2)
+        expect(exported_adjustments.pluck("_id")).to eq([1, 2])
         expect(adjustment_yaml).not_to include("records:")
 
         exported_submissions = YAML.load_stream(
@@ -263,10 +265,7 @@ RSpec.describe "normalized course transfer" do
         exported_submission = exported_submissions.first
         expect(exported_submission.fetch("assessment_id")).to include(
           "table" => "assessments",
-          "key" => {
-            "course_id" => { "name" => "transfer-course" },
-            "name" => "lab"
-          }
+          "id" => 1
         )
 
         Annotation.where(id: annotation.id).delete_all
@@ -295,15 +294,8 @@ RSpec.describe "normalized course transfer" do
         imported_course = CourseTransfer::ImportManager.new(
           registry: CourseTransfer::CoreExporters.registry,
           context: import_context,
-          user_keys: [
-            CourseTransfer::Serialization.canonical("email" => user.email.downcase)
-          ],
-          assessment_keys: [
-            CourseTransfer::Serialization.canonical(
-              "course_id" => { "name" => course.name.downcase },
-              "name" => assessment.name.downcase
-            )
-          ]
+          user_ids: [1],
+          assessment_ids: [1]
         ).import
 
         imported_user = User.find_by!(email: "transfer@example.com")
@@ -372,7 +364,7 @@ RSpec.describe "normalized course transfer" do
     end
   end
 
-  it "rolls back when a non-reusable natural key already exists" do
+  it "rolls back when the destination course identifier already exists" do
     penalty = insert_record(
       ScoreAdjustment,
       type: "Penalty",
@@ -449,10 +441,10 @@ RSpec.describe "normalized course transfer" do
       version: 2_000
     )
 
-    prepared_row = Struct.new(:database_key, keyword_init: true)
+    prepared_row = Struct.new(:database_match, keyword_init: true)
     prepared = versions.map do |version|
       prepared_row.new(
-        database_key: {
+        database_match: {
           assessment_id: assessment.id,
           course_user_datum_id: membership.id,
           version:

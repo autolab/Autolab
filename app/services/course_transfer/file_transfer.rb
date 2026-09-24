@@ -4,7 +4,6 @@ require "find"
 require "pathname"
 require_relative "errors"
 require_relative "file_pool"
-require_relative "serialization"
 
 module CourseTransfer
   # Builds and restores the filesystem-shaped portion of a course package.
@@ -14,18 +13,18 @@ module CourseTransfer
 
     # @param plan [CourseTransfer::ExportPlan]
     # @param context [CourseTransfer::Context]
-    # @param key_maps [Hash]
+    # @param id_maps [Hash]
     # @return [void]
-    def self.export(plan, context:, key_maps:)
-      new(context:, key_maps:).export(plan)
+    def self.export(plan, context:, id_maps:)
+      new(context:, id_maps:).export(plan)
     end
 
     # @param context [CourseTransfer::Context]
     # @param imported_ids [Hash{Symbol => Array<Integer>}]
-    # @param key_maps [Hash]
+    # @param id_maps [Hash]
     # @return [CourseTransfer::FileTransfer] cleanup handle
-    def self.import(context:, imported_ids:, key_maps:, selection: nil)
-      transfer = new(context:, key_maps:, selection:)
+    def self.import(context:, imported_ids:, id_maps:, selection: nil)
+      transfer = new(context:, id_maps:, selection:)
       transfer.import(imported_ids)
       transfer
     rescue StandardError
@@ -33,9 +32,9 @@ module CourseTransfer
       raise
     end
 
-    def initialize(context:, key_maps:, selection: nil)
+    def initialize(context:, id_maps:, selection: nil)
       @root = context.staging_path
-      @key_maps = key_maps
+      @id_maps = id_maps
       @selection = selection
       @uploaded_blobs = []
       @restored_course = nil
@@ -186,8 +185,8 @@ module CourseTransfer
 
       plan.relation_for(:attachments)
           .includes(attachment_file_attachment: :blob).find_each do |attachment|
-        key = @key_maps.fetch(:attachments).fetch(attachment.id)
-        destination = attachment_path(key, attachment.filename)
+        package_id = @id_maps.fetch(:attachments).fetch(attachment.id)
+        destination = attachment_path(package_id, attachment.filename)
         FileUtils.mkdir_p(destination.dirname)
 
         pool.post(attachment, destination) do |record, target|
@@ -238,12 +237,15 @@ module CourseTransfer
 
     def restore_attachments(attachment_ids)
       expected = Set.new
-      keys_by_id = @key_maps.fetch(:attachments, {}).to_h { |key, id| [id, key] }
+      package_ids_by_database_id = @id_maps.fetch(:attachments, {}).to_h do |package_id,
+                                                                              database_id|
+        [database_id, package_id]
+      end
       transfers = Attachment.where(id: attachment_ids).map do |attachment|
-        key = keys_by_id.fetch(attachment.id) do
-          raise FileTransferError, "missing portable attachment key"
+        package_id = package_ids_by_database_id.fetch(attachment.id) do
+          raise FileTransferError, "missing attachment package ID"
         end
-        source = attachment_path(key, attachment.filename)
+        source = attachment_path(package_id, attachment.filename)
         next unless source.file? && !source.symlink?
 
         expected << source.expand_path
@@ -303,7 +305,7 @@ module CourseTransfer
       return Set.new unless @selection
 
       @selection.attachment_documents.to_set do |document|
-        attachment_path(document.fetch("_key"), document.fetch("filename")).expand_path
+        attachment_path(document.fetch("_id"), document.fetch("filename")).expand_path
       end
     end
 
@@ -334,8 +336,8 @@ module CourseTransfer
       end
     end
 
-    def attachment_path(key, filename)
-      address = Digest::SHA256.hexdigest(key.is_a?(String) ? key : Serialization.canonical(key))
+    def attachment_path(package_id, filename)
+      address = Digest::SHA256.hexdigest(package_id.to_s)
       @root.join(ATTACHMENTS_DIRECTORY, address, File.basename(filename.to_s))
     end
 
