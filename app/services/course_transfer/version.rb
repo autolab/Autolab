@@ -1,5 +1,4 @@
 require "pathname"
-require "rubygems/package"
 require "yaml"
 require_relative "errors"
 
@@ -8,7 +7,6 @@ module CourseTransfer
     CURRENT = 1
     FORMAT_ID = "autolab_course_export".freeze
     MANIFEST_FILENAME = "manifest.yml".freeze
-    LEGACY = "legacy".freeze
 
     class Unsupported < Error; end
     class InvalidManifest < Error; end
@@ -26,33 +24,10 @@ module CourseTransfer
       path
     end
 
-    def self.detect(staging_path)
-      read_manifest(staging_path)&.fetch("version", nil) || LEGACY
-    end
-
-    def self.detect_from_tar_file(tar_path)
-      File.open(tar_path, "rb") do |io|
-        Gem::Package::TarReader.new(io) do |tar|
-          manifest = nil
-          tar.each do |entry|
-            next unless Pathname.new(entry.full_name.to_s).cleanpath.to_s == MANIFEST_FILENAME
-            raise InvalidManifest, "manifest.yml appears more than once" if manifest
-            raise InvalidManifest, "manifest.yml must be a regular file" unless entry.file?
-
-            manifest = parse_manifest_yaml(entry.read)
-          end
-          return manifest.fetch("version") if manifest
-        end
-      end
-      LEGACY
-    end
-
     def self.read_manifest(staging_path)
       path = Pathname.new(staging_path).join(MANIFEST_FILENAME)
       parse_manifest_yaml(path.read) if path.file?
     end
-
-    def self.legacy?(version) = version.to_s == LEGACY
 
     def self.assert_importable!(version)
       return true if version == CURRENT

@@ -4,10 +4,7 @@ require Rails.root.join("app/services/course_transfer/export")
 
 RSpec.describe CourseTransfer::FileTransfer do
   def transfer(root)
-    context = CourseTransfer::Context.new(
-      staging_path: root,
-      version: CourseTransfer::Version::CURRENT
-    )
+    context = CourseTransfer::Context.new(staging_path: root)
     described_class.new(context:, id_maps: {})
   end
 
@@ -48,7 +45,7 @@ RSpec.describe CourseTransfer::FileTransfer do
     end
   end
 
-  it "copies course trees concurrently when an atomic move crosses filesystems" do
+  it "moves course trees across filesystems" do
     Dir.mktmpdir("course-transfer-files-") do |directory|
       root = Pathname.new(directory)
       source = root.join("source")
@@ -56,7 +53,7 @@ RSpec.describe CourseTransfer::FileTransfer do
       FileUtils.mkdir_p(source.join("empty"))
       source.join("first.txt").write("first")
       source.join("second.txt").write("second")
-      allow(File).to receive(:rename).with(source, destination).and_raise(Errno::EXDEV)
+      allow(File).to receive(:rename).with(source.to_s, destination.to_s).and_raise(Errno::EXDEV)
 
       transfer(root).send(:move_tree, source, destination)
 

@@ -72,10 +72,7 @@ RSpec.describe CourseTransfer::ImportSelection do
         "parts" => documents.keys.map(&:to_s)
       }.to_yaml)
 
-      context = CourseTransfer::Context.new(
-        staging_path: root,
-        version: CourseTransfer::Version::CURRENT
-      )
+      context = CourseTransfer::Context.new(staging_path: root)
       selection = described_class.new(
         context:,
         user_ids: ["1"],

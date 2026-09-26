@@ -10,34 +10,13 @@ RSpec.describe CourseTransfer::Version do
     }
   end
 
-  it "uses the same manifest validation for tar detection and extracted packages" do
+  it "reads and validates manifests" do
     Dir.mktmpdir("course-version-") do |directory|
       root = Pathname.new(directory)
-      manifest_path = root.join(described_class::MANIFEST_FILENAME)
-      manifest_path.write(manifest.to_yaml)
-      expect(described_class.detect(root)).to eq(described_class::CURRENT)
+      root.join(described_class::MANIFEST_FILENAME).write(manifest.to_yaml)
       expect(described_class.read_manifest(root)).to eq(manifest)
 
-      tar_path = root.join("package.tar")
-      File.open(tar_path, "wb") do |file|
-        Gem::Package::TarWriter.new(file) do |tar|
-          tar.add_file(described_class::MANIFEST_FILENAME, 0o644) do |entry|
-            entry.write(manifest.to_yaml)
-          end
-        end
-      end
-      expect(described_class.detect_from_tar_file(tar_path)).to eq(described_class::CURRENT)
-    end
-  end
-
-  it "rejects manifests without parts consistently" do
-    Dir.mktmpdir("course-version-invalid-") do |directory|
-      root = Pathname.new(directory)
-      invalid = manifest.except("parts")
-      root.join(described_class::MANIFEST_FILENAME).write(invalid.to_yaml)
-
-      expect { described_class.detect(root) }
-        .to raise_error(described_class::InvalidManifest, /parts/)
+      root.join(described_class::MANIFEST_FILENAME).write(manifest.except("parts").to_yaml)
       expect { described_class.read_manifest(root) }
         .to raise_error(described_class::InvalidManifest, /parts/)
     end

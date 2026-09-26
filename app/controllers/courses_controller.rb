@@ -273,11 +273,6 @@ class CoursesController < ApplicationController
     end
 
     tar_path = params[:tarFile].tempfile.path
-    version = CourseTransfer::Version.detect_from_tar_file(tar_path)
-    if CourseTransfer::Version.legacy?(version)
-      flash.now[:error] = "This is a legacy package. Preview it again before importing."
-      render(action: :new, status: :unprocessable_entity) && return
-    end
 
     imported_course = nil
 
@@ -285,7 +280,6 @@ class CoursesController < ApplicationController
       staging_path = CourseTransfer::Package.extract(tar_path, directory)
       context = CourseTransfer::Context.new(
         staging_path:,
-        version:,
         course_identifier:,
         instructor_email:
       )
@@ -1026,8 +1020,7 @@ private
     Dir.mktmpdir("autolab-course-export-", Rails.root.join("tmp")) do |staging_dir|
       staging_path = Pathname.new(staging_dir)
       context = CourseTransfer::Context.new(
-        staging_path:,
-        version: CourseTransfer::Version::CURRENT
+        staging_path:
       )
 
       selected_users = User.where(id: Array(params[:user_ids]).reject(&:blank?))
@@ -1035,14 +1028,14 @@ private
         id: Array(params[:assessment_ids]).reject(&:blank?)
       )
       manager = CourseTransfer::ExportManager.new(context:)
-      plan = manager.build_plan(
+      relations = manager.build_relations(
         CourseTransfer::ExportSelection.new(
           course: @course,
           users: selected_users,
           assessments: selected_assessments
         )
       )
-      manager.export(plan)
+      manager.export(relations)
 
       CourseTransfer::Package.pack(staging_path, tar_file.path)
     end

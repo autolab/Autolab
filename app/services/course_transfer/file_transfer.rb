@@ -10,12 +10,12 @@ module CourseTransfer
     COURSE_DIRECTORY = Pathname.new("files/course").freeze
     ATTACHMENTS_DIRECTORY = Pathname.new("files/attachments").freeze
 
-    # @param plan [CourseTransfer::ExportPlan]
+    # @param relations [Hash]
     # @param context [CourseTransfer::Context]
     # @param id_maps [Hash]
     # @return [void]
-    def self.export(plan, context:, id_maps:)
-      new(context:, id_maps:).export(plan)
+    def self.export(relations, context:, id_maps:)
+      new(context:, id_maps:).export(relations)
     end
 
     # @param context [CourseTransfer::Context]
@@ -40,24 +40,24 @@ module CourseTransfer
     end
 
     # Copies the course tree with unselected assessments and users filtered out.
-    # Files are hard-linked into staging when possible and copied otherwise.
+    # Files are copied into staging.
     #
-    # @param plan [CourseTransfer::ExportPlan]
+    # @param relations [Hash]
     # @return [void]
-    def export(plan)
-      course = plan.relation_for(:courses).first!
+    def export(relations)
+      course = relations.fetch(:courses).first!
       destination = @root.join(COURSE_DIRECTORY)
       FileUtils.mkdir_p(destination)
 
-      assessments = plan.relation_for(:assessments).includes(:course).to_a
-      exported_user_ids = plan.relation_for(:users).pluck(:id)
+      assessments = relations.fetch(:assessments).includes(:course).to_a
+      exported_user_ids = relations.fetch(:users).pluck(:id)
       excluded_emails = course.course_user_data.joins(:user)
                               .where.not(user_id: exported_user_ids)
                               .pluck("users.email")
 
       copy_course_root(course, assessments, destination)
       copy_assessments(assessments, exported_user_ids, excluded_emails, destination)
-      export_attachments(plan)
+      export_attachments(relations)
     rescue ActiveRecord::ActiveRecordError, SystemCallError => e
       raise FileTransferError, "unable to export course files: #{e.message}"
     end
@@ -159,24 +159,17 @@ module CourseTransfer
         if path.directory?
           FileUtils.mkdir_p(target)
         elsif path.file?
-          link_or_copy(path, target)
+          FileUtils.copy_file(path, target)
         else
           raise FileTransferError, "special files are not exportable: #{path}"
         end
       end
     end
 
-    def link_or_copy(source, destination)
-      FileUtils.mkdir_p(destination.dirname)
-      File.link(source, destination)
-    rescue Errno::EXDEV, Errno::EPERM, Errno::EACCES, Errno::EOPNOTSUPP
-      FileUtils.copy_file(source, destination)
-    end
+    def export_attachments(relations)
+      return unless relations.key?(:attachments)
 
-    def export_attachments(plan)
-      return unless plan.include?(:attachments)
-
-      plan.relation_for(:attachments)
+      relations.fetch(:attachments)
           .includes(attachment_file_attachment: :blob).find_each do |attachment|
         package_id = @id_maps.fetch(:attachments).fetch(attachment.id)
         destination = attachment_path(package_id, attachment.filename)
@@ -193,7 +186,7 @@ module CourseTransfer
         end
       else
         fallback = Rails.root.join("attachments", attachment.filename.to_s)
-        link_or_copy(fallback, destination) if fallback.file? && !fallback.symlink?
+        FileUtils.copy_file(fallback, destination) if fallback.file? && !fallback.symlink?
       end
     end
 
@@ -217,11 +210,7 @@ module CourseTransfer
     end
 
     def move_tree(source, destination)
-      File.rename(source, destination)
-    rescue Errno::EXDEV
-      FileUtils.mkdir_p(destination)
-      copy_tree(source, destination)
-      FileUtils.rm_rf(source)
+      FileUtils.mv(source, destination)
     end
 
     def restore_attachments(attachment_ids)
@@ -241,11 +230,16 @@ module CourseTransfer
         [attachment, source]
       end.compact
 
-      blobs = prepare_attachment_blobs(transfers)
-      blobs.each(&:save!)
-      @uploaded_blobs.concat(blobs)
-      upload_attachment_blobs(transfers, blobs)
-      transfers.zip(blobs).each do |(attachment, _source), blob|
+      transfers.each do |attachment, source|
+        blob = File.open(source, "rb") do |input|
+          ActiveStorage::Blob.create_and_upload!(
+            io: input,
+            filename: attachment.filename,
+            content_type: attachment.mime_type,
+            identify: false
+          )
+        end
+        @uploaded_blobs << blob
         attachment.attachment_file.attach(blob)
       end
 
@@ -253,23 +247,6 @@ module CourseTransfer
       known = known_attachment_files
       unknown = actual - (known.empty? ? expected : known)
       raise FileTransferError, "package contains an unknown attachment file" if unknown.any?
-    end
-
-    def prepare_attachment_blobs(transfers)
-      transfers.map do |attachment, source|
-        ActiveStorage::Blob.new(
-          filename: attachment.filename,
-          content_type: attachment.mime_type
-        ).tap do |blob|
-          File.open(source, "rb") { |input| blob.unfurl(input, identify: false) }
-        end
-      end
-    end
-
-    def upload_attachment_blobs(transfers, blobs)
-      transfers.zip(blobs).each do |(_attachment, source), blob|
-        File.open(source, "rb") { |input| blob.upload_without_unfurling(input) }
-      end
     end
 
     def attachment_files

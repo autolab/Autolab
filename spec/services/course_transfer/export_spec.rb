@@ -3,16 +3,6 @@ require "tmpdir"
 require Rails.root.join("app/services/course_transfer/export")
 require Rails.root.join("app/services/course_transfer/import")
 
-RSpec.describe CourseTransfer::ExportPlan do
-  it "stores lazy relations by table-file name" do
-    relation = User.where(administrator: false)
-    plan = described_class.new(users: relation)
-
-    expect(plan.names).to eq([:users])
-    expect(plan.relation_for(:users)).to equal(relation)
-  end
-end
-
 RSpec.describe CourseTransfer::ExportManager do
   it "uses incremental package IDs and preserves null foreign keys" do
     table = CourseTransfer::Schema.fetch(:attachments)
@@ -111,8 +101,8 @@ RSpec.describe CourseTransfer::ExportSelection do
     expect(seeds.fetch(:assessments)).to contain_exactly(selected_assessment)
     expect(seeds.fetch(:submissions)).to contain_exactly(included_submission)
 
-    plan = CourseTransfer::ExportManager.new(context: nil).build_plan(selection)
-    expect(plan.relation_for(:submissions)).to contain_exactly(included_submission)
+    relations = CourseTransfer::ExportManager.new(context: nil).build_relations(selection)
+    expect(relations.fetch(:submissions)).to contain_exactly(included_submission)
   end
 
   it "can export a course without users, assessments, or submissions" do
@@ -127,12 +117,9 @@ RSpec.describe CourseTransfer::ExportSelection do
     expect(seeds.fetch(:submissions)).to be_empty
 
     Dir.mktmpdir("course-transfer-empty-") do |directory|
-      context = CourseTransfer::Context.new(
-        staging_path: directory,
-        version: CourseTransfer::Version::CURRENT
-      )
+      context = CourseTransfer::Context.new(staging_path: directory)
       manager = CourseTransfer::ExportManager.new(context:)
-      manager.export(manager.build_plan(selection))
+      manager.export(manager.build_relations(selection))
 
       courses_yaml = Pathname.new(directory).join("courses.yml").read
       expect(courses_yaml).to start_with("---\n_id: 1\n")

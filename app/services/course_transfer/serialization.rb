@@ -1,5 +1,4 @@
 require "bigdecimal"
-require "json"
 require "psych"
 require "yaml"
 
@@ -19,12 +18,6 @@ module CourseTransfer
       when Array then value.map { |item| normalize(item) }
       else value
       end
-    end
-
-    # @param value [Object]
-    # @return [String]
-    def canonical(value)
-      JSON.generate(normalize(value))
     end
 
     # @param output [IO]

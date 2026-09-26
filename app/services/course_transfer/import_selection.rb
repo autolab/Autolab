@@ -6,12 +6,15 @@ require_relative "version"
 module CourseTransfer
   # Computes the subset of package rows required by an import selection.
   class ImportSelection
-    attr_reader :included_ids, :documents
+    attr_reader :included_ids, :documents, :parts
 
     def initialize(context:, user_ids:, assessment_ids:)
       @context = context
+      @all_users = user_ids.nil?
+      @all_assessments = assessment_ids.nil?
       @selected_user_ids = selected_ids(user_ids)
       @selected_assessment_ids = selected_ids(assessment_ids)
+      @parts = package_parts
       @documents = load_documents
       @included_ids = Hash.new { |hash, name| hash[name] = Set.new }
       @documents.each_key { |name| @included_ids[name] }
@@ -51,7 +54,7 @@ module CourseTransfer
     end
 
     def load_documents
-      package_parts.to_h do |name|
+      parts.to_h do |name|
         table = Schema.fetch(name)
         path = @context.staging_path.join(table.filename)
         raise InvalidPackage, "#{table.filename} is missing" unless path.file?
@@ -83,10 +86,12 @@ module CourseTransfer
 
     def build!
       include_matching(:courses) { true }
-      include_matching(:users) { |document| @selected_user_ids.include?(id_for(document)) }
+      include_matching(:users) do |document|
+        @all_users || @selected_user_ids.include?(id_for(document))
+      end
       include_matching(:course_user_data) { |document| included_reference?(document, "user_id") }
       include_matching(:assessments) do |document|
-        @selected_assessment_ids.include?(id_for(document))
+        @all_assessments || @selected_assessment_ids.include?(id_for(document))
       end
       include_matching(:submissions) do |document|
         included_reference?(document, "course_user_datum_id") &&

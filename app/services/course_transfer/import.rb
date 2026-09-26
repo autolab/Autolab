@@ -3,25 +3,21 @@ require_relative "file_transfer"
 require_relative "import_finalizer"
 require_relative "import_selection"
 require_relative "schema"
-require_relative "serialization"
-require_relative "version"
 
 module CourseTransfer
   class ImportManager
     attr_reader :context
 
-    def initialize(context:, selection: nil, user_ids: nil, assessment_ids: nil)
+    def initialize(context:, user_ids: nil, assessment_ids: nil)
       @context = context
-      @selection = selection
       @user_ids = user_ids
       @assessment_ids = assessment_ids
     end
 
     def import
-      @selection ||= ImportSelection.new(
+      @selection = ImportSelection.new(
         context:, user_ids: @user_ids, assessment_ids: @assessment_ids
-      ) if !@user_ids.nil? || !@assessment_ids.nil?
-      parts = package_parts
+      )
       @course_identifier = destination_course_identifier
       @imported_ids = Hash.new { |hash, name| hash[name] = [] }
       cleanup = nil
@@ -29,7 +25,7 @@ module CourseTransfer
 
       ApplicationRecord.transaction(requires_new: true) do
         id_maps = Hash.new { |hash, name| hash[name] = {} }
-        Schema.each { |table| import_table(table, id_maps) if parts.include?(table.name) }
+        Schema.each { |table| import_table(table, id_maps) if @selection.parts.include?(table.name) }
 
         course = imported_course(id_maps)
         ensure_import_instructor(course) if context.instructor_email.present?
@@ -49,40 +45,9 @@ module CourseTransfer
 
   private
 
-    def package_parts
-      manifest = Version.read_manifest(context.staging_path)
-      raise InvalidPackage, "manifest.yml is missing" unless manifest
-
-      Version.assert_importable!(manifest.fetch("version"))
-      parts = manifest.fetch("parts").map(&:to_sym).to_set
-      parts.each { |name| Schema.fetch(name) }
-      raise InvalidPackage, "manifest must include courses" unless parts.include?(:courses)
-
-      parts
-    rescue KeyError => e
-      raise InvalidPackage, "invalid manifest entry: #{e.message}"
-    rescue Psych::SyntaxError => e
-      raise InvalidPackage, "manifest.yml is invalid YAML: #{e.message}"
-    end
-
-    def table_documents(table)
-      path = context.staging_path.join(table.filename)
-      raise InvalidPackage, "#{table.filename} is missing" unless path.file?
-
-      Enumerator.new do |documents|
-        File.open(path, "rb") do |input|
-          Serialization.each_document(input, filename: table.filename) do |document|
-            documents << document
-          end
-        end
-      rescue Psych::Exception => e
-        raise InvalidPackage, "#{table.filename} is invalid YAML: #{e.message}"
-      end
-    end
-
     def import_table(table, id_maps)
       expected_id = 0
-      table_documents(table).each do |document|
+      @selection.documents.fetch(table.name).each_value do |document|
         validate_document!(table, document)
         package_id = document.fetch("_id")
         expected_id += 1
@@ -90,7 +55,7 @@ module CourseTransfer
           raise InvalidPackage,
                 "#{table.filename} expected _id #{expected_id}, got #{package_id.inspect}"
         end
-        next if @selection && !@selection.include?(table.name, document)
+        next unless @selection.include?(table.name, document)
 
         attributes = table.fields.to_h do |field|
           value = document.fetch(field.to_s)
@@ -112,34 +77,26 @@ module CourseTransfer
     end
 
     def insert_or_reuse(table, attributes, database_match)
-      existing = matching_ids(table, database_match)
-      if existing.any?
-        unless table.reuse_existing?
-          raise ImportCollision, "#{table.name} already contains #{database_match.inspect}"
-        end
-        return [existing.min, false]
+      reusable = case table.name
+                 when :users
+                   User.where("LOWER(email) = ?", attributes.fetch(:email).downcase).pick(:id)
+                 when :score_adjustments
+                   ScoreAdjustment.find_by(database_match)&.id
+                 end
+      return [reusable, false] if reusable
+
+      if table.model_class.exists?(database_match)
+        raise ImportCollision, "#{table.name} already contains #{database_match.inspect}"
       end
 
       # Callbacks are intentionally skipped; ImportFinalizer rebuilds derived state once.
       # rubocop:disable Rails/SkipsModelValidations
       table.model_class.insert_all!([attributes])
       # rubocop:enable Rails/SkipsModelValidations
-      inserted = matching_ids(table, database_match)
-      raise ImportError, "could not find imported #{table.name} record" unless inserted.one?
+      inserted = table.model_class.where(database_match).pick(table.model_class.primary_key)
+      raise ImportError, "could not find imported #{table.name} record" unless inserted
 
-      [inserted.first, true]
-    end
-
-    def matching_ids(table, database_match)
-      lookup_field = table.match_fields.find { |field| table.ref_fields.key?(field) } ||
-                     table.match_fields.first
-      scope = table.records_matching(lookup_field, [database_match.fetch(lookup_field)])
-      desired = database_match_signature(table, database_match)
-      columns = [table.model_class.primary_key, *table.match_fields]
-      scope.pluck(*columns).filter_map do |id, *values|
-        candidate = table.match_fields.zip(values).to_h
-        id if database_match_signature(table, candidate) == desired
-      end
+      [inserted, true]
     end
 
     def validate_document!(table, document)
@@ -193,7 +150,7 @@ module CourseTransfer
     end
 
     def destination_course_identifier
-      documents = table_documents(Schema.fetch(:courses)).to_a
+      documents = @selection.documents.fetch(:courses).values
       unless documents.one? && documents.first["name"].present?
         raise InvalidPackage, "a package must contain exactly one named course"
       end
@@ -235,12 +192,5 @@ module CourseTransfer
       raise ImportError, "failed to create import instructor: #{e.message}"
     end
 
-    def database_match_signature(table, database_match)
-      normalized = database_match.to_h do |field, value|
-        value = table.normalize_match_value(field, value) unless table.ref_fields.key?(field)
-        [field, value]
-      end
-      Serialization.canonical(normalized)
-    end
   end
 end

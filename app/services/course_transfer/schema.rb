@@ -1,7 +1,6 @@
 module CourseTransfer
   Table = Struct.new(
-    :name, :model_class, :fields, :ref_fields, :match_fields,
-    :case_insensitive, :reuse_existing, :dependency_scope,
+    :name, :model_class, :fields, :ref_fields, :match_fields, :dependency_scope,
     keyword_init: true
   ) do
     def filename = "#{name}.yml"
@@ -18,19 +17,6 @@ module CourseTransfer
       dependency_scope ? dependency_scope.call(relation) : {}
     end
 
-    def normalize_match_value(field, value)
-      case_insensitive.include?(field) ? value.to_s.downcase : value
-    end
-
-    def records_matching(field, values)
-      if name == :users && field == :email
-        model_class.where("LOWER(email) IN (?)", values.map { |value| value.to_s.downcase })
-      else
-        model_class.where(field => values)
-      end
-    end
-
-    def reuse_existing? = reuse_existing
   end
 
   module Schema
@@ -42,15 +28,13 @@ module CourseTransfer
     TABLES = [
       Table.new(
         name: :score_adjustments, model_class: ScoreAdjustment,
-        fields: %i[kind value type], ref_fields: {}, match_fields: %i[type kind value],
-        case_insensitive: [], reuse_existing: true
+        fields: %i[kind value type], ref_fields: {}, match_fields: %i[type kind value]
       ),
       Table.new(
         name: :users, model_class: User,
         fields: %i[email first_name last_name created_at updated_at school major year
                    hover_assessment_date],
-        ref_fields: {}, match_fields: %i[email], case_insensitive: %i[email],
-        reuse_existing: true
+        ref_fields: {}, match_fields: %i[email]
       ),
       Table.new(
         name: :courses, model_class: Course,
@@ -59,7 +43,7 @@ module CourseTransfer
                    cgdub_dependencies_updated_at gb_message website access_code disable_on_end],
         ref_fields: { late_penalty_id: :score_adjustments,
                       version_penalty_id: :score_adjustments },
-        match_fields: %i[name], case_insensitive: %i[name], reuse_existing: false,
+        match_fields: %i[name],
         dependency_scope: lambda { |relation|
           {
             score_adjustments: referenced(
@@ -75,7 +59,7 @@ module CourseTransfer
                    nickname course_assistant tweak_id user_id course_number],
         ref_fields: { course_id: :courses, user_id: :users,
                       tweak_id: :score_adjustments },
-        match_fields: %i[course_id user_id], case_insensitive: [], reuse_existing: false,
+        match_fields: %i[course_id user_id],
         dependency_scope: lambda { |relation|
           {
             users: User.where(id: relation.select(:user_id)),
@@ -85,8 +69,7 @@ module CourseTransfer
       ),
       Table.new(
         name: :groups, model_class: Group, fields: %i[name created_at updated_at],
-        ref_fields: {}, match_fields: %i[name created_at], case_insensitive: [],
-        reuse_existing: false
+        ref_fields: {}, match_fields: %i[name created_at]
       ),
       Table.new(
         name: :assessments, model_class: Assessment,
@@ -98,7 +81,7 @@ module CourseTransfer
                    allow_student_assign_group is_positive_grading disable_network],
         ref_fields: { course_id: :courses, late_penalty_id: :score_adjustments,
                       version_penalty_id: :score_adjustments },
-        match_fields: %i[course_id name], case_insensitive: %i[name], reuse_existing: false,
+        match_fields: %i[course_id name],
         dependency_scope: lambda { |relation|
           {
             score_adjustments: referenced(
@@ -114,14 +97,12 @@ module CourseTransfer
         fields: %i[filename mime_type name created_at updated_at course_id assessment_id
                    category_name release_at],
         ref_fields: { course_id: :courses, assessment_id: :assessments },
-        match_fields: %i[course_id assessment_id name filename release_at],
-        case_insensitive: [], reuse_existing: false
+        match_fields: %i[course_id assessment_id name filename release_at]
       ),
       Table.new(
         name: :problems, model_class: Problem,
         fields: %i[name description assessment_id created_at updated_at max_score optional starred],
-        ref_fields: { assessment_id: :assessments }, match_fields: %i[assessment_id name],
-        case_insensitive: %i[name], reuse_existing: false
+        ref_fields: { assessment_id: :assessments }, match_fields: %i[assessment_id name]
       ),
       Table.new(
         name: :submissions, model_class: Submission,
@@ -131,7 +112,6 @@ module CourseTransfer
         ref_fields: { course_user_datum_id: :course_user_data, assessment_id: :assessments,
                       submitted_by_id: :course_user_data, tweak_id: :score_adjustments },
         match_fields: %i[assessment_id course_user_datum_id version],
-        case_insensitive: [], reuse_existing: false,
         dependency_scope: lambda { |relation|
           {
             course_user_data: referenced(
@@ -151,7 +131,6 @@ module CourseTransfer
         ref_fields: { course_user_datum_id: :course_user_data, assessment_id: :assessments,
                       latest_submission_id: :submissions, group_id: :groups },
         match_fields: %i[course_user_datum_id assessment_id],
-        case_insensitive: [], reuse_existing: false,
         dependency_scope: lambda { |relation|
           {
             submissions: Submission.where(id: relation.select(:latest_submission_id)),
@@ -163,15 +142,14 @@ module CourseTransfer
         name: :extensions, model_class: Extension,
         fields: %i[course_user_datum_id assessment_id days infinite],
         ref_fields: { course_user_datum_id: :course_user_data, assessment_id: :assessments },
-        match_fields: %i[course_user_datum_id assessment_id],
-        case_insensitive: [], reuse_existing: false
+        match_fields: %i[course_user_datum_id assessment_id]
       ),
       Table.new(
         name: :scores, model_class: Score,
         fields: %i[submission_id score feedback problem_id created_at updated_at released grader_id],
         ref_fields: { submission_id: :submissions, problem_id: :problems,
                       grader_id: :course_user_data },
-        match_fields: %i[submission_id problem_id], case_insensitive: [], reuse_existing: false,
+        match_fields: %i[submission_id problem_id],
         dependency_scope: lambda { |relation|
           { course_user_data: CourseUserDatum.where(id: relation.select(:grader_id)) }
         }
@@ -182,8 +160,7 @@ module CourseTransfer
                    value problem_id coordinate shared_comment global_comment],
         ref_fields: { submission_id: :submissions, problem_id: :problems },
         match_fields: %i[submission_id problem_id filename position line coordinate submitted_by
-                         comment value created_at],
-        case_insensitive: [], reuse_existing: false
+                         comment value created_at]
       )
     ].freeze
 

@@ -223,10 +223,7 @@ RSpec.describe "normalized course transfer" do
       source_tree.join("private-lab", "private.txt").write("private assessment\n")
 
       Dir.mktmpdir("course-transfer-spec-") do |directory|
-        export_context = CourseTransfer::Context.new(
-          staging_path: directory,
-          version: CourseTransfer::Version::CURRENT
-        )
+        export_context = CourseTransfer::Context.new(staging_path: directory)
         export_manager = CourseTransfer::ExportManager.new(context: export_context)
         selection = CourseTransfer::ExportSelection.new(
           course:,
@@ -234,8 +231,8 @@ RSpec.describe "normalized course transfer" do
           assessments: Assessment.where(id: assessment.id)
         )
 
-        plan = export_manager.build_plan(selection)
-        export_manager.export(plan)
+        relations = export_manager.build_relations(selection)
+        export_manager.export(relations)
 
         exported_tree = Pathname.new(directory).join("files", "course")
         expect(Pathname.new(directory).join("files.yml")).not_to exist
@@ -286,7 +283,6 @@ RSpec.describe "normalized course transfer" do
 
         import_context = CourseTransfer::Context.new(
           staging_path: directory,
-          version: CourseTransfer::Version::CURRENT,
           course_identifier: "imported-transfer-course",
           instructor_email: "new-instructor@example.com"
         )
@@ -384,17 +380,11 @@ RSpec.describe "normalized course transfer" do
     )
 
     Dir.mktmpdir("course-transfer-collision-") do |directory|
-      context = CourseTransfer::Context.new(
-        staging_path: directory,
-        version: CourseTransfer::Version::CURRENT
-      )
+      context = CourseTransfer::Context.new(staging_path: directory)
       manager = CourseTransfer::ExportManager.new(context:)
-      manager.export(manager.build_plan(CourseTransfer::ExportSelection.new(course:)))
+      manager.export(manager.build_relations(CourseTransfer::ExportSelection.new(course:)))
 
-      import_context = CourseTransfer::Context.new(
-        staging_path: directory,
-        version: CourseTransfer::Version::CURRENT
-      )
+      import_context = CourseTransfer::Context.new(staging_path: directory)
 
       course_count = Course.count
       expect do

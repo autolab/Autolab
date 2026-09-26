@@ -44,16 +44,6 @@ module CourseTransfer
     end
   end
 
-  class ExportPlan
-    def initialize(relations)
-      @relations = relations.transform_keys(&:to_sym).freeze
-    end
-
-    def relation_for(name) = @relations.fetch(name.to_sym)
-    def include?(name) = @relations.key?(name.to_sym)
-    def names = @relations.keys
-  end
-
   class ExportManager
     PREVIEW_FILENAME = "preview.json".freeze
 
@@ -63,7 +53,7 @@ module CourseTransfer
       @context = context
     end
 
-    def build_plan(selection)
+    def build_relations(selection)
       fragments = Hash.new { |hash, name| hash[name] = [] }
       queue = selection.seed_relations.to_a
       visited = Set.new
@@ -78,25 +68,25 @@ module CourseTransfer
         table.dependencies(relation).each { |dependency| queue << dependency }
       end
 
-      ExportPlan.new(
-        fragments.transform_values { |scopes| scopes.reduce { |combined, scope| combined.or(scope) } }
-      )
+      fragments.transform_values do |scopes|
+        scopes.reduce { |combined, scope| combined.or(scope) }
+      end
     end
 
-    def export(plan)
+    def export(relations)
       FileUtils.mkdir_p(context.staging_path)
       id_maps = Hash.new { |hash, name| hash[name] = {} }
 
       Schema.each do |table|
-        next unless plan.include?(table.name)
+        next unless relations.key?(table.name)
 
-        write_table(table, plan.relation_for(table.name), id_maps)
+        write_table(table, relations.fetch(table.name), id_maps)
       end
 
-      write_preview(plan, id_maps)
-      Version.write_manifest!(context, parts: plan.names)
-      FileTransfer.export(plan, context:, id_maps:)
-      plan
+      write_preview(relations, id_maps)
+      Version.write_manifest!(context, parts: relations.keys)
+      FileTransfer.export(relations, context:, id_maps:)
+      relations
     end
 
   private
@@ -137,15 +127,15 @@ module CourseTransfer
       { "table" => target.to_s, "id" => package_id }
     end
 
-    def write_preview(plan, id_maps)
-      memberships = plan.relation_for(:course_user_data)
+    def write_preview(relations, id_maps)
+      memberships = relations.fetch(:course_user_data)
                         .pluck(:user_id, :instructor, :course_assistant)
                         .to_h { |user_id, instructor, assistant|
                           role = instructor ? "Instructor" :
                             (assistant ? "Course Assistant (TA)" : "Student")
                           [user_id, role]
                         }
-      users = plan.relation_for(:users).pluck(:id, :email, :first_name, :last_name).map do |
+      users = relations.fetch(:users).pluck(:id, :email, :first_name, :last_name).map do |
         id, email, first_name, last_name|
         name = [first_name, last_name].compact.join(" ").strip
         {
@@ -155,7 +145,7 @@ module CourseTransfer
           role: memberships.fetch(id, "Student")
         }
       end
-      assessments = plan.relation_for(:assessments).pluck(:id, :name, :display_name).map do |
+      assessments = relations.fetch(:assessments).pluck(:id, :name, :display_name).map do |
         id, name, display_name|
         {
           id: id_maps.fetch(:assessments).fetch(id).to_s,
@@ -165,7 +155,7 @@ module CourseTransfer
       end
 
       preview = {
-        version: context.version,
+        version: Version::CURRENT,
         users: users.sort_by { |user| [user.fetch(:name).downcase, user.fetch(:email).downcase] },
         assessments: assessments.sort_by { |assessment|
           [assessment.fetch(:name).downcase, assessment.fetch(:identifier).downcase]
