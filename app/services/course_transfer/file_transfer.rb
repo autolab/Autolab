@@ -3,7 +3,6 @@ require "fileutils"
 require "find"
 require "pathname"
 require_relative "errors"
-require_relative "file_pool"
 
 module CourseTransfer
   # Builds and restores the filesystem-shaped portion of a course package.
@@ -56,11 +55,9 @@ module CourseTransfer
                               .where.not(user_id: exported_user_ids)
                               .pluck("users.email")
 
-      FilePool.open do |pool|
-        copy_course_root(course, assessments, destination, pool)
-        copy_assessments(assessments, exported_user_ids, excluded_emails, destination, pool)
-        export_attachments(plan, pool)
-      end
+      copy_course_root(course, assessments, destination)
+      copy_assessments(assessments, exported_user_ids, excluded_emails, destination)
+      export_attachments(plan)
     rescue ActiveRecord::ActiveRecordError, SystemCallError => e
       raise FileTransferError, "unable to export course files: #{e.message}"
     end
@@ -86,10 +83,10 @@ module CourseTransfer
 
   private
 
-    def copy_course_root(course, assessments, destination, pool)
+    def copy_course_root(course, assessments, destination)
       excluded = course.assessments.pluck(:name).map { |name| course.directory_path.join(name) }
       excluded << course.directory_path.join("autolab.log")
-      copy_tree(course.directory_path, destination, pool:) do |path|
+      copy_tree(course.directory_path, destination) do |path|
         excluded.any? { |root| within?(path, root) }
       end
 
@@ -97,7 +94,7 @@ module CourseTransfer
       assessments.each { |assessment| FileUtils.mkdir_p(destination.join(assessment.name)) }
     end
 
-    def copy_assessments(assessments, exported_user_ids, excluded_emails, destination, pool)
+    def copy_assessments(assessments, exported_user_ids, excluded_emails, destination)
       assessment_ids = assessments.map(&:id)
       excluded_paths = excluded_submission_paths(
         assessment_ids, assessments.first&.course_id, exported_user_ids
@@ -108,7 +105,7 @@ module CourseTransfer
         handin = if assessment.handin_directory.present?
                    assessment.handin_directory_path.expand_path
                  end
-        copy_tree(assessment.folder_path, destination.join(assessment.name), pool:) do |path|
+        copy_tree(assessment.folder_path, destination.join(assessment.name)) do |path|
           excluded_handin_path?(path, handin, excluded_paths, excluded_emails)
         end
       end
@@ -142,7 +139,7 @@ module CourseTransfer
       excluded_emails.any? { |email| path.basename.to_s.downcase.include?(email) }
     end
 
-    def copy_tree(source, destination, pool: nil)
+    def copy_tree(source, destination)
       source = Pathname.new(source).expand_path
       return unless source.directory?
       raise FileTransferError, "symbolic links are not exportable: #{source}" if source.symlink?
@@ -162,11 +159,7 @@ module CourseTransfer
         if path.directory?
           FileUtils.mkdir_p(target)
         elsif path.file?
-          if pool
-            pool.post(path, target) { |from, to| link_or_copy(from, to) }
-          else
-            link_or_copy(path, target)
-          end
+          link_or_copy(path, target)
         else
           raise FileTransferError, "special files are not exportable: #{path}"
         end
@@ -180,7 +173,7 @@ module CourseTransfer
       FileUtils.copy_file(source, destination)
     end
 
-    def export_attachments(plan, pool)
+    def export_attachments(plan)
       return unless plan.include?(:attachments)
 
       plan.relation_for(:attachments)
@@ -189,9 +182,7 @@ module CourseTransfer
         destination = attachment_path(package_id, attachment.filename)
         FileUtils.mkdir_p(destination.dirname)
 
-        pool.post(attachment, destination) do |record, target|
-          export_attachment(record, target)
-        end
+        export_attachment(attachment, destination)
       end
     end
 
@@ -229,9 +220,7 @@ module CourseTransfer
       File.rename(source, destination)
     rescue Errno::EXDEV
       FileUtils.mkdir_p(destination)
-      FilePool.open do |pool|
-        copy_tree(source, destination, pool:)
-      end
+      copy_tree(source, destination)
       FileUtils.rm_rf(source)
     end
 
@@ -267,29 +256,19 @@ module CourseTransfer
     end
 
     def prepare_attachment_blobs(transfers)
-      blobs = Array.new(transfers.length)
-      FilePool.open do |pool|
-        transfers.each_with_index do |(attachment, source), index|
-          pool.post(attachment, source, index) do |record, path, position|
-            blob = ActiveStorage::Blob.new(
-              filename: record.filename,
-              content_type: record.mime_type
-            )
-            File.open(path, "rb") { |input| blob.unfurl(input, identify: false) }
-            blobs[position] = blob
-          end
+      transfers.map do |attachment, source|
+        ActiveStorage::Blob.new(
+          filename: attachment.filename,
+          content_type: attachment.mime_type
+        ).tap do |blob|
+          File.open(source, "rb") { |input| blob.unfurl(input, identify: false) }
         end
       end
-      blobs
     end
 
     def upload_attachment_blobs(transfers, blobs)
-      FilePool.open do |pool|
-        transfers.zip(blobs).each do |(_attachment, source), blob|
-          pool.post(source, blob) do |path, uploaded_blob|
-            File.open(path, "rb") { |input| uploaded_blob.upload_without_unfurling(input) }
-          end
-        end
+      transfers.zip(blobs).each do |(_attachment, source), blob|
+        File.open(source, "rb") { |input| blob.upload_without_unfurling(input) }
       end
     end
 

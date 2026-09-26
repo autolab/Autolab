@@ -1,6 +1,6 @@
 require "rails_helper"
 require "tmpdir"
-require Rails.root.join("app/services/course_transfer/core_exporters")
+require Rails.root.join("app/services/course_transfer/export")
 
 RSpec.describe CourseTransfer::FileTransfer do
   def transfer(root)

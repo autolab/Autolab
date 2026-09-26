@@ -1,0 +1,31 @@
+<% @title = "Selective Course Archive" %>
+
+<% content_for :stylesheets do %>
+  <%= stylesheet_link_tag "export" %>
+<% end %>
+
+<% content_for :javascripts do %>
+  <%= javascript_include_tag "export_course" %>
+<% end %>
+
+<h2>Selective Course Archive</h2>
+<p>
+  The course configuration is always included. Select the users and assessments to include;
+  submissions are exported only when both are selected.
+</p>
+
+<%= form_tag archive_course_path(@course), method: :post do %>
+  <h3>Users</h3>
+  <% @export_users.each do |membership| %>
+    <p><label><%= check_box_tag "user_ids[]", membership.user_id, true %>
+      <%= membership.user.display_name %> (<%= membership.user.email %>)</label></p>
+  <% end %>
+
+  <h3>Assessments</h3>
+  <% @export_assessments.each do |assessment| %>
+    <p><label><%= check_box_tag "assessment_ids[]", assessment.id, true %>
+      <%= assessment.display_name %></label></p>
+  <% end %>
+
+  <%= submit_tag "Create archive", class: "btn", data: { disable_with: false } %>
+<% end %>

@@ -1,56 +1,7 @@
 require "rails_helper"
 require "tmpdir"
-require Rails.root.join("app/services/course_transfer/core_exporters")
+require Rails.root.join("app/services/course_transfer/export")
 require Rails.root.join("app/services/course_transfer/import")
-
-RSpec.describe CourseTransfer::Exporter do
-  subject(:exporter) do
-    described_class.new(name: :widgets, model_class: User)
-  end
-
-  it "defaults one exporter to one YAML table file" do
-    expect(exporter.name).to eq(:widgets)
-    expect(exporter.filename).to eq("widgets.yml")
-    expect(exporter.model_class).to eq(User)
-  end
-
-  it "leaves relations lazy and unchanged by default" do
-    relation = User.where(administrator: false)
-
-    expect(exporter.dependencies(relation)).to eq({})
-  end
-
-  it "maps plucked values to declared columns" do
-    expect(exporter.row_from([12])).to eq("id" => 12)
-  end
-end
-
-RSpec.describe CourseTransfer::ExportRegistry do
-  subject(:registry) { described_class.new }
-
-  let(:exporter) do
-    CourseTransfer::Exporter.new(name: :users, model_class: User)
-  end
-
-  it "registers and fetches exporters by package name" do
-    registry.register(exporter)
-
-    expect(registry.fetch("users")).to equal(exporter)
-    expect(registry.names).to eq([:users])
-  end
-
-  it "rejects duplicate package names" do
-    registry.register(exporter)
-
-    expect { registry.register(exporter) }
-      .to raise_error(CourseTransfer::DuplicateExporter)
-  end
-
-  it "rejects unknown package names" do
-    expect { registry.fetch(:missing) }
-      .to raise_error(CourseTransfer::UnknownExporter)
-  end
-end
 
 RSpec.describe CourseTransfer::ExportPlan do
   it "stores lazy relations by table-file name" do
@@ -64,12 +15,9 @@ end
 
 RSpec.describe CourseTransfer::ExportManager do
   it "uses incremental package IDs and preserves null foreign keys" do
-    exporter = CourseTransfer::CoreExporters::AttachmentExporter.new
-    manager = described_class.new(
-      registry: CourseTransfer::CoreExporters.registry,
-      context: nil
-    )
-    row = exporter.fields.index_with { nil }.transform_keys(&:to_s).merge(
+    table = CourseTransfer::Schema.fetch(:attachments)
+    manager = described_class.new(context: nil)
+    row = table.fields.index_with { nil }.transform_keys(&:to_s).merge(
       "id" => 7,
       "course_id" => 11,
       "name" => "Syllabus",
@@ -79,7 +27,7 @@ RSpec.describe CourseTransfer::ExportManager do
 
     document = manager.send(
       :serialize_row,
-      exporter,
+      table,
       row,
       1,
       { courses: { 11 => course_package_id }, assessments: {} }
@@ -163,10 +111,7 @@ RSpec.describe CourseTransfer::ExportSelection do
     expect(seeds.fetch(:assessments)).to contain_exactly(selected_assessment)
     expect(seeds.fetch(:submissions)).to contain_exactly(included_submission)
 
-    plan = CourseTransfer::ExportManager.new(
-      registry: CourseTransfer::CoreExporters.registry,
-      context: nil
-    ).build_plan(selection)
+    plan = CourseTransfer::ExportManager.new(context: nil).build_plan(selection)
     expect(plan.relation_for(:submissions)).to contain_exactly(included_submission)
   end
 
@@ -186,10 +131,7 @@ RSpec.describe CourseTransfer::ExportSelection do
         staging_path: directory,
         version: CourseTransfer::Version::CURRENT
       )
-      manager = CourseTransfer::ExportManager.new(
-        registry: CourseTransfer::CoreExporters.registry,
-        context:
-      )
+      manager = CourseTransfer::ExportManager.new(context:)
       manager.export(manager.build_plan(selection))
 
       courses_yaml = Pathname.new(directory).join("courses.yml").read
@@ -197,6 +139,12 @@ RSpec.describe CourseTransfer::ExportSelection do
       expect(courses_yaml).not_to include("records:")
       expect(YAML.load_stream(courses_yaml).size).to eq(1)
       expect(Pathname.new(directory).join("users.yml").read).to be_empty
+      preview = JSON.parse(Pathname.new(directory).join("preview.json").read)
+      expect(preview).to eq(
+        "version" => CourseTransfer::Version::CURRENT,
+        "users" => [],
+        "assessments" => []
+      )
     end
   end
 end

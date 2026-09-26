@@ -1,120 +1,14 @@
 require_relative "errors"
+require_relative "schema"
 require_relative "serialization"
 require_relative "version"
 
 module CourseTransfer
-  # Reads the selectable users and assessments from an extracted package.
-  class ImportPreview
-    Item = Struct.new(:id, :name, :email, :role, keyword_init: true)
-
-    attr_reader :users, :assessments
-
-    def initialize(registry:, context:)
-      @registry = registry
-      @context = context
-      parts = package_parts
-      @users = parts.include?(:users) ? read_users : []
-      @assessments = parts.include?(:assessments) ? read_assessments : []
-    end
-
-  private
-
-    def package_parts
-      manifest = Version.read_manifest(@context.staging_path)
-      raise InvalidPackage, "manifest.yml is missing" unless manifest
-
-      Version.assert_importable!(
-        version: manifest.fetch("version"),
-        min_target: manifest.fetch("min_target_version")
-      )
-      manifest.fetch("parts").map(&:to_sym).to_set
-    rescue KeyError => e
-      raise InvalidPackage, "manifest is missing #{e.key.inspect}"
-    end
-
-    def documents(name)
-      exporter = @registry.fetch(name)
-      path = @context.staging_path.join(exporter.filename)
-      raise InvalidPackage, "#{exporter.filename} is missing" unless path.file?
-
-      rows = File.open(path, "rb") do |input|
-        Serialization.each_document(input, filename: exporter.filename).to_a
-      end
-      rows.each_with_index do |document, index|
-        validate_preview_document!(document, name)
-        expected_id = index + 1
-        next if document.fetch("_id") == expected_id
-
-        raise InvalidPackage,
-              "#{exporter.filename} expected _id #{expected_id}, " \
-              "got #{document.fetch('_id').inspect}"
-      end
-      rows
-    rescue Psych::Exception => e
-      raise InvalidPackage, "#{exporter.filename} is invalid YAML: #{e.message}"
-    end
-
-    def read_users
-      roles = membership_roles
-      documents(:users).map do |document|
-        validate_preview_document!(document, :users)
-        email = document.fetch("email").to_s
-        name = [document["first_name"], document["last_name"]].compact.join(" ").strip
-        Item.new(
-          id: document.fetch("_id").to_s,
-          name: name.presence || email,
-          email:,
-          role: roles.fetch(document.fetch("_id"), "Student")
-        )
-      end.sort_by { |item| [item.name.downcase, item.email.downcase] }
-    end
-
-    def read_assessments
-      documents(:assessments).map do |document|
-        validate_preview_document!(document, :assessments)
-        Item.new(
-          id: document.fetch("_id").to_s,
-          name: document["display_name"].presence || document.fetch("name").to_s,
-          email: document.fetch("name").to_s,
-          role: nil
-        )
-      end.sort_by { |item| [item.name.downcase, item.email.downcase] }
-    end
-
-    def membership_roles
-      return {} unless package_parts.include?(:course_user_data)
-
-      documents(:course_user_data).each_with_object({}) do |document, roles|
-        validate_preview_document!(document, :course_user_data)
-        reference = document["user_id"]
-        next unless reference.is_a?(Hash) && reference["id"].is_a?(Integer) &&
-                    reference["id"].positive?
-
-        role = if document["instructor"]
-                 "Instructor"
-               elsif document["course_assistant"]
-                 "Course Assistant (TA)"
-               else
-                 "Student"
-               end
-        roles[reference.fetch("id")] = role
-      end
-    end
-
-    def validate_preview_document!(document, name)
-      return if document.is_a?(Hash) && document["_id"].is_a?(Integer) &&
-                document["_id"].positive?
-
-      raise InvalidPackage, "#{@registry.fetch(name).filename} contains an invalid row"
-    end
-  end
-
   # Computes the subset of package rows required by an import selection.
   class ImportSelection
     attr_reader :included_ids, :documents
 
-    def initialize(registry:, context:, user_ids:, assessment_ids:)
-      @registry = registry
+    def initialize(context:, user_ids:, assessment_ids:)
       @context = context
       @selected_user_ids = selected_ids(user_ids)
       @selected_assessment_ids = selected_ids(assessment_ids)
@@ -146,41 +40,36 @@ module CourseTransfer
       manifest = Version.read_manifest(@context.staging_path)
       raise InvalidPackage, "manifest.yml is missing" unless manifest
 
-      Version.assert_importable!(
-        version: manifest.fetch("version"),
-        min_target: manifest.fetch("min_target_version")
-      )
+      Version.assert_importable!(manifest.fetch("version"))
       parts = manifest.fetch("parts").map(&:to_sym).to_set
-      parts.each { |name| @registry.fetch(name) }
+      parts.each { |name| Schema.fetch(name) }
       raise InvalidPackage, "manifest must include courses" unless parts.include?(:courses)
 
       parts
-    rescue UnknownExporter => e
-      raise InvalidPackage, e.message
     rescue KeyError => e
-      raise InvalidPackage, "manifest is missing #{e.key.inspect}"
+      raise InvalidPackage, "invalid manifest entry: #{e.message}"
     end
 
     def load_documents
       package_parts.to_h do |name|
-        exporter = @registry.fetch(name)
-        path = @context.staging_path.join(exporter.filename)
-        raise InvalidPackage, "#{exporter.filename} is missing" unless path.file?
+        table = Schema.fetch(name)
+        path = @context.staging_path.join(table.filename)
+        raise InvalidPackage, "#{table.filename} is missing" unless path.file?
 
         indexed = {}
         File.open(path, "rb") do |input|
-          stream = Serialization.each_document(input, filename: exporter.filename)
+          stream = Serialization.each_document(input, filename: table.filename)
           stream.each_with_index do |document, index|
             unless document.is_a?(Hash) && document["_id"].is_a?(Integer) &&
                    document["_id"].positive?
-              raise InvalidPackage, "#{exporter.filename} contains an invalid row"
+              raise InvalidPackage, "#{table.filename} contains an invalid row"
             end
 
             id = id_for(document)
             expected_id = index + 1
             unless id == expected_id
               raise InvalidPackage,
-                    "#{exporter.filename} expected _id #{expected_id}, got #{id.inspect}"
+                    "#{table.filename} expected _id #{expected_id}, got #{id.inspect}"
             end
 
             indexed[id] = document
@@ -188,7 +77,7 @@ module CourseTransfer
         end
         [name, indexed]
       rescue Psych::Exception => e
-        raise InvalidPackage, "#{exporter.filename} is invalid YAML: #{e.message}"
+        raise InvalidPackage, "#{table.filename} is invalid YAML: #{e.message}"
       end
     end
 
@@ -221,10 +110,10 @@ module CourseTransfer
       loop do
         changed = false
         included_ids.each do |name, ids|
-          exporter = @registry.fetch(name)
+          table = Schema.fetch(name)
           ids.to_a.each do |id|
             document = documents.fetch(name).fetch(id)
-            exporter.ref_fields.each_key do |field|
+            table.ref_fields.each_key do |field|
               reference = document[field.to_s]
               next unless reference.is_a?(Hash) && reference["table"] && reference["id"]
 

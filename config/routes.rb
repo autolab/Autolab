@@ -293,8 +293,8 @@ Rails.application.routes.draw do
       match "email", via: [:get, :post]
       get "export"
       post "export", action: :export_selected
-      get "legacy_export"
-      post "legacy_export_selected"
+      get "archive"
+      post "archive", action: :archive_selected
       get "manage"
       get "moss"
       post "reload"
@@ -308,10 +308,7 @@ Rails.application.routes.draw do
     end
 
     collection do
-      post "import", action: :import_upload
-      get "import"
       post "complete_import"
-      get "legacy_import"
       post "create_from_tar"
     end
   end

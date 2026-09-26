@@ -1,240 +1,37 @@
 require "fileutils"
-require_relative "dependency_order"
+require "json"
 require_relative "errors"
 require_relative "file_transfer"
+require_relative "schema"
 require_relative "serialization"
+require_relative "version"
 
-# Services for portable, normalized course packages.
 module CourseTransfer
-  # Describes one database table and its corresponding package file.
-  # Concrete exporters contain declarations and lazy dependency scopes only;
-  # orchestration and serialization are shared by all tables.
-  class Exporter
-    attr_reader :name, :model_class
-
-    class << self
-      attr_reader :table_name, :table_model, :declared_fields,
-                  :declared_references, :declared_match_fields, :normalized_match_fields
-
-      def table(name, model)
-        @table_name = name
-        @table_model = model
-      end
-
-      def export_fields(*fields)
-        @declared_fields = fields
-      end
-
-      def references(**references)
-        @declared_references = references
-      end
-
-      # Database fields used after a bulk insert to locate the generated row.
-      # These values are never exposed as identifiers in the package.
-      def match_by(*fields, case_insensitive: [])
-        @declared_match_fields = fields
-        @normalized_match_fields = Array(case_insensitive)
-      end
-
-      def reuse_existing
-        @reuse_existing = true
-      end
-
-      def reuse_existing?
-        @reuse_existing || false
-      end
-    end
-
-    # @param name [Symbol] stable package name for this table
-    # @param model_class [Class<ApplicationRecord>] exported Active Record model
-    def initialize(name: self.class.table_name, model_class: self.class.table_model)
-      raise ArgumentError, "exporter table and model are required" unless name && model_class
-
-      @name = name.to_sym
-      @model_class = model_class
-    end
-
-    # @return [String] package-relative YAML filename
-    def filename
-      "#{name}.yml"
-    end
-
-    # Returns records in other table files required by +relation+.
-    # Implementations must return lazy, structurally compatible relations.
-    #
-    # @param _relation [ActiveRecord::Relation]
-    # @return [Hash{Symbol => ActiveRecord::Relation}]
-    def dependencies(_relation)
-      {}
-    end
-
-    # Database columns exported for each record, excluding the primary key.
-    # Foreign-key columns must also occur in {#ref_fields}.
-    #
-    # @return [Array<Symbol>]
-    def fields
-      self.class.declared_fields || []
-    end
-
-    # Qualified fields plucked by the shared writer. The primary key is used
-    # internally to construct reference maps and is never written as a record
-    # attribute.
-    #
-    # @return [Array<String>]
-    def pluck_fields
-      [model_class.primary_key, *fields].map do |field|
-        "#{model_class.table_name}.#{field}"
-      end
-    end
-
-    # Maps local foreign-key columns to referenced table exporters.
-    #
-    # @return [Hash{Symbol => Symbol}]
-    def ref_fields
-      self.class.declared_references || {}
-    end
-
-    # Database columns used to locate an inserted (or reusable) row.
-    # @return [Array<Symbol>]
-    def match_fields
-      self.class.declared_match_fields || []
-    end
-
-    # Normalizes a database match component.
-    #
-    # @param field [Symbol]
-    # @param value [Object]
-    # @return [Object]
-    def normalize_match_value(field, value)
-      self.class.normalized_match_fields&.include?(field) ? value.to_s.downcase : value
-    end
-
-    # Whether an existing database record with the same match fields may be
-    # reused instead of treating it as an import collision.
-    #
-    # @return [Boolean]
-    def reuse_existing?
-      self.class.reuse_existing?
-    end
-
-    # Table files that must be imported before this one.
-    #
-    # @return [Array<Symbol>]
-    def import_dependencies
-      ref_fields.values.uniq
-    end
-
-    # Narrows a database lookup. Exporters may override this when the
-    # database treats a key component case-insensitively.
-    #
-    # @param field [Symbol]
-    # @param values [Array<Object>]
-    # @return [ActiveRecord::Relation]
-    def records_matching(field, values)
-      model_class.where(field => values)
-    end
-
-    # Converts plucked values to a column-keyed row.
-    #
-    # @param values [Array<Object>]
-    # @return [Hash{String => Object}]
-    def row_from(values)
-      columns = [model_class.primary_key.to_sym, *fields]
-      columns.map(&:to_s).zip(values).to_h
-    end
-
-  protected
-
-    # Builds one relation containing records referenced by any of +fields+.
-    #
-    # @param model [Class<ApplicationRecord>]
-    # @param relation [ActiveRecord::Relation]
-    # @param fields [Array<Symbol>]
-    # @return [ActiveRecord::Relation]
-    def referenced_records(model, relation, *fields)
-      fields.map { |field| model.where(id: relation.select(field)) }
-            .reduce { |combined, scope| combined.or(scope) }
-    end
-  end
-
-  # Holds the exporter for every table file in a package.
-  class ExportRegistry
-    include Enumerable
-
-    def initialize
-      @exporters = {}
-    end
-
-    # @param exporter [CourseTransfer::Exporter]
-    # @return [CourseTransfer::ExportRegistry] self
-    def register(exporter)
-      if @exporters.key?(exporter.name)
-        raise DuplicateExporter, "exporter #{exporter.name.inspect} is already registered"
-      end
-
-      @exporters[exporter.name] = exporter
-      self
-    end
-
-    # @param name [String, Symbol]
-    # @return [CourseTransfer::Exporter]
-    def fetch(name)
-      @exporters.fetch(name.to_sym) do
-        raise UnknownExporter, "no exporter registered for #{name.inspect}"
-      end
-    end
-
-    # @yieldparam exporter [CourseTransfer::Exporter]
-    # @return [Enumerator, Hash]
-    def each(&block)
-      @exporters.each_value(&block)
-    end
-
-    # @return [Array<Symbol>]
-    def names
-      @exporters.keys
-    end
-  end
-
-  # User-facing scope for a course export. The course is always included.
-  # Submissions are the intersection of the chosen users and assessments.
   class ExportSelection
     attr_reader :course, :users, :assessments
 
-    # @param course [Course]
-    # @param users [ActiveRecord::Relation<User>, nil]
-    # @param assessments [ActiveRecord::Relation<Assessment>, nil]
     def initialize(course:, users: nil, assessments: nil)
       @course = course
       @users = users || User.none
       @assessments = assessments || Assessment.none
     end
 
-    # Returns the intentionally selected rows before support dependencies are
-    # recursively added. All selections are constrained to +course+.
-    #
-    # @return [Hash{Symbol => ActiveRecord::Relation}]
     def seed_relations
-      selected_assessments = Assessment.where(
-        course_id: course.id,
-        id: assessments.select(:id)
-      )
+      selected_assessments = Assessment.where(course_id: course.id, id: assessments.select(:id))
       selected_memberships = CourseUserDatum.where(
-        course_id: course.id,
-        user_id: users.select(:id)
+        course_id: course.id, user_id: users.select(:id)
       )
       selected_users = User.where(id: selected_memberships.select(:user_id))
-      selected_submissions = Submission.where(
-        assessment_id: selected_assessments.select(:id),
-        course_user_datum_id: selected_memberships.select(:id)
-      )
 
       {
         courses: Course.where(id: course.id),
         users: selected_users,
         course_user_data: selected_memberships,
         assessments: selected_assessments,
-        submissions: selected_submissions,
+        submissions: Submission.where(
+          assessment_id: selected_assessments.select(:id),
+          course_user_datum_id: selected_memberships.select(:id)
+        ),
         assessment_user_data: AssessmentUserDatum.where(
           assessment_id: selected_assessments.select(:id),
           course_user_datum_id: selected_memberships.select(:id)
@@ -247,54 +44,26 @@ module CourseTransfer
     end
   end
 
-  # Immutable collection of lazy relations selected for table-file export.
   class ExportPlan
-    # @param relations [Hash{Symbol => ActiveRecord::Relation}]
     def initialize(relations)
       @relations = relations.transform_keys(&:to_sym).freeze
     end
 
-    # @param name [String, Symbol]
-    # @return [ActiveRecord::Relation]
-    def relation_for(name)
-      @relations.fetch(name.to_sym)
-    end
-
-    # @param name [String, Symbol]
-    # @return [Boolean]
-    def include?(name)
-      @relations.key?(name.to_sym)
-    end
-
-    # @return [Array<Symbol>]
-    def names
-      @relations.keys
-    end
+    def relation_for(name) = @relations.fetch(name.to_sym)
+    def include?(name) = @relations.key?(name.to_sym)
+    def names = @relations.keys
   end
 
-  # Builds dependency closure and writes one batched YAML file per table.
   class ExportManager
-    DEFAULT_BATCH_SIZE = 1_000
+    PREVIEW_FILENAME = "preview.json".freeze
 
-    attr_reader :registry, :context, :batch_size
+    attr_reader :context
 
-    # @param registry [CourseTransfer::ExportRegistry]
-    # @param context [CourseTransfer::Context]
-    # @param batch_size [Integer]
-    def initialize(registry:, context:, batch_size: DEFAULT_BATCH_SIZE)
-      @registry = registry
+    def initialize(context:)
       @context = context
-      @batch_size = Integer(batch_size)
-      raise ArgumentError, "batch size must be positive" unless @batch_size.positive?
     end
 
-    # Recursively expands a configured selection into all supporting records.
-    # Dependency scopes remain lazy until files are written.
-    #
-    # @param selection [CourseTransfer::ExportSelection]
-    # @return [CourseTransfer::ExportPlan]
     def build_plan(selection)
-      dependency_order
       fragments = Hash.new { |hash, name| hash[name] = [] }
       queue = selection.seed_relations.to_a
       visited = Set.new
@@ -302,38 +71,29 @@ module CourseTransfer
       until queue.empty?
         name, relation = queue.shift
         name = name.to_sym
-        signature = [name, relation.to_sql]
-        next unless visited.add?(signature)
+        next unless visited.add?([name, relation.to_sql])
 
-        exporter = registry.fetch(name)
+        table = Schema.fetch(name)
         fragments[name] << relation
-
-        exporter.dependencies(relation).each do |dependency_name, dependency_relation|
-          queue << [dependency_name.to_sym, dependency_relation]
-        end
+        table.dependencies(relation).each { |dependency| queue << dependency }
       end
 
-      relations = fragments.transform_values do |scopes|
-        scopes.reduce { |combined, scope| combined.or(scope) }
-      end
-      ExportPlan.new(relations)
+      ExportPlan.new(
+        fragments.transform_values { |scopes| scopes.reduce { |combined, scope| combined.or(scope) } }
+      )
     end
 
-    # Writes all table files and the package manifest.
-    #
-    # @param plan [CourseTransfer::ExportPlan]
-    # @return [CourseTransfer::ExportPlan]
     def export(plan)
       FileUtils.mkdir_p(context.staging_path)
       id_maps = Hash.new { |hash, name| hash[name] = {} }
 
-      dependency_order.each do |exporter|
-        next unless plan.include?(exporter.name)
+      Schema.each do |table|
+        next unless plan.include?(table.name)
 
-        id_maps[exporter.name]
-        write_table(exporter, plan.relation_for(exporter.name), id_maps)
+        write_table(table, plan.relation_for(table.name), id_maps)
       end
 
+      write_preview(plan, id_maps)
       Version.write_manifest!(context, parts: plan.names)
       FileTransfer.export(plan, context:, id_maps:)
       plan
@@ -341,81 +101,77 @@ module CourseTransfer
 
   private
 
-    def write_table(exporter, relation, id_maps)
-      path = context.staging_path.join(exporter.filename)
+    def write_table(table, relation, id_maps)
+      path = context.staging_path.join(table.filename)
+      rows = relation.reorder(table.model_class.primary_key => :asc).pluck(*table.pluck_fields)
 
       File.open(path, "w") do |file|
-        package_id = 0
-        each_plucked_row(exporter, relation) do |row|
-          package_id += 1
-          id_maps[exporter.name][row.fetch(exporter.model_class.primary_key)] = package_id
-          document = serialize_row(exporter, row, package_id, id_maps)
-          Serialization.dump_document(file, document)
+        rows.each_with_index do |values, index|
+          row = table.row_from(values)
+          package_id = index + 1
+          id_maps[table.name][row.fetch(table.model_class.primary_key)] = package_id
+          Serialization.dump_document(file, serialize_row(table, row, package_id, id_maps))
         end
       end
     end
 
-    def each_plucked_row(exporter, relation)
-      primary_key = exporter.model_class.primary_key
-      scope = relation.reorder(primary_key => :asc)
-      last_id = nil
-
-      loop do
-        batch = scope
-        if last_id
-          batch = batch.where(
-            "#{exporter.model_class.table_name}.#{primary_key} > ?", last_id
-          )
-        end
-        values = batch.limit(batch_size).pluck(*exporter.pluck_fields)
-        break if values.empty?
-
-        values.each { |row_values| yield exporter.row_from(row_values) }
-        last_id = values.last.first
-        break if values.length < batch_size
-      end
-    end
-
-    def serialize_row(exporter, row, package_id, id_maps)
+    def serialize_row(table, row, package_id, id_maps)
       document = { "_id" => package_id }
-
-      exporter.fields.each do |field|
-        field_name = field.to_s
-        target_name = exporter.ref_fields[field]
-        document[field_name] = if target_name
-                                 reference_document(target_name, row[field_name], id_maps)
-                               else
-                                 row[field_name]
-                               end
+      table.fields.each do |field|
+        value = row.fetch(field.to_s)
+        target = table.ref_fields[field]
+        document[field.to_s] = target ? reference(target, value, id_maps) : value
       end
-
       document
     end
 
-    def reference_document(target_name, source_id, id_maps)
+    def reference(target, source_id, id_maps)
       return nil if source_id.nil?
       return source_id if source_id.respond_to?(:negative?) && source_id <= 0
 
-      {
-        "table" => target_name.to_s,
-        "id" => reference_id(target_name, source_id, id_maps)
-      }
-    end
-
-    def reference_id(target_name, source_id, id_maps)
-      return nil if source_id.nil?
-      return source_id if source_id.respond_to?(:negative?) && source_id <= 0
-
-      id_maps.fetch(target_name).fetch(source_id.to_s) do
-        id_maps.fetch(target_name).fetch(source_id) do
-          raise MissingExportReference,
-                "#{target_name} record #{source_id.inspect} was referenced but not exported"
+      package_id = id_maps.fetch(target).fetch(source_id.to_s) do
+        id_maps.fetch(target).fetch(source_id) do
+          raise MissingExportReference, "#{target} record #{source_id.inspect} was not exported"
         end
       end
+      { "table" => target.to_s, "id" => package_id }
     end
 
-    def dependency_order
-      @dependency_order ||= DependencyOrder.new(registry).call
+    def write_preview(plan, id_maps)
+      memberships = plan.relation_for(:course_user_data)
+                        .pluck(:user_id, :instructor, :course_assistant)
+                        .to_h { |user_id, instructor, assistant|
+                          role = instructor ? "Instructor" :
+                            (assistant ? "Course Assistant (TA)" : "Student")
+                          [user_id, role]
+                        }
+      users = plan.relation_for(:users).pluck(:id, :email, :first_name, :last_name).map do |
+        id, email, first_name, last_name|
+        name = [first_name, last_name].compact.join(" ").strip
+        {
+          id: id_maps.fetch(:users).fetch(id).to_s,
+          name: name.presence || email,
+          email:,
+          role: memberships.fetch(id, "Student")
+        }
+      end
+      assessments = plan.relation_for(:assessments).pluck(:id, :name, :display_name).map do |
+        id, name, display_name|
+        {
+          id: id_maps.fetch(:assessments).fetch(id).to_s,
+          name: display_name.presence || name,
+          identifier: name
+        }
+      end
+
+      preview = {
+        version: context.version,
+        users: users.sort_by { |user| [user.fetch(:name).downcase, user.fetch(:email).downcase] },
+        assessments: assessments.sort_by { |assessment|
+          [assessment.fetch(:name).downcase, assessment.fetch(:identifier).downcase]
+        }
+      }
+      context.staging_path.join(PREVIEW_FILENAME).write(JSON.generate(preview))
     end
   end
 end

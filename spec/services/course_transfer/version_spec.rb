@@ -6,7 +6,6 @@ RSpec.describe CourseTransfer::Version do
     {
       "format" => described_class::FORMAT_ID,
       "version" => described_class::CURRENT,
-      "min_target_version" => described_class::MIN_SUPPORTED_TARGET.to_s,
       "parts" => []
     }
   end
@@ -31,16 +30,16 @@ RSpec.describe CourseTransfer::Version do
     end
   end
 
-  it "rejects incomplete manifests consistently" do
+  it "rejects manifests without parts consistently" do
     Dir.mktmpdir("course-version-invalid-") do |directory|
       root = Pathname.new(directory)
-      invalid = manifest.except("min_target_version")
+      invalid = manifest.except("parts")
       root.join(described_class::MANIFEST_FILENAME).write(invalid.to_yaml)
 
       expect { described_class.detect(root) }
-        .to raise_error(described_class::InvalidManifest, /min_target_version/)
+        .to raise_error(described_class::InvalidManifest, /parts/)
       expect { described_class.read_manifest(root) }
-        .to raise_error(described_class::InvalidManifest, /min_target_version/)
+        .to raise_error(described_class::InvalidManifest, /parts/)
     end
   end
 end

@@ -1,6 +1,6 @@
 require "rails_helper"
 require "tmpdir"
-require Rails.root.join("app/services/course_transfer/core_exporters")
+require Rails.root.join("app/services/course_transfer/export")
 require Rails.root.join("app/services/course_transfer/import")
 
 RSpec.describe "normalized course transfer" do
@@ -227,8 +227,7 @@ RSpec.describe "normalized course transfer" do
           staging_path: directory,
           version: CourseTransfer::Version::CURRENT
         )
-        registry = CourseTransfer::CoreExporters.registry
-        export_manager = CourseTransfer::ExportManager.new(registry:, context: export_context)
+        export_manager = CourseTransfer::ExportManager.new(context: export_context)
         selection = CourseTransfer::ExportSelection.new(
           course:,
           users: User.where(id: user.id),
@@ -292,7 +291,6 @@ RSpec.describe "normalized course transfer" do
           instructor_email: "new-instructor@example.com"
         )
         imported_course = CourseTransfer::ImportManager.new(
-          registry: CourseTransfer::CoreExporters.registry,
           context: import_context,
           user_ids: [1],
           assessment_ids: [1]
@@ -390,8 +388,7 @@ RSpec.describe "normalized course transfer" do
         staging_path: directory,
         version: CourseTransfer::Version::CURRENT
       )
-      registry = CourseTransfer::CoreExporters.registry
-      manager = CourseTransfer::ExportManager.new(registry:, context:)
+      manager = CourseTransfer::ExportManager.new(context:)
       manager.export(manager.build_plan(CourseTransfer::ExportSelection.new(course:)))
 
       import_context = CourseTransfer::Context.new(
@@ -401,67 +398,9 @@ RSpec.describe "normalized course transfer" do
 
       course_count = Course.count
       expect do
-        CourseTransfer::ImportManager.new(
-          registry: CourseTransfer::CoreExporters.registry,
-          context: import_context
-        ).import
+        CourseTransfer::ImportManager.new(context: import_context).import
       end.to raise_error(CourseTransfer::InvalidCourseIdentifier)
       expect(Course.count).to eq(course_count)
     end
-  end
-
-  it "resolves more than one thousand submission keys without a deep OR expression" do
-    course = insert_record(Course, name: "large-lookup-course")
-    user = insert_record(User, email: "large-lookup@example.com")
-    membership = insert_record(
-      CourseUserDatum,
-      course_id: course.id,
-      user_id: user.id
-    )
-    assessment = insert_record(
-      Assessment,
-      course_id: course.id,
-      name: "large-lookup-assessment"
-    )
-    versions = (1..1_001).to_a
-    # Bulk setup keeps this regression focused on lookup query shape.
-    # rubocop:disable Rails/SkipsModelValidations
-    Submission.insert_all!(versions.map do |version|
-      {
-        assessment_id: assessment.id,
-        course_user_datum_id: membership.id,
-        version:
-      }
-    end)
-    # rubocop:enable Rails/SkipsModelValidations
-    insert_record(
-      Submission,
-      assessment_id: assessment.id,
-      course_user_datum_id: membership.id,
-      version: 2_000
-    )
-
-    prepared_row = Struct.new(:database_match, keyword_init: true)
-    prepared = versions.map do |version|
-      prepared_row.new(
-        database_match: {
-          assessment_id: assessment.id,
-          course_user_datum_id: membership.id,
-          version:
-        }
-      )
-    end
-    exporter = CourseTransfer::CoreExporters::SubmissionExporter.new
-    manager = CourseTransfer::ImportManager.new(
-      registry: CourseTransfer::CoreExporters.registry,
-      context: nil
-    )
-
-    resolved = manager.send(:find_database_ids, exporter, prepared)
-
-    expect(resolved.size).to eq(1_001)
-    expect(resolved.values).to match_array(
-      Submission.where(version: versions).pluck(:id)
-    )
   end
 end

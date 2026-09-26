@@ -1,145 +1,79 @@
-require "yaml"
 require "pathname"
 require "rubygems/package"
+require "yaml"
 require_relative "errors"
 
 module CourseTransfer
-  # Defines package format compatibility and manifest operations.
   class Version
-    CURRENT = "2.0.0".freeze
+    CURRENT = 1
     FORMAT_ID = "autolab_course_export".freeze
     MANIFEST_FILENAME = "manifest.yml".freeze
     LEGACY = "legacy".freeze
 
-    # Oldest version this app can import (inclusive bounds as Gem::Version).
-    # (should be in the past or current version)
-    MIN_SUPPORTED_IMPORT = Gem::Version.new("2.0.0")
-
-    # Oldest version that can import the current version (should be in the past or current version)
-    MIN_SUPPORTED_TARGET = Gem::Version.new("2.0.0")
-
-    CURRENT_VERSION = Gem::Version.new(CURRENT)
-
     class Unsupported < Error; end
     class InvalidManifest < Error; end
 
-    # Writes the package compatibility manifest.
-    #
-    # @param context [CourseTransfer::Context]
-    # @param parts [Array<String, Symbol>, nil] table files in the package
-    # @return [Pathname]
     def self.write_manifest!(context, parts: nil)
-      payload = {
-        "format" => FORMAT_ID,
-        "version" => context.version.to_s,
-        "min_target_version" => MIN_SUPPORTED_TARGET.to_s,
-        "created_at" => Time.current.utc.iso8601,
-        "parts" => Array(parts).map(&:to_s)
-      }
-
       path = context.staging_path.join(MANIFEST_FILENAME)
-      path.write(payload.to_yaml)
+      path.write(
+        {
+          "format" => FORMAT_ID,
+          "version" => CURRENT,
+          "created_at" => Time.current.utc.iso8601,
+          "parts" => Array(parts).map(&:to_s)
+        }.to_yaml
+      )
       path
     end
 
-    # Detect format version from an extracted package root directory.
-    # Returns LEGACY when no manifest is present (old course tar layout).
     def self.detect(staging_path)
-      manifest = read_manifest(staging_path)
-      return LEGACY unless manifest
-
-      manifest.fetch("version").to_s
+      read_manifest(staging_path)&.fetch("version", nil) || LEGACY
     end
 
-    # Detect format version from a packed course tar without full extract.
-    # Root-level manifest.yml indicates a new-format export; otherwise legacy.
     def self.detect_from_tar_file(tar_path)
       File.open(tar_path, "rb") do |io|
         Gem::Package::TarReader.new(io) do |tar|
-          found = false
-          version = nil
+          manifest = nil
           tar.each do |entry|
-            next if entry.directory?
-
-            name = Pathname.new(entry.full_name.to_s).cleanpath.to_s
-            next unless name == MANIFEST_FILENAME
-            raise InvalidManifest, "manifest.yml appears more than once" if found
+            next unless Pathname.new(entry.full_name.to_s).cleanpath.to_s == MANIFEST_FILENAME
+            raise InvalidManifest, "manifest.yml appears more than once" if manifest
             raise InvalidManifest, "manifest.yml must be a regular file" unless entry.file?
 
-            found = true
-            version = parse_manifest_yaml(entry.read).fetch("version").to_s
+            manifest = parse_manifest_yaml(entry.read)
           end
-          return version if found
+          return manifest.fetch("version") if manifest
         end
       end
-
       LEGACY
+    end
+
+    def self.read_manifest(staging_path)
+      path = Pathname.new(staging_path).join(MANIFEST_FILENAME)
+      parse_manifest_yaml(path.read) if path.file?
+    end
+
+    def self.legacy?(version) = version.to_s == LEGACY
+
+    def self.assert_importable!(version)
+      return true if version == CURRENT
+
+      raise Unsupported, "unsupported export format version: #{version.inspect}"
     end
 
     def self.parse_manifest_yaml(contents)
       data = YAML.safe_load(contents, aliases: false)
       raise InvalidManifest, "manifest.yml must contain a mapping" unless data.is_a?(Hash)
-      raise InvalidManifest, "manifest.yml is empty" if data.empty?
       raise InvalidManifest, "unknown format" unless data["format"] == FORMAT_ID
-
-      %w[version min_target_version].each do |field|
-        value = data[field]
-        raise InvalidManifest, "manifest is missing #{field.inspect}" if value.blank?
-      end
-      unless data["parts"].is_a?(Array)
-        raise InvalidManifest, "manifest is missing \"parts\""
-      end
-      unless data["parts"].all? { |part| part.is_a?(String) }
+      raise InvalidManifest, "manifest has an invalid version" unless data["version"].is_a?(Integer)
+      unless data["parts"].is_a?(Array) && data["parts"].all? { |part| part.is_a?(String) }
         raise InvalidManifest, "manifest parts must be an array of strings"
       end
-      if data["parts"].uniq.length != data["parts"].length
-        raise InvalidManifest, "manifest parts must be unique"
-      end
+      raise InvalidManifest, "manifest parts must be unique" unless data["parts"].uniq == data["parts"]
 
       data
     rescue Psych::Exception => e
       raise InvalidManifest, "invalid manifest.yml: #{e.message}"
     end
     private_class_method :parse_manifest_yaml
-
-    # Reads a manifest from an extracted package.
-    #
-    # @param staging_path [String, Pathname]
-    # @return [Hash, nil]
-    def self.read_manifest(staging_path)
-      path = Pathname.new(staging_path).join(MANIFEST_FILENAME)
-      return nil unless path.file?
-
-      parse_manifest_yaml(path.read)
-    end
-
-    def self.legacy?(version)
-      version.to_s == LEGACY
-    end
-
-    # Raises Unsupported if this app cannot import the given format version.
-    def self.assert_importable!(version:, min_target:)
-      return true if legacy?(version)
-
-      begin
-        parsed = Gem::Version.new(version.to_s)
-        parsed_min_target = Gem::Version.new(min_target.to_s)
-      rescue ArgumentError
-        raise Unsupported, "invalid export format version: #{version}"
-      end
-
-      if parsed < MIN_SUPPORTED_IMPORT
-        raise Unsupported,
-              "export format #{version} is too old; minimum supported is #{MIN_SUPPORTED_IMPORT}"
-      end
-
-      if parsed_min_target > CURRENT_VERSION
-        raise Unsupported,
-              "export format #{version} is too new for this Autolab " \
-              "(the import supports only past #{min_target}); upgrade Autolab to import"
-      end
-
-      true
-    end
   end
 end

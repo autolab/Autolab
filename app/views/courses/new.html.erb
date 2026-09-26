@@ -1,5 +1,13 @@
 <% @title = "Create New Course" %>
 
+<% content_for :stylesheets do %>
+  <%= stylesheet_link_tag "export" %>
+<% end %>
+
+<% content_for :javascripts do %>
+  <%= javascript_include_tag "course_import" %>
+<% end %>
+
 <div class="row">
   <div class="col s12">
     <ul class="tabs">
