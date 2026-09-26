@@ -5,7 +5,7 @@
 <% end %>
 
 <% content_for :javascripts do %>
-  <%= javascript_include_tag "export_course" %>
+  <%= javascript_include_tag "course_transfer_selection" %>
 <% end %>
 
 <h2>Selective Course Archive</h2>
@@ -15,17 +15,27 @@
 </p>
 
 <%= form_tag archive_course_path(@course), method: :post do %>
-  <h3>Users</h3>
-  <% @export_users.each do |membership| %>
-    <p><label><%= check_box_tag "user_ids[]", membership.user_id, true %>
-      <%= membership.user.display_name %> (<%= membership.user.email %>)</label></p>
-  <% end %>
+  <% users = @export_users.map do |membership|
+       role = if membership.instructor?
+                "Instructor"
+              elsif membership.course_assistant?
+                "Course Assistant (TA)"
+              else
+                "Student"
+              end
+       { id: membership.user_id, name: membership.user.display_name,
+         email: membership.user.email, role: role }
+     end %>
+  <% assessments = @export_assessments.map do |assessment|
+       { id: assessment.id, name: assessment.display_name, identifier: assessment.name }
+     end %>
 
-  <h3>Assessments</h3>
-  <% @export_assessments.each do |assessment| %>
-    <p><label><%= check_box_tag "assessment_ids[]", assessment.id, true %>
-      <%= assessment.display_name %></label></p>
-  <% end %>
+  <div data-course-transfer-selector="users" data-id-prefix="export">
+    <script type="application/json"><%= raw json_escape(users.to_json) %></script>
+  </div>
+  <div data-course-transfer-selector="assessments" data-id-prefix="export">
+    <script type="application/json"><%= raw json_escape(assessments.to_json) %></script>
+  </div>
 
   <%= submit_tag "Create archive", class: "btn", data: { disable_with: false } %>
 <% end %>

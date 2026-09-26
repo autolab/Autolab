@@ -64,56 +64,6 @@ document.addEventListener('DOMContentLoaded', function () {
     return { legacy: false, preview: preview };
   };
 
-  const renderSelection = function (container, type, items, columns) {
-    container.replaceChildren();
-    const heading = document.createElement('h3');
-    heading.textContent = type === 'users' ? 'Users' : 'Assessments';
-    container.appendChild(heading);
-
-    if (items.length === 0) {
-      const empty = document.createElement('p');
-      empty.textContent = `This package has no ${type}.`;
-      container.appendChild(empty);
-      return;
-    }
-
-    const table = document.createElement('table');
-    table.className = 'prettyBorder export-selection-table';
-    const head = document.createElement('thead');
-    const headRow = document.createElement('tr');
-    ['Include'].concat(columns.map((column) => column.label)).forEach((label) => {
-      const cell = document.createElement('th');
-      cell.textContent = label;
-      headRow.appendChild(cell);
-    });
-    head.appendChild(headRow);
-    table.appendChild(head);
-
-    const body = document.createElement('tbody');
-    items.forEach((item, index) => {
-      const row = document.createElement('tr');
-      const selectionCell = document.createElement('td');
-      const checkbox = document.createElement('input');
-      checkbox.type = 'checkbox';
-      checkbox.name = `${type === 'users' ? 'user' : 'assessment'}_ids[]`;
-      checkbox.value = String(item.id);
-      checkbox.checked = true;
-      checkbox.id = `import_${type}_${index}`;
-      checkbox.setAttribute('aria-label', `Include ${item.name || item.email || item.identifier}`);
-      selectionCell.appendChild(checkbox);
-      row.appendChild(selectionCell);
-
-      columns.forEach((column) => {
-        const cell = document.createElement('td');
-        cell.textContent = item[column.key] || '';
-        row.appendChild(cell);
-      });
-      body.appendChild(row);
-    });
-    table.appendChild(body);
-    container.appendChild(table);
-  };
-
   const resetPreview = function () {
     options.hidden = true;
     users.replaceChildren();
@@ -153,15 +103,10 @@ document.addEventListener('DOMContentLoaded', function () {
         submit.value = 'Create Course';
         status.textContent = `${file.name} is a legacy course package.`;
       } else {
-        renderSelection(users, 'users', result.preview.users, [
-          { key: 'name', label: 'Name' },
-          { key: 'email', label: 'Email' },
-          { key: 'role', label: 'Role' }
-        ]);
-        renderSelection(assessments, 'assessments', result.preview.assessments, [
-          { key: 'name', label: 'Assessment' },
-          { key: 'identifier', label: 'Identifier' }
-        ]);
+        window.CourseTransferSelection.render(users, 'users', result.preview.users, 'import');
+        window.CourseTransferSelection.render(
+          assessments, 'assessments', result.preview.assessments, 'import'
+        );
         submit.value = 'Import Course';
         status.textContent = `${file.name} is ready to import (format ${result.preview.version}).`;
       }

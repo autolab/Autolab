@@ -425,7 +425,8 @@ RSpec.describe CoursesController, type: :controller do
       expect(response).to be_successful
       expect(response.body).to match(/Select the users and assessments to include/m)
       expect(response.body).to match(/submissions are exported only when both/m)
-      expect(response.body).to match(/Assessments/m)
+      expect(response.body).to include('data-course-transfer-selector="users"')
+      expect(response.body).to include('data-course-transfer-selector="assessments"')
     end
 
     it "exports a new-format course package after submission" do
