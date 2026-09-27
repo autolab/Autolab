@@ -25,7 +25,8 @@ class CoursesController < ApplicationController
                      only: %i[courses_redirect index new create create_from_tar
                               complete_import join_course]
   before_action :set_manage_course_breadcrumb,
-                only: %i[edit users moss email upload_roster export export_selected archive]
+                only: %i[edit users moss email upload_roster export export_selected
+                         legacy_export_selected]
   before_action :set_manage_course_users_breadcrumb, only: %i[upload_roster]
 
   def index
@@ -975,10 +976,27 @@ class CoursesController < ApplicationController
   end
 
   action_auth_level :export, :instructor
-  def export; end
+  def export
+    @export_users = @course.course_user_data.includes(:user).order(:id)
+    @export_assessments = @course.assessments.ordered
+  end
 
   action_auth_level :export_selected, :instructor
   def export_selected
+    tar_file = build_new_export_tar
+    (request.env["rack.tempfiles"] ||= []) << tar_file
+    send_file tar_file.path,
+              filename: "#{@course.name}_#{Time.current.strftime('%Y%m%d')}.tar",
+              type: "application/x-tar",
+              disposition: "attachment"
+  rescue StandardError => e
+    tar_file&.close!
+    flash[:error] = "Unable to generate course export: #{e.message}"
+    redirect_to(action: :export)
+  end
+
+  action_auth_level :legacy_export_selected, :instructor
+  def legacy_export_selected
     tar_stream = @course.generate_tar(params[:export_configs])
 
     send_data tar_stream.string.force_encoding("binary"),
@@ -991,26 +1009,6 @@ class CoursesController < ApplicationController
   rescue StandardError => e
     flash[:error] = "Unable to generate tarball -- #{e.message}"
     redirect_to(action: :export)
-  end
-
-  action_auth_level :archive, :instructor
-  def archive
-    @export_users = @course.course_user_data.includes(:user).order(:id)
-    @export_assessments = @course.assessments.ordered
-  end
-
-  action_auth_level :archive_selected, :instructor
-  def archive_selected
-    tar_file = build_new_export_tar
-    (request.env["rack.tempfiles"] ||= []) << tar_file
-    send_file tar_file.path,
-              filename: "#{@course.name}_#{Time.current.strftime('%Y%m%d')}.tar",
-              type: "application/x-tar",
-              disposition: "attachment"
-  rescue StandardError => e
-    tar_file&.close!
-    flash[:error] = "Unable to generate course export: #{e.message}"
-    redirect_to(action: :archive)
   end
 
 private

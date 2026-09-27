@@ -47,6 +47,7 @@
     items.forEach((item, index) => {
       const row = body.insertRow();
       const selectionCell = row.insertCell();
+      const label = document.createElement('label');
       const checkbox = document.createElement('input');
       checkbox.type = 'checkbox';
       checkbox.name = definition.inputName;
@@ -54,7 +55,9 @@
       checkbox.checked = true;
       checkbox.id = `${idPrefix}_${type}_${index}`;
       checkbox.setAttribute('aria-label', `Include ${item.name || item.email || item.identifier}`);
-      selectionCell.appendChild(checkbox);
+      label.appendChild(checkbox);
+      label.appendChild(document.createElement('span'));
+      selectionCell.appendChild(label);
 
       definition.columns.forEach((column) => {
         const cell = row.insertCell();
