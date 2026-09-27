@@ -1,9 +1,8 @@
 require "bigdecimal"
-require "psych"
-require "yaml"
+require "json"
 
 module CourseTransfer
-  # Canonicalizes values and safely reads and writes multi-document YAML.
+  # Canonicalizes values and streams one JSON document per line.
   module Serialization
   module_function
 
@@ -24,7 +23,7 @@ module CourseTransfer
     # @param document [Object]
     # @return [void]
     def dump_document(output, document)
-      output.write(YAML.dump(normalize(document)))
+      output.puts(JSON.generate(normalize(document)))
     end
 
     # Streams safely loaded documents without materializing the whole file.
@@ -35,14 +34,11 @@ module CourseTransfer
     def each_document(input, filename:)
       return enum_for(__method__, input, filename:) unless block_given?
 
-      handler = Psych::Handlers::DocumentStream.new do |document|
-        loader = Psych::ClassLoader::Restricted.new([], [])
-        scanner = Psych::ScalarScanner.new(loader)
-        yield Psych::Visitors::NoAliasRuby.new(
-          scanner, loader, symbolize_names: false, freeze: false
-        ).accept(document)
+      input.each_line.with_index(1) do |line, line_number|
+        yield JSON.parse(line)
+      rescue JSON::ParserError => e
+        raise JSON::ParserError, "#{filename}:#{line_number}: #{e.message}"
       end
-      Psych::Parser.new(handler).parse(input, filename)
     end
   end
 end

@@ -1,10 +1,12 @@
 <% @title = "Export Course" %>
 
 <% content_for :stylesheets do %>
+  <%= stylesheet_link_tag "https://cdn.datatables.net/v/dt/dt-3.1.2/sl-4.1.1/datatables.min.css" %>
   <%= stylesheet_link_tag "export" %>
 <% end %>
 
 <% content_for :javascripts do %>
+  <%= javascript_include_tag "https://cdn.datatables.net/v/dt/dt-3.1.2/sl-4.1.1/datatables.min.js" %>
   <%= javascript_include_tag "course_transfer_selection" %>
 <% end %>
 

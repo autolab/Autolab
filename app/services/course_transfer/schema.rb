@@ -3,7 +3,7 @@ module CourseTransfer
     :name, :model_class, :fields, :ref_fields, :match_fields, :dependency_scope,
     keyword_init: true
   ) do
-    def filename = "#{name}.yml"
+    def filename = "#{name}.jsonl"
 
     def pluck_fields
       [model_class.primary_key, *fields].map { |field| "#{model_class.table_name}.#{field}" }

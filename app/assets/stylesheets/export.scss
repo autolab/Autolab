@@ -71,6 +71,12 @@ table {
   width: 100%;
 }
 
+.export-selection-table input.dt-select-checkbox {
+  opacity: 1;
+  pointer-events: auto;
+  position: static;
+}
+
 .export-selection-table thead {
   position: sticky;
   top: 0;
@@ -85,11 +91,6 @@ table {
 .export-checkbox-column {
   text-align: center;
   width: 3rem;
-}
-
-.export-checkbox-label {
-  display: inline-block;
-  margin: 0;
 }
 
 tr.course-field {

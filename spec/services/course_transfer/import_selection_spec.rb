@@ -8,7 +8,7 @@ RSpec.describe CourseTransfer::ImportSelection do
   end
 
   def write_documents(root, name, documents)
-    File.open(root.join("#{name}.yml"), "w") do |file|
+    File.open(root.join("#{name}.jsonl"), "w") do |file|
       documents.each { |document| CourseTransfer::Serialization.dump_document(file, document) }
     end
   end

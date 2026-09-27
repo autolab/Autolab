@@ -6,134 +6,108 @@ require Rails.root.join("app/services/course_transfer/import")
 RSpec.describe "normalized course transfer" do
   # These records exercise transfer SQL, not model lifecycle callbacks.
   # rubocop:disable Rails/SkipsModelValidations
-  def insert_record(model, attributes)
+  def insert_factory_record(model, factory, overrides = {})
+    attributes = attributes_for(factory, **overrides)
+                 .slice(*model.column_names.map(&:to_sym))
     model.insert_all!([attributes])
     model.find_by!(attributes)
   end
   # rubocop:enable Rails/SkipsModelValidations
 
   it "round-trips selected course, user, assessment, submission, and grading rows" do
-    late_penalty = insert_record(
-      ScoreAdjustment,
+    late_penalty = insert_factory_record(
+      ScoreAdjustment, :penalty,
       type: "Penalty",
       kind: ScoreAdjustment::POINTS,
       value: 1.5
     )
-    version_penalty = insert_record(
-      ScoreAdjustment,
+    version_penalty = insert_factory_record(
+      ScoreAdjustment, :penalty,
       type: "Penalty",
       kind: ScoreAdjustment::PERCENT,
       value: 2.0
     )
-    course = insert_record(
-      Course,
+    course = insert_factory_record(
+      Course, :course,
       name: "transfer-course",
       display_name: "Transfer Course",
       semester: "f26",
-      late_slack: 0,
       grace_days: 2,
-      start_date: Date.new(2026, 8, 1),
-      end_date: Date.new(2026, 12, 1),
-      version_threshold: -1,
       late_penalty_id: late_penalty.id,
       version_penalty_id: version_penalty.id
     )
-    user = insert_record(
-      User,
+    user = insert_factory_record(
+      User, :user,
       email: "transfer@example.com",
       first_name: "Transfer",
       last_name: "Student"
     )
-    membership = insert_record(
-      CourseUserDatum,
+    membership = insert_factory_record(
+      CourseUserDatum, :student,
       course_id: course.id,
       user_id: user.id,
       lecture: "A",
       section: "1",
-      instructor: false,
-      course_assistant: false,
       dropped: false
     )
-    excluded_user = insert_record(
-      User,
+    excluded_user = insert_factory_record(
+      User, :user,
       email: "excluded@example.com",
       first_name: "Excluded",
       last_name: "Student"
     )
-    excluded_membership = insert_record(
-      CourseUserDatum,
+    excluded_membership = insert_factory_record(
+      CourseUserDatum, :student,
       course_id: course.id,
       user_id: excluded_user.id,
-      instructor: false,
-      course_assistant: false,
       dropped: false
     )
-    assessment = insert_record(
-      Assessment,
+    assessment = insert_factory_record(
+      Assessment, :assessment,
       course_id: course.id,
       name: "lab",
       display_name: "Lab",
       category_name: "Labs",
-      start_at: Time.zone.parse("2026-08-10 12:00:00"),
-      due_at: Time.zone.parse("2026-08-20 12:00:00"),
-      end_at: Time.zone.parse("2026-08-21 12:00:00"),
-      max_size: 1_024,
-      max_submissions: 10,
       max_grace_days: 2,
-      group_size: 1,
-      handin_directory: "handin",
       handin_filename: "handin.tar",
-      disable_handins: false,
-      github_submission_enabled: true,
       allow_student_assign_group: true,
       is_positive_grading: false,
       disable_network: false
     )
-    excluded_assessment = insert_record(
-      Assessment,
+    excluded_assessment = insert_factory_record(
+      Assessment, :assessment,
       course_id: course.id,
       name: "private-lab",
       display_name: "Private Lab",
       category_name: "Labs",
-      start_at: Time.zone.parse("2026-08-10 12:00:00"),
-      due_at: Time.zone.parse("2026-08-20 12:00:00"),
-      end_at: Time.zone.parse("2026-08-21 12:00:00"),
-      max_size: 1_024,
-      max_submissions: 10,
-      handin_directory: "handin",
       handin_filename: "handin.tar",
       disable_handins: true
     )
-    problem = insert_record(
-      Problem,
+    problem = insert_factory_record(
+      Problem, :problem,
       assessment_id: assessment.id,
       name: "code",
       description: "Code quality",
-      max_score: 10.0,
-      optional: false,
-      starred: false
+      max_score: 10.0
     )
-    submission = insert_record(
-      Submission,
+    submission = insert_factory_record(
+      Submission, :submission,
       assessment_id: assessment.id,
       course_user_datum_id: membership.id,
       submitted_by_id: membership.id,
       version: 1,
       filename: "handin.tar",
       notes: "first",
-      mime_type: "application/x-tar",
-      special_type: 0,
-      ignored: false,
-      group_key: ""
+      mime_type: "application/x-tar"
     )
-    group = insert_record(
-      Group,
+    group = insert_factory_record(
+      Group, :group,
       name: "Team One",
       created_at: Time.zone.parse("2026-08-10 11:00:00"),
       updated_at: Time.zone.parse("2026-08-10 11:00:00")
     )
-    assessment_user_datum = insert_record(
-      AssessmentUserDatum,
+    assessment_user_datum = insert_factory_record(
+      AssessmentUserDatum, :assessment_user_datum,
       assessment_id: assessment.id,
       course_user_datum_id: membership.id,
       latest_submission_id: submission.id,
@@ -142,15 +116,14 @@ RSpec.describe "normalized course transfer" do
       membership_status: AssessmentUserDatum::CONFIRMED,
       version_number: 1
     )
-    extension = insert_record(
-      Extension,
+    extension = insert_factory_record(
+      Extension, :extension,
       assessment_id: assessment.id,
       course_user_datum_id: membership.id,
-      days: 1,
-      infinite: false
+      days: 1
     )
-    score = insert_record(
-      Score,
+    score = insert_factory_record(
+      Score, :score,
       submission_id: submission.id,
       problem_id: problem.id,
       grader_id: 0,
@@ -158,8 +131,8 @@ RSpec.describe "normalized course transfer" do
       feedback: "good",
       released: true
     )
-    annotation = insert_record(
-      Annotation,
+    annotation = insert_factory_record(
+      Annotation, :annotation,
       submission_id: submission.id,
       problem_id: problem.id,
       filename: "main.c",
@@ -169,12 +142,10 @@ RSpec.describe "normalized course transfer" do
       value: 0.5,
       coordinate: "1,4",
       submitted_by: user.email,
-      shared_comment: false,
-      global_comment: false,
       created_at: Time.zone.parse("2026-08-20 10:00:00")
     )
-    attachment = insert_record(
-      Attachment,
+    attachment = insert_factory_record(
+      Attachment, :attachment,
       course_id: course.id,
       assessment_id: assessment.id,
       filename: "reference.txt",
@@ -235,7 +206,7 @@ RSpec.describe "normalized course transfer" do
         export_manager.export(relations)
 
         exported_tree = Pathname.new(directory).join("files", "course")
-        expect(Pathname.new(directory).join("files.yml")).not_to exist
+        expect(Pathname.new(directory).join("files.jsonl")).not_to exist
         expect(Pathname.new(directory).join("files", course.name)).not_to exist
         expect(exported_tree.join("random-course-file.txt")).to exist
         expect(exported_tree.join("lab", "random-assessment-file.txt")).to exist
@@ -247,16 +218,16 @@ RSpec.describe "normalized course transfer" do
         expect(Pathname.new(directory).join("files", "attachments").glob("**/reference.txt").one?)
           .to be(true)
 
-        adjustment_yaml = Pathname.new(directory).join("score_adjustments.yml").read
-        expect(adjustment_yaml.scan(/^---$/).size).to eq(2)
-        exported_adjustments = YAML.load_stream(adjustment_yaml)
+        adjustment_jsonl = Pathname.new(directory).join("score_adjustments.jsonl").read
+        exported_adjustments = adjustment_jsonl.lines.map { |line| JSON.parse(line) }
         expect(exported_adjustments.size).to eq(2)
         expect(exported_adjustments.pluck("_id")).to eq([1, 2])
-        expect(adjustment_yaml).not_to include("records:")
+        expect(adjustment_jsonl.lines.size).to eq(2)
 
-        exported_submissions = YAML.load_stream(
-          Pathname.new(directory).join("submissions.yml").read
-        )
+        submissions_path = Pathname.new(directory).join("submissions.jsonl")
+        exported_submissions = submissions_path.each_line.map do |line|
+          JSON.parse(line)
+        end
         expect(exported_submissions.size).to eq(1)
         exported_submission = exported_submissions.first
         expect(exported_submission.fetch("assessment_id")).to include(
@@ -359,22 +330,17 @@ RSpec.describe "normalized course transfer" do
   end
 
   it "rolls back when the destination course identifier already exists" do
-    penalty = insert_record(
-      ScoreAdjustment,
+    penalty = insert_factory_record(
+      ScoreAdjustment, :penalty,
       type: "Penalty",
       kind: ScoreAdjustment::POINTS,
       value: 0.0
     )
-    course = insert_record(
-      Course,
+    course = insert_factory_record(
+      Course, :course,
       name: "collision-course",
       display_name: "Collision Course",
-      semester: "f26",
-      late_slack: 0,
       grace_days: 0,
-      start_date: Date.new(2026, 8, 1),
-      end_date: Date.new(2026, 12, 1),
-      version_threshold: -1,
       late_penalty_id: penalty.id,
       version_penalty_id: penalty.id
     )
