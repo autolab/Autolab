@@ -26,7 +26,7 @@ class CoursesController < ApplicationController
                               complete_import join_course]
   before_action :set_manage_course_breadcrumb,
                 only: %i[edit users moss email upload_roster export export_selected
-                         legacy_export_selected]
+                         legacy_export legacy_export_selected]
   before_action :set_manage_course_users_breadcrumb, only: %i[upload_roster]
 
   def index
@@ -995,6 +995,9 @@ class CoursesController < ApplicationController
     redirect_to(action: :export)
   end
 
+  action_auth_level :legacy_export, :instructor
+  def legacy_export; end
+
   action_auth_level :legacy_export_selected, :instructor
   def legacy_export_selected
     tar_stream = @course.generate_tar(params[:export_configs])
@@ -1005,10 +1008,10 @@ class CoursesController < ApplicationController
               disposition: 'attachment'
   rescue SystemCallError => e
     flash[:error] = "Unable to create the config YAML file: #{e.message}"
-    redirect_to(action: :export)
+    redirect_to(action: :legacy_export)
   rescue StandardError => e
     flash[:error] = "Unable to generate tarball -- #{e.message}"
-    redirect_to(action: :export)
+    redirect_to(action: :legacy_export)
   end
 
 private

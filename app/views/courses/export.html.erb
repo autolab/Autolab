@@ -6,13 +6,16 @@
 
 <% content_for :javascripts do %>
   <%= javascript_include_tag "course_transfer_selection" %>
-  <%= javascript_include_tag "export_course" %>
 <% end %>
 
 <h2>Export Course</h2>
 <p>
   The course configuration is always included. Select the users and assessments to include;
   submissions are exported only when both are selected.
+</p>
+<p>
+  The package includes related enrollments, problems, attachments, assessment-user data,
+  extensions, scores, annotations, penalties, groups, and declared course files.
 </p>
 
 <%= form_tag export_course_path(@course), method: :post do %>
@@ -41,8 +44,9 @@
   <%= submit_tag "Export", class: "btn", data: { disable_with: false } %>
 <% end %>
 
-<details>
-  <summary>Legacy configuration export</summary>
-  <p>Select configuration files for older Autolab installations.</p>
-  <%= render partial: "exportForm" %>
-</details>
+<div class="card-panel grey lighten-4">
+  <p style="margin: 0;">
+    Exporting for an older Autolab installation?
+    Visit <%= link_to "Legacy Export", legacy_export_course_path(@course) %>.
+  </p>
+</div>

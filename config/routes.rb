@@ -293,7 +293,8 @@ Rails.application.routes.draw do
       match "email", via: [:get, :post]
       get "export"
       post "export", action: :export_selected
-      post "legacy_export", action: :legacy_export_selected
+      get "legacy_export"
+      post "legacy_export_selected"
       get "manage"
       get "moss"
       post "reload"

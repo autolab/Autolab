@@ -494,6 +494,26 @@ RSpec.describe CoursesController, type: :controller do
     end
   end
 
+  describe "#legacy_export" do
+    include_context "controllers shared context"
+
+    it "renders the legacy configuration selector for an instructor" do
+      sign_in(instructor_user)
+      get :legacy_export, params: { name: @course.name }
+
+      expect(response).to be_successful
+      expect(response.body).to match(/Legacy Export/m)
+      expect(response.body).to match(/Select fields to include in the export/m)
+    end
+
+    it "rejects a student" do
+      sign_in(student_user)
+      get :legacy_export, params: { name: @course.name }
+
+      expect(response).not_to be_successful
+    end
+  end
+
   shared_examples "legacy_export_success" do
     before(:each) do
       sign_in(user)
@@ -526,7 +546,7 @@ RSpec.describe CoursesController, type: :controller do
       allow_any_instance_of(Course).to receive(:generate_tar).and_raise(StandardError)
       post :legacy_export_selected, params: { name: @course.name }
       expect(response).to have_http_status(302)
-      expect(response).to redirect_to(action: :export)
+      expect(response).to redirect_to(action: :legacy_export)
       expect(flash[:error]).to be_present
       expect(flash[:error]).to match(/StandardError/m)
     end
