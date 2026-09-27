@@ -121,10 +121,11 @@ RSpec.describe CourseTransfer::ExportSelection do
       manager = CourseTransfer::ExportManager.new(context:)
       manager.export(manager.build_relations(selection))
 
-      courses_jsonl = Pathname.new(directory).join("courses.jsonl").read
-      expect(JSON.parse(courses_jsonl).fetch("_id")).to eq(1)
-      expect(courses_jsonl.lines.size).to eq(1)
-      expect(Pathname.new(directory).join("users.jsonl").read).to be_empty
+      courses_yaml = Pathname.new(directory).join("courses.yml").read
+      expect(courses_yaml).to start_with("---\n_id: 1\n")
+      expect(courses_yaml).not_to include("records:")
+      expect(YAML.load_stream(courses_yaml).size).to eq(1)
+      expect(Pathname.new(directory).join("users.yml").read).to be_empty
       preview = JSON.parse(Pathname.new(directory).join("preview.json").read)
       expect(preview).to eq(
         "version" => CourseTransfer::Version::CURRENT,

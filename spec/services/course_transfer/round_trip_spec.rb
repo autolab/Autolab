@@ -206,7 +206,7 @@ RSpec.describe "normalized course transfer" do
         export_manager.export(relations)
 
         exported_tree = Pathname.new(directory).join("files", "course")
-        expect(Pathname.new(directory).join("files.jsonl")).not_to exist
+        expect(Pathname.new(directory).join("files.yml")).not_to exist
         expect(Pathname.new(directory).join("files", course.name)).not_to exist
         expect(exported_tree.join("random-course-file.txt")).to exist
         expect(exported_tree.join("lab", "random-assessment-file.txt")).to exist
@@ -218,16 +218,16 @@ RSpec.describe "normalized course transfer" do
         expect(Pathname.new(directory).join("files", "attachments").glob("**/reference.txt").one?)
           .to be(true)
 
-        adjustment_jsonl = Pathname.new(directory).join("score_adjustments.jsonl").read
-        exported_adjustments = adjustment_jsonl.lines.map { |line| JSON.parse(line) }
+        adjustment_yaml = Pathname.new(directory).join("score_adjustments.yml").read
+        expect(adjustment_yaml.scan(/^---$/).size).to eq(2)
+        exported_adjustments = YAML.load_stream(adjustment_yaml)
         expect(exported_adjustments.size).to eq(2)
         expect(exported_adjustments.pluck("_id")).to eq([1, 2])
-        expect(adjustment_jsonl.lines.size).to eq(2)
+        expect(adjustment_yaml).not_to include("records:")
 
-        submissions_path = Pathname.new(directory).join("submissions.jsonl")
-        exported_submissions = submissions_path.each_line.map do |line|
-          JSON.parse(line)
-        end
+        exported_submissions = YAML.load_stream(
+          Pathname.new(directory).join("submissions.yml").read
+        )
         expect(exported_submissions.size).to eq(1)
         exported_submission = exported_submissions.first
         expect(exported_submission.fetch("assessment_id")).to include(

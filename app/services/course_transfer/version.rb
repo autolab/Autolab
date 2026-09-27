@@ -4,7 +4,7 @@ require_relative "errors"
 
 module CourseTransfer
   class Version
-    CURRENT = 2
+    CURRENT = 1
     FORMAT_ID = "autolab_course_export".freeze
     MANIFEST_FILENAME = "manifest.yml".freeze
 

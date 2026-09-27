@@ -441,10 +441,10 @@ RSpec.describe CoursesController, type: :controller do
       end
 
       expect(entries.keys).to include(
-        "courses.jsonl", "users.jsonl", "assessments.jsonl", "submissions.jsonl", "manifest.yml",
+        "courses.yml", "users.yml", "assessments.yml", "submissions.yml", "manifest.yml",
         "preview.json"
       )
-      course_rows = entries.fetch("courses.jsonl").lines.map { |line| JSON.parse(line) }
+      course_rows = YAML.load_stream(entries.fetch("courses.yml"))
       expect(course_rows.one?).to be(true)
       expect(course_rows.first.fetch("late_slack")).to eq(@course[:late_slack])
       manifest = YAML.safe_load(entries.fetch("manifest.yml"))

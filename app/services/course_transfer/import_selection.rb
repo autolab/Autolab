@@ -79,8 +79,8 @@ module CourseTransfer
           end
         end
         [name, indexed]
-      rescue JSON::ParserError => e
-        raise InvalidPackage, "#{table.filename} is invalid JSON Lines: #{e.message}"
+      rescue Psych::Exception => e
+        raise InvalidPackage, "#{table.filename} is invalid YAML: #{e.message}"
       end
     end
 
