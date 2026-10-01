@@ -126,6 +126,10 @@ Rails.application.routes.draw do
     get "ssh_keys", on: :member
     post "create_ssh_key", on: :member
     delete "destroy_ssh_key/:ssh_key_id", on: :member, to: "users#destroy_ssh_key", as: :destroy_ssh_key
+    # AWS SSM Management
+    get "ssm_access", on: :member
+    post "create_iam_unix_user", on: :member
+    get "iam_unix_user_status", on: :member
   end
 
   resources :courses, param: :name do

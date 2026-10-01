@@ -1,0 +1,265 @@
+<h4>IAM & UNIX User Management</h4>
+
+<p>
+  Create an AWS IAM user and corresponding Linux account for
+  <strong><%= @user.display_name %></strong>
+  (<%= @user.email %>).
+</p>
+
+<div class="alert alert-info">
+  <h5>About account creation</h5>
+
+  <p>
+    This will create an AWS IAM user and a Linux user on the configured
+    EC2 instance.
+  </p>
+
+  <p>
+    <strong>An AWS access key will also be generated.</strong>
+    The secret access key is only available when the account is first
+    created, so make sure to save it before leaving this page.
+  </p>
+</div>
+
+<div class="form-group">
+  <label>Username</label>
+  <p class="form-control-static">
+    <strong><%= UnixGroupManager.update_unix_user_mapping(@user) %></strong>
+  </p>
+
+  <p class="help-block">
+    This username will be used for both the AWS IAM user and Linux account.
+  </p>
+</div>
+
+<div id="creation-error"
+     class="alert alert-danger"
+     style="display: none;">
+</div>
+
+<button
+  id="create-user-button"
+  type="button"
+  class="btn btn-danger">
+  CREATE USER
+</button>
+
+<div id="creation-status" style="display: none;">
+  <h5>Account Creation Status</h5>
+
+  <div class="alert alert-info">
+    <strong>Status:</strong>
+    <span id="status-text">Starting...</span>
+  </div>
+</div>
+
+<div
+  id="credentials-panel"
+  class="alert alert-warning"
+  style="display: none;">
+
+  <h3>AWS Access Key Created</h3>
+
+  <p>
+    <strong>Save these credentials now.</strong>
+    AWS will not display the secret access key again.
+    If you lose it, you will need to generate a new access key.
+  </p>
+
+  <div class="form-group">
+    <label>Access Key ID</label>
+
+    <div>
+      <code id="access-key-id"></code>
+
+      <button
+        class="btn btn-default btn-sm"
+        type="button"
+        onclick="copyText('access-key-id')">
+        COPY
+      </button>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label for="secret-access-key">Secret Access Key</label>
+
+    <div class="input-group">
+      <input
+        id="secret-access-key"
+        class="form-control"
+        type="password"
+        autocomplete="off"
+        readonly>
+
+      <span class="input-group-btn">
+        <button
+          id="show-secret-button"
+          class="btn btn-default"
+          type="button"
+          onclick="toggleSecret()">
+          SHOW
+        </button>
+
+        <button
+          class="btn btn-default"
+          type="button"
+          onclick="copyValue('secret-access-key')">
+          COPY
+        </button>
+      </span>
+    </div>
+  </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const createButton = document.getElementById("create-user-button");
+
+        createButton.addEventListener("click", async function() {
+            createButton.disabled = true;
+            createButton.innerText = "CREATING...";
+
+            document.getElementById("creation-error").style.display = "none";
+            document.getElementById("creation-status").style.display = "block";
+            document.getElementById("status-text").innerText =
+                "Starting account creation...";
+
+            try {
+                const response = await fetch(
+                    "<%= create_iam_unix_user_user_path(@user) %>",
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRF-Token":
+                            document.querySelector('meta[name="csrf-token"]').content
+                        }
+                    }
+                );
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(
+                        data.error || "Failed to start account creation."
+                    );
+                }
+
+                if (data.access_key) {
+                    showCredentials(data.access_key);
+                }
+
+                if (data.status === "success") {
+                    creationFinished();
+                    return;
+                }
+
+                if (!data.job_id) {
+                    throw new Error("No provisioning job ID was returned.");
+                }
+
+                pollProvisionStatus(data.job_id);
+
+            } catch (error) {
+                creationFailed(error.message);
+            }
+        });
+    });
+
+    async function pollProvisionStatus(jobId) {
+        try {
+            const url =
+                "<%= iam_unix_user_status_user_path(@user) %>";
+
+            const response = await fetch(url);
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(
+                    data.error || "Failed to retrieve provisioning status."
+                );
+            }
+
+            if (data.access_key) {
+                showCredentials(data.access_key);
+            }
+
+            document.getElementById("status-text").innerText =
+                data.message || data.status;
+
+            if (data.status === "success") {
+                creationFinished();
+                return;
+            }
+
+            if (data.status === "failed") {
+                creationFailed(
+                    data.error || "Account creation failed."
+                );
+                return;
+            }
+
+            setTimeout(function() {
+                pollProvisionStatus(jobId);
+            }, 2000);
+
+        } catch (error) {
+            creationFailed(error.message);
+        }
+    }
+
+    function showCredentials(accessKey) {
+        document.getElementById("access-key-id").value =
+            accessKey.access_key_id;
+
+        document.getElementById("secret-access-key").value =
+            accessKey.secret_access_key;
+
+        document.getElementById("credentials-panel").style.display =
+            "block";
+    }
+
+    function creationFinished() {
+        document.getElementById("status-text").innerText =
+            "Account created successfully.";
+
+        const button = document.getElementById("create-user-button");
+        button.innerText = "USER CREATED";
+        button.disabled = true;
+    }
+
+    function creationFailed(message) {
+        document.getElementById("status-text").innerText =
+            "Account creation failed.";
+
+        const errorBox = document.getElementById("creation-error");
+        errorBox.innerText = message;
+        errorBox.style.display = "block";
+
+        const button = document.getElementById("create-user-button");
+        button.innerText = "CREATE USER";
+        button.disabled = false;
+    }
+
+    function toggleSecret() {
+        const field =
+            document.getElementById("secret-access-key");
+
+        const button =
+            document.getElementById("show-secret-button");
+
+        if (field.type === "password") {
+            field.type = "text";
+            button.innerText = "HIDE";
+        } else {
+            field.type = "password";
+            button.innerText = "SHOW";
+        }
+    }
+
+    async function copyField(id) {
+        const value = document.getElementById(id).value;
+        await navigator.clipboard.writeText(value);
+    }
+</script>

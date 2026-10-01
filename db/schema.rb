@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2026_08_22_163030) do
+ActiveRecord::Schema.define(version: 2026_10_01_191555) do
 
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
@@ -38,50 +38,6 @@ ActiveRecord::Schema.define(version: 2026_08_22_163030) do
     t.integer "blob_id", null: false
     t.string "variation_digest", null: false
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
-  end
-
-  create_table "ami_images", force: :cascade do |t|
-    t.string "name"
-    t.datetime "created_at", precision: 6, null: false
-    t.datetime "updated_at", precision: 6, null: false
-    t.integer "status", default: 0, null: false
-    t.string "ami_id"
-    t.string "execution_arn"
-    t.string "pipeline_arn"
-    t.string "recipe_arn"
-    t.string "component_arn"
-    t.integer "course_id"
-    t.boolean "is_public", default: false, null: false
-    t.index ["ami_id"], name: "index_ami_images_on_ami_id", unique: true
-    t.index ["course_id"], name: "index_ami_images_on_course_id"
-    t.index ["execution_arn"], name: "index_ami_images_on_execution_arn"
-    t.index ["is_public"], name: "index_ami_images_on_is_public"
-  end
-
-  create_table "ami_package_sources", force: :cascade do |t|
-    t.integer "ami_image_id", null: false
-    t.integer "source_type", default: 0, null: false
-    t.string "name"
-    t.string "deb_url"
-    t.datetime "created_at", precision: 6, null: false
-    t.datetime "updated_at", precision: 6, null: false
-    t.index ["ami_image_id"], name: "index_ami_package_sources_on_ami_image_id"
-  end
-
-  create_table "ami_packages", force: :cascade do |t|
-    t.integer "ami_image_id", null: false
-    t.string "name", null: false
-    t.string "version"
-    t.integer "install_type", default: 0
-    t.integer "ami_package_source_id"
-    t.boolean "validated", default: false
-    t.text "validation_error"
-    t.datetime "created_at", precision: 6, null: false
-    t.datetime "updated_at", precision: 6, null: false
-    t.index "\"deb_url\"", name: "index_ami_packages_on_deb_url"
-    t.index ["ami_image_id", "name"], name: "index_ami_packages_on_ami_image_id_and_name"
-    t.index ["ami_image_id"], name: "index_ami_packages_on_ami_image_id"
-    t.index ["ami_package_source_id"], name: "index_ami_packages_on_ami_package_source_id"
   end
 
   create_table "annotations", force: :cascade do |t|
@@ -195,13 +151,8 @@ ActiveRecord::Schema.define(version: 2026_08_22_163030) do
     t.boolean "release_score"
     t.string "instance_type", default: ""
     t.boolean "use_access_key", default: false
-    t.string "ami", default: ""
-    t.string "security_group", default: ""
     t.text "access_key_ciphertext"
     t.text "access_key_id_ciphertext"
-    t.boolean "use_ami_image", default: false, null: false
-    t.integer "ami_image_id"
-    t.index ["ami_image_id"], name: "index_autograders_on_ami_image_id"
   end
 
   create_table "container_images", force: :cascade do |t|
@@ -219,7 +170,6 @@ ActiveRecord::Schema.define(version: 2026_08_22_163030) do
     t.index ["course_id"], name: "index_container_images_on_course_id"
     t.index ["image_uri"], name: "index_container_images_on_image_uri", unique: true
     t.index ["is_public"], name: "index_container_images_on_is_public"
-    t.index ["name"], name: "index_container_images_on_name_public_only", unique: true, where: "is_public = true"
     t.index ["public_template_id"], name: "index_container_images_on_public_template_id"
     t.index ["status"], name: "index_container_images_on_status"
   end
@@ -299,8 +249,8 @@ ActiveRecord::Schema.define(version: 2026_08_22_163030) do
     t.string "context_id"
     t.integer "course_id"
     t.datetime "last_synced"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
     t.string "membership_url"
     t.string "platform"
     t.boolean "auto_sync", default: false
@@ -495,6 +445,8 @@ ActiveRecord::Schema.define(version: 2026_08_22_163030) do
     t.string "year"
     t.boolean "hover_assessment_date", default: false, null: false
     t.string "unix_user"
+    t.string "aws_job_id"
+    t.string "aws_job_status"
     t.index ["confirmation_token"], name: "index_users_on_confirmation_token", unique: true
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
@@ -527,11 +479,6 @@ ActiveRecord::Schema.define(version: 2026_08_22_163030) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
-  add_foreign_key "ami_images", "courses"
-  add_foreign_key "ami_package_sources", "ami_images"
-  add_foreign_key "ami_packages", "ami_images"
-  add_foreign_key "ami_packages", "ami_package_sources"
-  add_foreign_key "autograders", "ami_images"
   add_foreign_key "container_images", "container_images", column: "public_template_id"
   add_foreign_key "github_integrations", "users"
   add_foreign_key "oauth_access_grants", "oauth_applications", column: "application_id"

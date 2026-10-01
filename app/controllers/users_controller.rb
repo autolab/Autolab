@@ -1,4 +1,5 @@
 require_relative "../services/unix_group_manager"
+require "tango_client"
 
 class UsersController < ApplicationController
   skip_before_action :set_course
@@ -599,6 +600,71 @@ class UsersController < ApplicationController
     end
 
     redirect_to(ssh_keys_user_path(user))
+  end
+
+  action_auth_level :ssm_access, :instructor
+  def ssm_access
+    user = User.find_by(id: params[:user_id] || params[:id])
+    if user.nil?
+      flash[:error] = "User not found"
+      redirect_to(users_path) && return
+    end
+
+    # Only instructors can access via SSM
+    unless user.instructor? || current_user.administrator?
+      flash[:error] =
+        "Permission denied: AWS SSM access management is only available for course instructors."
+      redirect_to(user_path(user)) && return
+    end
+
+    # Users can only manage their own SSH keys, or admins can manage any instructor's keys
+    if user != current_user && !current_user.administrator?
+      flash[:error] = "Permission denied: you can only manage your own SSM access."
+      redirect_to(users_path) && return
+    end
+
+    @user = user
+    @default_username = @user.email
+  end
+
+  action_auth_level :create_iam_unix_user, :instructor
+  def create_iam_unix_user
+    user = User.find(params[:id])
+
+    username = UnixGroupManager.update_unix_user_mapping(user)
+
+    result = TangoClient.create_iam_user(
+      username,
+      username,
+      true
+    )
+
+    render json: result
+  rescue StandardError => e
+    render json: { error: e.message }, status: :unprocessable_entity
+  end
+
+  action_auth_level :iam_unix_user_status, :instructor
+  def iam_unix_user_status
+    user = User.find(params[:id])
+
+    if user.aws_job_id.blank?
+      return render json: {
+        error: "No AWS job found for this user"
+      }, status: :not_found
+    end
+
+    result = TangoClient.iam_unix_user_status(user.aws_job_id)
+
+    user.update!(
+      aws_job_status: result["status"]
+    )
+
+    render json: result
+  rescue StandardError => e
+    render json: {
+      error: e.message
+    }, status: :unprocessable_entity
   end
 
 private
