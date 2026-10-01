@@ -259,7 +259,8 @@ class CourseUserDatum < ApplicationRecord
   # global grace left cache key
   def ggl_cache_key
     # gets it into the YYYYMMDDHHMMSS form
-    dua = course.cgdub_dependencies_updated_at.utc.to_s(:number)
+    dependency_timestamp = course.cgdub_dependencies_updated_at || Time.at(0).utc
+    dua = dependency_timestamp.utc.to_s(:number)
 
     "ggl/dua-#{dua}/u-#{id}"
   end

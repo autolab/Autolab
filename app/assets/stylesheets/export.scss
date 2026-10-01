@@ -27,6 +27,71 @@ table {
   font-size: 17px;
 }
 
+.export-selection {
+  margin-bottom: 2rem;
+}
+
+.export-selection-header {
+  align-items: baseline;
+  display: flex;
+  gap: 1rem;
+}
+
+.export-selection-header h3 {
+  margin-bottom: 0.5rem;
+}
+
+.export-selection-count {
+  color: $autolab-dark-grey;
+}
+
+.export-selection-controls {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.export-search-label {
+  margin-right: 0.25rem;
+}
+
+.export-search {
+  margin: 0 0.5rem 0 0;
+  max-width: 20rem;
+}
+
+.export-selection-table-wrapper {
+  max-height: 28rem;
+  overflow: auto;
+}
+
+.export-selection-table {
+  width: 100%;
+}
+
+.export-selection-table thead {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.export-selection-table td,
+.export-selection-table th {
+  padding: 0.65rem 1rem;
+}
+
+.export-checkbox-column {
+  text-align: center;
+  width: 3rem;
+}
+
+.export-checkbox-label {
+  display: inline-block;
+  margin: 0;
+}
+
 tr.course-field {
   font-weight: 400;
 }

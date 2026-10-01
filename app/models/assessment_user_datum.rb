@@ -275,7 +275,9 @@ protected
 
   def cgdub_cache_key
     # gets it into the YYYYMMDDHHMMSS form
-    dua = assessment.course.cgdub_dependencies_updated_at.utc.to_s(:number)
+    course = assessment.course
+    dependency_timestamp = course.cgdub_dependencies_updated_at || Time.at(0).utc
+    dua = dependency_timestamp.utc.to_s(:number)
 
     "cgdub/dua-#{dua}/u-#{course_user_datum_id}/a-#{assessment_id}"
   end
