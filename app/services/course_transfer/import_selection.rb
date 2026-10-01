@@ -103,7 +103,9 @@ module CourseTransfer
             included_reference?(document, "assessment_id")
         end
       end
-      include_matching(:problems) { |document| included_reference?(document, "assessment_id") }
+      %i[autograders scoreboards problems].each do |name|
+        include_matching(name) { |document| included_reference?(document, "assessment_id") }
+      end
       include_matching(:attachments) do |document|
         document["assessment_id"].nil? || included_reference?(document, "assessment_id")
       end
@@ -119,6 +121,8 @@ module CourseTransfer
           ids.to_a.each do |id|
             document = documents.fetch(name).fetch(id)
             table.ref_fields.each_key do |field|
+              next if table.missing_reference?(field)
+
               reference = document[field.to_s]
               next unless reference.is_a?(Hash) && reference["table"] && reference["id"]
 

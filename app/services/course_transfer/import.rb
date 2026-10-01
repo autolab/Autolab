@@ -1,3 +1,4 @@
+require "pathname"
 require_relative "errors"
 require_relative "file_transfer"
 require_relative "import_finalizer"
@@ -6,6 +7,8 @@ require_relative "schema"
 
 module CourseTransfer
   class ImportManager
+    SAFE_IDENTIFIER = /\A[A-Za-z][A-Za-z0-9_-]*\z/
+
     attr_reader :context
 
     def initialize(context:, user_ids: nil, assessment_ids: nil)
@@ -18,6 +21,7 @@ module CourseTransfer
       @selection = ImportSelection.new(
         context:, user_ids: @user_ids, assessment_ids: @assessment_ids
       )
+      validate_package!
       @course_identifier = destination_course_identifier
       @imported_ids = Hash.new { |hash, name| hash[name] = [] }
       cleanup = nil
@@ -32,9 +36,9 @@ module CourseTransfer
         cleanup = FileTransfer.import(
           context:, imported_ids: @imported_ids, id_maps:, selection: @selection
         )
+        validate_import
         finalizer = ImportFinalizer.new(course, imported_ids: @imported_ids)
         finalizer.finalize!
-        validate_import
         course
       end
     rescue StandardError
@@ -59,8 +63,18 @@ module CourseTransfer
 
         attributes = table.fields.to_h do |field|
           value = document.fetch(field.to_s)
-          value = resolve_reference(table.ref_fields.fetch(field), value, id_maps) if
-            table.ref_fields.key?(field)
+          # Version 1 packages may contain a source-host handin destination.
+          value = nil if table.name == :assessments && field == :remote_handin_path
+          if table.ref_fields.key?(field)
+            missing = table.missing_reference?(field)
+            value = resolve_reference(
+              table.ref_fields.fetch(field),
+              value,
+              id_maps,
+              missing:,
+              missing_value: missing ? table.missing_reference_value(field) : nil
+            )
+          end
           [field, value]
         end
         attributes[:name] = @course_identifier if table.name == :courses
@@ -118,7 +132,7 @@ module CourseTransfer
       raise InvalidPackage, "#{table.filename} contains an invalid _id"
     end
 
-    def resolve_reference(expected_table, value, id_maps)
+    def resolve_reference(expected_table, value, id_maps, missing: false, missing_value: nil)
       return nil if value.nil?
       return value if value.is_a?(Numeric) && value <= 0
 
@@ -126,9 +140,83 @@ module CourseTransfer
               value["id"].is_a?(Integer) && value["id"].positive?
       raise InvalidPackage, "invalid reference to #{expected_table}" unless valid
 
-      id_maps.fetch(expected_table).fetch(value.fetch("id")) do
-        raise MissingImportReference,
-              "reference to missing #{expected_table} ID #{value.fetch('id').inspect}"
+      resolved = id_maps.fetch(expected_table, {})[value.fetch("id")]
+      return missing_value if resolved.nil? && missing
+      return resolved unless resolved.nil?
+
+      raise MissingImportReference,
+            "reference to missing #{expected_table} ID #{value.fetch('id').inspect}"
+    end
+
+    def validate_package!
+      @selection.parts.each do |name|
+        table = Schema.fetch(name)
+        @selection.documents.fetch(name).each_value do |document|
+          validate_document!(table, document)
+        end
+      end
+      validate_package_paths!
+    end
+
+    def validate_package_paths!
+      documents_for(:users).each do |document|
+        validate_path_component!(document["email"], "user email")
+      end
+      documents_for(:assessments).each do |document|
+        name = document["name"].to_s
+        unless SAFE_IDENTIFIER.match?(name)
+          raise InvalidPackage, "assessment name #{name.inspect} is not a safe identifier"
+        end
+
+        validate_relative_path!(document["handin_directory"], "assessment handin directory")
+        validate_filename!(document["handin_filename"], "assessment handin filename")
+        %w[handout writeup].each do |field|
+          value = document[field]
+          next if value.blank? || Utilities.is_url?(value)
+
+          validate_relative_path!(value, "assessment #{field}")
+        end
+      end
+      documents_for(:submissions).each do |document|
+        validate_filename!(document["filename"], "submission filename")
+      end
+      documents_for(:attachments).each do |document|
+        validate_filename!(document["filename"], "attachment filename")
+      end
+      documents_for(:annotations).each do |document|
+        validate_relative_path!(document["filename"], "annotation filename")
+      end
+    end
+
+    def documents_for(name)
+      @selection.documents.fetch(name, {}).values
+    end
+
+    def validate_path_component!(value, description)
+      return if value.blank?
+
+      raw = value.to_s
+      if raw.match?(/[[:cntrl:]]/) || raw.include?("/") || raw.include?("\\") ||
+         %w[. ..].include?(raw)
+        raise InvalidPackage, "#{description} #{raw.inspect} is not a safe path component"
+      end
+    end
+
+    def validate_filename!(value, description)
+      return if value.blank?
+
+      validate_path_component!(value, description)
+    end
+
+    def validate_relative_path!(value, description)
+      return if value.blank?
+
+      raw = value.to_s
+      path = Pathname.new(raw)
+      parts = raw.split("/")
+      if raw.match?(/[[:cntrl:]]/) || raw.include?("\\") || path.absolute? ||
+         parts.include?("..")
+        raise InvalidPackage, "#{description} #{raw.inspect} is not a safe relative path"
       end
     end
 

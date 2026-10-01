@@ -62,6 +62,13 @@ RSpec.describe CourseTransfer::ImportSelection do
             "course_user_datum_id" => reference(:course_user_data, 1),
             "assessment_id" => reference(:assessments, 2)
           }
+        ],
+        scores: [
+          {
+            "_id" => 1,
+            "submission_id" => reference(:submissions, 1),
+            "grader_id" => reference(:course_user_data, 2)
+          }
         ]
       }
 
@@ -82,6 +89,8 @@ RSpec.describe CourseTransfer::ImportSelection do
       expect(selection.included_ids.fetch(:users)).to contain_exactly(1)
       expect(selection.included_ids.fetch(:assessments)).to contain_exactly(1)
       expect(selection.included_ids.fetch(:submissions)).to contain_exactly(1)
+      expect(selection.included_ids.fetch(:scores)).to contain_exactly(1)
+      expect(selection.included_ids.fetch(:course_user_data)).to contain_exactly(1)
       expect(selection.excluded_user_emails).to eq(["excluded@example.com"])
       expect(selection.excluded_assessment_names).to eq(["excluded"])
     end

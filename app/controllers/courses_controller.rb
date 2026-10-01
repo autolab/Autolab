@@ -314,37 +314,39 @@ class CoursesController < ApplicationController
     end
 
     begin
-      tar_extract = Gem::Package::TarReader.new(tar_io)
-      tar_extract.rewind
-      unless valid_course_tar(tar_extract)
-        flash[:error] +=
-          "<br>Invalid tarball. A valid course tar has a single root "\
-            "directory that's named after the course, containing a "\
-            "course yaml file"
+      begin
+        tar_extract = Gem::Package::TarReader.new(tar_io)
+        tar_extract.rewind
+        unless valid_course_tar(tar_extract)
+          flash[:error] +=
+            "<br>Invalid tarball. A valid course tar has a single root "\
+              "directory that's named after the course, containing a "\
+              "course yaml file"
+          flash[:html_safe] = true
+          render(action: "new") && return
+        end
+      rescue SyntaxError => e
+        flash[:error] = "Error parsing course configuration file:"
+        # escape so that <compiled> doesn't get treated as a html tag
+        flash[:error] += "<br><pre>#{CGI.escapeHTML e.to_s}</pre>"
         flash[:html_safe] = true
         render(action: "new") && return
+      rescue StandardError => e
+        flash[:error] = "Error while reading the tarball -- #{e.message}."
+        render(action: "new") && return
       end
-    rescue SyntaxError => e
-      flash[:error] = "Error parsing course configuration file:"
-      # escape so that <compiled> doesn't get treated as a html tag
-      flash[:error] += "<br><pre>#{CGI.escapeHTML e.to_s}</pre>"
-      flash[:html_safe] = true
-      render(action: "new") && return
-    rescue StandardError => e
-      flash[:error] = "Error while reading the tarball -- #{e.message}."
-      render(action: "new") && return
-    end
 
-    begin
-      tar_io.rewind
-      tar_extract = Gem::Package::TarReader.new(tar_io)
-      tar_extract.rewind
-      @newCourse = get_course_from_config(tar_extract)
-      # save assessment directories
-      save_assessments_from_tar(tar_extract)
-    rescue StandardError => e
-      flash[:error] = "Error while extracting course to server -- #{e.message}."
-      render(action: "new") && return
+      begin
+        tar_io.rewind
+        tar_extract = Gem::Package::TarReader.new(tar_io)
+        tar_extract.rewind
+        @newCourse = get_course_from_config(tar_extract)
+        # save assessment directories
+        save_assessments_from_tar(tar_extract)
+      rescue StandardError => e
+        flash[:error] = "Error while extracting course to server -- #{e.message}."
+        render(action: "new") && return
+      end
     ensure
       tar_io.close if tar_io && !tar_io.closed?
     end

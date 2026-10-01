@@ -109,21 +109,35 @@ module CourseTransfer
       document = { "_id" => package_id }
       table.fields.each do |field|
         value = row.fetch(field.to_s)
+        # Host filesystem destinations are deliberately not portable archive data.
+        value = nil if table.name == :assessments && field == :remote_handin_path
         target = table.ref_fields[field]
-        document[field.to_s] = target ? reference(target, value, id_maps) : value
+        if target
+          missing = table.missing_reference?(field)
+          value = reference(
+            target,
+            value,
+            id_maps,
+            missing:,
+            missing_value: missing ? table.missing_reference_value(field) : nil
+          )
+        end
+        document[field.to_s] = value
       end
       document
     end
 
-    def reference(target, source_id, id_maps)
+    def reference(target, source_id, id_maps, missing: false, missing_value: nil)
       return nil if source_id.nil?
       return source_id if source_id.respond_to?(:negative?) && source_id <= 0
 
-      package_id = id_maps.fetch(target).fetch(source_id.to_s) do
-        id_maps.fetch(target).fetch(source_id) do
-          raise MissingExportReference, "#{target} record #{source_id.inspect} was not exported"
-        end
+      target_ids = id_maps.fetch(target, {})
+      package_id = target_ids[source_id.to_s] || target_ids[source_id]
+      return missing_value if package_id.nil? && missing
+      if package_id.nil?
+        raise MissingExportReference, "#{target} record #{source_id.inspect} was not exported"
       end
+
       { "table" => target.to_s, "id" => package_id }
     end
 

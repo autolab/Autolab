@@ -1,6 +1,7 @@
 module CourseTransfer
   Table = Struct.new(
     :name, :model_class, :fields, :ref_fields, :match_fields, :dependency_scope,
+    :missing_ref_values,
     keyword_init: true
   ) do
     def filename = "#{name}.yml"
@@ -15,6 +16,14 @@ module CourseTransfer
 
     def dependencies(relation)
       dependency_scope ? dependency_scope.call(relation) : {}
+    end
+
+    def missing_reference?(field)
+      missing_ref_values&.key?(field)
+    end
+
+    def missing_reference_value(field)
+      missing_ref_values.fetch(field)
     end
 
   end
@@ -87,10 +96,22 @@ module CourseTransfer
             score_adjustments: referenced(
               ScoreAdjustment, relation, :late_penalty_id, :version_penalty_id
             ),
+            autograders: Autograder.where(assessment_id: relation.select(:id)),
+            scoreboards: Scoreboard.where(assessment_id: relation.select(:id)),
             problems: Problem.where(assessment_id: relation.select(:id)),
             attachments: Attachment.where(assessment_id: relation.select(:id))
           }
         }
+      ),
+      Table.new(
+        name: :autograders, model_class: Autograder,
+        fields: %i[assessment_id autograde_timeout autograde_image release_score instance_type],
+        ref_fields: { assessment_id: :assessments }, match_fields: %i[assessment_id]
+      ),
+      Table.new(
+        name: :scoreboards, model_class: Scoreboard,
+        fields: %i[assessment_id banner colspec include_instructors],
+        ref_fields: { assessment_id: :assessments }, match_fields: %i[assessment_id]
       ),
       Table.new(
         name: :attachments, model_class: Attachment,
@@ -112,10 +133,11 @@ module CourseTransfer
         ref_fields: { course_user_datum_id: :course_user_data, assessment_id: :assessments,
                       submitted_by_id: :course_user_data, tweak_id: :score_adjustments },
         match_fields: %i[assessment_id course_user_datum_id version],
+        missing_ref_values: { submitted_by_id: nil },
         dependency_scope: lambda { |relation|
           {
-            course_user_data: referenced(
-              CourseUserDatum, relation, :course_user_datum_id, :submitted_by_id
+            course_user_data: CourseUserDatum.where(
+              id: relation.select(:course_user_datum_id)
             ),
             assessments: Assessment.where(id: relation.select(:assessment_id)),
             score_adjustments: ScoreAdjustment.where(id: relation.select(:tweak_id)),
@@ -150,9 +172,7 @@ module CourseTransfer
         ref_fields: { submission_id: :submissions, problem_id: :problems,
                       grader_id: :course_user_data },
         match_fields: %i[submission_id problem_id],
-        dependency_scope: lambda { |relation|
-          { course_user_data: CourseUserDatum.where(id: relation.select(:grader_id)) }
-        }
+        missing_ref_values: { grader_id: 0 }
       ),
       Table.new(
         name: :annotations, model_class: Annotation,

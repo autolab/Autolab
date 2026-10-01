@@ -15,7 +15,11 @@
 </p>
 <p>
   The package includes related enrollments, problems, attachments, assessment-user data,
-  extensions, scores, annotations, penalties, groups, and declared course files.
+  extensions, scores, annotations, penalties, groups, portable autograder settings,
+  scoreboards, and all files stored in the selected course directories.
+</p>
+<p>
+  Autograder access credentials and external-service integrations are intentionally excluded.
 </p>
 
 <%= form_tag export_course_path(@course), method: :post do %>

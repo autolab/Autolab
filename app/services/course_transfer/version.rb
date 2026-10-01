@@ -4,7 +4,8 @@ require_relative "errors"
 
 module CourseTransfer
   class Version
-    CURRENT = 1
+    CURRENT = 2
+    SUPPORTED = [1, CURRENT].freeze
     FORMAT_ID = "autolab_course_export".freeze
     MANIFEST_FILENAME = "manifest.yml".freeze
 
@@ -30,7 +31,7 @@ module CourseTransfer
     end
 
     def self.assert_importable!(version)
-      return true if version == CURRENT
+      return true if SUPPORTED.include?(version)
 
       raise Unsupported, "unsupported export format version: #{version.inspect}"
     end

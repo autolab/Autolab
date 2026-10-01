@@ -21,4 +21,10 @@ RSpec.describe CourseTransfer::Version do
         .to raise_error(described_class::InvalidManifest, /parts/)
     end
   end
+
+  it "accepts version 1 packages and rejects unknown versions" do
+    expect(described_class.assert_importable!(1)).to be(true)
+    expect { described_class.assert_importable!(described_class::CURRENT + 1) }
+      .to raise_error(described_class::Unsupported)
+  end
 end

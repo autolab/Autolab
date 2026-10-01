@@ -27,6 +27,27 @@ RSpec.describe CourseTransfer::ExportManager do
     expect(document.fetch("course_id")).to eq("table" => "courses", "id" => 1)
     expect(document.fetch("assessment_id")).to be_nil
   end
+
+  it "uses a safe sentinel when an optional referenced row was not selected" do
+    table = CourseTransfer::Schema.fetch(:scores)
+    manager = described_class.new(context: nil)
+    row = table.fields.index_with { nil }.transform_keys(&:to_s).merge(
+      "id" => 9,
+      "submission_id" => 4,
+      "problem_id" => 5,
+      "grader_id" => 99
+    )
+
+    document = manager.send(
+      :serialize_row,
+      table,
+      row,
+      1,
+      { submissions: { 4 => 1 }, problems: { 5 => 1 }, course_user_data: {} }
+    )
+
+    expect(document.fetch("grader_id")).to eq(0)
+  end
 end
 
 RSpec.describe CourseTransfer::ExportSelection do
@@ -67,7 +88,14 @@ RSpec.describe CourseTransfer::ExportSelection do
       Submission,
       assessment_id: selected_assessment.id,
       course_user_datum_id: selected_membership.id,
+      submitted_by_id: outside_membership.id,
       version: 1
+    )
+    insert_record(
+      Score,
+      submission_id: included_submission.id,
+      grader_id: outside_membership.id,
+      score: 10
     )
     insert_record(
       Submission,
@@ -103,6 +131,8 @@ RSpec.describe CourseTransfer::ExportSelection do
 
     relations = CourseTransfer::ExportManager.new(context: nil).build_relations(selection)
     expect(relations.fetch(:submissions)).to contain_exactly(included_submission)
+    expect(relations.fetch(:users)).to contain_exactly(selected_user)
+    expect(relations.fetch(:course_user_data)).to contain_exactly(selected_membership)
   end
 
   it "can export a course without users, assessments, or submissions" do

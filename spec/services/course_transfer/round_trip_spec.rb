@@ -70,6 +70,7 @@ RSpec.describe "normalized course transfer" do
       category_name: "Labs",
       max_grace_days: 2,
       handin_filename: "handin.tar",
+      remote_handin_path: "/srv/source-only-handins",
       allow_student_assign_group: true,
       is_positive_grading: false,
       disable_network: false
@@ -90,11 +91,27 @@ RSpec.describe "normalized course transfer" do
       description: "Code quality",
       max_score: 10.0
     )
+    autograder = insert_factory_record(
+      Autograder, :autograder,
+      assessment_id: assessment.id,
+      autograde_timeout: 240,
+      autograde_image: "grading-image",
+      release_score: false,
+      instance_type: "t3.small"
+    )
+    scoreboard_attributes = {
+      assessment_id: assessment.id,
+      banner: "Transfer scoreboard",
+      colspec: { "scoreboard" => [{ "hdr" => "Name" }] }.to_json,
+      include_instructors: true
+    }
+    Scoreboard.insert_all!([scoreboard_attributes]) # rubocop:disable Rails/SkipsModelValidations
+    scoreboard = Scoreboard.find_by!(scoreboard_attributes)
     submission = insert_factory_record(
       Submission, :submission,
       assessment_id: assessment.id,
       course_user_datum_id: membership.id,
-      submitted_by_id: membership.id,
+      submitted_by_id: excluded_membership.id,
       version: 1,
       filename: "handin.tar",
       notes: "first",
@@ -126,7 +143,7 @@ RSpec.describe "normalized course transfer" do
       Score, :score,
       submission_id: submission.id,
       problem_id: problem.id,
-      grader_id: 0,
+      grader_id: excluded_membership.id,
       score: 9.0,
       feedback: "good",
       released: true
@@ -234,6 +251,13 @@ RSpec.describe "normalized course transfer" do
           "table" => "assessments",
           "id" => 1
         )
+        expect(exported_submission.fetch("submitted_by_id")).to be_nil
+        exported_score = YAML.load_stream(
+          Pathname.new(directory).join("scores.yml").read
+        ).fetch(0)
+        expect(exported_score.fetch("grader_id")).to eq(0)
+        expect(Pathname.new(directory).join("autograders.yml")).to be_file
+        expect(Pathname.new(directory).join("scoreboards.yml")).to be_file
 
         Annotation.where(id: annotation.id).delete_all
         Score.where(id: score.id).delete_all
@@ -241,6 +265,8 @@ RSpec.describe "normalized course transfer" do
         AssessmentUserDatum.where(id: assessment_user_datum.id).delete_all
         Submission.where(id: submission.id).delete_all
         Problem.where(id: problem.id).delete_all
+        Autograder.where(id: autograder.id).delete_all
+        Scoreboard.where(id: scoreboard.id).delete_all
         Group.where(id: group.id).delete_all
         attachment.attachment_file.purge
         Attachment.where(id: attachment.id).delete_all
@@ -265,6 +291,7 @@ RSpec.describe "normalized course transfer" do
 
         imported_user = User.find_by!(email: "transfer@example.com")
         imported_instructor = User.find_by!(email: "new-instructor@example.com")
+        expect(User.find_by(email: "excluded@example.com")).to be_nil
         imported_membership = imported_course.course_user_data.find_by!(user: imported_user)
         imported_assessment = imported_course.assessments.find_by!(name: "lab")
         imported_submission = Submission.find_by!(
@@ -284,6 +311,8 @@ RSpec.describe "normalized course transfer" do
         expect(imported_course.course_user_data.find_by!(user: imported_instructor).instructor?)
           .to be(true)
         expect(imported_submission.notes).to eq("first")
+        expect(imported_submission.submitted_by_id).to be_nil
+        expect(imported_assessment.remote_handin_path).to be_nil
         expect(imported_aud.latest_submission).to eq(imported_submission)
         expect(imported_aud.group.name).to eq("Team One")
         expect(
@@ -292,8 +321,21 @@ RSpec.describe "normalized course transfer" do
             course_user_datum: imported_membership
           ).days
         ).to eq(1)
-        expect(Score.find_by!(submission: imported_submission,
-                              problem: imported_problem).score).to eq(9.0)
+        imported_score = Score.find_by!(submission: imported_submission, problem: imported_problem)
+        expect(imported_score.score).to eq(9.0)
+        expect(imported_score.grader_id).to eq(0)
+        expect(imported_assessment.autograder).to have_attributes(
+          autograde_timeout: 240,
+          autograde_image: "grading-image",
+          release_score: false,
+          instance_type: "t3.small",
+          use_access_key: false
+        )
+        expect(imported_assessment.scoreboard).to have_attributes(
+          banner: "Transfer scoreboard",
+          colspec: scoreboard_attributes.fetch(:colspec),
+          include_instructors: true
+        )
         expect(Annotation.find_by!(submission: imported_submission,
                                    problem: imported_problem).comment).to eq("nice")
         expect(imported_course.directory_path.join("course.rb").read)
