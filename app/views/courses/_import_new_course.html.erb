@@ -1,28 +1,57 @@
 <h3>Create New Course from Tarball</h3>
 
-<%= form_with url: { action: :create_from_tar }, builder: FormBuilderWithDateTimeInput do |f| %>
+<%= form_with url: complete_import_courses_path, method: :post, local: true,
+              id: "course_import_form", multipart: true, builder: FormBuilderWithDateTimeInput,
+              data: { new_import_url: complete_import_courses_path,
+                      legacy_import_url: create_from_tar_courses_path } do |f| %>
   <p>
-    If you have an existing Autolab course, then you can import it into this course:
+    Choose an Autolab course export. The package is inspected in your browser before it is
+    uploaded, then sent once when you import it.
   </p>
-  <ul>
-    <li>
-      1: Go into Manage Course in the existing Autolab course
-    </li>
-    <li>
-      2: On the left sidebar, click “Export Course”
-    </li>
-    <li>
-      3: Select the fields you would like to export and click the export button.
-    </li>
-  </ul>
-  <%= f.file_field :tarFile, required: true,
-                             help_text: "This tarball should have come from Autolab, and contains course configuration data" %>
 
-  <div class="input-field">
-    <label class="control-label" for="instructor_email">Instructor Email</label>
-    <%= email_field_tag :instructor_email, nil, class: "validate", placeholder: "", required: true, autocomplete: "email" %>
-    <p class="help-block">Email of an Instructor, they will set up the course from here!</p>
+  <%= f.file_field :tarFile, required: true, accept: ".tar,application/x-tar",
+                             help_text: "This tarball should have come from Autolab" %>
+
+  <button type="button" class="btn primary" data-import-preview>Preview Import</button>
+  <p data-import-status role="status" aria-live="polite"></p>
+
+  <div data-import-options hidden>
+    <div data-new-import-description hidden>
+      <p>
+        The course configuration is always imported. Select the users and assessments to include;
+        submissions are imported only when both their user and assessment are selected.
+      </p>
+    </div>
+
+    <div data-legacy-import-description hidden class="card-panel yellow lighten-4">
+      <p>
+        <strong>Legacy package:</strong> this package will use the existing legacy course importer.
+      </p>
+    </div>
+
+    <div class="form-group" data-course-identifier-field>
+      <%= label_tag :course_identifier, "New course identifier" %>
+      <%= text_field_tag :course_identifier, nil, required: true, disabled: true,
+                         pattern: "[A-Za-z0-9_-]+", class: "form-control" %>
+      <small>This becomes the course URL identifier and must not already exist.</small>
+    </div>
+
+    <div class="form-group">
+      <%= label_tag :instructor_email, "New instructor email" %>
+      <%= email_field_tag :instructor_email, nil, required: true, disabled: true,
+                          class: "form-control", autocomplete: "email" %>
+    </div>
+
+    <%= hidden_field_tag :selection_submitted, "1", disabled: true %>
+    <div data-import-users></div>
+    <div data-import-assessments></div>
+
+    <%= f.submit "Import Course", class: "btn primary", data: {
+      confirm: "Import this course package?", import_submit: true
+    } %>
   </div>
-
-  <%= f.submit "Create Course", { class: "btn primary" } %>
 <% end %>
+
+<noscript>
+  <p>JavaScript is required to preview a course package before importing it.</p>
+</noscript>

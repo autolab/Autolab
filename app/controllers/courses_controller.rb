@@ -2,19 +2,31 @@ require "archive"
 require "csv"
 require "fileutils"
 require "pathname"
+require "rubygems/package"
 require "statistics"
+require "stringio"
+require "tempfile"
 require_relative "../services/unix_group_manager"
+require_relative "../services/course_transfer/export"
+require_relative "../services/course_transfer/import"
+require_relative "../services/course_transfer/import_selection"
+require_relative "../services/course_transfer/package"
 
 class CoursesController < ApplicationController
   skip_before_action :set_course,
-                     only: %i[courses_redirect index new create create_from_tar join_course]
+                     only: %i[courses_redirect index new create create_from_tar
+                              complete_import join_course]
   # you need to be able to pick a course to be authorized for it
   skip_before_action :authorize_user_for_course,
-                     only: %i[courses_redirect index new create create_from_tar join_course]
+                     only: %i[courses_redirect index new create create_from_tar
+                              complete_import join_course]
   # if there's no course, there are no persistent announcements for that course
   skip_before_action :update_persistent_announcements,
-                     only: %i[courses_redirect index new create create_from_tar join_course]
-  before_action :set_manage_course_breadcrumb, only: %i[edit users moss email upload_roster export]
+                     only: %i[courses_redirect index new create create_from_tar
+                              complete_import join_course]
+  before_action :set_manage_course_breadcrumb,
+                only: %i[edit users moss email upload_roster export export_selected
+                         legacy_export legacy_export_selected]
   before_action :set_manage_course_users_breadcrumb, only: %i[upload_roster]
 
   def index
@@ -247,47 +259,96 @@ class CoursesController < ApplicationController
     end
   end
 
+  action_auth_level :complete_import, :administrator
+  def complete_import
+    if params[:tarFile].blank?
+      flash.now[:error] = "Please select a course tarball for uploading."
+      render(action: :new, status: :unprocessable_entity) && return
+    end
+
+    course_identifier = params[:course_identifier].to_s.strip
+    instructor_email = params[:instructor_email].to_s.strip
+    if course_identifier.blank? || instructor_email.blank?
+      flash.now[:error] = "Course identifier and instructor email are required."
+      render(action: :new, status: :unprocessable_entity) && return
+    end
+
+    tar_path = params[:tarFile].tempfile.path
+
+    imported_course = nil
+
+    Dir.mktmpdir("autolab-course-import-", Rails.root.join("tmp")) do |directory|
+      staging_path = CourseTransfer::Package.extract(tar_path, directory)
+      context = CourseTransfer::Context.new(
+        staging_path:,
+        course_identifier:,
+        instructor_email:
+      )
+      imported_course = CourseTransfer::ImportManager.new(
+        context:,
+        user_ids: Array(params[:user_ids]),
+        assessment_ids: Array(params[:assessment_ids])
+      ).import
+    end
+
+    flash[:success] = "Imported course #{imported_course.display_name}."
+    redirect_to course_path(imported_course.name)
+  rescue CourseTransfer::Error => e
+    flash.now[:error] = "Unable to import course: #{e.message}"
+    render(action: :new, status: :unprocessable_entity)
+  rescue StandardError => e
+    Rails.logger.error("Course import failed: #{e.class}: #{e.message}")
+    flash.now[:error] = "Unable to import course: #{e.message}"
+    render(action: :new, status: :unprocessable_entity)
+  end
+
   action_auth_level :create_from_tar, :administrator
   def create_from_tar
-    tarFile = params[:tarFile]
-    if tarFile.nil?
+    tar_io = nil
+
+    if params[:tarFile].present?
+      tar_io = File.new(params[:tarFile].open, "rb")
+    else
       flash[:error] = "Please select a course tarball for uploading."
       render(action: "new") && return
     end
 
     begin
-      tarFile = File.new(tarFile.open, "rb")
-      tar_extract = Gem::Package::TarReader.new(tarFile)
-      tar_extract.rewind
-      unless valid_course_tar(tar_extract)
-        flash[:error] +=
-          "<br>Invalid tarball. A valid course tar has a single root "\
-            "directory that's named after the course, containing a "\
-            "course yaml file"
+      begin
+        tar_extract = Gem::Package::TarReader.new(tar_io)
+        tar_extract.rewind
+        unless valid_course_tar(tar_extract)
+          flash[:error] +=
+            "<br>Invalid tarball. A valid course tar has a single root "\
+              "directory that's named after the course, containing a "\
+              "course yaml file"
+          flash[:html_safe] = true
+          render(action: "new") && return
+        end
+      rescue SyntaxError => e
+        flash[:error] = "Error parsing course configuration file:"
+        # escape so that <compiled> doesn't get treated as a html tag
+        flash[:error] += "<br><pre>#{CGI.escapeHTML e.to_s}</pre>"
         flash[:html_safe] = true
         render(action: "new") && return
+      rescue StandardError => e
+        flash[:error] = "Error while reading the tarball -- #{e.message}."
+        render(action: "new") && return
       end
-      tar_extract.close
-    rescue SyntaxError => e
-      flash[:error] = "Error parsing course configuration file:"
-      # escape so that <compiled> doesn't get treated as a html tag
-      flash[:error] += "<br><pre>#{CGI.escapeHTML e.to_s}</pre>"
-      flash[:html_safe] = true
-      render(action: "new") && return
-    rescue StandardError => e
-      flash[:error] = "Error while reading the tarball -- #{e.message}."
-      render(action: "new") && return
-    end
 
-    begin
-      tar_extract.rewind
-      @newCourse = get_course_from_config(tar_extract)
-      # save assessment directories
-      save_assessments_from_tar(tar_extract)
-      tar_extract.close
-    rescue StandardError => e
-      flash[:error] = "Error while extracting course to server -- #{e.message}."
-      render(action: "new") && return
+      begin
+        tar_io.rewind
+        tar_extract = Gem::Package::TarReader.new(tar_io)
+        tar_extract.rewind
+        @newCourse = get_course_from_config(tar_extract)
+        # save assessment directories
+        save_assessments_from_tar(tar_extract)
+      rescue StandardError => e
+        flash[:error] = "Error while extracting course to server -- #{e.message}."
+        render(action: "new") && return
+      end
+    ensure
+      tar_io.close if tar_io && !tar_io.closed?
     end
 
     unless @newCourse.save
@@ -917,10 +978,30 @@ class CoursesController < ApplicationController
   end
 
   action_auth_level :export, :instructor
-  def export; end
+  def export
+    @export_users = @course.course_user_data.includes(:user).order(:id)
+    @export_assessments = @course.assessments.ordered
+  end
 
   action_auth_level :export_selected, :instructor
   def export_selected
+    tar_file = build_new_export_tar
+    (request.env["rack.tempfiles"] ||= []) << tar_file
+    send_file tar_file.path,
+              filename: "#{@course.name}_#{Time.current.strftime('%Y%m%d')}.tar",
+              type: "application/x-tar",
+              disposition: "attachment"
+  rescue StandardError => e
+    tar_file&.close!
+    flash[:error] = "Unable to generate course export: #{e.message}"
+    redirect_to(action: :export)
+  end
+
+  action_auth_level :legacy_export, :instructor
+  def legacy_export; end
+
+  action_auth_level :legacy_export_selected, :instructor
+  def legacy_export_selected
     tar_stream = @course.generate_tar(params[:export_configs])
 
     send_data tar_stream.string.force_encoding("binary"),
@@ -929,13 +1010,43 @@ class CoursesController < ApplicationController
               disposition: 'attachment'
   rescue SystemCallError => e
     flash[:error] = "Unable to create the config YAML file: #{e.message}"
-    redirect_to(action: :export)
+    redirect_to(action: :legacy_export)
   rescue StandardError => e
     flash[:error] = "Unable to generate tarball -- #{e.message}"
-    redirect_to(action: :export)
+    redirect_to(action: :legacy_export)
   end
 
 private
+
+  def build_new_export_tar
+    tar_file = Tempfile.new(["autolab-course-export-", ".tar"])
+    Dir.mktmpdir("autolab-course-export-", Rails.root.join("tmp")) do |staging_dir|
+      staging_path = Pathname.new(staging_dir)
+      context = CourseTransfer::Context.new(
+        staging_path:
+      )
+
+      selected_users = User.where(id: Array(params[:user_ids]).reject(&:blank?))
+      selected_assessments = Assessment.where(
+        id: Array(params[:assessment_ids]).reject(&:blank?)
+      )
+      manager = CourseTransfer::ExportManager.new(context:)
+      relations = manager.build_relations(
+        CourseTransfer::ExportSelection.new(
+          course: @course,
+          users: selected_users,
+          assessments: selected_assessments
+        )
+      )
+      manager.export(relations)
+
+      CourseTransfer::Package.pack(staging_path, tar_file.path)
+    end
+    tar_file
+  rescue StandardError
+    tar_file&.close!
+    raise
+  end
 
   def new_course_params
     params.require(:newCourse).permit(:name, :semester)
