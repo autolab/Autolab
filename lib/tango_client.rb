@@ -167,7 +167,7 @@ module TangoClient
 
   def self.create_iam_user(iam_username, os_username, create_key = true)
     resp = handle_exceptions do
-      url = "/create_iam_user/#{api_key}/"
+      url = "/iam/#{api_key}/users/"
 
       body = {
         iam_username: iam_username,
@@ -187,7 +187,7 @@ module TangoClient
 
   def self.iam_unix_user_status(job_id)
     resp = handle_exceptions do
-      url = "/iam_unix_user_status/#{api_key}/#{job_id}/"
+      url = "/iam/#{api_key}/jobs/#{job_id}/"
 
       ClientObj.get(
         url,
