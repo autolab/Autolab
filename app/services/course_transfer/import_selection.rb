@@ -86,6 +86,9 @@ module CourseTransfer
 
     def build!
       include_matching(:courses) { true }
+      include_matching(:container_images) do |document|
+        included_reference?(document, "course_id")
+      end
       include_matching(:users) do |document|
         @all_users || @selected_user_ids.include?(id_for(document))
       end

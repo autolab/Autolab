@@ -18,6 +18,18 @@ RSpec.describe CourseTransfer::ImportSelection do
       root = Pathname.new(directory)
       documents = {
         courses: [{ "_id" => 1 }],
+        container_images: [
+          {
+            "_id" => 1,
+            "name" => "selected-image",
+            "status" => 2,
+            "image_uri" => "example.com/selected-image:latest",
+            "course_id" => reference(:courses, 1),
+            "dockerfile_contents" => "FROM ruby:3.2\n",
+            "created_at" => "2026-09-01T00:00:00.000000Z",
+            "updated_at" => "2026-09-01T00:00:00.000000Z"
+          }
+        ],
         users: [
           { "_id" => 1, "email" => "selected@example.com" },
           { "_id" => 2, "email" => "excluded@example.com" }
@@ -88,6 +100,7 @@ RSpec.describe CourseTransfer::ImportSelection do
 
       expect(selection.included_ids.fetch(:users)).to contain_exactly(1)
       expect(selection.included_ids.fetch(:assessments)).to contain_exactly(1)
+      expect(selection.included_ids.fetch(:container_images)).to contain_exactly(1)
       expect(selection.included_ids.fetch(:submissions)).to contain_exactly(1)
       expect(selection.included_ids.fetch(:scores)).to contain_exactly(1)
       expect(selection.included_ids.fetch(:course_user_data)).to contain_exactly(1)

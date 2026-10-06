@@ -58,9 +58,15 @@ module CourseTransfer
             score_adjustments: referenced(
               ScoreAdjustment, relation, :late_penalty_id, :version_penalty_id
             ),
-            attachments: Attachment.where(course_id: relation.select(:id), assessment_id: nil)
+            attachments: Attachment.where(course_id: relation.select(:id), assessment_id: nil),
+            container_images: ContainerImage.where(course_id: relation.select(:id))
           }
         }
+      ),
+      Table.new(
+        name: :container_images, model_class: ContainerImage,
+        fields: %i[name status image_uri course_id dockerfile_contents created_at updated_at],
+        ref_fields: { course_id: :courses }, match_fields: %i[course_id name]
       ),
       Table.new(
         name: :course_user_data, model_class: CourseUserDatum,

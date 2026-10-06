@@ -69,6 +69,26 @@ RSpec.describe CourseTransfer::ExportSelection do
     selected_assessment = insert_record(Assessment, course_id: course.id, name: "selected")
     excluded_assessment = insert_record(Assessment, course_id: course.id, name: "excluded")
     outside_assessment = insert_record(Assessment, course_id: other_course.id, name: "outside")
+    course_image = insert_record(
+      ContainerImage,
+      course_id: course.id,
+      name: "course-image",
+      status: ContainerImage.statuses.fetch("ready"),
+      image_uri: "example.com/course-image:latest",
+      dockerfile_contents: "FROM ruby:3.2\n",
+      created_at: Time.current,
+      updated_at: Time.current
+    )
+    insert_record(
+      ContainerImage,
+      course_id: other_course.id,
+      name: "other-course-image",
+      status: ContainerImage.statuses.fetch("ready"),
+      image_uri: "example.com/other-course-image:latest",
+      dockerfile_contents: "FROM ruby:3.2\n",
+      created_at: Time.current,
+      updated_at: Time.current
+    )
     selected_membership = insert_record(
       CourseUserDatum,
       course_id: course.id,
@@ -133,6 +153,7 @@ RSpec.describe CourseTransfer::ExportSelection do
     expect(relations.fetch(:submissions)).to contain_exactly(included_submission)
     expect(relations.fetch(:users)).to contain_exactly(selected_user)
     expect(relations.fetch(:course_user_data)).to contain_exactly(selected_membership)
+    expect(relations.fetch(:container_images)).to contain_exactly(course_image)
   end
 
   it "can export a course without users, assessments, or submissions" do

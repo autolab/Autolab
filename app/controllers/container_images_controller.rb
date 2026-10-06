@@ -22,6 +22,7 @@ class ContainerImagesController < ApplicationController
     @container_image.status = 0
     uploaded_file = params[:container_image][:dockerfile]
     dockerfile_content = uploaded_file.read if uploaded_file.present?
+    @container_image.dockerfile_contents = dockerfile_content
 
     if @container_image.save
       template_name = @container_image.public_template.name if @container_image.public_template

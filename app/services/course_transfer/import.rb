@@ -1,4 +1,5 @@
 require "pathname"
+require "tango_client"
 require_relative "errors"
 require_relative "file_transfer"
 require_relative "import_finalizer"
@@ -28,7 +29,7 @@ module CourseTransfer
       finalizer = nil
 
       # wrapping everything in a transaction allows everything to be rolled back if deemed necessary
-      ApplicationRecord.transaction(requires_new: true) do
+      course = ApplicationRecord.transaction(requires_new: true) do
         id_maps = Hash.new { |hash, name| hash[name] = {} }
         Schema.each { |table| import_table(table, id_maps) if @selection.parts.include?(table.name) }
 
@@ -42,6 +43,8 @@ module CourseTransfer
         finalizer.finalize!
         course
       end
+      rebuild_container_images(course)
+      course
     rescue StandardError
       finalizer&.cleanup!
       cleanup&.cleanup!
@@ -49,6 +52,39 @@ module CourseTransfer
     end
 
   private
+
+    def rebuild_container_images(course)
+      return unless Rails.configuration.x.ec2_docker == true
+
+      @imported_ids.fetch(:container_images, []).each do |image_id|
+        image = ContainerImage.find(image_id)
+        image.update!(status: :draft)
+
+        unless image.dockerfile_contents.present?
+          image.update!(status: :failed)
+          Rails.logger.error(
+            "Course import could not rebuild container image #{image.id}: " \
+              "Dockerfile contents are missing"
+          )
+          next
+        end
+
+        response = TangoClient.build_image(
+          image.name,
+          image.id,
+          image.dockerfile_contents,
+          course.name,
+          nil,
+          nil
+        )
+        image.update!(status: response.fetch("status"))
+      rescue ActiveRecord::RecordNotFound, ActiveRecord::ActiveRecordError => e
+        Rails.logger.error("Course import failed to rebuild container image #{image_id}: #{e.message}")
+      rescue TangoClient::TangoException => e
+        image&.update!(status: :failed)
+        Rails.logger.error("Course import failed to submit container image #{image_id}: #{e.message}")
+      end
+    end
 
     def import_table(table, id_maps)
       expected_id = 0

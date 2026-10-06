@@ -99,6 +99,17 @@ RSpec.describe "normalized course transfer" do
       release_score: false,
       instance_type: "t3.small"
     )
+    container_image_attributes = {
+      name: "grading-image",
+      status: ContainerImage.statuses.fetch("ready"),
+      image_uri: "example.com/grading-image:latest",
+      course_id: course.id,
+      dockerfile_contents: "FROM ruby:3.2\n",
+      created_at: Time.current,
+      updated_at: Time.current
+    }
+    ContainerImage.insert_all!([container_image_attributes]) # rubocop:disable Rails/SkipsModelValidations
+    container_image = ContainerImage.find_by!(container_image_attributes)
     scoreboard_attributes = {
       assessment_id: assessment.id,
       banner: "Transfer scoreboard",
@@ -257,6 +268,7 @@ RSpec.describe "normalized course transfer" do
         ).fetch(0)
         expect(exported_score.fetch("grader_id")).to eq(0)
         expect(Pathname.new(directory).join("autograders.yml")).to be_file
+        expect(Pathname.new(directory).join("container_images.yml")).to be_file
         expect(Pathname.new(directory).join("scoreboards.yml")).to be_file
 
         Annotation.where(id: annotation.id).delete_all
@@ -266,6 +278,7 @@ RSpec.describe "normalized course transfer" do
         Submission.where(id: submission.id).delete_all
         Problem.where(id: problem.id).delete_all
         Autograder.where(id: autograder.id).delete_all
+        ContainerImage.where(id: container_image.id).delete_all
         Scoreboard.where(id: scoreboard.id).delete_all
         Group.where(id: group.id).delete_all
         attachment.attachment_file.purge
@@ -283,6 +296,8 @@ RSpec.describe "normalized course transfer" do
           course_identifier: "imported-transfer-course",
           instructor_email: "new-instructor@example.com"
         )
+        allow(Rails.configuration.x).to receive(:ec2_docker).and_return(true)
+        allow(TangoClient).to receive(:build_image).and_return("status" => 1)
         imported_course = CourseTransfer::ImportManager.new(
           context: import_context,
           user_ids: [1],
@@ -331,6 +346,21 @@ RSpec.describe "normalized course transfer" do
           instance_type: "t3.small",
           use_access_key: false
         )
+        imported_image = imported_course.container_images.find_by!(name: "grading-image")
+        expect(TangoClient).to have_received(:build_image).with(
+          "grading-image",
+          imported_image.id,
+          "FROM ruby:3.2\n",
+          "imported-transfer-course",
+          nil,
+          nil
+        )
+        expect(imported_image)
+          .to have_attributes(
+            status: "building",
+            image_uri: "example.com/grading-image:latest",
+            dockerfile_contents: "FROM ruby:3.2\n"
+          )
         expect(imported_assessment.scoreboard).to have_attributes(
           banner: "Transfer scoreboard",
           colspec: scoreboard_attributes.fetch(:colspec),
