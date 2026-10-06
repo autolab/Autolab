@@ -7,6 +7,8 @@ require_relative "serialization"
 require_relative "version"
 
 module CourseTransfer
+  # The `ExportSelection` class exports by building relations (using `ActiveRecord`) that export all of the information
+  # we need for a single course export all at once.
   class ExportSelection
     attr_reader :course, :users, :assessments
 
@@ -23,6 +25,7 @@ module CourseTransfer
       )
       selected_users = User.where(id: selected_memberships.select(:user_id))
 
+      # essentially, we just seed all of the different types of fields we may want to export
       {
         courses: Course.where(id: course.id),
         users: selected_users,
@@ -61,13 +64,16 @@ module CourseTransfer
       until queue.empty?
         name, relation = queue.shift
         name = name.to_sym
+        # essentially, if we add new stuff to the relations we would like to pull,
         next unless visited.add?([name, relation.to_sql])
 
+        # and then we add all the things that it could depend on to our data
         table = Schema.fetch(name)
         fragments[name] << relation
         table.dependencies(relation).each { |dependency| queue << dependency }
       end
 
+      # and we combine them all of the fragmented relations in individual tables into larger fragments
       fragments.transform_values do |scopes|
         scopes.reduce { |combined, scope| combined.or(scope) }
       end
@@ -91,6 +97,7 @@ module CourseTransfer
 
   private
 
+    # essentially just dumps a table into yaml
     def write_table(table, relation, id_maps)
       path = context.staging_path.join(table.filename)
       rows = relation.reorder(table.model_class.primary_key => :asc).pluck(*table.pluck_fields)
@@ -127,6 +134,7 @@ module CourseTransfer
       document
     end
 
+    # generates a reference (used as a substitute for foreign keys)
     def reference(target, source_id, id_maps, missing: false, missing_value: nil)
       return nil if source_id.nil?
       return source_id if source_id.respond_to?(:negative?) && source_id <= 0
@@ -141,6 +149,9 @@ module CourseTransfer
       { "table" => target.to_s, "id" => package_id }
     end
 
+    # the preview is used by the frontend to allow selection on import.
+    # this is essentially just an easily parseable JSON file that contains information
+    # on the possible users and assignments to import, along with version information.
     def write_preview(relations, id_maps)
       memberships = relations.fetch(:course_user_data)
                         .pluck(:user_id, :instructor, :course_assistant)

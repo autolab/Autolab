@@ -77,6 +77,8 @@ module CourseTransfer
     #
     # @return [void]
     def cleanup!
+      # todo! I might actually prefer to just not delete anything and require that we have an admin go in and delete
+      # todo! the malformed files if this fails
       cleanup_each(@uploaded_blobs) { |blob| blob.service.delete(blob.key) }
       FileUtils.rm_rf(@restored_course) if @restored_course
     end
@@ -197,12 +199,14 @@ module CourseTransfer
       raise FileTransferError, "course file payload is missing" unless source.exist?
       raise FileTransferError, "course file payload is not a directory" unless source.directory?
 
+      # it is SUPER KEY that this check happens first
       destination = Course.find(course_ids.first).directory_path
       if destination.exist?
         raise FileTransferError, "course directory already exists: #{destination}"
       end
 
       FileUtils.mkdir_p(destination.dirname)
+      # specifically before this happens, otherwise we may accidentally rollback a pre-existing course (but this prevents that)
       @restored_course = destination
       move_tree(source, destination)
     rescue ActiveRecord::ActiveRecordError, SystemCallError => e

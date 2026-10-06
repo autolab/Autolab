@@ -27,6 +27,7 @@ module CourseTransfer
       cleanup = nil
       finalizer = nil
 
+      # wrapping everything in a transaction allows everything to be rolled back if deemed necessary
       ApplicationRecord.transaction(requires_new: true) do
         id_maps = Hash.new { |hash, name| hash[name] = {} }
         Schema.each { |table| import_table(table, id_maps) if @selection.parts.include?(table.name) }
