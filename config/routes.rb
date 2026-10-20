@@ -130,6 +130,7 @@ Rails.application.routes.draw do
     get "ssm_access", on: :member
     post "create_iam_unix_user", on: :member
     get "iam_unix_user_status", on: :member
+    post "regenerate_iam_access_key", on: :member
   end
 
   resources :courses, param: :name do

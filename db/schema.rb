@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2026_10_01_191555) do
+ActiveRecord::Schema.define(version: 2026_10_06_210924) do
 
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
@@ -447,6 +447,7 @@ ActiveRecord::Schema.define(version: 2026_10_01_191555) do
     t.string "unix_user"
     t.string "aws_job_id"
     t.string "aws_job_status"
+    t.datetime "iam_user_created_at"
     t.index ["confirmation_token"], name: "index_users_on_confirmation_token", unique: true
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true

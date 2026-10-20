@@ -624,6 +624,7 @@ class UsersController < ApplicationController
     end
 
     @user = user
+    @username = user.unix_user
     @default_username = @user.email
   end
 
@@ -638,6 +639,20 @@ class UsersController < ApplicationController
       username,
       true
     )
+
+    user.aws_job_id = result["jobId"]
+    user.aws_job_status = case result["statusId"]
+                          when 1
+                            "in_progress"
+                          when 2
+                            "success"
+                          when 255
+                            "failed"
+                          else
+                            "unknown"
+                          end
+
+    user.save!
 
     render json: result
   rescue StandardError => e
@@ -656,8 +671,49 @@ class UsersController < ApplicationController
 
     result = TangoClient.iam_unix_user_status(user.aws_job_id)
 
+    user.aws_job_status = case result["statusId"]
+                          when 1
+                            "in_progress"
+                          when 2
+                            "success"
+                          when 255
+                            "failed"
+                          else
+                            "unknown"
+                          end
+
+    user.save!
+
+    render json: result
+  rescue StandardError => e
+    render json: {
+      error: e.message
+    }, status: :unprocessable_entity
+  end
+
+  action_auth_level :regenerate_iam_access_key, :instructor
+  def regenerate_iam_access_key
+    user = User.find(params[:id])
+
+    unless user.iam_user_created_at.present?
+      return render json: {
+        error: "IAM user has not been created yet."
+      }, status: :unprocessable_entity
+    end
+
+    if %w[pending in_progress].include?(user.aws_job_status)
+      return render json: {
+        error: "An AWS operation is already in progress."
+      }, status: :conflict
+    end
+
+    result = TangoClient.regenerate_iam_access_key(
+      iam_username: user.unix_user
+    )
+
     user.update!(
-      aws_job_status: result["status"]
+      aws_job_id: result["job_id"],
+      aws_job_status: "pending"
     )
 
     render json: result

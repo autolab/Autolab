@@ -40,7 +40,7 @@ module TangoClient
       raise TangoException, "Tango returned negative status code: #{resp["statusMsg"]}"
     end
 
-    if resp.code != 200
+    if resp.code != 200 && resp.code != 202
       raise TangoException, "Tango returned HTTP code #{resp.code}"
     end
     
@@ -190,6 +190,19 @@ module TangoClient
       url = "/iam/#{api_key}/jobs/#{job_id}/"
 
       ClientObj.get(
+        url,
+        headers: { "Content-Type" => "application/json" }
+      )
+    end
+
+    resp.parsed_response
+  end
+
+  def self.regenerate_iam_access_key(iam_username)
+    resp = handle_exceptions do
+      url = "/iam/#{api_key}/users/#{iam_username}/key/"
+
+      ClientObj.post(
         url,
         headers: { "Content-Type" => "application/json" }
       )

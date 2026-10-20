@@ -1,51 +1,73 @@
+<% iam_user_created = @user.iam_user_created_at.present? %>
+
 <h4>IAM & UNIX User Management</h4>
 
 <p>
-  Create an AWS IAM user and corresponding Linux account for
+  Manage the AWS IAM user and corresponding Linux account for
   <strong><%= @user.display_name %></strong>
   (<%= @user.email %>).
 </p>
 
 <div class="alert alert-info">
-  <h5>About account creation</h5>
+  <h5>About account access</h5>
 
-  <p>
-    This will create an AWS IAM user and a Linux user on the configured
-    EC2 instance.
-  </p>
+  <% if iam_user_created %>
+    <p>
+      Your AWS IAM user and Linux account have already been created.
+    </p>
 
-  <p>
-    <strong>An AWS access key will also be generated.</strong>
-    The secret access key is only available when the account is first
-    created, so make sure to save it before leaving this page.
-  </p>
+    <p>
+      You can regenerate your AWS access key below.
+      <strong>The secret access key is only shown once,</strong>
+      so make sure to save it before leaving this page.
+    </p>
+  <% else %>
+    <p>
+      This will create an AWS IAM user and a Linux user on the configured
+      EC2 instance.
+    </p>
+
+    <p>
+      <strong>An AWS access key will also be generated.</strong>
+      The secret access key is only available when the account is first
+      created, so make sure to save it before leaving this page.
+    </p>
+  <% end %>
 </div>
 
 <div class="form-group">
   <label>Username</label>
+
   <p class="form-control-static">
-    <strong><%= UnixGroupManager.update_unix_user_mapping(@user) %></strong>
+    <strong><%= @username %></strong>
   </p>
 
   <p class="help-block">
-    This username will be used for both the AWS IAM user and Linux account.
+    This username is used for both the AWS IAM user and Linux account.
   </p>
 </div>
 
-<div id="creation-error"
-     class="alert alert-danger"
-     style="display: none;">
+<div
+  id="creation-error"
+  class="alert alert-danger"
+  style="display: none;">
 </div>
 
 <button
-  id="create-user-button"
+  id="aws-action-button"
   type="button"
-  class="btn btn-danger">
-  CREATE USER
+  class="btn btn-danger"
+  data-mode="<%= iam_user_created ? "regenerate" : "create" %>"
+  data-url="<%= if iam_user_created
+                  regenerate_iam_access_key_user_path(@user)
+                else
+                  create_iam_unix_user_user_path(@user)
+                end %>">
+  <%= iam_user_created ? "REGENERATE ACCESS KEY" : "CREATE USER" %>
 </button>
 
 <div id="creation-status" style="display: none;">
-  <h5>Account Creation Status</h5>
+  <h5>Account Status</h5>
 
   <div class="alert alert-info">
     <strong>Status:</strong>
@@ -58,7 +80,7 @@
   class="alert alert-warning"
   style="display: none;">
 
-  <h3>AWS Access Key Created</h3>
+  <h5>AWS Access Key Created</h5>
 
   <p>
     <strong>Save these credentials now.</strong>
@@ -112,134 +134,211 @@
   </div>
 </div>
 
+<div
+  id="ssm-instructions"
+  style="<%= iam_user_created ? "" : "display: none;" %>">
+
+  <hr>
+
+  <h5>Connect Using AWS SSM</h5>
+
+  <p>
+    First configure the AWS CLI using the access key shown above:
+  </p>
+
+  <pre><code>aws configure</code></pre>
+
+  <p>
+    Then connect to the EC2 instance using AWS Systems Manager:
+  </p>
+
+  <pre><code>aws ssm start-session --target <%= @instance_id %></code></pre>
+</div>
+
 <script>
     document.addEventListener("DOMContentLoaded", function() {
-        const createButton = document.getElementById("create-user-button");
+        const actionButton = document.getElementById("aws-action-button");
 
-        createButton.addEventListener("click", async function() {
-            createButton.disabled = true;
-            createButton.innerText = "CREATING...";
+        actionButton.addEventListener("click", function() {
+            startAwsOperation();
+        });
 
-            document.getElementById("creation-error").style.display = "none";
+        const existingStatus = "<%= @user.aws_job_status.to_s %>";
+
+        if (existingStatus === "pending" || existingStatus === "in_progress") {
+            actionButton.disabled = true;
+
             document.getElementById("creation-status").style.display = "block";
             document.getElementById("status-text").innerText =
-                "Starting account creation...";
+                "Operation in progress...";
 
-            try {
-                const response = await fetch(
-                    "<%= create_iam_unix_user_user_path(@user) %>",
-                    {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                            "X-CSRF-Token":
-                            document.querySelector('meta[name="csrf-token"]').content
-                        }
-                    }
-                );
-
-                const data = await response.json();
-
-                if (!response.ok) {
-                    throw new Error(
-                        data.error || "Failed to start account creation."
-                    );
-                }
-
-                if (data.access_key) {
-                    showCredentials(data.access_key);
-                }
-
-                if (data.status === "success") {
-                    creationFinished();
-                    return;
-                }
-
-                if (!data.job_id) {
-                    throw new Error("No provisioning job ID was returned.");
-                }
-
-                pollProvisionStatus(data.job_id);
-
-            } catch (error) {
-                creationFailed(error.message);
-            }
-        });
+            pollProvisionStatus();
+        }
     });
 
-    async function pollProvisionStatus(jobId) {
-        try {
-            const url =
-                "<%= iam_unix_user_status_user_path(@user) %>";
+    async function startAwsOperation() {
+        const button = document.getElementById("aws-action-button");
+        const mode = button.dataset.mode;
 
-            const response = await fetch(url);
+        button.disabled = true;
+        button.innerText =
+            mode === "create" ? "CREATING..." : "REGENERATING...";
+
+        document.getElementById("creation-error").style.display = "none";
+        document.getElementById("creation-status").style.display = "block";
+
+        document.getElementById("status-text").innerText =
+            mode === "create"
+                ? "Starting account creation..."
+                : "Starting access key regeneration...";
+
+        try {
+            const response = await fetch(button.dataset.url, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-Token":
+                    document.querySelector('meta[name="csrf-token"]').content
+                }
+            });
+
             const data = await response.json();
+
+            console.log(data);
 
             if (!response.ok) {
                 throw new Error(
-                    data.error || "Failed to retrieve provisioning status."
+                    data.error || "Failed to start AWS operation."
                 );
             }
 
-            if (data.access_key) {
-                showCredentials(data.access_key);
+            if (data.accessKey) {
+                showCredentials(data.accessKey);
             }
 
-            document.getElementById("status-text").innerText =
-                data.message || data.status;
-
-            if (data.status === "success") {
-                creationFinished();
+            if (data.statusId === 2) {
+                operationFinished(mode);
                 return;
             }
 
-            if (data.status === "failed") {
-                creationFailed(
-                    data.error || "Account creation failed."
+            if (data.statusId === 255) {
+                operationFailed(
+                    mode,
+                    data.statusMsg || "AWS operation failed."
                 );
                 return;
             }
 
-            setTimeout(function() {
-                pollProvisionStatus(jobId);
-            }, 2000);
+            pollProvisionStatus();
 
         } catch (error) {
-            creationFailed(error.message);
+            operationFailed(mode, error.message);
         }
     }
 
-    function showCredentials(accessKey) {
-        document.getElementById("access-key-id").value =
-            accessKey.access_key_id;
+    async function pollProvisionStatus() {
+        const button = document.getElementById("aws-action-button");
+        const mode = button.dataset.mode;
 
-        document.getElementById("secret-access-key").value =
-            accessKey.secret_access_key;
+        try {
+            const response = await fetch(
+                "<%= iam_unix_user_status_user_path(@user) %>"
+            );
 
-        document.getElementById("credentials-panel").style.display =
-            "block";
+            const data = await response.json();
+
+            console.log(data);
+
+            if (!response.ok) {
+                throw new Error(
+                    data.error || "Failed to retrieve AWS job status."
+                );
+            }
+
+            if (data.accessKey) {
+                showCredentials(data.accessKey);
+            }
+
+            document.getElementById("status-text").innerText =
+                data.statusMsg;
+
+            if (data.statusId === 2) {
+                operationFinished(mode);
+                return;
+            }
+
+            if (data.statusId === 255) {
+                operationFailed(
+                    mode,
+                    data.statusMsg || "AWS operation failed."
+                );
+                return;
+            }
+
+            setTimeout(pollProvisionStatus, 2000);
+
+        } catch (error) {
+            operationFailed(mode, error.message);
+        }
     }
 
-    function creationFinished() {
-        document.getElementById("status-text").innerText =
-            "Account created successfully.";
+    function operationFinished(mode) {
+        const button = document.getElementById("aws-action-button");
 
-        const button = document.getElementById("create-user-button");
-        button.innerText = "USER CREATED";
-        button.disabled = true;
+        if (mode === "create") {
+            document.getElementById("status-text").innerText =
+                "Account created successfully.";
+
+            document.getElementById("ssm-instructions").style.display =
+                "block";
+
+            // The user now exists, so future clicks should regenerate the key.
+            button.dataset.mode = "regenerate";
+            button.dataset.url =
+                "<%= regenerate_iam_access_key_user_path(@user) %>";
+
+            button.innerText = "REGENERATE ACCESS KEY";
+            button.disabled = false;
+
+        } else {
+            document.getElementById("status-text").innerText =
+                "Access key regenerated successfully.";
+
+            button.innerText = "REGENERATE ACCESS KEY";
+            button.disabled = false;
+        }
     }
 
-    function creationFailed(message) {
+    function operationFailed(mode, message) {
         document.getElementById("status-text").innerText =
-            "Account creation failed.";
+            mode === "create"
+                ? "Account creation failed."
+                : "Access key regeneration failed.";
 
         const errorBox = document.getElementById("creation-error");
+
         errorBox.innerText = message;
         errorBox.style.display = "block";
 
-        const button = document.getElementById("create-user-button");
-        button.innerText = "CREATE USER";
+        const button = document.getElementById("aws-action-button");
+
+        button.innerText =
+            mode === "create"
+                ? "CREATE USER"
+                : "REGENERATE ACCESS KEY";
+
         button.disabled = false;
+    }
+
+    function showCredentials(accessKey) {
+        document.getElementById("access-key-id").textContent =
+            accessKey.accessKeyId;
+
+        document.getElementById("secret-access-key").value =
+            accessKey.secretAccessKey;
+
+        document.getElementById("credentials-panel").style.display =
+            "block";
     }
 
     function toggleSecret() {
@@ -258,8 +357,17 @@
         }
     }
 
-    async function copyField(id) {
-        const value = document.getElementById(id).value;
+    async function copyText(id) {
+        const value =
+            document.getElementById(id).textContent;
+
+        await navigator.clipboard.writeText(value);
+    }
+
+    async function copyValue(id) {
+        const value =
+            document.getElementById(id).value;
+
         await navigator.clipboard.writeText(value);
     }
 </script>
