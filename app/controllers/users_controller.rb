@@ -682,7 +682,14 @@ class UsersController < ApplicationController
                             "unknown"
                           end
 
+    # The first poll to see the provision succeed: the Unix account exists
+    # now, so set up the course access that was skipped while it did not.
+    first_success = result["statusId"] == 2 && user.iam_user_created_at.blank?
+    user.iam_user_created_at = Time.current if first_success
+
     user.save!
+
+    sync_instructor_course_access(user) if first_success
 
     render json: result
   rescue StandardError => e
@@ -724,6 +731,24 @@ class UsersController < ApplicationController
   end
 
 private
+
+  # Add the user to their course groups and build ~/courses. Never raises: the
+  # status response it runs before can carry a one-time access key, which an
+  # error response would lose.
+  def sync_instructor_course_access(user)
+    user.course_user_data.where(instructor: true, dropped: [false, nil])
+        .includes(:course).find_each do |cud|
+      next if UnixGroupManager.update_course_staff_membership(cud.course, user, is_staff: true)
+
+      Rails.logger.error("Failed to add #{user.unix_user} to the Unix group for #{cud.course.name}")
+    end
+
+    return if UnixGroupManager.ensure_courses_directory(user, "/home/#{user.unix_user}")
+
+    Rails.logger.error("Failed to build ~/courses for #{user.unix_user}")
+  rescue StandardError => e
+    Rails.logger.error("sync_instructor_course_access failed for #{user.unix_user}: #{e.message}")
+  end
 
   # Given the path to a file, return the filename to use when the user downloads it
   # path should be of the form .../<ver>_<handin> or .../annotated_<ver>_<handin>
