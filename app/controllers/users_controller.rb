@@ -548,7 +548,8 @@ class UsersController < ApplicationController
         @ssh_key.save!
         SshKey.provision_all_for_user(@user)
       end
-      flash[:success] = "SSH key added successfully. You can now SSH into the system."
+      flash[:success] = "SSH key added successfully. You can now use it for SSH and file " \
+                        "transfer through AWS Session Manager."
     rescue SshKey::ProvisioningError => e
       flash[:error] = "Failed to add SSH key: #{e.message}"
     rescue ActiveRecord::RecordInvalid => e
@@ -636,6 +637,8 @@ class UsersController < ApplicationController
     end
     @instance_id = iam_config["instanceId"].presence
     @aws_region = iam_config["region"].presence
+    # SSH and file transfer over SSM need a key from the SSH Keys page.
+    @ssh_key_count = @user.ssh_keys.where(active: true).count
   end
 
   action_auth_level :create_iam_unix_user, :instructor
