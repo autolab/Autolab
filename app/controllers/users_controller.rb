@@ -626,10 +626,16 @@ class UsersController < ApplicationController
     @user = user
     @username = user.unix_user
     @default_username = @user.email
-    # Shown in the connection instructions. These match Tango's
-    # IAM_INSTANCE_ID and EC2_REGION; nil hides them rather than guessing.
-    @instance_id = ENV["AWS_SSM_INSTANCE_ID"].presence
-    @aws_region = ENV["AWS_SSM_REGION"].presence
+    # Shown in the connection instructions, read from Tango's IAM config on
+    # every load. nil (e.g. Tango is down) hides them rather than guessing.
+    iam_config = begin
+      TangoClient.iam_config || {}
+    rescue StandardError => e
+      Rails.logger.error("Could not read IAM config from Tango: #{e.message}")
+      {}
+    end
+    @instance_id = iam_config["instanceId"].presence
+    @aws_region = iam_config["region"].presence
   end
 
   action_auth_level :create_iam_unix_user, :instructor

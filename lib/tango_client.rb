@@ -185,6 +185,20 @@ module TangoClient
     resp.parsed_response
   end
 
+  # Returns {"instanceId" => ..., "region" => ...} from Tango's IAM config.
+  def self.iam_config
+    resp = handle_exceptions do
+      url = "/iam/#{api_key}/config/"
+
+      ClientObj.get(
+        url,
+        headers: { "Content-Type" => "application/json" }
+      )
+    end
+
+    resp.parsed_response
+  end
+
   def self.iam_unix_user_status(job_id)
     resp = handle_exceptions do
       url = "/iam/#{api_key}/jobs/#{job_id}/"

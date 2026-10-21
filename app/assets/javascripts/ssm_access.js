@@ -118,7 +118,7 @@ function renderSsmGuide() {
         code.textContent = ssmDetails.region;
         regionPrompt.appendChild(code);
     } else {
-        // AWS_SSM_REGION is unset; add it to Autolab's .env to fill this in.
+        // Tango's IAM config could not be read (or has no region).
         regionPrompt.textContent =
             "The AWS region of the instance (ask your Autolab administrator)";
     }
