@@ -1,4 +1,18 @@
 <% iam_user_created = @user.iam_user_created_at.present? %>
+<% job_running = @user.aws_job_status.to_s == "in_progress" %>
+<%# Default tab: SET UP until the account exists or while a job runs, then
+    ACCESS. FORGOT YOUR KEY? is only ever opened by the user. %>
+<% default_tab = iam_user_created && !job_running ? "ssm-access" : "ssm-setup" %>
+<% aws_cli_install_url = "https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html" %>
+<% ssm_plugin_install_url = "https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html" %>
+
+<% content_for :stylesheets do %>
+  <%= stylesheet_link_tag "ssm_access" %>
+<% end %>
+
+<% content_for :javascripts do %>
+  <%= javascript_include_tag "ssm_access" %>
+<% end %>
 
 <h4>IAM & UNIX User Management</h4>
 
@@ -8,366 +22,460 @@
   (<%= @user.email %>).
 </p>
 
-<div class="alert alert-info">
-  <h5>About account access</h5>
-
-  <% if iam_user_created %>
-    <p>
-      Your AWS IAM user and Linux account have already been created.
-    </p>
-
-    <p>
-      You can regenerate your AWS access key below.
-      <strong>The secret access key is only shown once,</strong>
-      so make sure to save it before leaving this page.
-    </p>
-  <% else %>
-    <p>
-      This will create an AWS IAM user and a Linux user on the configured
-      EC2 instance.
-    </p>
-
-    <p>
-      <strong>An AWS access key will also be generated.</strong>
-      The secret access key is only available when the account is first
-      created, so make sure to save it before leaving this page.
-    </p>
-  <% end %>
-</div>
-
-<div class="form-group">
-  <label>Username</label>
-
-  <p class="form-control-static">
-    <strong><%= @username %></strong>
-  </p>
-
-  <p class="help-block">
-    This username is used for both the AWS IAM user and Linux account.
-  </p>
-</div>
-
 <div
-  id="creation-error"
-  class="alert alert-danger"
-  style="display: none;">
-</div>
+  id="ssm-page"
+  class="row"
+  data-username="<%= @username %>"
+  data-instance-id="<%= @instance_id %>"
+  data-region="<%= @aws_region %>"
+  data-job-status="<%= @user.aws_job_status %>"
+  data-account-created="<%= iam_user_created %>"
+  data-status-url="<%= iam_unix_user_status_user_path(@user) %>">
 
-<button
-  id="aws-action-button"
-  type="button"
-  class="btn btn-danger"
-  data-mode="<%= iam_user_created ? "regenerate" : "create" %>"
-  data-url="<%= if iam_user_created
-                  regenerate_iam_access_key_user_path(@user)
-                else
-                  create_iam_unix_user_user_path(@user)
-                end %>">
-  <%= iam_user_created ? "REGENERATE ACCESS KEY" : "CREATE USER" %>
-</button>
-
-<div id="creation-status" style="display: none;">
-  <h5>Account Status</h5>
-
-  <div class="alert alert-info">
-    <strong>Status:</strong>
-    <span id="status-text">Starting...</span>
+  <div class="col s12">
+    <%# ACCESS and FORGOT YOUR KEY? stay disabled until the account exists. %>
+    <ul class="tabs" id="ssm-tabs">
+      <li class="tab">
+        <a href="#ssm-setup" class="<%= "active" if default_tab == "ssm-setup" %>">SET UP</a>
+      </li>
+      <li class="tab <%= "disabled" unless iam_user_created %>" data-needs-account>
+        <a href="#ssm-access" class="<%= "active" if default_tab == "ssm-access" %>">ACCESS</a>
+      </li>
+      <li class="tab <%= "disabled" unless iam_user_created %>" data-needs-account>
+        <a href="#ssm-forgot">FORGOT YOUR KEY?</a>
+      </li>
+    </ul>
   </div>
-</div>
 
-<div
-  id="credentials-panel"
-  class="alert alert-warning"
-  style="display: none;">
+  <div class="col s12">
+    <%# Shared by every tab, so a running operation is visible wherever the
+        user is. %>
+    <div
+      id="creation-error"
+      class="alert alert-danger"
+      style="display: none; margin-top: 1em;">
+    </div>
 
-  <h5>AWS Access Key Created</h5>
+    <div
+      id="creation-status"
+      class="alert alert-info"
+      style="display: none; margin-top: 1em;">
+      <strong id="status-title">In progress:</strong>
+      <span id="status-text">Starting...</span>
+    </div>
+  </div>
 
-  <p>
-    <strong>Save these credentials now.</strong>
-    AWS will not display the secret access key again.
-    If you lose it, you will need to generate a new access key.
-  </p>
+  <%# ---------- TAB 1: SET UP ---------- %>
+  <div
+    id="ssm-setup"
+    class="col s12 ssm-panel"
+    style="<%= "display: none;" unless default_tab == "ssm-setup" %>">
 
-  <div class="form-group">
-    <label>Access Key ID</label>
+    <%# Shown until the account exists %>
+    <div
+      id="create-section"
+      style="<%= iam_user_created ? "display: none;" : "" %>">
 
-    <div>
-      <code id="access-key-id"></code>
+      <div class="alert alert-info">
+        <p>
+          This will create an AWS IAM user and a Linux user on the configured
+          EC2 instance.
+        </p>
+
+        <p>
+          <strong>An AWS access key will also be generated.</strong>
+          The secret access key is only shown once, when the account is
+          created, so make sure to save it before leaving this page.
+        </p>
+      </div>
+
+      <div class="form-group">
+        <label>Username</label>
+
+        <p class="form-control-static">
+          <% if @username.present? %>
+            <strong><%= @username %></strong>
+          <% else %>
+            <em>Assigned when the account is created</em>
+          <% end %>
+        </p>
+
+        <p class="help-block">
+          This username is used for both the AWS IAM user and Linux account.
+        </p>
+      </div>
 
       <button
-        class="btn btn-default btn-sm"
+        id="create-button"
         type="button"
-        onclick="copyText('access-key-id')">
-        COPY
+        class="btn btn-danger"
+        data-url="<%= create_iam_unix_user_user_path(@user) %>">
+        CREATE USER
       </button>
     </div>
-  </div>
 
-  <div class="form-group">
-    <label for="secret-access-key">Secret Access Key</label>
+    <%# Shown once the account exists %>
+    <div
+      id="setup-account-section"
+      style="<%= iam_user_created ? "" : "display: none;" %>">
 
-    <div class="input-group">
-      <input
-        id="secret-access-key"
-        class="form-control"
-        type="password"
-        autocomplete="off"
-        readonly>
+      <div class="alert alert-success">
+        <h5>Account Ready</h5>
 
-      <span class="input-group-btn">
-        <button
-          id="show-secret-button"
-          class="btn btn-default"
-          type="button"
-          onclick="toggleSecret()">
-          SHOW
-        </button>
+        <p>
+          <span class="ssm-username" data-ssm-username><%= @username %></span>
+        </p>
 
-        <button
-          class="btn btn-default"
-          type="button"
-          onclick="copyValue('secret-access-key')">
-          COPY
-        </button>
-      </span>
+        <p style="margin-bottom: 0;">
+          Your AWS IAM user and Linux account are ready and use this username.
+        </p>
+      </div>
+
+      <div class="ssm-section">
+        <h6><strong>Prerequisites</strong></h6>
+
+        <ul class="browser-default">
+          <li>
+            <strong>AWS CLI</strong> &mdash;
+            <a href="<%= aws_cli_install_url %>" target="_blank" rel="noopener">
+              installation guide
+            </a>
+          </li>
+          <li>
+            <strong>Session Manager Plugin</strong> &mdash;
+            <a href="<%= ssm_plugin_install_url %>" target="_blank" rel="noopener">
+              installation guide
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="ssm-section">
+        <h6><strong>AWS Credentials</strong></h6>
+
+        <%# Shown whenever no key is on the page, e.g. after a refresh. %>
+        <p id="no-credentials-note">
+          Your secret access key was shown once, when it was created. If you no
+          longer have it, use
+          <a href="#ssm-forgot" onclick="selectTab('ssm-forgot'); return false;">FORGOT YOUR KEY?</a>
+          to generate a new one.
+        </p>
+
+        <div
+          id="credentials-panel"
+          class="alert alert-warning"
+          style="display: none;">
+
+          <p>
+            <strong>Save these credentials now.</strong>
+            AWS will not display the secret access key again.
+            If you lose it, you will need to generate a new access key.
+          </p>
+
+          <div class="form-group">
+            <label>Access Key ID</label>
+
+            <div>
+              <code id="access-key-id"></code>
+
+              <button
+                class="btn btn-default btn-sm"
+                type="button"
+                onclick="copyText('access-key-id', this)">
+                COPY
+              </button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="secret-access-key">Secret Access Key</label>
+
+            <div class="input-group">
+              <input
+                id="secret-access-key"
+                class="form-control"
+                type="password"
+                autocomplete="off"
+                readonly>
+
+              <span class="input-group-btn">
+                <button
+                  id="show-secret-button"
+                  class="btn btn-default"
+                  type="button"
+                  onclick="toggleSecret()">
+                  SHOW
+                </button>
+
+                <button
+                  class="btn btn-default"
+                  type="button"
+                  onclick="copyValue('secret-access-key', this)">
+                  COPY
+                </button>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ssm-section">
+        <h6><strong>Configure the AWS CLI</strong></h6>
+
+        <p>
+          Use a named AWS CLI profile instead of the default profile, so these
+          credentials do not replace any AWS credentials you already use.
+        </p>
+
+        <div class="ssm-command">
+          <pre><code id="cmd-configure"></code></pre>
+
+          <button
+            class="btn btn-default btn-sm"
+            type="button"
+            onclick="copyText('cmd-configure', this)">
+            COPY
+          </button>
+        </div>
+
+        <p>When prompted, enter:</p>
+
+        <table class="ssm-prompts">
+          <tr>
+            <td><strong>AWS Access Key ID</strong></td>
+            <td>Use the Access Key ID shown above</td>
+          </tr>
+          <tr>
+            <td><strong>AWS Secret Access Key</strong></td>
+            <td>Use the Secret Access Key shown above</td>
+          </tr>
+          <tr>
+            <td><strong>Default region name</strong></td>
+            <td id="prompt-region"></td>
+          </tr>
+          <tr>
+            <td><strong>Default output format</strong></td>
+            <td><code>json</code></td>
+          </tr>
+        </table>
+
+        <p class="ssm-section">
+          Then open the
+          <a href="#ssm-access" onclick="selectTab('ssm-access'); return false;">ACCESS</a>
+          tab to connect.
+        </p>
+      </div>
     </div>
   </div>
+
+  <%# ---------- TAB 2: ACCESS ---------- %>
+  <div
+    id="ssm-access"
+    class="col s12 ssm-panel"
+    style="<%= "display: none;" unless default_tab == "ssm-access" %>">
+
+    <table class="ssm-prompts">
+      <tr>
+        <td><strong>Username</strong></td>
+        <td><code data-ssm-username><%= @username %></code></td>
+      </tr>
+      <tr>
+        <td><strong>Instance ID</strong></td>
+        <td>
+          <code id="instance-id"></code>
+
+          <button
+            id="copy-instance-id-button"
+            class="btn btn-default btn-sm"
+            type="button"
+            onclick="copyText('instance-id', this)">
+            COPY
+          </button>
+
+          <span id="instance-id-missing" style="display: none;">
+            <em>Not configured. Ask your Autolab administrator for the instance ID.</em>
+          </span>
+        </td>
+      </tr>
+      <tr>
+        <td><strong>AWS CLI profile</strong></td>
+        <td><code data-ssm-profile></code></td>
+      </tr>
+    </table>
+
+    <div class="ssm-section">
+      <h6><strong>Start the SSM session</strong></h6>
+
+      <div class="ssm-command">
+        <pre><code id="cmd-start-session"></code></pre>
+
+        <button
+          class="btn btn-default btn-sm"
+          type="button"
+          onclick="copyText('cmd-start-session', this)">
+          COPY
+        </button>
+      </div>
+    </div>
+
+    <div class="ssm-section ssm-transfer">
+      <h6><strong>Transfer Files</strong></h6>
+
+      <p>
+        File transfer runs SSH through Session Manager, so it also needs an
+        SSH key: add your public key on the
+        <%= link_to "SSH Keys", ssh_keys_user_path(@user) %> page, and keep the
+        private key at <code data-ssm-ssh-key></code> on your computer. If your
+        key is somewhere else, change the <code>-i</code> or
+        <code>IdentityFile</code> path in the commands below.
+      </p>
+
+      <div class="ssm-subnav">
+        <button
+          type="button"
+          class="btn-flat active"
+          aria-pressed="true"
+          data-transfer-option="ssm-transfer-once"
+          onclick="showTransferOption('ssm-transfer-once')">
+          One-time transfer
+        </button>
+
+        <button
+          type="button"
+          class="btn-flat"
+          aria-pressed="false"
+          data-transfer-option="ssm-transfer-config"
+          onclick="showTransferOption('ssm-transfer-config')">
+          Easier repeated transfers
+        </button>
+      </div>
+
+      <div id="ssm-transfer-once" class="ssm-transfer-option">
+        <p>
+          Use these commands if you only need to transfer files occasionally.
+          No SSH configuration changes are required.
+        </p>
+
+        <p class="ssm-command-label">Upload</p>
+
+        <div class="ssm-command">
+          <pre><code id="cmd-scp-upload"></code></pre>
+
+          <button
+            class="btn btn-default btn-sm"
+            type="button"
+            onclick="copyText('cmd-scp-upload', this)">
+            COPY
+          </button>
+        </div>
+
+        <p class="ssm-command-label">Download</p>
+
+        <div class="ssm-command">
+          <pre><code id="cmd-scp-download"></code></pre>
+
+          <button
+            class="btn btn-default btn-sm"
+            type="button"
+            onclick="copyText('cmd-scp-download', this)">
+            COPY
+          </button>
+        </div>
+      </div>
+
+      <div
+        id="ssm-transfer-config"
+        class="ssm-transfer-option"
+        style="display: none;">
+
+        <p>
+          For frequent transfers, add the following SSH configuration to your
+          local computer.
+        </p>
+
+        <div class="card-panel amber lighten-5">
+          <strong>
+            This configuration belongs on your local computer in
+            <code>~/.ssh/config</code>, not on the EC2 instance.
+          </strong>
+        </div>
+
+        <div class="ssm-command">
+          <pre><code id="cmd-ssh-config"></code></pre>
+
+          <button
+            class="btn btn-default btn-sm"
+            type="button"
+            onclick="copyText('cmd-ssh-config', this)">
+            COPY
+          </button>
+        </div>
+
+        <p>Then transfer files with:</p>
+
+        <p class="ssm-command-label">Upload</p>
+
+        <div class="ssm-command">
+          <pre><code id="cmd-scp-upload-short"></code></pre>
+
+          <button
+            class="btn btn-default btn-sm"
+            type="button"
+            onclick="copyText('cmd-scp-upload-short', this)">
+            COPY
+          </button>
+        </div>
+
+        <p class="ssm-command-label">Download</p>
+
+        <div class="ssm-command">
+          <pre><code id="cmd-scp-download-short"></code></pre>
+
+          <button
+            class="btn btn-default btn-sm"
+            type="button"
+            onclick="copyText('cmd-scp-download-short', this)">
+            COPY
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <%# ---------- TAB 3: FORGOT YOUR KEY? ---------- %>
+  <div
+    id="ssm-forgot"
+    class="col s12 ssm-panel"
+    style="display: none;">
+
+    <p>
+      AWS does not allow an existing Secret Access Key to be displayed again.
+    </p>
+
+    <p>
+      If you no longer have access to your credentials, generate a new access
+      key. Your current access key is deleted and stops working.
+    </p>
+
+    <div class="alert alert-warning">
+      <p>
+        <strong>The new secret access key is only shown once,</strong>
+        so make sure to save it when it appears.
+      </p>
+
+      <p style="margin-bottom: 0;">
+        Afterwards, rerun
+        <code data-ssm-configure-command></code>
+        with the new key.
+      </p>
+    </div>
+
+    <button
+      id="regenerate-button"
+      type="button"
+      class="btn btn-danger"
+      data-url="<%= regenerate_iam_access_key_user_path(@user) %>">
+      REGENERATE ACCESS KEY
+    </button>
+  </div>
 </div>
-
-<div
-  id="ssm-instructions"
-  style="<%= iam_user_created ? "" : "display: none;" %>">
-
-  <hr>
-
-  <h5>Connect Using AWS SSM</h5>
-
-  <p>
-    First configure the AWS CLI using the access key shown above:
-  </p>
-
-  <pre><code>aws configure</code></pre>
-
-  <p>
-    Then connect to the EC2 instance using AWS Systems Manager:
-  </p>
-
-  <pre><code>aws ssm start-session --target <%= @instance_id %></code></pre>
-</div>
-
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        const actionButton = document.getElementById("aws-action-button");
-
-        actionButton.addEventListener("click", function() {
-            startAwsOperation();
-        });
-
-        const existingStatus = "<%= @user.aws_job_status.to_s %>";
-
-        if (existingStatus === "pending" || existingStatus === "in_progress") {
-            actionButton.disabled = true;
-
-            document.getElementById("creation-status").style.display = "block";
-            document.getElementById("status-text").innerText =
-                "Operation in progress...";
-
-            pollProvisionStatus();
-        }
-    });
-
-    async function startAwsOperation() {
-        const button = document.getElementById("aws-action-button");
-        const mode = button.dataset.mode;
-
-        button.disabled = true;
-        button.innerText =
-            mode === "create" ? "CREATING..." : "REGENERATING...";
-
-        document.getElementById("creation-error").style.display = "none";
-        document.getElementById("creation-status").style.display = "block";
-
-        document.getElementById("status-text").innerText =
-            mode === "create"
-                ? "Starting account creation..."
-                : "Starting access key regeneration...";
-
-        try {
-            const response = await fetch(button.dataset.url, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-CSRF-Token":
-                    document.querySelector('meta[name="csrf-token"]').content
-                }
-            });
-
-            const data = await response.json();
-
-            console.log(data);
-
-            if (!response.ok) {
-                throw new Error(
-                    data.error || "Failed to start AWS operation."
-                );
-            }
-
-            if (data.accessKey) {
-                showCredentials(data.accessKey);
-            }
-
-            if (data.statusId === 2) {
-                operationFinished(mode);
-                return;
-            }
-
-            if (data.statusId === 255) {
-                operationFailed(
-                    mode,
-                    data.statusMsg || "AWS operation failed."
-                );
-                return;
-            }
-
-            pollProvisionStatus();
-
-        } catch (error) {
-            operationFailed(mode, error.message);
-        }
-    }
-
-    async function pollProvisionStatus() {
-        const button = document.getElementById("aws-action-button");
-        const mode = button.dataset.mode;
-
-        try {
-            const response = await fetch(
-                "<%= iam_unix_user_status_user_path(@user) %>"
-            );
-
-            const data = await response.json();
-
-            console.log(data);
-
-            if (!response.ok) {
-                throw new Error(
-                    data.error || "Failed to retrieve AWS job status."
-                );
-            }
-
-            if (data.accessKey) {
-                showCredentials(data.accessKey);
-            }
-
-            document.getElementById("status-text").innerText =
-                data.statusMsg;
-
-            if (data.statusId === 2) {
-                operationFinished(mode);
-                return;
-            }
-
-            if (data.statusId === 255) {
-                operationFailed(
-                    mode,
-                    data.statusMsg || "AWS operation failed."
-                );
-                return;
-            }
-
-            setTimeout(pollProvisionStatus, 2000);
-
-        } catch (error) {
-            operationFailed(mode, error.message);
-        }
-    }
-
-    function operationFinished(mode) {
-        const button = document.getElementById("aws-action-button");
-
-        if (mode === "create") {
-            document.getElementById("status-text").innerText =
-                "Account created successfully.";
-
-            document.getElementById("ssm-instructions").style.display =
-                "block";
-
-            // The user now exists, so future clicks should regenerate the key.
-            button.dataset.mode = "regenerate";
-            button.dataset.url =
-                "<%= regenerate_iam_access_key_user_path(@user) %>";
-
-            button.innerText = "REGENERATE ACCESS KEY";
-            button.disabled = false;
-
-        } else {
-            document.getElementById("status-text").innerText =
-                "Access key regenerated successfully.";
-
-            button.innerText = "REGENERATE ACCESS KEY";
-            button.disabled = false;
-        }
-    }
-
-    function operationFailed(mode, message) {
-        document.getElementById("status-text").innerText =
-            mode === "create"
-                ? "Account creation failed."
-                : "Access key regeneration failed.";
-
-        const errorBox = document.getElementById("creation-error");
-
-        errorBox.innerText = message;
-        errorBox.style.display = "block";
-
-        const button = document.getElementById("aws-action-button");
-
-        button.innerText =
-            mode === "create"
-                ? "CREATE USER"
-                : "REGENERATE ACCESS KEY";
-
-        button.disabled = false;
-    }
-
-    function showCredentials(accessKey) {
-        document.getElementById("access-key-id").textContent =
-            accessKey.accessKeyId;
-
-        document.getElementById("secret-access-key").value =
-            accessKey.secretAccessKey;
-
-        document.getElementById("credentials-panel").style.display =
-            "block";
-    }
-
-    function toggleSecret() {
-        const field =
-            document.getElementById("secret-access-key");
-
-        const button =
-            document.getElementById("show-secret-button");
-
-        if (field.type === "password") {
-            field.type = "text";
-            button.innerText = "HIDE";
-        } else {
-            field.type = "password";
-            button.innerText = "SHOW";
-        }
-    }
-
-    async function copyText(id) {
-        const value =
-            document.getElementById(id).textContent;
-
-        await navigator.clipboard.writeText(value);
-    }
-
-    async function copyValue(id) {
-        const value =
-            document.getElementById(id).value;
-
-        await navigator.clipboard.writeText(value);
-    }
-</script>

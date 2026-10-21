@@ -1,0 +1,69 @@
+// Styles for users/ssm_access.html.erb
+
+.ssm-username {
+  font-size: 1.6em;
+  font-weight: bold;
+}
+
+.ssm-command {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  margin-bottom: 1em;
+}
+
+.ssm-command pre {
+  flex: 1;
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.ssm-section {
+  margin-top: 1.5em;
+}
+
+.ssm-prompts {
+  margin-bottom: 0;
+}
+
+.ssm-prompts td {
+  padding: 0.3em 1em 0.3em 0;
+  vertical-align: top;
+}
+
+.ssm-panel {
+  padding-top: 1.5em;
+}
+
+// Transfer Files sits below the main connection steps on ACCESS, so it is
+// set apart and kept a little quieter.
+.ssm-transfer {
+  margin-top: 2.5em;
+  padding-top: 1.5em;
+  border-top: 1px solid #e0e0e0;
+
+  pre {
+    font-size: 0.9em;
+  }
+}
+
+.ssm-command-label {
+  margin: 0.5em 0 0.25em;
+  font-weight: bold;
+}
+
+.ssm-subnav {
+  margin-bottom: 1em;
+
+  .btn-flat {
+    text-transform: none;
+    border-bottom: 2px solid transparent;
+    border-radius: 0;
+  }
+
+  .btn-flat.active {
+    font-weight: bold;
+    border-bottom-color: currentColor;
+  }
+}

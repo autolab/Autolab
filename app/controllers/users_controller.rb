@@ -626,11 +626,18 @@ class UsersController < ApplicationController
     @user = user
     @username = user.unix_user
     @default_username = @user.email
+    # Shown in the connection instructions. These match Tango's
+    # IAM_INSTANCE_ID and EC2_REGION; nil hides them rather than guessing.
+    @instance_id = ENV["AWS_SSM_INSTANCE_ID"].presence
+    @aws_region = ENV["AWS_SSM_REGION"].presence
   end
 
   action_auth_level :create_iam_unix_user, :instructor
   def create_iam_unix_user
-    user = User.find(params[:id])
+    user = User.find_by(id: params[:id])
+    if (error = ssm_access_error(user))
+      return render json: { error: }, status: :forbidden
+    end
 
     username = UnixGroupManager.update_unix_user_mapping(user)
 
@@ -661,7 +668,10 @@ class UsersController < ApplicationController
 
   action_auth_level :iam_unix_user_status, :instructor
   def iam_unix_user_status
-    user = User.find(params[:id])
+    user = User.find_by(id: params[:id])
+    if (error = ssm_access_error(user))
+      return render json: { error: }, status: :forbidden
+    end
 
     if user.aws_job_id.blank?
       return render json: {
@@ -700,7 +710,10 @@ class UsersController < ApplicationController
 
   action_auth_level :regenerate_iam_access_key, :instructor
   def regenerate_iam_access_key
-    user = User.find(params[:id])
+    user = User.find_by(id: params[:id])
+    if (error = ssm_access_error(user))
+      return render json: { error: }, status: :forbidden
+    end
 
     unless user.iam_user_created_at.present?
       return render json: {
@@ -708,20 +721,15 @@ class UsersController < ApplicationController
       }, status: :unprocessable_entity
     end
 
-    if %w[pending in_progress].include?(user.aws_job_status)
+    if user.aws_job_status == "in_progress"
       return render json: {
         error: "An AWS operation is already in progress."
       }, status: :conflict
     end
 
-    result = TangoClient.regenerate_iam_access_key(
-      iam_username: user.unix_user
-    )
-
-    user.update!(
-      aws_job_id: result["job_id"],
-      aws_job_status: "pending"
-    )
+    # Synchronous: Tango replaces the key and returns it in this response, so
+    # there is no job to record or poll.
+    result = TangoClient.regenerate_iam_access_key(user.unix_user)
 
     render json: result
   rescue StandardError => e
@@ -731,6 +739,23 @@ class UsersController < ApplicationController
   end
 
 private
+
+  # Error message if the current user may not manage this user's IAM/Unix
+  # account, nil if they may. The same rules as ssm_access, for its JSON
+  # actions: this controller skips authenticate_for_action, so their
+  # action_auth_level is not enforced on its own.
+  def ssm_access_error(user)
+    return "User not found" if user.nil?
+
+    unless user.instructor? || current_user.administrator?
+      return "Permission denied: AWS SSM access management is only available " \
+             "for course instructors."
+    end
+
+    return nil if user == current_user || current_user.administrator?
+
+    "Permission denied: you can only manage your own SSM access."
+  end
 
   # Add the user to their course groups and build ~/courses. Never raises: the
   # status response it runs before can carry a one-time access key, which an
