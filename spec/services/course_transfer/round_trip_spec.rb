@@ -294,6 +294,7 @@ RSpec.describe "normalized course transfer" do
         import_context = CourseTransfer::Context.new(
           staging_path: directory,
           course_identifier: "imported-transfer-course",
+          course_display_name: " Imported Transfer Course ",
           instructor_email: "new-instructor@example.com"
         )
         allow(Rails.configuration.x).to receive(:ec2_docker).and_return(true)
@@ -321,7 +322,7 @@ RSpec.describe "normalized course transfer" do
         )
 
         expect(imported_course.name).to eq("imported-transfer-course")
-        expect(imported_course.display_name).to eq("Transfer Course")
+        expect(imported_course.display_name).to eq("Imported Transfer Course")
         expect(imported_course.cgdub_dependencies_updated_at).to be_present
         expect(imported_course.course_user_data.find_by!(user: imported_instructor).instructor?)
           .to be(true)

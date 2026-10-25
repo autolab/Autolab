@@ -36,6 +36,12 @@
       <small>This becomes the course URL identifier and must not already exist.</small>
     </div>
 
+    <div class="form-group" data-course-display-name-field>
+      <%= label_tag :course_display_name, "New course display name" %>
+      <%= text_field_tag :course_display_name, nil, required: true, disabled: true,
+                         class: "form-control" %>
+    </div>
+
     <div class="form-group">
       <%= label_tag :instructor_email, "New instructor email" %>
       <%= email_field_tag :instructor_email, nil, required: true, disabled: true,

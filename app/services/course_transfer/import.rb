@@ -114,7 +114,12 @@ module CourseTransfer
           end
           [field, value]
         end
-        attributes[:name] = @course_identifier if table.name == :courses
+        if table.name == :courses
+          attributes[:name] = @course_identifier
+          if context.course_display_name.present?
+            attributes[:display_name] = context.course_display_name
+          end
+        end
         if table.name == :courses && attributes[:cgdub_dependencies_updated_at].nil?
           attributes[:cgdub_dependencies_updated_at] = Time.current
         end

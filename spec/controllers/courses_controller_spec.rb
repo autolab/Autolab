@@ -394,19 +394,45 @@ RSpec.describe CoursesController, type: :controller do
         post :complete_import, params: {
           tarFile: upload,
           course_identifier: "imported-course",
+          course_display_name: " Imported Course ",
           instructor_email: "new-instructor@example.com",
           user_ids: ["1"],
           assessment_ids: ["1"]
         }
 
         expect(response).to redirect_to(course_path(imported_course.name))
+        expect(CourseTransfer::ImportManager).to have_received(:new).with(
+          context: have_attributes(course_display_name: "Imported Course"),
+          user_ids: ["1"],
+          assessment_ids: ["1"]
+        )
       ensure
         FileUtils.rm_f(tar_path)
+      end
+
+      [nil, "", "   "].each do |display_name|
+        it "rejects a submission with display name #{display_name.inspect}" do
+          upload = Rack::Test::UploadedFile.new(
+            Rails.root.join("spec/fixtures/courses/course-valid.tar"), "application/x-tar", true
+          )
+          expect(CourseTransfer::ImportManager).not_to receive(:new)
+
+          post :complete_import, params: {
+            tarFile: upload,
+            course_identifier: "imported-course",
+            course_display_name: display_name,
+            instructor_email: "new-instructor@example.com"
+          }
+
+          expect(response).to have_http_status(:unprocessable_entity)
+          expect(flash[:error]).to match(/display name.*required/i)
+        end
       end
 
       it "rejects a submission without a tarball" do
         post :complete_import, params: {
           course_identifier: "imported-course",
+          course_display_name: " Imported Course ",
           instructor_email: "new-instructor@example.com"
         }
 

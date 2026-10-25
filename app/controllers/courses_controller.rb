@@ -268,8 +268,9 @@ class CoursesController < ApplicationController
 
     course_identifier = params[:course_identifier].to_s.strip
     instructor_email = params[:instructor_email].to_s.strip
-    if course_identifier.blank? || instructor_email.blank?
-      flash.now[:error] = "Course identifier and instructor email are required."
+    course_display_name = params[:course_display_name].to_s.strip
+    if course_identifier.blank? || instructor_email.blank? || course_display_name.blank?
+      flash.now[:error] = "Course identifier, display name, and instructor email are required."
       render(action: :new, status: :unprocessable_entity) && return
     end
 
@@ -282,6 +283,7 @@ class CoursesController < ApplicationController
       context = CourseTransfer::Context.new(
         staging_path:,
         course_identifier:,
+        course_display_name:,
         instructor_email:
       )
       imported_course = CourseTransfer::ImportManager.new(

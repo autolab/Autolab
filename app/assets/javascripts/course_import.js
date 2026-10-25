@@ -8,6 +8,8 @@ document.addEventListener('DOMContentLoaded', function () {
   const options = form.querySelector('[data-import-options]');
   const identifierField = form.querySelector('[data-course-identifier-field]');
   const identifier = form.querySelector('[name="course_identifier"]');
+  const displayNameField = form.querySelector('[data-course-display-name-field]');
+  const displayName = form.querySelector('[name="course_display_name"]');
   const instructor = form.querySelector('[name="instructor_email"]');
   const selectionSubmitted = form.querySelector('[name="selection_submitted"]');
   const newDescription = form.querySelector('[data-new-import-description]');
@@ -70,6 +72,7 @@ document.addEventListener('DOMContentLoaded', function () {
     assessments.replaceChildren();
     instructor.disabled = true;
     identifier.disabled = true;
+    displayName.disabled = true;
     selectionSubmitted.disabled = true;
     previewButton.hidden = false;
     submit.value = 'Import Course';
@@ -94,6 +97,8 @@ document.addEventListener('DOMContentLoaded', function () {
       legacyDescription.hidden = !legacy;
       identifierField.hidden = legacy;
       identifier.disabled = legacy;
+      displayNameField.hidden = legacy;
+      displayName.disabled = legacy;
       instructor.disabled = false;
       selectionSubmitted.disabled = legacy;
 
