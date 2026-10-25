@@ -24,14 +24,13 @@ module CourseArchive
       end
     end
 
-    def self.copy_file(source, destination, required: true)
+    def self.copy_file(source, destination)
       source = Pathname.new(source) if source
-      if source&.file? && !source.symlink?
-        FileUtils.mkdir_p(destination.dirname)
-        FileUtils.copy_file(source, destination)
-      elsif required
-        raise Error, "Required course file is missing or unsafe: #{source}"
-      end
+      return if source.nil? || (!source.exist? && !source.symlink?)
+      raise Error, "Only regular files can be copied: #{source}" if source.symlink? || !source.file?
+
+      FileUtils.mkdir_p(destination.dirname)
+      FileUtils.copy_file(source, destination)
     end
 
     def self.export(root, course, rows)
@@ -61,9 +60,9 @@ module CourseArchive
                               submission.course_user_datum.user_id.to_s)
         copy_file(submission.handin_file_path, directory.join(submission.filename))
         copy_file(submission.handin_annotated_file_path,
-                  directory.join("annotated_#{submission.filename}"), required: false)
+                  directory.join("annotated_#{submission.filename}"))
         copy_file(submission.autograde_feedback_path,
-                  directory.join(submission.autograde_feedback_filename), required: false)
+                  directory.join(submission.autograde_feedback_filename))
       end
       Attachment.where(id: rows.fetch("attachments").pluck("_id")).find_each do |attachment|
         target = root.join("files/attachments", attachment.id.to_s, attachment.filename)
@@ -75,6 +74,8 @@ module CourseArchive
         else
           copy_file(Rails.root.join("attachments", attachment.filename), target)
         end
+      rescue ActiveStorage::FileNotFoundError, Errno::ENOENT
+        FileUtils.rm_f(target)
       end
     end
 
@@ -94,14 +95,9 @@ module CourseArchive
                     assessment.handin_directory_path.join(email))
         end
       end
-      maps.fetch("submissions").each_value do |id|
-        submission = Submission.find(id)
-        raise Error, "Submission #{id} has no handin file" if
-          submission.filename.present? && !Pathname.new(submission.handin_file_path).file?
-      end
       rows.fetch("attachments").each do |row|
         source = root.join("files/attachments", row.fetch("_id").to_s, row.fetch("filename"))
-        raise Error, "Attachment file is missing: #{row['filename']}" unless source.file?
+        next unless source.file?
 
         blob = ActiveStorage::Blob.create_before_direct_upload!(
           filename: row.fetch("filename"), content_type: row["mime_type"],

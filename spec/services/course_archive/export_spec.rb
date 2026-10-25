@@ -137,6 +137,33 @@ RSpec.describe "Course archive export" do
     expect(@root.join("files/handins", @assessment.id.to_s, @excluded.id.to_s)).not_to exist
   end
 
+  it "skips missing submission files while keeping metadata and other course files" do
+    handins = @assessment.handin_directory_path.join(@user.email)
+    FileUtils.mkdir_p(handins)
+    handins.join("extra.txt").write("available material")
+
+    CourseArchive::Content.export(@root, @course, rows)
+    CourseArchive::Records.write(@root, rows)
+    exported = @root.join("files/handins", @assessment.id.to_s, @user.id.to_s)
+
+    expect(exported.join("answer.txt")).not_to exist
+    expect(exported.join("extra.txt").read).to eq("available material")
+    expect(YAML.safe_load(@root.join("submissions.yml").read).pluck("_id")).to eq([@submission.id])
+  end
+
+  it "skips an attachment whose Active Storage bytes are missing" do
+    attachment = record(Attachment, course_id: @course.id, filename: "missing.txt", name: "Missing",
+                                    category_name: "General", release_at: Time.current)
+    attachment.attachment_file.attach(io: StringIO.new("lost bytes"), filename: "missing.txt")
+    blob = attachment.attachment_file.blob
+    expect(blob).to be_persisted
+    blob.service.delete(blob.key)
+
+    CourseArchive::Content.export(@root, @course, rows)
+
+    expect(@root.join("files/attachments", attachment.id.to_s, "missing.txt")).not_to exist
+  end
+
   it "packs file bytes and empty directories into a regular tar" do
     source = @root.join("source")
     FileUtils.mkdir_p(source.join("empty"))
@@ -157,6 +184,8 @@ RSpec.describe "Course archive export" do
     source = @root.join("source")
     FileUtils.mkdir_p(source)
     source.join("link").make_symlink("/tmp")
+    expect { CourseArchive::Content.copy_file(source.join("link"), @root.join("copy")) }
+      .to raise_error(CourseArchive::Error, /regular files/)
     expect { CourseArchive::Tarball.pack(source, @root.join("unsafe.tar")) }
       .to raise_error(CourseArchive::Error, /regular files/)
     source.join("link").unlink

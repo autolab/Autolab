@@ -62,7 +62,7 @@ Shared course files and selected assessment materials are copied independently o
 
 Handin payloads are stored under assessment/user IDs. Selected user directories retain their auxiliary files. Known legacy flat submission, annotated-handin, and feedback files are read through the submission model's path helpers and normalized into the same user-owned layout. Unowned flat files and the handin root's deleted-submission archive are omitted.
 
-Selective import copies only the chosen assessment/user payloads. It does not copy everything and delete excluded paths afterward. Attachment bytes are uploaded through Active Storage; missing attachment or required submission files fail the import. Optional annotated-handin and feedback files may be absent.
+Selective import copies only the chosen assessment/user payloads. It does not copy everything and delete excluded paths afterward. Attachment bytes are uploaded through Active Storage. Missing files are omitted during export and skipped during import; their submission and attachment records are preserved. Symbolic links and other non-regular files are still rejected.
 
 ## Restoration
 
