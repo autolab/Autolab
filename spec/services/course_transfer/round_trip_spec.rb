@@ -31,6 +31,7 @@ RSpec.describe "normalized course transfer" do
       Course, :course,
       name: "transfer-course",
       display_name: "Transfer Course",
+      disabled: false,
       semester: "f26",
       grace_days: 2,
       late_penalty_id: late_penalty.id,
@@ -323,6 +324,14 @@ RSpec.describe "normalized course transfer" do
 
         expect(imported_course.name).to eq("imported-transfer-course")
         expect(imported_course.display_name).to eq("Imported Transfer Course")
+        expect(imported_course).to be_disabled
+        expect(imported_course.late_slack).to eq(course.late_slack)
+        expect(imported_course.grace_days).to eq(2)
+        expect(imported_course.late_penalty.value).to eq(1.5)
+        expect(imported_course.version_penalty.value).to eq(2.0)
+        expect(imported_course.version_penalty.kind).to eq("percent")
+        expect(imported_course.start_date).to eq(course.start_date)
+        expect(imported_course.end_date).to eq(course.end_date)
         expect(imported_course.cgdub_dependencies_updated_at).to be_present
         expect(imported_course.course_user_data.find_by!(user: imported_instructor).instructor?)
           .to be(true)
@@ -399,6 +408,48 @@ RSpec.describe "normalized course transfer" do
       FileUtils.rm_rf(source_tree)
       FileUtils.rm_rf(destination_tree)
       FileUtils.rm_f(generated_configs.call)
+    end
+  end
+
+  it "imports courses with unset grading settings using new-course defaults" do
+    course = insert_factory_record(
+      Course, :course,
+      name: "unset-grading-course",
+      late_slack: nil,
+      grace_days: nil,
+      late_penalty_id: nil,
+      version_penalty_id: nil
+    )
+    FileUtils.mkdir_p(course.directory_path)
+    FileUtils.cp(Rails.root.join("lib/__defaultCourse.rb"), course.directory_path.join("course.rb"))
+    imported_course = nil
+    Dir.mktmpdir("course-transfer-unset-grading-") do |directory|
+      context = CourseTransfer::Context.new(staging_path: directory)
+      manager = CourseTransfer::ExportManager.new(context:)
+      manager.export(manager.build_relations(CourseTransfer::ExportSelection.new(course:)))
+      import_context = CourseTransfer::Context.new(
+        staging_path: directory,
+        course_identifier: "imported-unset-grading-course"
+      )
+
+      imported_course = CourseTransfer::ImportManager.new(context: import_context).import
+
+      expect(imported_course).to be_valid
+      expect(imported_course).to be_disabled
+      expect(imported_course.late_slack).to eq(0)
+      expect(imported_course.grace_days).to eq(0)
+      expect(imported_course.late_penalty.value).to eq(0)
+      expect(imported_course.late_penalty.kind).to eq("points")
+      expect(imported_course.version_penalty.value).to eq(0)
+      expect(imported_course.version_penalty.kind).to eq("points")
+      expect(course.reload.late_slack).to be_nil
+      expect(course.grace_days).to be_nil
+    end
+  ensure
+    FileUtils.rm_rf(course.directory_path) if course
+    if imported_course
+      FileUtils.rm_rf(imported_course.directory_path)
+      FileUtils.rm_f(imported_course.config_file_path)
     end
   end
 

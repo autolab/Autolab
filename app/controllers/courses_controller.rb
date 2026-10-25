@@ -293,8 +293,10 @@ class CoursesController < ApplicationController
       ).import
     end
 
-    flash[:success] = "Imported course #{imported_course.display_name}."
-    redirect_to course_path(imported_course.name)
+    flash[:alert] = "Course imported successfully. The start and end dates were copied from " \
+                    "the original course, and the imported course is disabled. Please review " \
+                    "and update these settings below before enabling the course."
+    redirect_to edit_course_path(imported_course.name)
   rescue CourseTransfer::Error => e
     flash.now[:error] = "Unable to import course: #{e.message}"
     render(action: :new, status: :unprocessable_entity)

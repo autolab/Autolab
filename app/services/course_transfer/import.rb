@@ -116,6 +116,16 @@ module CourseTransfer
         end
         if table.name == :courses
           attributes[:name] = @course_identifier
+          attributes[:disabled] = true
+          # Older courses can have unset grading settings despite current validations.
+          # Use the same defaults as Course.quick_create for missing values only.
+          attributes[:late_slack] ||= 0
+          attributes[:grace_days] ||= 0
+          if attributes[:late_penalty_id].nil? || attributes[:version_penalty_id].nil?
+            penalty = Penalty.find_or_create_by!(kind: ScoreAdjustment::POINTS, value: 0)
+            attributes[:late_penalty_id] ||= penalty.id
+            attributes[:version_penalty_id] ||= penalty.id
+          end
           if context.course_display_name.present?
             attributes[:display_name] = context.course_display_name
           end

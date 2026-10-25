@@ -400,7 +400,12 @@ RSpec.describe CoursesController, type: :controller do
           assessment_ids: ["1"]
         }
 
-        expect(response).to redirect_to(course_path(imported_course.name))
+        expect(response).to redirect_to(edit_course_path(imported_course.name))
+        expect(flash[:alert]).to eq(
+          "Course imported successfully. The start and end dates were copied from " \
+          "the original course, and the imported course is disabled. Please review " \
+          "and update these settings below before enabling the course."
+        )
         expect(CourseTransfer::ImportManager).to have_received(:new).with(
           context: have_attributes(course_display_name: "Imported Course"),
           user_ids: ["1"],
