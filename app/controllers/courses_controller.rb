@@ -7,10 +7,7 @@ require "statistics"
 require "stringio"
 require "tempfile"
 require_relative "../services/unix_group_manager"
-require_relative "../services/course_transfer/export"
-require_relative "../services/course_transfer/import"
-require_relative "../services/course_transfer/import_selection"
-require_relative "../services/course_transfer/package"
+require_relative "../services/course_archive"
 
 class CoursesController < ApplicationController
   skip_before_action :set_course,
@@ -276,28 +273,17 @@ class CoursesController < ApplicationController
 
     tar_path = params[:tarFile].tempfile.path
 
-    imported_course = nil
-
-    Dir.mktmpdir("autolab-course-import-", Rails.root.join("tmp")) do |directory|
-      staging_path = CourseTransfer::Package.extract(tar_path, directory)
-      context = CourseTransfer::Context.new(
-        staging_path:,
-        course_identifier:,
-        course_display_name:,
-        instructor_email:
-      )
-      imported_course = CourseTransfer::ImportManager.new(
-        context:,
-        user_ids: Array(params[:user_ids]),
-        assessment_ids: Array(params[:assessment_ids])
-      ).import
-    end
+    imported_course = CourseArchive.import(
+      tar_path:, identifier: course_identifier, display_name: course_display_name,
+      instructor_email:,
+      user_ids: Array(params[:user_ids]), assessment_ids: Array(params[:assessment_ids])
+    )
 
     flash[:alert] = "Course imported successfully. The start and end dates were copied from " \
                     "the original course, and the imported course is disabled. Please review " \
                     "and update these settings below before enabling the course."
     redirect_to edit_course_path(imported_course.name)
-  rescue CourseTransfer::Error => e
+  rescue CourseArchive::Error => e
     flash.now[:error] = "Unable to import course: #{e.message}"
     render(action: :new, status: :unprocessable_entity)
   rescue StandardError => e
@@ -1024,28 +1010,9 @@ private
 
   def build_new_export_tar
     tar_file = Tempfile.new(["autolab-course-export-", ".tar"])
-    Dir.mktmpdir("autolab-course-export-", Rails.root.join("tmp")) do |staging_dir|
-      staging_path = Pathname.new(staging_dir)
-      context = CourseTransfer::Context.new(
-        staging_path:
-      )
-
-      selected_users = User.where(id: Array(params[:user_ids]).reject(&:blank?))
-      selected_assessments = Assessment.where(
-        id: Array(params[:assessment_ids]).reject(&:blank?)
-      )
-      manager = CourseTransfer::ExportManager.new(context:)
-      relations = manager.build_relations(
-        CourseTransfer::ExportSelection.new(
-          course: @course,
-          users: selected_users,
-          assessments: selected_assessments
-        )
-      )
-      manager.export(relations)
-
-      CourseTransfer::Package.pack(staging_path, tar_file.path)
-    end
+    CourseArchive.export(course: @course, tar_path: tar_file.path,
+                         user_ids: Array(params[:user_ids]),
+                         assessment_ids: Array(params[:assessment_ids]))
     tar_file
   rescue StandardError
     tar_file&.close!

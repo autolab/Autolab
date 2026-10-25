@@ -1,0 +1,119 @@
+require "digest"
+
+module CourseArchive
+  module Content
+    def self.copy_tree(source, destination, skip: [])
+      raise Error, "Symbolic links cannot be copied: #{source}" if source.symlink?
+      return unless source.directory?
+
+      FileUtils.mkdir_p(destination)
+      Find.find(source.to_s) do |entry|
+        path = Pathname.new(entry)
+        next if path == source
+
+        relative = path.relative_path_from(source).to_s
+        if skip.any? { |name| relative == name || relative.start_with?("#{name}/") }
+          Find.prune if path.directory?
+          next
+        end
+        raise Error, "Only regular files and directories can be copied: #{path}" if
+          path.symlink? || (!path.file? && !path.directory?)
+
+        target = destination.join(relative)
+        path.directory? ? FileUtils.mkdir_p(target) : FileUtils.copy_file(path, target)
+      end
+    end
+
+    def self.copy_file(source, destination, required: true)
+      source = Pathname.new(source) if source
+      if source&.file? && !source.symlink?
+        FileUtils.mkdir_p(destination.dirname)
+        FileUtils.copy_file(source, destination)
+      elsif required
+        raise Error, "Required course file is missing or unsafe: #{source}"
+      end
+    end
+
+    def self.export(root, course, rows)
+      shared = root.join("files/course")
+      FileUtils.mkdir_p(shared)
+      copy_tree(course.directory_path, shared,
+                skip: course.assessments.pluck(:name) + ["autolab.log"])
+      users = rows.fetch("users")
+      Assessment.where(id: rows.fetch("assessments").pluck("_id")).find_each do |assessment|
+        skip = [assessment.handin_directory.presence, "#{assessment.name}.yml", "log.txt"]
+               .compact.map { |path| Pathname.new(path).cleanpath.to_s }
+        copy_tree(assessment.folder_path, root.join("files/assessments", assessment.id.to_s), skip:)
+        next if assessment.handin_directory.blank?
+
+        users.each do |user|
+          copy_tree(assessment.handin_directory_path.join(user.fetch("email")),
+                    root.join("files/handins", assessment.id.to_s, user.fetch("_id").to_s))
+        end
+      end
+      # Old flat handin layouts are resolved by the model and saved in the same
+      # user-owned directory layout as newer submissions.
+      Submission.includes(:assessment, course_user_datum: :user)
+                .where(id: rows.fetch("submissions").pluck("_id")).find_each do |submission|
+        next if submission.filename.blank?
+
+        directory = root.join("files/handins", submission.assessment_id.to_s,
+                              submission.course_user_datum.user_id.to_s)
+        copy_file(submission.handin_file_path, directory.join(submission.filename))
+        copy_file(submission.handin_annotated_file_path,
+                  directory.join("annotated_#{submission.filename}"), required: false)
+        copy_file(submission.autograde_feedback_path,
+                  directory.join(submission.autograde_feedback_filename), required: false)
+      end
+      Attachment.where(id: rows.fetch("attachments").pluck("_id")).find_each do |attachment|
+        target = root.join("files/attachments", attachment.id.to_s, attachment.filename)
+        FileUtils.mkdir_p(target.dirname)
+        if attachment.attachment_file.attached?
+          File.open(target, "wb") do |output|
+            attachment.attachment_file.blob.download { |chunk| output.write(chunk) }
+          end
+        else
+          copy_file(Rails.root.join("attachments", attachment.filename), target)
+        end
+      end
+    end
+
+    def self.restore(root, rows, course, maps, blobs)
+      shared = root.join("files/course")
+      raise Error, "Course files are missing" unless shared.directory?
+
+      copy_tree(shared, course.directory_path)
+      rows.fetch("assessments").each do |row|
+        assessment = Assessment.find(maps.fetch("assessments").fetch(row.fetch("_id")))
+        copy_tree(root.join("files/assessments", row.fetch("_id").to_s), assessment.folder_path)
+        next if assessment.handin_directory.blank?
+
+        rows.fetch("users").each do |user|
+          email = User.find(maps.fetch("users").fetch(user.fetch("_id"))).email
+          copy_tree(root.join("files/handins", row.fetch("_id").to_s, user.fetch("_id").to_s),
+                    assessment.handin_directory_path.join(email))
+        end
+      end
+      maps.fetch("submissions").each_value do |id|
+        submission = Submission.find(id)
+        raise Error, "Submission #{id} has no handin file" if
+          submission.filename.present? && !Pathname.new(submission.handin_file_path).file?
+      end
+      rows.fetch("attachments").each do |row|
+        source = root.join("files/attachments", row.fetch("_id").to_s, row.fetch("filename"))
+        raise Error, "Attachment file is missing: #{row['filename']}" unless source.file?
+
+        blob = ActiveStorage::Blob.create_before_direct_upload!(
+          filename: row.fetch("filename"), content_type: row["mime_type"],
+          byte_size: source.size, checksum: Digest::MD5.file(source).base64digest
+        )
+        blobs << blob
+        File.open(source, "rb") { |input|
+          blob.service.upload(blob.key, input, checksum: blob.checksum)
+        }
+        attachment = Attachment.find(maps.fetch("attachments").fetch(row.fetch("_id")))
+        attachment.attachment_file.attach(blob)
+      end
+    end
+  end
+end

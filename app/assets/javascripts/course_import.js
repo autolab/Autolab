@@ -48,6 +48,7 @@ document.addEventListener('DOMContentLoaded', function () {
       if (nextOffset > file.size) throw new Error('The archive is truncated.');
 
       if (wanted.has(path)) {
+        if (size > 8 * 1024 * 1024) throw new Error('The package preview is too large.');
         found[path] = await file.slice(dataOffset, dataOffset + size).text();
         wanted.delete(path);
       }
@@ -60,6 +61,9 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     const preview = JSON.parse(found['preview.json']);
+    if (preview.version !== 3) {
+      throw new Error('Unsupported course archive. Export the course again using this version.');
+    }
     if (!Array.isArray(preview.users) || !Array.isArray(preview.assessments)) {
       throw new Error('The package preview is invalid.');
     }

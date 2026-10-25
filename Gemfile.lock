@@ -201,6 +201,7 @@ GEM
     language_server-protocol (3.17.0.3)
     launchy (2.5.2)
       addressable (~> 2.8)
+    libv8-node (16.19.0.1-aarch64-linux)
     libv8-node (16.19.0.1-arm64-darwin)
     libv8-node (16.19.0.1-x86_64-darwin)
     libv8-node (16.19.0.1-x86_64-linux)
@@ -247,6 +248,8 @@ GEM
     newrelic_rpm (9.6.0)
       base64
     nio4r (2.7.0)
+    nokogiri (1.16.8-aarch64-linux)
+      racc (~> 1.4)
     nokogiri (1.16.8-arm64-darwin)
       racc (~> 1.4)
     nokogiri (1.16.8-x86_64-darwin)
@@ -467,6 +470,7 @@ GEM
     zeitwerk (2.6.12)
 
 PLATFORMS
+  aarch64-linux
   arm64-darwin-21
   arm64-darwin-22
   arm64-darwin-23

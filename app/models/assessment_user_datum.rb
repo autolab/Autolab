@@ -7,6 +7,16 @@ require "association_cache"
 # submission of the user for an assessment.
 #
 class AssessmentUserDatum < ApplicationRecord
+  COURSE_EXPORT_FIELDS = %i[
+    created_at updated_at grade_type membership_status version_number
+  ].freeze
+  COURSE_EXPORT_REFERENCES = {
+    course_user_datum_id: :course_user_data,
+    assessment_id: :assessments,
+    latest_submission_id: :submissions,
+    group_id: :groups
+  }.freeze
+
   belongs_to :course_user_datum
   belongs_to :assessment
   belongs_to :latest_submission, class_name: "Submission"

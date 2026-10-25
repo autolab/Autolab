@@ -2,6 +2,16 @@ require "association_cache"
 require_relative "../services/unix_group_manager"
 
 class CourseUserDatum < ApplicationRecord
+  COURSE_EXPORT_FIELDS = %i[
+    lecture section grade_policy created_at updated_at instructor dropped nickname
+    course_assistant course_number
+  ].freeze
+  COURSE_EXPORT_REFERENCES = {
+    course_id: :courses,
+    user_id: :users,
+    tweak_id: :score_adjustments
+  }.freeze
+
   class AuthenticationFailed < RuntimeError
     attr_reader :user_message, :dev_message
 

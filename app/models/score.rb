@@ -1,4 +1,13 @@
 class Score < ApplicationRecord
+  COURSE_EXPORT_FIELDS = %i[
+    score feedback created_at updated_at released
+  ].freeze
+  COURSE_EXPORT_REFERENCES = {
+    submission_id: :submissions,
+    problem_id: :problems,
+    grader_id: :course_user_data
+  }.freeze
+
   belongs_to :submission
   belongs_to :problem
   belongs_to :grader, class_name: "CourseUserDatum"

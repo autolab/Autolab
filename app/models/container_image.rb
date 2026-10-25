@@ -1,4 +1,11 @@
 class ContainerImage < ApplicationRecord
+  COURSE_EXPORT_FIELDS = %i[
+    name status image_uri dockerfile_contents created_at updated_at
+  ].freeze
+  COURSE_EXPORT_REFERENCES = {
+    course_id: :courses
+  }.freeze
+
   attr_accessor :dockerfile
 
   belongs_to :course, optional: true
