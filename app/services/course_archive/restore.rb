@@ -21,7 +21,8 @@ module CourseArchive
           Course.where("LOWER(name) = ?", identifier.downcase).exists? ||
           @directory.exist? || @directory.symlink? || config.exist? || config.symlink?
 
-        FileUtils.mkdir_p(@directory.dirname)
+        [@directory.dirname, Rails.root.join("courseConfig"),
+         Rails.root.join("assessmentConfig")].each { |path| ImportFiles.prepare_directory(path) }
         Dir.mkdir(@directory)
         @owns_directory = true
         ApplicationRecord.transaction(requires_new: true) do
@@ -123,7 +124,6 @@ module CourseArchive
     end
 
     def finish(course)
-      FileUtils.mkdir_p([Rails.root.join("courseConfig"), Rails.root.join("assessmentConfig")])
       source = course.directory_path.join("course.rb")
       FileUtils.cp(Rails.root.join("lib/__defaultCourse.rb"), source) unless source.file?
       FileUtils.touch(course.directory_path.join("autolab.log"))
@@ -164,13 +164,13 @@ module CourseArchive
 
     def cleanup
       actions = @blobs.map { |blob| -> { blob.service.delete(blob.key) } } +
-                @generated.map { |path| -> { FileUtils.rm_f(path) } } +
+                @generated.map { |path| -> { ImportFiles.remove(path) } } +
                 @staff.map do |course, user|
                   -> {
                     UnixGroupManager.update_course_staff_membership(course, user, is_staff: false)
                   }
                 end
-      actions << -> { FileUtils.rm_rf(@directory) }
+      actions << -> { ImportFiles.remove(@directory, recursive: true) }
       actions.each do |action|
         action.call
       rescue StandardError => e
