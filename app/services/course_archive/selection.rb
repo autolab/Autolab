@@ -58,7 +58,25 @@ module CourseArchive
         end
       end
       rows.fetch("assessments").each { |row| row["remote_handin_path"] = nil }
+      normalize_annotation_paths(rows)
       clear_attribution(rows)
+    end
+
+    def self.normalize_annotation_paths(rows)
+      annotations = rows.fetch("annotations").select do |row|
+        row["filename"].is_a?(String) && Pathname.new(row["filename"]).absolute?
+      end
+      submissions = Submission.includes(:assessment, course_user_datum: :user)
+                              .where(id: annotations.pluck("submission_id")).index_by(&:id)
+      annotations.each do |row|
+        filename = row["filename"]
+        submission = submissions.fetch(row.fetch("submission_id"))
+        raise Error, "Annotation path does not reference its submission: #{filename}" unless
+          filename == submission.handin_file_path.to_s
+
+        # A null filename in the archive means the submission's handin itself.
+        row["filename"] = nil
+      end
     end
 
     def self.from_rows(rows, user_ids:, assessment_ids:)

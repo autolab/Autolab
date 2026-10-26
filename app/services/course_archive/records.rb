@@ -142,7 +142,9 @@ module CourseArchive
           Paths.filename!(row["filename"]) if row["filename"].present?
         end
       end
-      rows.fetch("annotations").each { |row| Paths.relative!(row["filename"]) }
+      rows.fetch("annotations").each do |row|
+        Paths.relative!(row["filename"]) unless row["filename"].nil?
+      end
     end
   end
 end

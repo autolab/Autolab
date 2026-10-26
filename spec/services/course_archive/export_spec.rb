@@ -137,6 +137,30 @@ RSpec.describe "Course archive export" do
     expect(@root.join("files/handins", @assessment.id.to_s, @excluded.id.to_s)).not_to exist
   end
 
+  it "exports whole-handin annotations as null and preserves relative archive filenames" do
+    [@submission.handin_file_path, "src/main.c"].each do |filename|
+      record(Annotation, submission_id: @submission.id, problem_id: @problem.id,
+                         filename:, comment: "Review this", value: 0)
+    end
+    tar_path = @root.join("annotated.tar")
+    CourseArchive.export(course: @course, tar_path:, user_ids: [@user.id],
+                         assessment_ids: [@assessment.id])
+    CourseArchive::Tarball.unpack(tar_path, @root.join("unpacked"))
+    exported = CourseArchive::Records.read(@root.join("unpacked"))
+
+    expect(exported.fetch("annotations").pluck("filename")).to eq([nil, "src/main.c"])
+    expect(@submission.annotations.order(:id).pluck(:filename))
+      .to eq([@submission.handin_file_path, "src/main.c"])
+  end
+
+  it "rejects absolute annotation paths even inside the course unless they identify its handin" do
+    record(Annotation, submission_id: @submission.id, problem_id: @problem.id,
+                       filename: @course.directory_path.join("other.txt").to_s,
+                       comment: "Wrong file", value: 0)
+
+    expect { rows }.to raise_error(CourseArchive::Error, /does not reference its submission/)
+  end
+
   it "skips missing submission files while keeping metadata and other course files" do
     handins = @assessment.handin_directory_path.join(@user.email)
     FileUtils.mkdir_p(handins)

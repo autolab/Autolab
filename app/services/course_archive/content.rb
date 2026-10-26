@@ -110,6 +110,16 @@ module CourseArchive
         attachment = Attachment.find(maps.fetch("attachments").fetch(row.fetch("_id")))
         attachment.attachment_file.attach(blob)
       end
+      # Resolve whole-handin annotations after copying files: the model chooses
+      # the actual destination path, including normalized legacy handin layouts.
+      rows.fetch("annotations").each do |row|
+        next unless row["filename"].nil?
+
+        annotation = Annotation.find(maps.fetch("annotations").fetch(row.fetch("_id")))
+        # rubocop:disable Rails/SkipsModelValidations
+        annotation.update_columns(filename: annotation.submission.handin_file_path)
+        # rubocop:enable Rails/SkipsModelValidations
+      end
     end
   end
 end
