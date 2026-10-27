@@ -1,5 +1,20 @@
 module CourseArchive
   module Paths
+    def self.export_source!(path)
+      # Also catch directory links in a handin path's parents, since handins
+      # are copied separately from the assessment tree.
+      root = Rails.root.to_s
+      path.ascend do |entry|
+        break unless entry == path || entry.to_s.start_with?("#{root}/")
+        next unless entry.symlink? && entry.directory?
+
+        raise Error, "Cannot export #{entry}: will not follow symlinks of folders " \
+                     "when exporting to prevent infinite loops."
+      end
+      raise Error, "Only regular files and directories can be exported: #{path}" unless
+        path.file? || path.directory?
+    end
+
     def self.relative!(value)
       unless value.is_a?(String) && value.present? &&
              !value.match?(/[[:cntrl:]\\]/) && !Pathname.new(value).absolute? &&

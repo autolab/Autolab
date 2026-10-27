@@ -204,14 +204,14 @@ RSpec.describe "Course archive export" do
     expect(entries).to include("notes.txt" => "course material", "empty" => :directory)
   end
 
-  it "rejects links and enforces archive size limits on export" do
+  it "rejects directory links and enforces archive size limits on export" do
     source = @root.join("source")
     FileUtils.mkdir_p(source)
     source.join("link").make_symlink("/tmp")
     expect { CourseArchive::Content.copy_file(source.join("link"), @root.join("copy")) }
-      .to raise_error(CourseArchive::Error, /regular files/)
+      .to raise_error(CourseArchive::Error, /symlinks of folders.*prevent infinite loops/)
     expect { CourseArchive::Tarball.pack(source, @root.join("unsafe.tar")) }
-      .to raise_error(CourseArchive::Error, /regular files/)
+      .to raise_error(CourseArchive::Error, /symlinks of folders.*prevent infinite loops/)
     source.join("link").unlink
     source.join("large.txt").write("large")
     stub_const("CourseArchive::Tarball::MAX_ENTRY_BYTES", 1)

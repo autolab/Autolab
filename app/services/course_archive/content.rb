@@ -3,7 +3,9 @@ require "digest"
 module CourseArchive
   module Content
     def self.copy_tree(source, destination, skip: [])
-      raise Error, "Symbolic links cannot be copied: #{source}" if source.symlink?
+      return unless source.exist?
+
+      Paths.export_source!(source)
       return unless source.directory?
 
       FileUtils.mkdir_p(destination)
@@ -16,8 +18,9 @@ module CourseArchive
           Find.prune if path.directory?
           next
         end
-        raise Error, "Only regular files and directories can be copied: #{path}" if
-          path.symlink? || (!path.file? && !path.directory?)
+        next unless path.exist?
+
+        Paths.export_source!(path)
 
         target = destination.join(relative)
         path.directory? ? FileUtils.mkdir_p(target) : FileUtils.copy_file(path, target)
@@ -26,8 +29,10 @@ module CourseArchive
 
     def self.copy_file(source, destination)
       source = Pathname.new(source) if source
-      return if source.nil? || (!source.exist? && !source.symlink?)
-      raise Error, "Only regular files can be copied: #{source}" if source.symlink? || !source.file?
+      return if source.nil? || !source.exist?
+
+      Paths.export_source!(source)
+      raise Error, "Only regular files can be copied: #{source}" unless source.file?
 
       FileUtils.mkdir_p(destination.dirname)
       FileUtils.copy_file(source, destination)

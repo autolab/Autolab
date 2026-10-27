@@ -15,14 +15,15 @@ module CourseArchive
     end
 
     def self.pack(root, destination)
+      Paths.export_source!(root)
       entries = total = 0
       File.open(destination, "wb") do |output|
         Gem::Package::TarWriter.new(output) do |tar|
           Find.find(root.to_s) do |entry|
             path = Pathname.new(entry)
             next if path == root
-            raise Error, "Only regular files and directories can be exported" if
-              path.symlink? || (!path.file? && !path.directory?)
+
+            Paths.export_source!(path)
 
             size = path.file? ? path.size : 0
             entries += 1
