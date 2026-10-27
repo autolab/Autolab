@@ -104,9 +104,17 @@ module CourseArchive
       return existing if existing
 
       user = User.new(attributes)
+      user.first_name ||= ""
+      user.last_name ||= ""
+      # Historical/SSO accounts may have no names; use their known identity
+      # rather than rejecting the entire course or inventing a person's name.
+      user.first_name = user.email if user.first_name.blank? && user.last_name.blank?
       user.password = user.password_confirmation = Devise.friendly_token[0, 20]
       user.skip_confirmation!
-      raise Error, user.errors.full_messages.join(", ") unless user.valid?
+      unless user.valid?
+        message = user.errors.full_messages.join(", ")
+        raise Error, "Unable to import user #{user.email}: #{message}"
+      end
 
       insert(User, user.attributes.except("id"))
     end
