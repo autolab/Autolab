@@ -2,7 +2,7 @@ require "digest"
 
 module CourseArchive
   module Content
-    def self.copy_tree(source, destination, skip: [])
+    def self.copy_tree(source, destination, skip: [], rename: {})
       return unless source.exist?
 
       Paths.export_source!(source)
@@ -22,7 +22,7 @@ module CourseArchive
 
         Paths.export_source!(path)
 
-        target = destination.join(relative)
+        target = destination.join(path.directory? ? relative : rename.fetch(relative, relative))
         path.directory? ? FileUtils.mkdir_p(target) : FileUtils.copy_file(path, target)
       end
     end
@@ -39,15 +39,18 @@ module CourseArchive
     end
 
     def self.export(root, course, rows)
+      timestamp = Time.current.utc.strftime("%Y%m%dT%H%M%S_%6NZ")
       shared = root.join("files/course")
       FileUtils.mkdir_p(shared)
       copy_tree(course.directory_path, shared,
-                skip: course.assessments.pluck(:name) + ["autolab.log"])
+                skip: course.assessments.pluck(:name),
+                rename: { "autolab.log" => "autolab_as_of_#{timestamp}.log" })
       users = rows.fetch("users")
       Assessment.where(id: rows.fetch("assessments").pluck("_id")).find_each do |assessment|
-        skip = [assessment.handin_directory.presence, "#{assessment.name}.yml", "log.txt"]
+        skip = [assessment.handin_directory.presence, "#{assessment.name}.yml"]
                .compact.map { |path| Pathname.new(path).cleanpath.to_s }
-        copy_tree(assessment.folder_path, root.join("files/assessments", assessment.id.to_s), skip:)
+        copy_tree(assessment.folder_path, root.join("files/assessments", assessment.id.to_s),
+                  skip:, rename: { "log.txt" => "log_as_of_#{timestamp}.txt" })
         next if assessment.handin_directory.blank?
 
         users.each do |user|
