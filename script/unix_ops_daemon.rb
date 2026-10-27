@@ -101,6 +101,10 @@ module UnixOps
         [UnixGroupManager.add_user_to_group(payload["username"], payload["group_name"]), "add_user_to_group", nil]
       when "remove_user_from_group"
         [UnixGroupManager.remove_user_from_group(payload["username"], payload["group_name"]), "remove_user_from_group", nil]
+      when "provision_ssh_key"
+        [UnixGroupManager.provision_ssh_key(payload["username"], payload["public_key"], email: payload["email"]), "provision_ssh_key", nil]
+      when "deprovision_ssh_key"
+        [UnixGroupManager.deprovision_ssh_key(payload["username"], payload["fingerprint"]), "deprovision_ssh_key", nil]
       when "provision_ssh_keys"
         [UnixGroupManager.provision_ssh_keys(payload["username"], payload["public_keys"] || [], email: payload["email"]), "provision_ssh_keys", nil]
       when "delete_user"
