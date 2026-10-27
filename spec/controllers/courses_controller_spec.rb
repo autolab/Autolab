@@ -367,9 +367,8 @@ RSpec.describe CoursesController, type: :controller do
   end
 
   shared_examples "export_success" do
-    before(:each) do
-      sign_in(user)
-    end
+    before(:each) { sign_in(user) }
+
     it "renders successfully" do
       get :export, params: { name: @course.name }
       expect(response).to be_successful
@@ -378,9 +377,8 @@ RSpec.describe CoursesController, type: :controller do
   end
 
   shared_examples "export_failure" do |login: false|
-    before(:each) do
-      sign_in(user) if login
-    end
+    before(:each) { sign_in(user) if login }
+
     it "renders with failure" do
       get :export, params: { name: @course.name }
       expect(response).not_to be_successful
@@ -390,104 +388,99 @@ RSpec.describe CoursesController, type: :controller do
 
   describe "#export" do
     include_context "controllers shared context"
+
     context "when user is Autolab admin" do
-      it_behaves_like "export_success" do
-        let!(:user) { admin_user }
-      end
+      it_behaves_like("export_success") { let!(:user) { admin_user } }
     end
 
     context "when user is Autolab instructor" do
-      it_behaves_like "export_success" do
-        let!(:user) { instructor_user }
-      end
+      it_behaves_like("export_success") { let!(:user) { instructor_user } }
     end
 
     context "when user is Autolab user" do
-      it_behaves_like "export_failure", login: true do
-        let!(:user) { student_user }
-      end
+      it_behaves_like("export_failure", login: true) { let!(:user) { student_user } }
     end
 
     context "when user is not logged in" do
-      it_behaves_like "export_failure", login: false do
-        let!(:user) { student_user }
-      end
+      it_behaves_like("export_failure", login: false) { let!(:user) { student_user } }
     end
   end
 
   shared_examples "export_selected_success" do
-    before(:each) do
-      sign_in(user)
+    before(:each) { sign_in(user) }
+
+    let(:exported_files) do
+      files = {}
+      Gem::Package::TarReader.new(StringIO.new(response.body)) do |tar|
+        tar.each { |entry| files[entry.full_name] = entry.read if entry.file? }
+      end
+      files
     end
 
-    it "exports default course configs and attachments" do
-      default_tar = (@course.generate_tar []).string.force_encoding("binary")
+    it "exports course configuration and course-level attachment records" do
       post :export_selected, params: { name: @course.name }
+
       expect(response).to be_successful
-      expect(response.body).to eq(default_tar)
+      expect(response.media_type).to eq("application/x-tar")
+      expect(response.headers["Content-Disposition"]).to include("attachment")
+      expect(YAML.safe_load(exported_files.fetch("manifest.yml")))
+        .to include("format" => CourseArchive::FORMAT, "version" => CourseArchive::VERSION)
+      expect(YAML.safe_load(exported_files.fetch("courses.yml")).first.fetch("_id"))
+        .to eq(@course.id)
+      expect(YAML.safe_load(exported_files.fetch("attachments.yml")).pluck("_id"))
+        .to match_array(@course.attachments.where(assessment_id: nil).pluck(:id))
     end
 
-    it "exports metric configs" do
-      metrics_tar = (@course.generate_tar ["metrics_config"]).string.force_encoding("binary")
-      post :export_selected, params: { name: @course.name, export_configs: ["metrics_config"] }
-      expect(response).to be_successful
-      expect(response.body).to eq(metrics_tar)
-    end
+    it "exports selected users and assessments" do
+      user_ids = @course.course_user_data.pluck(:user_id)
+      assessment_ids = @course.assessment_ids
+      post :export_selected, params: { name: @course.name, user_ids:, assessment_ids: }
 
-    it "exports assessments" do
-      assessments_tar = (@course.generate_tar ["assessments"]).string.force_encoding("binary")
-      post :export_selected, params: { name: @course.name, export_configs: ["assessments"] }
       expect(response).to be_successful
-      expect(response.body).to eq(assessments_tar)
+      expect(YAML.safe_load(exported_files.fetch("users.yml")).pluck("_id"))
+        .to match_array(user_ids)
+      expect(YAML.safe_load(exported_files.fetch("assessments.yml")).pluck("_id"))
+        .to match_array(assessment_ids)
     end
 
     it "handles StandardError during export" do
-      allow_any_instance_of(Course).to receive(:generate_tar).and_raise(StandardError)
+      allow(CourseArchive).to receive(:export).and_raise(StandardError, "archive failed")
       post :export_selected, params: { name: @course.name }
-      expect(response).to have_http_status(302)
-      expect(flash[:error]).to be_present
-      expect(flash[:error]).to match(/StandardError/m)
+
+      expect(response).to redirect_to(export_course_path(@course))
+      expect(flash[:error]).to include("Unable to generate course export", "archive failed")
     end
   end
 
   shared_examples "export_selected_failure" do
-    before(:each) do
-      sign_in(user)
-    end
+    before(:each) { sign_in(user) }
 
     it "does not export a course" do
-      default_tar = (@course.generate_tar []).string.force_encoding("binary")
+      expect(CourseArchive).not_to receive(:export)
       post :export_selected, params: { name: @course.name }
       expect(response).not_to be_successful
-      expect(response.body).not_to eq(default_tar)
+      expect(response.media_type).not_to eq("application/x-tar")
     end
   end
 
   describe "#export_selected" do
     context "when user is instructor with no attachment" do
       include_context "controllers shared context"
-
-      it_behaves_like "export_selected_success" do
-        let!(:user) { instructor_user }
-      end
+      it_behaves_like("export_selected_success") { let!(:user) { instructor_user } }
     end
 
     context "when user is instructor with attachment" do
-      let!(:course_hash) do
-        create_course_with_attachment_as_hash
-      end
+      let!(:course_hash) { create_course_with_attachment_as_hash }
+      after(:each) { delete_course_files(course_hash[:course]) }
 
-      it_behaves_like "export_selected_success" do
+      it_behaves_like("export_selected_success") do
         let!(:user) { course_hash[:instructor_user] }
       end
     end
 
     context "when user is Autolab user" do
       include_context "controllers shared context"
-
-      it_behaves_like "export_selected_failure" do
-        let!(:user) { student_user }
-      end
+      it_behaves_like("export_selected_failure") { let!(:user) { student_user } }
     end
   end
 

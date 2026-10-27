@@ -4,6 +4,15 @@
 # score calculations in the future.
 #
 class Annotation < ApplicationRecord
+  COURSE_EXPORT_FIELDS = %i[
+    filename position line created_at updated_at submitted_by comment value coordinate
+    shared_comment global_comment
+  ].freeze
+  COURSE_EXPORT_REFERENCES = {
+    submission_id: :submissions,
+    problem_id: :problems
+  }.freeze
+
   belongs_to :submission
   belongs_to :problem
 
