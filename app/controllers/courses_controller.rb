@@ -279,9 +279,9 @@ class CoursesController < ApplicationController
       user_ids: Array(params[:user_ids]), assessment_ids: Array(params[:assessment_ids])
     )
 
-    flash[:alert] = "Course imported successfully. The start and end dates were copied from " \
-                    "the original course, and the imported course is disabled. Please review " \
-                    "and update these settings below before enabling the course."
+    flash[:success] = "Course imported successfully. The start and end dates were copied from " \
+                      "the original course, and the imported course is disabled. Please review " \
+                      "and update these settings below before enabling the course."
     redirect_to edit_course_path(imported_course.name)
   rescue CourseArchive::Error => e
     flash.now[:error] = "Unable to import course: #{e.message}"
