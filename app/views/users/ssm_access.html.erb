@@ -330,33 +330,6 @@
         <code>IdentityFile</code> path in the commands below.
       </p>
 
-      <% if @ssh_key_count.positive? %>
-        <p>
-          <strong>SSH key:</strong>
-          <%= pluralize(@ssh_key_count, "key") %> added.
-          <%= link_to "Manage SSH keys", ssh_keys_user_path(@user) %>
-        </p>
-      <% else %>
-        <div class="card-panel amber lighten-5">
-          <strong>No SSH key yet.</strong>
-          Add one on the <%= link_to "SSH Keys", ssh_keys_user_path(@user) %>
-          page before using these commands.
-        </div>
-      <% end %>
-
-      <p class="ssm-command-label">Check that your key works</p>
-
-      <div class="ssm-command">
-        <pre><code id="cmd-ssh-test"></code></pre>
-
-        <button
-          class="btn btn-default btn-sm"
-          type="button"
-          onclick="copyText('cmd-ssh-test', this)">
-          COPY
-        </button>
-      </div>
-
       <div class="ssm-subnav">
         <button
           type="button"

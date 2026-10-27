@@ -146,16 +146,11 @@ function renderTransferCommands(username, instanceId, profile, regionFlag) {
     const proxyCommand =
         "aws ssm start-session --target %h " + sessionArgs +
         " --parameters portNumber=%p --profile " + profile + regionFlag;
-    const sshOptions = [
+    const scpOptions = [
+        "scp \\",
         "  -i " + SSM_SSH_KEY_PATH + " \\",
         "  -o 'ProxyCommand=" + proxyCommand + "' \\"
     ];
-    const scpOptions = ["scp \\"].concat(sshOptions);
-
-    // Opens a shell over SSH, to check the key before transferring files.
-    document.getElementById("cmd-ssh-test").textContent = ["ssh \\"]
-        .concat(sshOptions, ["  " + username + "@" + instanceId])
-        .join("\n");
 
     document.getElementById("cmd-scp-upload").textContent = scpOptions.concat([
         "  ./file.txt \\",

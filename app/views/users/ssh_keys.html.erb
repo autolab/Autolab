@@ -13,14 +13,15 @@
     <% username = UnixGroupManager.update_unix_user_mapping(@user) %>
     <% if username %>
       <p><strong>Unix Username:</strong> <code><%= username %></code></p>
-      <p>Your SSH key is used to connect and transfer files through AWS
-        Session Manager. After adding a key, open the ACCESS tab on the
-        <%= link_to "SSM access page", ssm_access_user_path(@user) %> for the
-        <code>ssh</code> and <code>scp</code> commands. If you have not set
-        up AWS access yet, start with its SET UP tab.</p>
-      <p>Those commands use <code>~/.ssh/id_ed25519_autolab</code>. If you
-        generated the RSA key below instead, change the key path in them to
-        <code>~/.ssh/id_rsa_autolab</code>.</p>
+      <% hostname = request.host || "autolab.example.com" %>
+      <p>After adding an SSH key, you can SSH into the system using<br>
+        <code>ssh -i ~/.ssh/id_ed25519_autolab <%= username %>@<%= hostname %></code>
+        <br>
+        or
+        <br>
+        <code>ssh -i ~/.ssh/id_rsa_autolab <%= username %>@<%= hostname %></code>
+        <br>
+        depending on the name of the file the SSH key information is saved in. </p>
     <% else %>
       <p class="warning">Unix user account not yet created. It will be created automatically when you add your first SSH key or when you are added as staff to a course.</p>
     <% end %>
@@ -95,4 +96,4 @@ cat ~/.ssh/id_rsa_autolab.pub
 
 <hr>
 
-<p><%= link_to "← Back to SSM Access", ssm_access_user_path(@user), class: "btn" %></p>
+<p><%= link_to "← Back to User Profile", user_path(@user), class: "btn" %></p>
