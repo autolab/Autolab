@@ -101,12 +101,6 @@ function renderSsmGuide() {
         "aws ssm start-session --target " + instanceId +
         " --profile " + profile + regionFlag;
 
-    document.getElementById("instance-id").textContent =
-        ssmDetails.instanceId;
-    document.getElementById("instance-id").style.display =
-        ssmDetails.instanceId ? "" : "none";
-    document.getElementById("copy-instance-id-button").style.display =
-        ssmDetails.instanceId ? "" : "none";
     document.getElementById("instance-id-missing").style.display =
         ssmDetails.instanceId ? "none" : "";
 
@@ -125,10 +119,6 @@ function renderSsmGuide() {
 
     document.querySelectorAll("[data-ssm-username]").forEach(function(el) {
         el.textContent = ssmDetails.username;
-    });
-
-    document.querySelectorAll("[data-ssm-profile]").forEach(function(el) {
-        el.textContent = profile;
     });
 
     document.querySelectorAll("[data-ssm-configure-command]")

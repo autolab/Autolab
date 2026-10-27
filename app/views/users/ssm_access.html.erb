@@ -5,6 +5,7 @@
 <% default_tab = iam_user_created && !job_running ? "ssm-access" : "ssm-setup" %>
 <% aws_cli_install_url = "https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html" %>
 <% ssm_plugin_install_url = "https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html" %>
+<% ssm_docs_url = "https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager.html" %>
 
 <% content_for :stylesheets do %>
   <%= stylesheet_link_tag "ssm_access" %>
@@ -20,6 +21,13 @@
   Manage the AWS IAM user and corresponding Linux account for
   <strong><%= @user.display_name %></strong>
   (<%= @user.email %>).
+</p>
+
+<p>
+  You connect to the course EC2 instance through AWS Systems Manager Session
+  Manager (SSM), which opens a shell from the AWS CLI without SSH ports or
+  passwords. New to SSM? See
+  <a href="<%= ssm_docs_url %>" target="_blank" rel="noopener">What is Session Manager?</a>
 </p>
 
 <div
@@ -132,7 +140,7 @@
       </div>
 
       <div class="ssm-section">
-        <h6><strong>Prerequisites</strong></h6>
+        <h6><strong>1. Prerequisites</strong></h6>
 
         <ul class="browser-default">
           <li>
@@ -151,7 +159,7 @@
       </div>
 
       <div class="ssm-section">
-        <h6><strong>AWS Credentials</strong></h6>
+        <h6><strong>2. AWS Credentials</strong></h6>
 
         <%# Shown whenever no key is on the page, e.g. after a refresh. %>
         <p id="no-credentials-note">
@@ -220,7 +228,7 @@
       </div>
 
       <div class="ssm-section">
-        <h6><strong>Configure the AWS CLI</strong></h6>
+        <h6><strong>3. Configure the AWS CLI</strong></h6>
 
         <p>
           Use a named AWS CLI profile instead of the default profile, so these
@@ -260,9 +268,9 @@
         </table>
 
         <p class="ssm-section">
-          Then open the
+          Then continue with step 4 on the
           <a href="#ssm-access" onclick="selectTab('ssm-access'); return false;">ACCESS</a>
-          tab to connect.
+          tab.
         </p>
       </div>
     </div>
@@ -274,37 +282,8 @@
     class="col s12 ssm-panel"
     style="<%= "display: none;" unless default_tab == "ssm-access" %>">
 
-    <table class="ssm-prompts">
-      <tr>
-        <td><strong>Username</strong></td>
-        <td><code data-ssm-username><%= @username %></code></td>
-      </tr>
-      <tr>
-        <td><strong>Instance ID</strong></td>
-        <td>
-          <code id="instance-id"></code>
-
-          <button
-            id="copy-instance-id-button"
-            class="btn btn-default btn-sm"
-            type="button"
-            onclick="copyText('instance-id', this)">
-            COPY
-          </button>
-
-          <span id="instance-id-missing" style="display: none;">
-            <em>Not configured. Ask your Autolab administrator for the instance ID.</em>
-          </span>
-        </td>
-      </tr>
-      <tr>
-        <td><strong>AWS CLI profile</strong></td>
-        <td><code data-ssm-profile></code></td>
-      </tr>
-    </table>
-
     <div class="ssm-section">
-      <h6><strong>Start the SSM session</strong></h6>
+      <h6><strong>4. Start the SSM session</strong></h6>
 
       <div class="ssm-command">
         <pre><code id="cmd-start-session"></code></pre>
@@ -316,10 +295,14 @@
           COPY
         </button>
       </div>
+
+      <p id="instance-id-missing" style="display: none;">
+        <em>The instance ID is not configured. Ask your Autolab administrator for it.</em>
+      </p>
     </div>
 
     <div class="ssm-section ssm-transfer">
-      <h6><strong>Transfer Files</strong></h6>
+      <h6><strong>5. Transfer files (optional)</strong></h6>
 
       <p>
         File transfer runs SSH through Session Manager, so it also needs an
