@@ -673,6 +673,76 @@ class UnixGroupManager
     end
   end
 
+  # Writes inside a home directory run as its owner, never as root: the user
+  # controls that directory, so a symlink they plant there must only ever
+  # reach files they could already change. $1 is the home directory.
+  SSH_DIR_SCRIPT = <<~'SH'.freeze
+    set -e
+    umask 077
+    mkdir -p -- "$1/.ssh"
+    chmod 700 -- "$1/.ssh"
+    touch -- "$1/.ssh/authorized_keys"
+    chmod 600 -- "$1/.ssh/authorized_keys"
+  SH
+
+  # Replaces authorized_keys with stdin. The rename replaces a symlink at that
+  # path instead of writing through it.
+  WRITE_AUTHORIZED_KEYS_SCRIPT = <<~'SH'.freeze
+    set -e
+    umask 077
+    mkdir -p -- "$1/.ssh"
+    chmod 700 -- "$1/.ssh"
+    tmp=$(mktemp "$1/.ssh/.authorized_keys.XXXXXX")
+    trap 'rm -f -- "$tmp"' EXIT
+    cat > "$tmp"
+    mv -fT -- "$tmp" "$1/.ssh/authorized_keys"
+  SH
+
+  SKEL_COPY_SCRIPT = <<~'SH'.freeze
+    cp -Rnp /etc/skel/. "$1"/
+  SH
+
+  # Run one of the scripts above as username, with args as $1...
+  def self.run_as_user(username, script, *args, stdin_data: "")
+    Open3.capture3("runuser", "-u", username, "--", "/bin/sh", "-c", script, "sh", *args,
+                   stdin_data:, chdir: "/")
+  end
+
+  # Only ordinary accounts may have their home written to. A system or
+  # sudo-capable account (root, ubuntu, ssm-user) would otherwise give an
+  # Autolab user whose unix_user collides with it root access. Mirrors the
+  # check Tango makes before mapping an SSM session onto an account.
+  def self.unprivileged_account?(username)
+    return false if Etc.getpwnam(username).uid < 1000
+
+    # Ask sudo itself rather than checking groups: ssm-user gets sudo through
+    # /etc/sudoers.d with an ordinary uid. Anything but an explicit denial,
+    # including a missing sudo, counts as privileged.
+    output, _status = Open3.capture2e({ "LC_ALL" => "C" }, "sudo", "-n", "-l", "-U", username)
+    output.include?("not allowed to run sudo")
+  rescue ArgumentError, SystemCallError
+    false
+  end
+
+  # Replace the user's authorized_keys with public_keys, writing as the user.
+  def self.write_authorized_keys(username, public_keys)
+    unless unprivileged_account?(username)
+      Rails.logger.error("Refusing to write SSH keys for missing or privileged account #{username}")
+      return false
+    end
+
+    keys = public_keys.map { |key| key.to_s.strip }.reject(&:empty?)
+    content = keys.map { |key| "#{key}\n" }.join
+    _, stderr, status = run_as_user(username, WRITE_AUTHORIZED_KEYS_SCRIPT,
+                                    Etc.getpwnam(username).dir, stdin_data: content)
+    unless status.success?
+      Rails.logger.error("Failed to write authorized_keys for #{username}: #{stderr.strip}")
+      return false
+    end
+
+    true
+  end
+
   # Set up user's home directory with .ssh directory and proper permissions
   def self.setup_user_home(username)
     return false if username.nil? || username.empty?
@@ -689,41 +759,30 @@ class UnixGroupManager
       home_dir = stdout.split(":")[5]
       return false if home_dir.nil? || home_dir.empty?
 
-      # 1. Create the directory if it doesn't exist
+      unless unprivileged_account?(username)
+        Rails.logger.error("Refusing to set up home for missing or privileged account #{username}")
+        return false
+      end
+
+      # 1. Create the directory if it doesn't exist. Safe as root: it is a new
+      # path under a root-owned parent, handed to the user straight away.
       unless Dir.exist?(home_dir)
-        FileUtils.mkdir_p(home_dir)
-      end
-
-      if Dir.exist?("/etc/skel") && !File.exist?(File.join(home_dir, ".bashrc"))
-        begin
-          # Grab everything (including hidden files) except . and ..
-          items = Dir.entries("/etc/skel").reject { |e| e == "." || e == ".." }
-          items.each do |item|
-            FileUtils.cp_r(File.join("/etc/skel", item), home_dir, preserve: true)
-          end
-        rescue => e
-          Rails.logger.warn("Manual skel copy failed: #{e.message}")
-        end
-      end
-
-      # Create .ssh directory with proper permissions (700)
-      ssh_dir = File.join(home_dir, ".ssh")
-      FileUtils.mkdir_p(ssh_dir) unless Dir.exist?(ssh_dir)
-      File.chmod(0o700, ssh_dir)
-
-      # Get user info - handle case where user might not exist yet
-      begin
         user_info = Etc.getpwnam(username)
-        File.chown(user_info.uid, user_info.gid, ssh_dir)
+        FileUtils.mkdir_p(home_dir)
+        File.chown(user_info.uid, user_info.gid, home_dir)
+      end
 
-        # Create authorized_keys file if it doesn't exist (600)
-        authorized_keys = File.join(ssh_dir, "authorized_keys")
-        FileUtils.touch(authorized_keys) unless File.exist?(authorized_keys)
-        File.chmod(0o600, authorized_keys)
-        File.chown(user_info.uid, user_info.gid, authorized_keys)
+      # Everything inside the home directory is written as the user.
+      if Dir.exist?("/etc/skel") && !File.exist?(File.join(home_dir, ".bashrc"))
+        _, stderr, status = run_as_user(username, SKEL_COPY_SCRIPT, home_dir)
+        Rails.logger.warn("Manual skel copy failed: #{stderr.strip}") unless status.success?
+      end
 
-      rescue ArgumentError
-        Rails.logger.warn("User #{username} not found in passwd, skipping ownership changes")
+      # .ssh (700) and authorized_keys (600)
+      _, stderr, status = run_as_user(username, SSH_DIR_SCRIPT, home_dir)
+      unless status.success?
+        Rails.logger.warn("Failed to set up .ssh for #{username}: #{stderr.strip}")
+        return false
       end
       # 1. Find the user in the database (assuming username is email/LDAP)
       # user = User.find_by(email: username)
@@ -849,132 +908,6 @@ class UnixGroupManager
     false
   end
 
-  # Provision SSH public key to user's authorized_keys file
-  def self.provision_ssh_key(username, public_key, email: nil)
-    return false if username.nil? || username.empty? || public_key.nil? || public_key.empty?
-
-    if delegate_enabled?
-      # 1. First, tell the delegate to handle the SSH key and user account
-      success = delegate_action("provision_ssh_key", username:, public_key:,
-                                                     email:)
-
-      # 2. TRIGGER: If successful, sync the curated courses directory
-      if success
-        # We need the User object to know which courses they lead
-        user = User.find_by(email: email || username)
-        if user
-          # home_dir is typically /home/username
-          ensure_courses_directory(user, "/home/#{username}")
-        end
-      end
-
-      return success
-    end
-
-    # In development or when system commands aren't available, just log and succeed
-    if should_skip_operations?
-      Rails.logger.info("Skipping SSH key provisioning for #{username} (development mode or system commands unavailable)")
-      return true
-    end
-
-    # Ensure user exists and home is set up
-    ensure_user(username, email:)
-    setup_user_home(username)
-
-    # Get home directory
-    stdout, _, status = Open3.capture3("getent", "passwd", username)
-    return false unless status.success?
-
-    home_dir = stdout.split(":")[5]
-    return false if home_dir.nil? || home_dir.empty?
-
-    authorized_keys = File.join(home_dir, ".ssh", "authorized_keys")
-    return false unless File.exist?(authorized_keys)
-
-    # Read existing keys
-    existing_keys = []
-    if File.exist?(authorized_keys) && File.size(authorized_keys) > 0
-      existing_keys = File.readlines(authorized_keys).map(&:strip).reject(&:empty?)
-    end
-
-    # Add new key if not already present
-    key_line = public_key.strip
-    unless existing_keys.include?(key_line)
-      File.open(authorized_keys, "a") do |f|
-        f.puts key_line
-      end
-      File.chmod(0o600, authorized_keys)
-      user_info = Etc.getpwnam(username)
-      File.chown(user_info.uid, user_info.gid, authorized_keys)
-      Rails.logger.info("Added SSH key for #{username}")
-    end
-
-    true
-  rescue StandardError => e
-    Rails.logger.error("Failed to provision SSH key for #{username}: #{e}")
-    false
-  end
-
-  # Remove SSH key from authorized_keys by fingerprint
-  def self.deprovision_ssh_key(username, fingerprint)
-    return false if username.nil? || username.empty? || fingerprint.nil? || fingerprint.empty?
-
-    if delegate_enabled?
-      success = delegate_action("deprovision_ssh_key", username:, fingerprint:)
-
-      if success
-        user = User.find_by(email: username) || User.find_by(email: "#{username}@andrew.cmu.edu") # Flexible lookup
-        ensure_courses_directory(user, "/home/#{username}") if user
-      end
-
-      return success
-    end
-
-    # Get home directory
-    stdout, _, status = Open3.capture3("getent", "passwd", username)
-    return false unless status.success?
-
-    home_dir = stdout.split(":")[5]
-    return false if home_dir.nil? || home_dir.empty?
-
-    authorized_keys = File.join(home_dir, ".ssh", "authorized_keys")
-    return false unless File.exist?(authorized_keys)
-
-    # Read existing keys and filter out the one with matching fingerprint
-    existing_keys = File.readlines(authorized_keys).map(&:strip).reject(&:empty?)
-
-    # Find key with matching fingerprint
-    require "digest"
-    require "base64"
-    filtered_keys = existing_keys.reject do |key_line|
-      parts = key_line.split(/\s+/, 3)
-      next false if parts.length < 2
-
-      begin
-        key_data = parts[1]
-        decoded = Base64.decode64(key_data)
-        key_fingerprint = Digest::SHA256.hexdigest(decoded)
-        key_fingerprint == fingerprint
-      rescue StandardError
-        false
-      end
-    end
-
-    # Write back filtered keys
-    File.open(authorized_keys, "w") do |f|
-      filtered_keys.each { |key| f.puts key }
-    end
-    File.chmod(0o600, authorized_keys)
-    user_info = Etc.getpwnam(username)
-    File.chown(user_info.uid, user_info.gid, authorized_keys)
-
-    Rails.logger.info("Removed SSH key for #{username}")
-    true
-  rescue StandardError => e
-    Rails.logger.error("Failed to deprovision SSH key for #{username}: #{e}")
-    false
-  end
-
   # Provision multiple SSH keys (replaces all keys)
   def self.provision_ssh_keys(username, public_keys, email: nil)
     return false if username.nil? || username.empty?
@@ -991,29 +924,16 @@ class UnixGroupManager
       return success
     end
 
+    # In development or when system commands aren't available, just log and succeed
+    if should_skip_operations?
+      Rails.logger.info("Skipping SSH key provisioning for #{username} " \
+                        "(development mode or system commands unavailable)")
+      return true
+    end
+
     # Ensure user exists and home is set up
     ensure_user(username, email:)
-    setup_user_home(username)
-
-    # Get home directory
-    stdout, _, status = Open3.capture3("getent", "passwd", username)
-    return false unless status.success?
-
-    home_dir = stdout.split(":")[5]
-    return false if home_dir.nil? || home_dir.empty?
-
-    authorized_keys = File.join(home_dir, ".ssh", "authorized_keys")
-    return false unless File.exist?(authorized_keys)
-
-    # Write all keys
-    File.open(authorized_keys, "w") do |f|
-      public_keys.each do |key|
-        f.puts key.strip if key && !key.strip.empty?
-      end
-    end
-    File.chmod(0o600, authorized_keys)
-    user_info = Etc.getpwnam(username)
-    File.chown(user_info.uid, user_info.gid, authorized_keys)
+    return false unless write_authorized_keys(username, public_keys)
 
     Rails.logger.info("Provisioned #{public_keys.length} SSH keys for #{username}")
     true
