@@ -1,8 +1,16 @@
 <% iam_user_created = @user.iam_user_created_at.present? %>
 <% job_running = @user.aws_job_status.to_s == "in_progress" %>
 <%# Default tab: SET UP until the account exists or while a job runs, then
-    ACCESS. FORGOT YOUR KEY? is only ever opened by the user. %>
-<% default_tab = iam_user_created && !job_running ? "ssm-access" : "ssm-setup" %>
+    ACCESS. ?tab= (kept in sync by ssm_access.js) reopens the tab the user
+    was on, unless it is disabled because the account does not exist yet. %>
+<% requested_tab = "ssm-#{params[:tab]}" %>
+<% default_tab = if job_running || !iam_user_created
+                   "ssm-setup"
+                 elsif %w[ssm-setup ssm-access ssm-forgot].include?(requested_tab)
+                   requested_tab
+                 else
+                   "ssm-access"
+                 end %>
 <% aws_cli_install_url = "https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html" %>
 <% ssm_plugin_install_url = "https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html" %>
 <% ssm_docs_url = "https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager.html" %>
@@ -50,7 +58,7 @@
         <a href="#ssm-access" class="<%= "active" if default_tab == "ssm-access" %>">ACCESS</a>
       </li>
       <li class="tab <%= "disabled" unless iam_user_created %>" data-needs-account>
-        <a href="#ssm-forgot">FORGOT YOUR KEY?</a>
+        <a href="#ssm-forgot" class="<%= "active" if default_tab == "ssm-forgot" %>">FORGOT YOUR KEY?</a>
       </li>
     </ul>
   </div>
@@ -159,76 +167,7 @@
       </div>
 
       <div class="ssm-section">
-        <h6><strong>2. AWS Credentials</strong></h6>
-
-        <%# Shown whenever no key is on the page, e.g. after a refresh. %>
-        <p id="no-credentials-note">
-          Your secret access key was shown once, when it was created. If you no
-          longer have it, use
-          <a href="#ssm-forgot" onclick="selectTab('ssm-forgot'); return false;">FORGOT YOUR KEY?</a>
-          to generate a new one.
-        </p>
-
-        <div
-          id="credentials-panel"
-          class="alert alert-warning"
-          style="display: none;">
-
-          <p>
-            <strong>Save these credentials now.</strong>
-            AWS will not display the secret access key again.
-            If you lose it, you will need to generate a new access key.
-          </p>
-
-          <div class="form-group">
-            <label>Access Key ID</label>
-
-            <div>
-              <code id="access-key-id"></code>
-
-              <button
-                class="btn btn-default btn-sm"
-                type="button"
-                onclick="copyText('access-key-id', this)">
-                COPY
-              </button>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label for="secret-access-key">Secret Access Key</label>
-
-            <div class="input-group">
-              <input
-                id="secret-access-key"
-                class="form-control"
-                type="password"
-                autocomplete="off"
-                readonly>
-
-              <span class="input-group-btn">
-                <button
-                  id="show-secret-button"
-                  class="btn btn-default"
-                  type="button"
-                  onclick="toggleSecret()">
-                  SHOW
-                </button>
-
-                <button
-                  class="btn btn-default"
-                  type="button"
-                  onclick="copyValue('secret-access-key', this)">
-                  COPY
-                </button>
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="ssm-section">
-        <h6><strong>3. Configure the AWS CLI</strong></h6>
+        <h6><strong>2. Configure the AWS CLI</strong></h6>
 
         <p>
           Use a named AWS CLI profile instead of the default profile, so these
@@ -246,29 +185,122 @@
           </button>
         </div>
 
+        <%# Shown whenever no key is on the page, e.g. after a refresh. %>
+        <p id="no-credentials-note">
+          Your secret access key was shown once, when it was created. If you no
+          longer have it, use
+          <a href="#ssm-forgot" onclick="selectTab('ssm-forgot'); return false;">FORGOT YOUR KEY?</a>
+          to generate a new one.
+        </p>
+
+        <div
+          id="credentials-panel"
+          class="alert alert-warning"
+          style="display: none;">
+          <strong>Save these credentials now.</strong>
+          AWS will not display the secret access key again.
+          If you lose it, you will need to generate a new access key.
+        </div>
+
         <p>When prompted, enter:</p>
 
+        <%# The key rows show their value only while a new key is on the page;
+            otherwise they say it is gone and link to FORGOT YOUR KEY?. %>
         <table class="ssm-prompts">
           <tr>
             <td><strong>AWS Access Key ID</strong></td>
-            <td>Use the Access Key ID shown above</td>
+            <td>
+              <span class="ssm-credential-unavailable" data-credential-placeholder>
+                No longer shown &mdash;
+                <a href="#ssm-forgot" onclick="selectTab('ssm-forgot'); return false;">generate a new key</a>
+              </span>
+
+              <div class="ssm-prompt-value" data-credential-value style="display: none;">
+                <code id="access-key-id"></code>
+
+                <button
+                  class="btn btn-default btn-sm"
+                  type="button"
+                  onclick="copyText('access-key-id', this)">
+                  COPY
+                </button>
+              </div>
+            </td>
           </tr>
           <tr>
             <td><strong>AWS Secret Access Key</strong></td>
-            <td>Use the Secret Access Key shown above</td>
+            <td>
+              <span class="ssm-credential-unavailable" data-credential-placeholder>
+                No longer shown &mdash;
+                <a href="#ssm-forgot" onclick="selectTab('ssm-forgot'); return false;">generate a new key</a>
+              </span>
+
+              <div class="input-group" data-credential-value style="display: none;">
+                <input
+                  id="secret-access-key"
+                  class="form-control"
+                  type="password"
+                  autocomplete="off"
+                  readonly>
+
+                <span class="input-group-btn">
+                  <button
+                    id="show-secret-button"
+                    class="btn btn-default"
+                    type="button"
+                    onclick="toggleSecret()">
+                    SHOW
+                  </button>
+
+                  <button
+                    class="btn btn-default"
+                    type="button"
+                    onclick="copyValue('secret-access-key', this)">
+                    COPY
+                  </button>
+                </span>
+              </div>
+            </td>
           </tr>
           <tr>
             <td><strong>Default region name</strong></td>
-            <td id="prompt-region"></td>
+            <td>
+              <div id="prompt-region" class="ssm-prompt-value">
+                <code id="prompt-region-value"></code>
+
+                <button
+                  class="btn btn-default btn-sm"
+                  type="button"
+                  onclick="copyText('prompt-region-value', this)">
+                  COPY
+                </button>
+              </div>
+
+              <%# Tango's IAM config could not be read (or has no region). %>
+              <span id="prompt-region-missing" style="display: none;">
+                The AWS region of the instance (ask your Autolab administrator)
+              </span>
+            </td>
           </tr>
           <tr>
             <td><strong>Default output format</strong></td>
-            <td><code>json</code></td>
+            <td>
+              <div class="ssm-prompt-value">
+                <code id="prompt-output">json</code>
+
+                <button
+                  class="btn btn-default btn-sm"
+                  type="button"
+                  onclick="copyText('prompt-output', this)">
+                  COPY
+                </button>
+              </div>
+            </td>
           </tr>
         </table>
 
         <p class="ssm-section">
-          Then continue with step 4 on the
+          Then continue with step 3 on the
           <a href="#ssm-access" onclick="selectTab('ssm-access'); return false;">ACCESS</a>
           tab.
         </p>
@@ -283,7 +315,7 @@
     style="<%= "display: none;" unless default_tab == "ssm-access" %>">
 
     <div class="ssm-section">
-      <h6><strong>4. Start the SSM session</strong></h6>
+      <h6><strong>3. Start the SSM session</strong></h6>
 
       <div class="ssm-command">
         <pre><code id="cmd-start-session"></code></pre>
@@ -302,7 +334,7 @@
     </div>
 
     <div class="ssm-section ssm-transfer">
-      <h6><strong>5. Transfer files (optional)</strong></h6>
+      <h6><strong>4. Transfer files (optional)</strong></h6>
 
       <p>
         File transfer runs SSH through Session Manager, so it also needs an
@@ -429,7 +461,7 @@
   <div
     id="ssm-forgot"
     class="col s12 ssm-panel"
-    style="display: none;">
+    style="<%= "display: none;" unless default_tab == "ssm-forgot" %>">
 
     <p>
       AWS does not allow an existing Secret Access Key to be displayed again.
@@ -448,7 +480,7 @@
 
       <p style="margin-bottom: 0;">
         Afterwards, rerun
-        <code data-ssm-configure-command></code>
+        <code class="ssm-inline-command" data-ssm-configure-command></code>
         with the new key.
       </p>
     </div>
@@ -456,7 +488,7 @@
     <button
       id="regenerate-button"
       type="button"
-      class="btn btn-danger"
+      class="btn btn-danger ssm-regenerate-button"
       data-url="<%= regenerate_iam_access_key_user_path(@user) %>">
       REGENERATE ACCESS KEY
     </button>

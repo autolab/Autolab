@@ -25,6 +25,14 @@ document.addEventListener("DOMContentLoaded", function() {
     ssmStatusUrl = page.dataset.statusUrl;
     renderSsmGuide();
 
+    document.querySelectorAll("#ssm-tabs a").forEach(function(link) {
+        link.addEventListener("click", function() {
+            if (!link.parentElement.classList.contains("disabled")) {
+                setTabInUrl(link.getAttribute("href").slice(1));
+            }
+        });
+    });
+
     document.getElementById("create-button")
         .addEventListener("click", function() {
             startAwsOperation("create");
@@ -64,6 +72,7 @@ function selectTab(panelId) {
 
     if (tabs) {
         tabs.select(panelId);
+        setTabInUrl(panelId);
         return;
     }
 
@@ -74,6 +83,16 @@ function selectTab(panelId) {
     if (link) {
         link.click();
     }
+}
+
+// Record the open tab as ?tab=setup|access|forgot, so a reload or a shared
+// link reopens it. The view reads the same parameter.
+function setTabInUrl(panelId) {
+    const url = new URL(window.location.href);
+
+    url.searchParams.set("tab", panelId.replace(/^ssm-/, ""));
+    url.hash = "";
+    window.history.replaceState(null, "", url);
 }
 
 function enableAccountTabs() {
@@ -104,18 +123,13 @@ function renderSsmGuide() {
     document.getElementById("instance-id-missing").style.display =
         ssmDetails.instanceId ? "none" : "";
 
-    const regionPrompt = document.getElementById("prompt-region");
-    regionPrompt.textContent = "";
-
-    if (ssmDetails.region) {
-        const code = document.createElement("code");
-        code.textContent = ssmDetails.region;
-        regionPrompt.appendChild(code);
-    } else {
-        // Tango's IAM config could not be read (or has no region).
-        regionPrompt.textContent =
-            "The AWS region of the instance (ask your Autolab administrator)";
-    }
+    // No region means Tango's IAM config could not be read (or has none).
+    document.getElementById("prompt-region-value").textContent =
+        ssmDetails.region;
+    document.getElementById("prompt-region").style.display =
+        ssmDetails.region ? "" : "none";
+    document.getElementById("prompt-region-missing").style.display =
+        ssmDetails.region ? "none" : "";
 
     document.querySelectorAll("[data-ssm-username]").forEach(function(el) {
         el.textContent = ssmDetails.username;
@@ -389,6 +403,7 @@ function showCredentials(accessKey) {
     document.getElementById("show-secret-button").innerText = "SHOW";
 
     document.getElementById("no-credentials-note").style.display = "none";
+    setCredentialRowsVisible(true);
 
     const panel = document.getElementById("credentials-panel");
     panel.style.display = "block";
@@ -402,6 +417,20 @@ function clearCredentials() {
     document.getElementById("secret-access-key").value = "";
     document.getElementById("credentials-panel").style.display = "none";
     document.getElementById("no-credentials-note").style.display = "";
+    setCredentialRowsVisible(false);
+}
+
+// Swap the key rows of the aws configure prompts between their values and
+// placeholders.
+function setCredentialRowsVisible(visible) {
+    document.querySelectorAll("[data-credential-value]").forEach(function(el) {
+        el.style.display = visible ? "" : "none";
+    });
+
+    document.querySelectorAll("[data-credential-placeholder]")
+        .forEach(function(el) {
+            el.style.display = visible ? "none" : "";
+        });
 }
 
 function toggleSecret() {

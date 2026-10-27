@@ -29,7 +29,29 @@
 
 .ssm-prompts td {
   padding: 0.3em 1em 0.3em 0;
-  vertical-align: top;
+  vertical-align: middle;
+}
+
+// A command inside a sentence; the margin keeps the surrounding words from
+// running into its background.
+.ssm-inline-command {
+  margin: 0 0.3em;
+}
+
+.ssm-regenerate-button {
+  margin-top: 1.5em;
+}
+
+.ssm-credential-unavailable {
+  color: #757575;
+  font-style: italic;
+}
+
+// A value to enter at an aws configure prompt, with its COPY button.
+.ssm-prompt-value {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
 }
 
 .ssm-panel {
