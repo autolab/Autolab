@@ -1,4 +1,12 @@
 class Extension < ApplicationRecord
+  COURSE_EXPORT_FIELDS = %i[
+    days infinite
+  ].freeze
+  COURSE_EXPORT_REFERENCES = {
+    course_user_datum_id: :course_user_data,
+    assessment_id: :assessments
+  }.freeze
+
   belongs_to :assessment
   belongs_to :course_user_datum
   validates :course_user_datum_id, presence: true
