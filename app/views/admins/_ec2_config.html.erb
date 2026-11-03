@@ -1,0 +1,50 @@
+<% content_for :javascripts do %>
+  <%= javascript_include_tag "ec2_limits" %>
+  <%= stylesheet_link_tag "ec2_limits" %>
+<% end %>
+
+<div class="row" id="ec2-instance-selector"
+     data-instance-types="<%= @ec2_instance_types.to_json %>">
+  <div class="col s12">
+    <h4>EC2 Instance Limits</h4>
+
+    <p class="help-text">
+      Select which EC2 instances are globally available for Instructors to choose from when configuring autograders.
+    </p>
+
+    <%= form_with url: update_ec2_config_admins_path, method: :post, local: true do |f| %>
+      <div class="instance-search-container">
+        <%= text_field_tag :instance_search,
+                           nil,
+                           id: "instance-search",
+                           placeholder: "Search for an instance type, e.g. t3.micro",
+                           autocomplete: "off" %>
+
+        <div id="search-results"></div>
+      </div>
+
+      <h5>Selected instances</h5>
+
+      <div id="selected-instances" class="selected-instances">
+        <% @ec2_config_hash["allowed_instances"].each do |instance_type| %>
+          <div class="selected-instance"
+               data-instance-type="<%= instance_type %>">
+            <span><%= instance_type %></span>
+
+            <button
+              type="button"
+              class="remove-instance"
+              data-instance-type="<%= instance_type %>"
+              aria-label="Remove <%= instance_type %>">
+              &times;
+            </button>
+
+            <%= hidden_field_tag "allowed_instances[]", instance_type %>
+          </div>
+        <% end %>
+      </div>
+
+      <%= f.submit "Save EC2 Limits", class: "btn primary" %>
+    <% end %>
+  </div>
+</div>

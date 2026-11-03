@@ -341,7 +341,14 @@ protected
   end
 
   def set_users_list_breadcrumb
-    @breadcrumbs << (view_context.link_to "Users List", users_path)
+    @breadcrumbs << if current_user.administrator?
+                      (view_context.link_to "Users List", users_path)
+                    else
+                      # For non-admins, show the text but don't make it a link
+                      view_context.link_to("Users List", "", class: "disabled-breadcrumb",
+                                                             style: "cursor: default;
+                                                                    color: inherit;")
+                    end
   end
   ### END HELPERS
 
@@ -350,10 +357,14 @@ protected
   # class.
   # @return The filename of the dlist that was created.
   def make_dlist(cuds)
-    emails = []
+    return "" if cuds.blank?
 
-    cuds.each do |cud|
-      emails << cud.user.email.to_s
+    emails = cuds.filter_map do |entry|
+      if entry.respond_to?(:user) && entry.user&.email.present?
+        entry.user.email.to_s
+      elsif entry.respond_to?(:email) && entry.email.present?
+        entry.email.to_s
+      end
     end
 
     emails.join(",")
@@ -411,6 +422,7 @@ private
       end
       format.json { head :internal_server_error }
       format.js { head :internal_server_error }
+      format.any { head :internal_server_error }
     end
   end
 end

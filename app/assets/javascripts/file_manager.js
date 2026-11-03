@@ -5,7 +5,7 @@ function rename(path) {
         $.ajax({
             url: "/file_manager/" + rel_path,
             type: "PUT",
-            data: { new_name: new_name, relative_path: rel_path},
+            data: { new_name: new_name, relative_path: rel_path },
             success: function(data) {
                 console.log(`Renamed: ${rel_path}`)
                 location.reload();
@@ -19,12 +19,21 @@ function deleteSelected(path) {
         $.ajax({
             url: path,
             type: "DELETE",
-            success: function () {
+            dataType: "json",
+            headers: {
+                "Accept": "application/json"
+            },
+            success: function(response) {
+                if (response && response.success === false) {
+                    reject(response.error || "Delete failed");
+                    return;
+                }
                 console.log(`Deleted: ${path}`);
                 resolve();
             },
-            error: function (xhr, status, error) {
-                reject(error);
+            error: function(xhr, status, error) {
+                const message = (xhr && xhr.responseJSON && xhr.responseJSON.error) ? xhr.responseJSON.error : error;
+                reject(message);
             }
         });
     })
@@ -38,7 +47,7 @@ function downloadSelected(path) {
             data: {
                 path: path
             },
-            success: function (data) {
+            success: function(data) {
                 let blob = new Blob([data], { type: 'application/x-tar' });
                 let url = URL.createObjectURL(blob);
                 let a = document.createElement('a');
@@ -53,7 +62,7 @@ function downloadSelected(path) {
                 console.log(`Downloaded: ${data.filename}`);
                 resolve();
             },
-            error: function (xhr, status, error) {
+            error: function(xhr, status, error) {
                 console.error(`Failed to download ${path}: ${error}`);
                 reject(error);
             }
@@ -76,11 +85,11 @@ function uploadFile(file, path, name) {
             data: formData,
             contentType: false,
             processData: false,
-            success: function () {
+            success: function() {
                 console.log("Uploaded file successfully");
                 resolve();
             },
-            error: function (xhr, status, error) {
+            error: function(xhr, status, error) {
                 console.error(`Failed to upload file: ${error}`);
                 reject(error);
             }
@@ -98,14 +107,14 @@ function uploadAllFiles(path) {
     }
     if (files.length > 0) {
         Promise.all(uploadPromises)
-        .then(() => {
-            alert("All files uploaded successfully.");
-            location.reload();
-        })
-        .catch((error) => {
-            alert("Some files failed to upload successfully. Ensure that you are not in the root directory, the file is smaller than 1 GB, and does not already exist.");
-            location.reload();
-        });
+            .then(() => {
+                alert("All files uploaded successfully.");
+                location.reload();
+            })
+            .catch((error) => {
+                alert("Some files failed to upload successfully. Ensure that you are not in the root directory, the file is smaller than 1 GB, and does not already exist.");
+                location.reload();
+            });
     } else {
         console.log('No files selected.');
     }
@@ -130,8 +139,7 @@ function createFolder(path) {
             })
             .catch((error) => {
                 alert("Failed to create folder. Check that you are not in the root directory and that the tile/folder does not already exist.");
-            })
-        ;
+            });
     }
 }
 

@@ -1,0 +1,416 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+#
+# unix_ops_daemon.rb - Lightweight HTTP daemon for privileged Unix operations.
+# Runs inside a dedicated container with access to host /etc and /home, exposing
+# a simple JSON API for the web application to request user/group changes.
+#
+# Usage:
+#   bundle exec ruby script/unix_ops_daemon.rb
+#
+
+ENV["RAILS_ENV"] ||= ENV.fetch("UNIX_OPS_RAILS_ENV", "production")
+
+require "json"
+require "base64"
+require "webrick"
+require "active_support/security_utils"
+require_relative "../config/environment"
+require_relative "../app/services/unix_group_manager"
+
+module UnixOps
+  class Server
+    DEFAULT_PORT = (ENV["UNIX_OPS_PORT"] || 4000).to_i
+    BIND_ADDRESS = ENV.fetch("UNIX_OPS_BIND", "0.0.0.0")
+
+    def initialize
+      @logger = Rails.logger || Logger.new($stdout)
+      @server = WEBrick::HTTPServer.new(
+        Port: DEFAULT_PORT,
+        BindAddress: BIND_ADDRESS,
+        AccessLog: [],
+        Logger: WEBrick::Log.new($stdout, WEBrick::Log::INFO)
+      )
+      mount_routes
+    end
+
+    def start
+      trap("INT") { shutdown }
+      trap("TERM") { shutdown }
+      @logger.info("UnixOps daemon listening on #{BIND_ADDRESS}:#{DEFAULT_PORT}")
+      @server.start
+    end
+
+    private
+
+    def mount_routes
+      @server.mount_proc "/health" do |_req, res|
+        res.status = 200
+        res["Content-Type"] = "application/json"
+        res.body = JSON.dump(status: "ok")
+      end
+
+      @server.mount_proc "/jobs" do |req, res|
+        unless authorized?(req)
+          respond(res, 401, error: "unauthorized")
+          next
+        end
+
+        begin
+          payload = JSON.parse(req.body.to_s)
+        rescue JSON::ParserError
+          respond(res, 400, error: "invalid_json")
+          next
+        end
+
+        action = payload["action"]
+        job_payload = payload["payload"] || {}
+
+        success, message, data = process(action, job_payload)
+        status = success ? 200 : 422
+        respond(res, status, { success: success, message: message, data: data })
+      end
+    end
+
+
+    def authorized?(req)
+      secret = ENV["UNIX_OPS_SHARED_SECRET"]
+      return false if secret.nil? || secret.empty?
+
+      header = req.header["authorization"]&.first
+      return false if header.nil? || !header.start_with?("Bearer ")
+
+      token = header.split(" ", 2).last
+      # Use secure compare if available
+      ActiveSupport::SecurityUtils.secure_compare(token, secret)
+    rescue StandardError
+      false
+    end
+
+    def process(action, payload)
+      case action
+      when "ensure_group"
+        [UnixGroupManager.ensure_group(payload["group_name"]), "ensure_group", nil]
+      when "remove_group"
+        [UnixGroupManager.remove_group(payload["group_name"], force: payload["force"]), "remove_group", nil]
+      when "ensure_user"
+        [UnixGroupManager.ensure_user(payload["username"], email: payload["email"]), "ensure_user", nil]
+      when "setup_user_home"
+        [UnixGroupManager.setup_user_home(payload["username"]), "setup_user_home", nil]
+      when "add_user_to_group"
+        [UnixGroupManager.add_user_to_group(payload["username"], payload["group_name"]), "add_user_to_group", nil]
+      when "remove_user_from_group"
+        [UnixGroupManager.remove_user_from_group(payload["username"], payload["group_name"]), "remove_user_from_group", nil]
+      when "provision_ssh_key"
+        [UnixGroupManager.provision_ssh_key(payload["username"], payload["public_key"], email: payload["email"]), "provision_ssh_key", nil]
+      when "deprovision_ssh_key"
+        [UnixGroupManager.deprovision_ssh_key(payload["username"], payload["fingerprint"]), "deprovision_ssh_key", nil]
+      when "provision_ssh_keys"
+        [UnixGroupManager.provision_ssh_keys(payload["username"], payload["public_keys"] || [], email: payload["email"]), "provision_ssh_keys", nil]
+      when "delete_user"
+        [UnixGroupManager.delete_user(payload["username"], remove_home: payload.fetch("remove_home", true)), "delete_user", nil]
+      when "user_exists"
+        success = UnixGroupManager.user_exists?(payload["username"])
+        [true, "user_exists", { value: success }]
+      when "get_group_gid"
+        begin
+          require "etc"
+          group_info = Etc.getgrnam(payload["group_name"])
+          [true, "get_group_gid", { gid: group_info.gid, group_name: group_info.name }]
+        rescue ArgumentError
+          [false, "group_not_found", nil]
+        rescue StandardError => e
+          [false, e.message, nil]
+        end
+      when "chgrp"
+        begin
+          require "fileutils"
+          group_name = payload["group_name"]
+          path = payload["path"]
+          # If owner is explicitly nil or empty string, keep current owner
+          # If owner is not specified in payload, default to root
+          owner = payload.key?("owner") ? payload["owner"] : "root"
+          require "etc"
+          group_info = Etc.getgrnam(group_name)
+          
+          # Get owner UID if specified (non-nil and non-empty)
+          owner_uid = nil
+          if owner && owner != ""
+            # Check if owner is a numeric UID (as string or integer)
+            if owner.to_s.match?(/^\d+$/)
+              owner_uid = owner.to_i
+            else
+              begin
+                owner_uid = Etc.getpwnam(owner.to_s).uid
+              rescue ArgumentError
+                # Owner doesn't exist, use nil to keep current owner
+                owner_uid = nil
+              end
+            end
+          end
+          # If owner was nil or empty string, owner_uid remains nil, which keeps current owner
+          
+          File.lchown(owner_uid, group_info.gid, path)
+          owner_desc = owner_uid ? (owner.to_s.match?(/^\d+$/) ? "uid:#{owner_uid}" : owner) : "unchanged"
+          [true, "chgrp", { path: path, group_name: group_name, gid: group_info.gid, owner: owner_desc }]
+        rescue ArgumentError
+          [false, "group_or_file_not_found", nil]
+        rescue StandardError => e
+          [false, e.message, nil]
+        end
+      when "chown"
+        begin
+          path = payload["path"]
+          owner = payload["owner"]
+
+          if path.nil? || path.empty? || owner.nil? || owner.to_s.empty?
+            [false, "invalid_chown_payload", nil]
+          else
+            require "etc"
+            owner_uid = if owner.to_s.match?(/^\d+$/)
+                          owner.to_i
+                        else
+                          Etc.getpwnam(owner.to_s).uid
+                        end
+
+            # Keep current group unchanged
+            File.lchown(owner_uid, nil, path)
+            owner_desc = owner.to_s.match?(/^\d+$/) ? "uid:#{owner_uid}" : owner.to_s
+            [true, "chown", { path: path, owner: owner_desc }]
+          end
+        rescue ArgumentError
+          [false, "user_or_file_not_found", nil]
+        rescue StandardError => e
+          [false, e.message, nil]
+        end
+      when "chmod"
+        begin
+          path = payload["path"]
+          mode = payload["mode"]
+          # Skip symlinks to avoid lchmod issues
+          if File.symlink?(path)
+            [true, "chmod", { path: path, mode: mode, skipped: "symlink" }]
+          else
+            File.chmod(mode, path)
+            [true, "chmod", { path: path, mode: mode.to_s(8) }]
+          end
+        rescue StandardError => e
+          [false, e.message, nil]
+        end
+      when "get_user_uid"
+        begin
+          require "etc"
+          user_info = Etc.getpwnam(payload["username"])
+          [true, "get_user_uid", { uid: user_info.uid, username: user_info.name }]
+        rescue ArgumentError
+          [false, "user_not_found", nil]
+        rescue StandardError => e
+          [false, e.message, nil]
+        end
+      when "read_file"
+        begin
+          path = payload["path"]
+          unless File.exist?(path)
+            [false, "file_not_found", nil]
+          else
+            content = File.binread(path)
+            [true, "read_file", {
+              path: path,
+              content_base64: Base64.strict_encode64(content),
+              size: content.bytesize
+            }]
+          end
+        rescue StandardError => e
+          [false, e.message, nil]
+        end
+      when "mkdir_p"
+        begin
+          path = payload["path"]
+          mode = payload["mode"]
+          if path.nil? || path.empty?
+            [false, "invalid_path", nil]
+          else
+            if mode
+              FileUtils.mkdir_p(path, mode: mode.to_i)
+            else
+              FileUtils.mkdir_p(path)
+            end
+            [true, "mkdir_p", { path: path, mode: mode }]
+          end
+        rescue StandardError => e
+          [false, e.message, nil]
+        end
+      when "rm_rf"
+        begin
+          path = payload["path"]
+          if path.nil? || path.empty?
+            [false, "invalid_path", nil]
+          else
+            require "fileutils"
+            # Safety check: Prevent accidental root/system nuking
+            if path == "/" || path == "/home" || path == "/etc"
+              [false, "protected_path", nil]
+            else
+              FileUtils.rm_rf(path)
+              [true, "rm_rf", { path: path }]
+            end
+          end
+        rescue StandardError => e
+          [false, e.message, nil]
+        end
+      when "delete_path"
+        begin
+          path = payload["path"]
+          recursive = payload.fetch("recursive", true)
+          if path.nil? || path.empty?
+            [false, "invalid_path", nil]
+          else
+            # Safety check: Prevent accidental root/system nuking
+            if path == "/" || path == "/home" || path == "/etc"
+              [false, "protected_path", nil]
+            else
+              require "fileutils"
+              if recursive
+                FileUtils.rm_rf(path)
+              elsif File.directory?(path)
+                Dir.rmdir(path)
+              else
+                File.delete(path)
+              end
+              [true, "delete_path", { path: path, recursive: recursive }]
+            end
+          end
+        rescue StandardError => e
+          [false, e.message, nil]
+        end
+      when "move_path"
+        begin
+          src = payload["src"]
+          dest = payload["dest"]
+          if src.nil? || src.empty? || dest.nil? || dest.empty?
+            [false, "invalid_move_payload", nil]
+          else
+            require "fileutils"
+            FileUtils.mkdir_p(File.dirname(dest))
+            FileUtils.mv(src, dest)
+            [true, "move_path", { src: src, dest: dest }]
+          end
+        rescue StandardError => e
+          [false, e.message, nil]
+        end
+      when "create_symlink"
+        begin
+          target = payload["target"]
+          link_path = payload["link_path"]
+          if target.nil? || target.empty? || link_path.nil? || link_path.empty?
+            [false, "invalid_symlink_payload", nil]
+          else
+            # Use rm_rf here so it can clear out old directories
+            # that might be blocking the symlink creation
+            require "fileutils"
+            FileUtils.rm_rf(link_path)
+
+            File.symlink(target, link_path)
+            [true, "create_symlink", { target: target, link_path: link_path }]
+          end
+        rescue StandardError => e
+          [false, e.message, nil]
+        end
+      when "write_file"
+        begin
+          path = payload["path"]
+          encoded_content = payload["content_base64"]
+          mode = payload["mode"]
+
+          if path.nil? || path.empty? || encoded_content.nil?
+            [false, "invalid_write_payload", nil]
+          else
+            content = Base64.decode64(encoded_content)
+            parent = File.dirname(path)
+            FileUtils.mkdir_p(parent) unless Dir.exist?(parent)
+            File.binwrite(path, content)
+            File.chmod(mode.to_i, path) if mode
+            [true, "write_file", { path: path, size: content.bytesize, mode: mode }]
+          end
+        rescue StandardError => e
+          [false, e.message, nil]
+        end
+      when "list_dir"
+        begin
+          path = payload["path"]
+          unless path && Dir.exist?(path)
+            [false, "directory_not_found", nil]
+          else
+            entries = Dir.children(path)
+            [true, "list_dir", { path: path, entries: entries }]
+          end
+        rescue StandardError => e
+          [false, e.message, nil]
+        end
+      when "list_assessment_dirs"
+        begin
+          path = payload["path"]
+          unless path && Dir.exist?(path)
+            [false, "directory_not_found", nil]
+          else
+            entries = Dir.children(path).filter_map do |entry|
+              entry_path = File.join(path, entry)
+              next unless File.directory?(entry_path)
+
+              {
+                "name" => entry,
+                "yml_exists" => File.exist?(File.join(entry_path, "#{entry}.yml"))
+              }
+            end
+            [true, "list_assessment_dirs", { path: path, entries: entries }]
+          end
+        rescue StandardError => e
+          [false, e.message, nil]
+        end
+      when "fix_course_permissions"
+        begin
+          path = payload["path"]
+          group_name = payload["group_name"]
+
+          unless path && Dir.exist?(path)
+            return [false, "directory_not_found", nil]
+          end
+
+          # 1. Recursive chown to the course group
+          # We use system() for efficiency with large directories
+          system("chown", "-R", ":#{group_name}", path)
+
+          # 2. Directories: SetGID (2), Owner/Group Full (77), Others Traverse (5) -> 2775
+          system("find", path, "-type", "d", "-exec", "chmod", "2775", "{}", "+")
+
+          # 3. Files: Owner/Group Read/Write (66), Others Read (4) -> 664
+          system("find", path, "-type", "f", "-exec", "chmod", "664", "{}", "+")
+
+          [true, "fix_course_permissions", { path: path, group: group_name }]
+        rescue StandardError => e
+          [false, e.message, nil]
+        end
+      else
+        [false, "unknown_action", nil]
+      end
+    rescue StandardError => e
+      @logger.warn("UnixOps action #{action} failed: #{e.message}")
+      [false, e.message, nil]
+    end
+
+    def respond(res, status, body)
+      data = body.delete(:data)
+      res.status = status
+      res["Content-Type"] = "application/json"
+      res.body = JSON.dump(body.merge(data ? { data: data } : {}))
+    end
+
+    def shutdown
+      @logger.info("UnixOps daemon shutting down")
+      @server.shutdown
+    end
+  end
+end
+
+UnixOps::Server.new.start
+

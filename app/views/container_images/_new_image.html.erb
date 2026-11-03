@@ -2,8 +2,10 @@
   <h4>Build Docker Image</h4>
   <%= form_with model: form_model, builder: FormBuilderWithDateTimeInput do |f| %>
     <%= f.text_field :name,
-                     pattern: "^[a-z0-9](_{0,2}[a-z0-9])*(/[a-z0-9](_{0,2}[a-z0-9])*)?$",
-                     help_text: "Name of Docker image. Any existing image with the same name will be overwritten." %>
+                     pattern: "^[a-z0-9]([_-]{0,2}[a-z0-9])*(/[a-z0-9]([_-]{0,2}[a-z0-9])*)?$",
+                     help_text: "Name of Docker image. Use lowercase letters (a-z), numbers (0-9), " \
+                       "underscores (_) or hyphens (-). Must start and end with a letter or " \
+                       "number. Existing images with the same name are overwritten." %>
     <% unless admin %>
       <div class="select-field-label">Template Autograder Image</div>
       <%= f.select :public_template_id,
@@ -13,6 +15,10 @@
                      :name
                    ),
                    { include_blank: "None" } %>
+      <div class="select-field-helper-text">
+        If your Dockerfile uses a base image (e.g., with FROM), select it here so the
+        build can reference the existing image.
+      </div>
     <% end %>
     <%= f.file_field :dockerfile, button_text: "Choose Dockerfile" %>
     <%= f.submit "Build Docker Image" %>

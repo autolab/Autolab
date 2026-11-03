@@ -1,0 +1,51 @@
+<div class="sponsors-page">
+  <div class="row">
+    <div class="col s12">
+      <h1>Autolab Sponsors</h1>
+      <p class="lead">
+        Thank you to the organizations who support your Autolab instance. Keep this page up to date so students
+        and staff know who makes their infrastructure possible.
+      </p>
+    </div>
+  </div>
+
+  <% if @sponsors.present? %>
+    <%= render partial: "sponsor_grid", locals: { sponsors: @sponsors } %>
+  <% else %>
+    <div class="card-panel yellow lighten-5">
+      <p class="black-text">
+        No sponsors have been added yet. Instance managers can add them by editing the <code>sponsors</code> section
+        in <code>config/school.yml</code> or by sharing details with your Autolab administrator.
+      </p>
+    </div>
+  <% end %>
+
+  <div class="row">
+    <div class="col s12 m8">
+      <div class="card">
+        <div class="card-content">
+          <span class="card-title">Update this Page</span>
+          <ol class="sponsor-steps">
+            <li>Add or edit sponsor entries inside <code>config/school.yml</code>.</li>
+            <li>Each entry supports <code>name</code>, <code>url</code>, <code>logo</code>, and an optional <code>description</code>.</li>
+            <li>Upload logos to <code>app/assets/images/sponsors</code> (or provide a full URL) and restart Autolab.</li>
+          </ol>
+          <p>
+            Prefer to have someone else handle it? Send the sponsor details (name, URL, logo) to your instance manager
+            and they'll update the configuration for you.
+          </p>
+        </div>
+        <div class="card-action">
+          <% if @instance_manager_email.present? %>
+            <%= mail_to @instance_manager_email,
+                        "Email instance manager",
+                        subject: "[Autolab] Sponsor update",
+                        class: "btn waves-effect waves-light" %>
+          <% else %>
+            <span class="grey-text">Set <code>instance_manager_email</code> in <code>config/school.yml</code> to enable quick emails.</span>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

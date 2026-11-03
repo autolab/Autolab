@@ -14,6 +14,7 @@ Rails.application.routes.draw do
   post 'smtp_config/update_config', to: "smtp_config#update_config"
   post 'smtp_config/send_test_email', to: "smtp_config#send_test_email"
   post 'oauth_config/update_oauth', to: "oauth_config#update_oauth_config"
+  post 'admins/ec2_config/update', to: 'ec2_config#update', as: :update_ec2_config_admins
 
   namespace :oauth, { defaults: { format: :json } } do
     get "device_flow_init", to: "device_flow#init"
@@ -64,6 +65,7 @@ Rails.application.routes.draw do
       match "developer_login", via: [:get, :post]
     end
     get "contact"
+    get "sponsors"
     get "no_user"
   end
 
@@ -120,6 +122,10 @@ Rails.application.routes.draw do
     match "update_password_for_user", on: :member, via: [:get, :put]
     post "change_password_for_user", on: :member
     patch "update_display_settings", on: :member
+    # SSH Key Management
+    get "ssh_keys", on: :member
+    post "create_ssh_key", on: :member
+    delete "destroy_ssh_key/:ssh_key_id", on: :member, to: "users#destroy_ssh_key", as: :destroy_ssh_key
   end
 
   resources :courses, param: :name do

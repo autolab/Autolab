@@ -14,7 +14,7 @@ class AdminsController < ApplicationController
 
     @email = CourseMailer.system_announcement(
       params[:from],
-      make_dlist(@cuds),
+      make_dlist(@users),
       params[:subject],
       params[:body]
     )
@@ -41,6 +41,22 @@ class AdminsController < ApplicationController
       @lti_config_hash =
         YAML.safe_load(File.read("#{Rails.configuration.config_location}/lti_config.yml"))
     end
+
+    ec2_config_path = "#{Rails.configuration.config_location}/ec2_config.yml"
+    ec2_instance_types_path = "#{Rails.configuration.config_location}/ec2_instance_types.yml"
+    @ec2_config_hash = if File.exist?(ec2_config_path) && File.size?(ec2_config_path)
+                         YAML.safe_load(File.read(ec2_config_path))
+                       else
+                         # Default to all instances if the admin hasn't configured it yet
+                         { "allowed_instances" => Autograder::INSTANCE_TYPES }
+                       end
+    @ec2_instance_types = if File.exist?(ec2_instance_types_path) &&
+                             File.size?(ec2_instance_types_path)
+                            YAML.safe_load(File.read(ec2_instance_types_path))
+                          else
+                            # Default to all instances if the admin hasn't configured it yet
+                            { "instance_types" => Autograder::INSTANCE_TYPES }
+                          end
 
     if Rails.cache.exist?(:tmp_smtp_config)
       @smtp_config_hash = Rails.cache.read(:tmp_smtp_config)

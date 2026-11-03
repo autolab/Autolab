@@ -8,10 +8,11 @@
 <div class="row">
   <div class="col s12">
     <ul class="tabs" id="config-tabs">
-      <li class="tab col s3"><a <% if active_tab == 'github' %> class="active" <% end %> href="#github">Github Integration</a></li>
-      <li class="tab col s3"><a <% if active_tab == 'smtp' %> class="active" <% end %> href="#smtp">SMTP Config</a></li>
-      <li class="tab col s3"><a <% if active_tab == 'lti' %> class="active" <% end %> href="#lti">LTI Integration</a></li>
-      <li class="tab col s3"><a <% if active_tab == 'oauth' %> class="active" <% end %> href="#oauth">OAuth Integration</a></li>
+      <li class="tab"><a <% if active_tab == 'github' %> class="active" <% end %> href="#github">Github Integration</a></li>
+      <li class="tab"><a <% if active_tab == 'smtp' %> class="active" <% end %> href="#smtp">SMTP Config</a></li>
+      <li class="tab"><a <% if active_tab == 'lti' %> class="active" <% end %> href="#lti">LTI Integration</a></li>
+      <li class="tab"><a <% if active_tab == 'oauth' %> class="active" <% end %> href="#oauth">OAuth Integration</a></li>
+      <li class="tab"><a <% if active_tab == 'ec2' %> class="active" <% end %> href="#ec2">EC2 Limits</a></li>
     </ul>
   </div>
   <div id="github" class="col s12">
@@ -25,5 +26,8 @@
   </div>
   <div id="oauth" class="col s12">
     <%= render partial: 'oauth_integration' %>
+  </div>
+  <div id="ec2" class="col s12">
+    <%= render partial: 'ec2_config' %>
   </div>
 </div>

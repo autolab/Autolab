@@ -27,21 +27,23 @@ class FileManagerController < ApplicationController
       end
     end
     absolute_path = check_path_exist(path)
-    if (File.directory?(absolute_path) && check_instructor(absolute_path)) ||
+    if (directory_path?(absolute_path) && check_instructor(absolute_path)) ||
        (path == "" && is_instructor_of_any_course)
       populate_directory(absolute_path, new_url)
       render 'file_manager/index'
-    elsif File.file?(absolute_path) && check_instructor(absolute_path)
-      if File.size(absolute_path) > 1_000_000 || params[:download]
-        send_file absolute_path
+    elsif file_path?(absolute_path) && check_instructor(absolute_path)
+      if file_size_bytes(absolute_path).to_i > 1_000_000 || params[:download]
+        stream_file_with_fallback(absolute_path,
+                                  filename: File.basename(absolute_path),
+                                  disposition: 'attachment')
       elsif !is_binary_file?(absolute_path)
         @path = path
-        @file = absolute_path.read
+        @file = read_binary_file(absolute_path)&.force_encoding("UTF-8")
         render :file, formats: :html
       else
-        send_file(absolute_path,
-                  filename: File.basename(absolute_path),
-                  disposition: 'attachment')
+        stream_file_with_fallback(absolute_path,
+                                  filename: File.basename(absolute_path),
+                                  disposition: 'attachment')
       end
     else
       flash[:error] = "You are not authorized to view this path"
@@ -59,10 +61,43 @@ class FileManagerController < ApplicationController
       parent = absolute_path.parent
       raise "Unable to delete courses in the root directory." if parent == BASE_DIRECTORY
 
-      FileUtils.rm_rf(absolute_path)
+      unless remove_path_with_delegate_fallback(absolute_path)
+        raise SystemCallError, "Delete operation did not remove #{absolute_path}"
+      end
+
+      respond_to do |format|
+        format.html do
+          flash[:success] = "Deleted successfully."
+          redirect_to(file_manager_index_path(path: parent.relative_path_from(BASE_DIRECTORY).to_s))
+        end
+        format.json { render json: { success: true }, status: :ok }
+        format.js { head :ok }
+      end
     else
       flash[:error] = "You are not authorized to delete this"
-      redirect_to root_path
+      respond_to do |format|
+        format.html { redirect_to root_path }
+        format.json { render json: { success: false, error: flash[:error] }, status: :forbidden }
+        format.js { head :forbidden }
+      end
+    end
+  rescue Errno::EACCES, Errno::EPERM
+    flash[:error] = "Unable to delete this path due to filesystem permissions."
+    respond_to do |format|
+      format.html { redirect_to root_path }
+      format.json {
+        render json: { success: false, error: flash[:error] }, status: :unprocessable_entity
+      }
+      format.js { head :unprocessable_entity }
+    end
+  rescue StandardError => e
+    flash[:error] = "Unable to delete this path. (#{e.message})"
+    respond_to do |format|
+      format.html { redirect_to root_path }
+      format.json {
+        render json: { success: false, error: flash[:error] }, status: :unprocessable_entity
+      }
+      format.js { head :unprocessable_entity }
     end
   end
 
@@ -85,12 +120,23 @@ class FileManagerController < ApplicationController
         end
 
         new_path = safe_expand_path("#{dir_name}/#{params[:new_name]}")
-        parent = new_path.split[0..-2].join('/')
+        parent = new_path.dirname
 
-        raise ArgumentError, "A file with that name already exists" if File.exist?(new_path)
+        raise ArgumentError, "A file with that name already exists" if path_exists?(new_path)
 
-        FileUtils.mkdir_p(parent)
-        FileUtils.mv(absolute_path, new_path)
+        create_directory_path(parent)
+
+        # Under the delegated permission model, source/parent paths can be unreadable/unwritable
+        # to the webapp process. Best-effort permission repair before moving.
+        FilesystemEnforcer.fix_path(absolute_path.to_s)
+        FilesystemEnforcer.fix_path(absolute_path.parent.to_s)
+        FilesystemEnforcer.fix_path(parent.to_s)
+
+        unless move_path_with_delegate_fallback(absolute_path, new_path)
+          raise SystemCallError, "Rename operation failed from #{absolute_path} to #{new_path}"
+        end
+
+        FilesystemEnforcer.fix_path(new_path.to_s)
         flash[:success] = "Successfully renamed file to #{params[:new_name]}"
       end
     else
@@ -99,6 +145,10 @@ class FileManagerController < ApplicationController
     end
   rescue ArgumentError => e
     flash[:error] = e.message
+  rescue Errno::EACCES, Errno::EPERM
+    flash[:error] = "Unable to rename this path due to filesystem permissions."
+  rescue SystemCallError => e
+    flash[:error] = "Unable to rename this path. (#{e.message})"
   end
 
   def download_tar
@@ -128,9 +178,9 @@ class FileManagerController < ApplicationController
                   type: "application/x-tar",
                   disposition: "attachment"
       else
-        send_file(absolute_path,
-                  filename: File.basename(absolute_path),
-                  disposition: 'attachment')
+        stream_file_with_fallback(absolute_path,
+                                  filename: File.basename(absolute_path),
+                                  disposition: 'attachment')
       end
     else
       flash[:error] = "You are not authorized to download attachments at this path"
@@ -145,10 +195,10 @@ class FileManagerController < ApplicationController
         "#{view_context.link_to 'here', new_course_url, method: 'get'}" \
         " if you want to create a new course."
     else
-      raise ActionController::ForbiddenError unless File.directory?(absolute_path)
+      raise ActionController::ForbiddenError unless directory_path?(absolute_path)
 
       if check_instructor(absolute_path) && !params[:name].nil?
-        all_filenames = Dir.entries(absolute_path)
+        all_filenames = directory_entries(absolute_path)
         if params[:name] != ""
           if all_filenames.include?(params[:name].to_s)
             raise "File with name #{input_file.original_filename} already exists."
@@ -156,7 +206,8 @@ class FileManagerController < ApplicationController
 
           # Creating a folder
           dir = "#{absolute_path}/#{params[:name]}"
-          FileUtils.mkdir_p(dir)
+          create_directory_path(dir)
+          FilesystemEnforcer.fix_path(dir)
 
         else
           # Uploading a file
@@ -167,9 +218,9 @@ class FileManagerController < ApplicationController
           elsif input_file.size >= 1.gigabyte
             raise "File size is too large. Upload a file that is smaller than 1 GB."
           else
-            File.open(Rails.root.join(absolute_path, input_file.original_filename), 'wb') do |file|
-              file.write(input_file.read)
-            end
+            dest = absolute_path.join(input_file.original_filename)
+            write_binary_file(dest, input_file.read)
+            FilesystemEnforcer.fix_path(dest.to_s)
           end
         end
       else
@@ -182,12 +233,16 @@ class FileManagerController < ApplicationController
 private
 
   def populate_directory(current_directory, current_url)
-    directory = Dir.entries(current_directory)
+    directory = directory_entries(current_directory)
     new_url = current_url == '/' ? '' : current_url
     @directory = directory.map do |file|
       abs_path_str = "#{current_directory}/#{file}"
-      stat = File.stat(abs_path_str)
-      is_file = stat.file?
+      stat = begin
+        File.stat(abs_path_str)
+      rescue StandardError
+        nil
+      end
+      is_file = stat ? stat.file? : file_path?(abs_path_str)
       if %w[. ..].include?(file)
         inst = true
         if current_directory == BASE_DIRECTORY
@@ -200,7 +255,7 @@ private
       {
         size: (if is_file
                  begin
-                   stat.size
+                   stat ? stat.size : file_size_bytes(abs_path_str)
                  rescue StandardError
                    '-'
                  end
@@ -209,7 +264,7 @@ private
                end),
         type: (is_file ? :file : :directory),
         date: begin
-          stat.mtime.strftime('%d %b %Y %H:%M')
+          stat ? stat.mtime.strftime('%d %b %Y %H:%M') : '-'
         rescue StandardError
           '-'
         end,
@@ -234,9 +289,111 @@ private
   def check_path_exist(path)
     @absolute_path = safe_expand_path(path)
     @relative_path = path
-    raise ActionController::RoutingError, 'Not Found' unless File.exist?(@absolute_path)
+    raise ActionController::RoutingError, 'Not Found' unless path_exists?(@absolute_path)
 
     @absolute_path
+  end
+
+  def path_exists?(path)
+    return false if path.nil?
+
+    return true if File.exist?(path)
+
+    return false unless UnixGroupManager.delegate_enabled?
+
+    entries = UnixGroupManager.list_dir_via_delegate(File.dirname(path.to_s))
+    entries&.include?(File.basename(path.to_s)) || false
+  rescue Errno::EACCES, Errno::EPERM
+    return false unless UnixGroupManager.delegate_enabled?
+
+    entries = UnixGroupManager.list_dir_via_delegate(File.dirname(path.to_s))
+    entries&.include?(File.basename(path.to_s)) || false
+  end
+
+  def directory_path?(path)
+    return true if File.directory?(path)
+    return false unless UnixGroupManager.delegate_enabled?
+
+    !UnixGroupManager.list_dir_via_delegate(path.to_s).nil?
+  rescue Errno::EACCES, Errno::EPERM
+    return false unless UnixGroupManager.delegate_enabled?
+
+    !UnixGroupManager.list_dir_via_delegate(path.to_s).nil?
+  end
+
+  def file_path?(path)
+    return false unless path_exists?(path)
+
+    !directory_path?(path)
+  end
+
+  def directory_entries(path)
+    Dir.entries(path)
+  rescue Errno::EACCES, Errno::EPERM
+    return [] unless UnixGroupManager.delegate_enabled?
+
+    entries = UnixGroupManager.list_dir_via_delegate(path.to_s) || []
+    [".", "..", *entries]
+  end
+
+  def file_size_bytes(path)
+    File.size(path)
+  rescue Errno::EACCES, Errno::EPERM
+    content = read_binary_file(path)
+    content ? content.bytesize : 0
+  end
+
+  def read_binary_file(path)
+    File.binread(path)
+  rescue Errno::EACCES, Errno::EPERM
+    return nil unless UnixGroupManager.delegate_enabled?
+
+    UnixGroupManager.read_file_via_delegate(path.to_s)
+  end
+
+  def create_directory_path(path)
+    FileUtils.mkdir_p(path)
+  rescue Errno::EACCES, Errno::EPERM
+    created = UnixGroupManager.mkdir_p_via_delegate(path.to_s, mode: 0o2770)
+    raise Errno::EACCES, "Permission denied creating directory #{path}" unless created
+  end
+
+  def write_binary_file(path, content)
+    File.binwrite(path, content)
+  rescue Errno::EACCES, Errno::EPERM
+    ok = UnixGroupManager.write_file_via_delegate(path.to_s, content)
+    raise Errno::EACCES, "Permission denied writing file #{path}" unless ok
+  end
+
+  def remove_path_with_delegate_fallback(path)
+    FileUtils.rm_r(path)
+    !path_exists?(path)
+  rescue Errno::EACCES, Errno::EPERM
+    return false unless UnixGroupManager.delegate_enabled?
+
+    deleted = UnixGroupManager.delegate_action("delete_path", path: path.to_s, recursive: true)
+    deleted && !path_exists?(path)
+  end
+
+  def move_path_with_delegate_fallback(src, dest)
+    FileUtils.mv(src, dest)
+    path_exists?(dest) && !path_exists?(src)
+  rescue Errno::EACCES, Errno::EPERM
+    return false unless UnixGroupManager.delegate_enabled?
+
+    moved = UnixGroupManager.delegate_action("move_path", src: src.to_s, dest: dest.to_s)
+    moved && path_exists?(dest) && !path_exists?(src)
+  end
+
+  def stream_file_with_fallback(path, filename:, disposition:)
+    send_file(path.to_s, filename:, disposition:)
+  rescue ActionController::MissingFile, Errno::EACCES, Errno::EPERM
+    content = read_binary_file(path)
+    raise ActionController::MissingFile, "Cannot read file #{path}" if content.nil?
+
+    send_data(content,
+              filename:,
+              disposition:)
   end
 
   def is_instructor_of_any_course

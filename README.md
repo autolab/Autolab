@@ -113,7 +113,6 @@ Autolab is released under the [Apache License 2.0](http://opensource.org/license
 
 Please feel free to use Autolab at your school/organization. If you run into any problems, you can reach the core developers at `autolab-dev@andrew.cmu.edu` and we would be happy to help. On a case-by-case basis, we also provide servers for free. (Especially if you are an NGO or small high-school classroom)
 
-
 ## Changelog
 
 ### [v3.0.0](https://github.com/autolab/Autolab/releases/tag/v3.0.0) (2024/07/24) UI-based deployment configuration, Simple File Manager, Export / Import Course, Tango, Grading Improvements
