@@ -1,4 +1,6 @@
 require "uri"
+require "digest"
+require "ipaddr"
 require "tango_client"
 require_relative Rails.root.join("config", "autogradeConfig.rb")
 
@@ -16,10 +18,34 @@ module AssessmentAutograde
   def autograde_done
     @assessment = @course.assessments.find_by(name: params[:name])
     head(:no_content) && return unless @assessment && @assessment.has_autograder?
+
+    # SECURITY: this route is unauthenticated, so the dave key is the ONLY thing
+    # proving the caller is Tango. Finished submissions have dave = NULL, so a
+    # missing/blank dave would otherwise match every graded submission in the DB.
+    dave = params[:dave].to_s
+    unless dave.match?(DAVE_KEY_FORMAT)
+      COURSE_LOGGER.log("autograde_done rejected: missing/malformed dave from #{request.remote_ip}")
+      head(:not_found) && return
+    end
+
+    unless tango_callback_ip_allowed?
+      COURSE_LOGGER.log("autograde_done rejected: IP #{request.remote_ip} not in TANGO_CALLBACK_ALLOWED_IPS")
+      head(:not_found) && return
+    end
+
     ASSESSMENT_LOGGER.setAssessment(@assessment)
 
-    # there can be multiple submission with the same dave if this was a group submission
-    submissions = Submission.where(dave: params[:dave]).all
+    # there can be multiple submission with the same dave if this was a group submission.
+    # Scope to this assessment so a key can never touch another assessment's submissions.
+    submissions = @assessment.submissions.where(dave: dave).to_a
+    if submissions.empty?
+      COURSE_LOGGER.log("autograde_done rejected: unknown dave from #{request.remote_ip}")
+      head(:not_found) && return
+    end
+    if params[:submission_id].present? && submissions.none? { |s| s.id.to_s == params[:submission_id].to_s }
+      COURSE_LOGGER.log("autograde_done rejected: submission_id #{params[:submission_id]} does not match dave")
+      head(:not_found) && return
+    end
 
     feedback_str = params[:file].read
 
@@ -264,5 +290,17 @@ submission_id: submissions[0].id, feedback: assessment.problems[0].id)}\">View a
 
   def _is_i?(value)
     value.is_a?(Integer) || (value.is_a?(String) && value =~ /\A[-+]?\d+\z/)
+  end
+
+  # Optional defense in depth for autograde_done: if TANGO_CALLBACK_ALLOWED_IPS
+  # is set (comma-separated IPs/CIDRs), only those addresses may call back.
+  def tango_callback_ip_allowed?
+    allowed = ENV["TANGO_CALLBACK_ALLOWED_IPS"].to_s.split(",").map(&:strip).reject(&:empty?)
+    return true if allowed.empty?
+
+    remote = IPAddr.new(request.remote_ip)
+    allowed.any? { |cidr| IPAddr.new(cidr).include?(remote) }
+  rescue IPAddr::InvalidAddressError
+    false
   end
 end

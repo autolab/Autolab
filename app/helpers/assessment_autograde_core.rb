@@ -1,4 +1,5 @@
 require "uri"
+require "securerandom"
 require "tango_client"
 require_relative Rails.root.join("config", "autogradeConfig.rb")
 
@@ -14,6 +15,10 @@ module AssessmentAutogradeCore
       super(msg)
     end
   end
+
+  # Dave keys are the per-job secret that authenticates Tango's callback to
+  # autograde_done. Legacy keys are 60 chars of A-Y; new keys are 64 hex chars.
+  DAVE_KEY_FORMAT = /\A[A-Za-z0-9]{40,255}\z/
 
   ##
   # sends an upload request for every file that needs to be uploaded.
@@ -76,6 +81,9 @@ module AssessmentAutogradeCore
     # Generate the dave number/string, this is used when autograding is done.
     # The key is not guaranteed to be unique, but it's gonna be unique.
     dave = (0...60).map { 65.+(rand(25)).chr }.join
+    # This key is the only credential protecting the unauthenticated
+    # autograde_done callback, so it must come from a CSPRNG.
+    dave = SecureRandom.hex(32)
 
     # save dave keys.  These let us know which submissions to save the autoresult for
     ActiveRecord::Base.transaction do
