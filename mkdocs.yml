@@ -44,7 +44,7 @@ nav:
             - Managing Authorized Apps: api-managing-authorized-apps.md
         - Tango API: tango-rest.md
         - Tango VMMS API: tango-vmms.md
-    - Developer: https://docs.autolabproject.com/developer/
+    - Developer: /developer/
 theme:
     name: material
     logo: "images/logo.svg"
