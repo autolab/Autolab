@@ -1,5 +1,6 @@
 require "uri"
 require "digest"
+require "ipaddr"
 require "tango_client"
 require_relative Rails.root.join("config/autogradeConfig.rb")
 
@@ -15,20 +16,37 @@ module AssessmentAutograde
   # action_no_auth :autograde_done
   def autograde_done
     @assessment = @course.assessments.find_by(name: params[:name])
-    head(:no_content) && return unless @assessment && @assessment.has_autograder?
+    head(:no_content) && return unless @assessment&.has_autograder?
+
+    # SECURITY: this route is unauthenticated, so the dave key is the ONLY thing
+    # proving the caller is Tango. Finished submissions have dave = NULL, so a
+    # missing/blank dave would otherwise match every graded submission in the DB.
+    dave = params[:dave].to_s
+    unless dave.match?(DAVE_KEY_FORMAT)
+      COURSE_LOGGER.log("autograde_done rejected: missing/malformed dave from #{request.remote_ip}")
+      head(:not_found) && return
+    end
+
+    unless tango_callback_ip_allowed?
+      COURSE_LOGGER.log("autograde_done rejected: IP #{request.remote_ip} not in TANGO_CALLBACK_ALLOWED_IPS")
+      head(:not_found) && return
+    end
 
     ASSESSMENT_LOGGER.setAssessment(@assessment)
 
-    # there can be multiple submission with the same dave if this was a group submission
-    submissions = Submission.where(dave: params[:dave]).all
-
-    payload_source = if params[:file].respond_to?(:read)
-                       :multipart_file
-                     elsif request.raw_post.present?
-                       :raw_post
-                     else
-                       :request_body
-                     end
+    # there can be multiple submission with the same dave if this was a group submission.
+    # Scope to this assessment so a key can never touch another assessment's submissions.
+    submissions = @assessment.submissions.where(dave:).to_a
+    if submissions.empty?
+      COURSE_LOGGER.log("autograde_done rejected: unknown dave from #{request.remote_ip}")
+      head(:not_found) && return
+    end
+    if params[:submission_id].present? && submissions.none? { |s|
+         s.id.to_s == params[:submission_id].to_s
+       }
+      COURSE_LOGGER.log("autograde_done rejected: submission_id #{params[:submission_id]} does not match dave")
+      head(:not_found) && return
+    end
 
     feedback_str = case payload_source
                    when :multipart_file
@@ -41,7 +59,8 @@ module AssessmentAutograde
 
     payload_bytes = feedback_str.to_s.bytesize
     payload_sha256 = Digest::SHA256.hexdigest(feedback_str.to_s)
-    payload_preview = feedback_str.to_s.encode("UTF-8", invalid: :replace, undef: :replace, replace: "?")
+    payload_preview = feedback_str.to_s.encode("UTF-8", invalid: :replace, undef: :replace,
+                                                        replace: "?")
     payload_preview = payload_preview[0, 500]
 
     COURSE_LOGGER.log("autograde_done payload source=#{payload_source} content_type=#{request.content_type} bytes=#{payload_bytes} sha256=#{payload_sha256}")
@@ -123,7 +142,7 @@ module AssessmentAutograde
                            else
                              params[:submission_ids]
                            end
-    rescue JSON::ParserError => e
+    rescue JSON::ParserError
       params[:submission_ids] || []
     end
 
@@ -133,7 +152,7 @@ module AssessmentAutograde
     # Now regrade only the most recent submissions. Keep track of
     # any handins that fail.
     submissions = submission_ids.filter_map do |sid|
-      _is_i?(sid) ? @assessment.submissions.find_by_id(sid) : nil
+      _is_i?(sid) ? @assessment.submissions.find_by(id: sid) : nil
     end.compact
     begin
       failed_list = sendJob_batch(@course, @assessment, submissions, @cud)
@@ -281,7 +300,7 @@ module AssessmentAutograde
         end
       when :missing_autograder_file
         flash[:error] =
-          "One or more files are missing in the server. Please contact the instructor. The missing files are: " + e.additional_data
+          "One or more files are missing in the server. Please contact the instructor. The missing files are: #{e.additional_data}"
       else
         flash[:error] = "Autograding failed because of an unexpected exception in the system."
       end
@@ -301,5 +320,17 @@ module AssessmentAutograde
 
   def _is_i?(value)
     value.is_a?(Integer) || (value.is_a?(String) && value =~ /\A[-+]?\d+\z/)
+  end
+
+  # Optional defense in depth for autograde_done: if TANGO_CALLBACK_ALLOWED_IPS
+  # is set (comma-separated IPs/CIDRs), only those addresses may call back.
+  def tango_callback_ip_allowed?
+    allowed = ENV["TANGO_CALLBACK_ALLOWED_IPS"].to_s.split(",").map(&:strip).reject(&:empty?)
+    return true if allowed.empty?
+
+    remote = IPAddr.new(request.remote_ip)
+    allowed.any? { |cidr| IPAddr.new(cidr).include?(remote) }
+  rescue IPAddr::InvalidAddressError
+    false
   end
 end

@@ -1,4 +1,5 @@
 require "uri"
+require "securerandom"
 require "tango_client"
 require_relative Rails.root.join("config/autogradeConfig.rb")
 require_relative "../services/filesystem_enforcer"
@@ -13,6 +14,10 @@ module AssessmentAutogradeCore
       super(msg)
     end
   end
+
+  # Dave keys are the per-job secret that authenticates Tango's callback to
+  # autograde_done. Legacy keys are 60 chars of A-Y; new keys are 64 hex chars.
+  DAVE_KEY_FORMAT = /\A[A-Za-z0-9]{40,255}\z/
 
   ##
   # sends an upload request for every file that needs to be uploaded.
@@ -71,13 +76,11 @@ module AssessmentAutogradeCore
       if f["remoteFile"].nil?
         f["remoteFile"] = File.basename(f["localFile"])
       end
-    end
 
-    # now actually send all of the upload requests
-    upload_file_list.each do |f|
+      # now actually send all of the upload requests
       bytes = file_bytes[f["localFile"]]
       md5hash = Digest::MD5.hexdigest(bytes)
-      next if existing_files.has_key?(f["remoteFile"]) &&
+      next if existing_files.key?(f["remoteFile"]) &&
               existing_files[f["remoteFile"]] == md5hash
 
       begin
@@ -111,9 +114,9 @@ module AssessmentAutogradeCore
   # Returns the dave key
   #
   def save_daves(submissions)
-    # Generate the dave number/string, this is used when autograding is done.
-    # The key is not guaranteed to be unique, but it's gonna be unique.
-    dave = (0...60).map { rand(65..89).chr }.join
+    # This key is the only credential protecting the unauthenticated
+    # autograde_done callback, so it must come from a CSPRNG.
+    dave = SecureRandom.hex(32)
 
     # save dave keys.  These let us know which submissions to save the autoresult for
     ActiveRecord::Base.transaction do
@@ -179,13 +182,13 @@ module AssessmentAutogradeCore
 
       # Order by job number to get the position in queue
       unassigned_jobs = unassigned_jobs.sort { |rjob1, rjob2| rjob1["id"].to_i - rjob2["id"].to_i }
-    rescue TangoClient::TangoException => e
+    rescue TangoClient::TangoException
       COURSE_LOGGER.log("Error while getting jobs")
       raise AutogradeError.new("Error while getting jobs", :get_job_status)
     end
 
     assignment = { "is_assigned" => assigned_jobs.any? { |rjob| rjob["id"].to_i == job_id } }
-    if !assignment["is_assigned"] && unassigned_jobs.length > 0
+    if !assignment["is_assigned"] && !unassigned_jobs.empty?
       # Assign a queue position if the job is live but not assigned
       assignment["queue_position"] = unassigned_jobs.index { |rjob| rjob["id"] == job_id }
       assignment["queue_length"] = unassigned_jobs.length
@@ -240,7 +243,7 @@ module AssessmentAutogradeCore
       Timeout.timeout(80) do
         loop do
           response = TangoClient.poll("#{course.name}-#{assessment.name}",
-                                      "#{URI.encode(output_file)}")
+                                      URI.encode(output_file).to_s)
           # json is returned when a job is not complete
           unless response.content_type == "application/json"
             feedback = response.body
@@ -302,7 +305,7 @@ module AssessmentAutogradeCore
 
     submissions.each do |submission|
       unless submission
-        failed_list << { submission: submission,
+        failed_list << { submission:,
                          error: AutogradeError.new("Invalid submission", :nil_submission) }
         next
       end
@@ -315,7 +318,7 @@ module AssessmentAutogradeCore
         # no autograding properties for this assessment
 
         # autograding failed
-        failed_list << { submission: submission, error: e }
+        failed_list << { submission:, error: e }
       end
     end
 
@@ -417,12 +420,12 @@ module AssessmentAutogradeCore
   def autogradeDone(submissions, feedback)
     submissions.each do |submission|
       feedback_file = submission.create_user_directory_and_return_autograde_feedback_path
-      COURSE_LOGGER.log("Looking for feedback file:" + feedback_file)
+      COURSE_LOGGER.log("Looking for feedback file:#{feedback_file}")
 
       feedback.force_encoding("UTF-8")
       if !feedback.valid_encoding?
         feedback.force_encoding("ASCII-8BIT")
-        hexify = proc { |c| "\\x" + c.bytes[0].to_s(16) }
+        hexify = proc { |c| "\\x#{c.bytes[0].to_s(16)}" }
         feedback = feedback.encode("UTF-8", invalid: :replace, fallback: hexify)
       end
 
@@ -437,7 +440,9 @@ module AssessmentAutogradeCore
         if UnixGroupManager.delegate_enabled?
           parent_dir = File.dirname(feedback_file)
           created_dir = UnixGroupManager.mkdir_p_via_delegate(parent_dir)
-          wrote_via_delegate = created_dir && UnixGroupManager.write_file_via_delegate(feedback_file, feedback)
+          wrote_via_delegate = created_dir && UnixGroupManager.write_file_via_delegate(
+            feedback_file, feedback
+          )
         end
 
         unless wrote_via_delegate
@@ -493,7 +498,7 @@ module AssessmentAutogradeCore
                else
                  parseAutoresult(autoresult, true)
                end
-      if scores.keys.length == 0
+      if scores.keys.empty?
         raise AutogradeError.new("Empty autoresult string",
                                  :empty_autoresult)
       end

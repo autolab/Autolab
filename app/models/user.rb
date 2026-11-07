@@ -3,6 +3,12 @@
 # the CourseUserData join table.
 #
 class User < ApplicationRecord
+  COURSE_EXPORT_FIELDS = %i[
+    email first_name last_name created_at updated_at school major year
+    hover_assessment_date
+  ].freeze
+  COURSE_EXPORT_REFERENCES = {}.freeze
+
   # Include default devise modules. Others available are:
   # :confirmable, :lockable, :timeoutable and :omniauthable
   devise :database_authenticatable, :registerable,

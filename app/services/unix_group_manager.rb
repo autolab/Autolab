@@ -751,6 +751,7 @@ class UnixGroupManager
     if delegate_enabled?
       return delegate_action("add_user_to_group", username:, group_name:)
     end
+    return true if should_skip_operations?
 
     # Check if user is already in group
     stdout, _, status = Open3.capture3("id", "-nG", username)
@@ -776,6 +777,7 @@ class UnixGroupManager
     if delegate_enabled?
       return delegate_action("remove_user_from_group", username:, group_name:)
     end
+    return true if should_skip_operations?
 
     # Remove user from group using gpasswd
     _, stderr, status = Open3.capture3("gpasswd", "-d", username, group_name)

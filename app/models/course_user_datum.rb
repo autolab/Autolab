@@ -2,6 +2,16 @@ require "association_cache"
 require_relative "../services/unix_group_manager"
 
 class CourseUserDatum < ApplicationRecord
+  COURSE_EXPORT_FIELDS = %i[
+    lecture section grade_policy created_at updated_at instructor dropped nickname
+    course_assistant course_number
+  ].freeze
+  COURSE_EXPORT_REFERENCES = {
+    course_id: :courses,
+    user_id: :users,
+    tweak_id: :score_adjustments
+  }.freeze
+
   class AuthenticationFailed < RuntimeError
     attr_reader :user_message, :dev_message
 
@@ -259,7 +269,8 @@ class CourseUserDatum < ApplicationRecord
   # global grace left cache key
   def ggl_cache_key
     # gets it into the YYYYMMDDHHMMSS form
-    dua = course.cgdub_dependencies_updated_at.utc.to_s(:number)
+    dependency_timestamp = course.cgdub_dependencies_updated_at || Time.at(0).utc
+    dua = dependency_timestamp.utc.to_s(:number)
 
     "ggl/dua-#{dua}/u-#{id}"
   end

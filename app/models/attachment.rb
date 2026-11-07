@@ -6,6 +6,14 @@ require "utilities"
 # handout files to students through Autolab.
 #
 class Attachment < ApplicationRecord
+  COURSE_EXPORT_FIELDS = %i[
+    filename mime_type name created_at updated_at category_name release_at
+  ].freeze
+  COURSE_EXPORT_REFERENCES = {
+    course_id: :courses,
+    assessment_id: :assessments
+  }.freeze
+
   include FriendlyId
   friendly_id :slug_candidates, use: :slugged
   after_create :initialize_slug
