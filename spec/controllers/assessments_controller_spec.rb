@@ -212,4 +212,113 @@ RSpec.describe AssessmentsController, type: :controller do
       end
     end
   end
+
+  describe "log_submit" do
+    context "when the date is inside of the assessment period" do
+      let!(:course_hash) { create_course_with_users_as_hash }
+      let!(:valid_assessment) do
+        assessment_path = Rails.root.join("courses/#{course_hash[:course].name}/assessment_valid")
+        FileUtils.mkdir_p(assessment_path)
+        FileUtils.mkdir_p("#{assessment_path}/handin")
+        assessment = FactoryBot.create(
+          :assessment,
+          name: "assessment_valid",
+          course: course_hash[:course],
+          start_at: 2.days.ago,
+          due_at: 1.day.from_now,
+          end_at: 2.days.from_now,
+          allow_unofficial: true
+        )
+        assessment.save!
+        assessment
+      end
+
+      it "allows a valid log submission" do
+        user = course_hash[:students_cud].first
+        params = {
+          course_name: course_hash[:course].name,
+          name: valid_assessment.name,
+          user: user.email,
+          result: "test result"
+        }
+        post(:log_submit, params:)
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to eq("OK")
+      end
+    end
+
+    context "when the submission is before the start date" do
+      let!(:course_hash) { create_course_with_users_as_hash }
+      let!(:invalid_assessment) do
+        assessment_path = Rails.root.join(
+          "courses/#{course_hash[:course].name}/assessment_invalid_date"
+        )
+        FileUtils.mkdir_p(assessment_path)
+        FileUtils.mkdir_p("#{assessment_path}/handin")
+        assessment = FactoryBot.create(
+          :assessment,
+          name: "assessment_invalid_date",
+          course: course_hash[:course],
+          start_at: 1.day.from_now,
+          due_at: 2.days.from_now,
+          end_at: 3.days.from_now,
+          allow_unofficial: true
+        )
+        assessment.save!
+        assessment
+      end
+
+      it "rejects a log submission for having invalid dates" do
+        user = course_hash[:students_cud].first
+        params = {
+          course_name: course_hash[:course].name,
+          name: invalid_assessment.name,
+          user: user.email,
+          result: "test result"
+        }
+        post(:log_submit, params:)
+        expect(response).to have_http_status(:bad_request)
+        expect(response.body).to eq(
+          "ERROR: Submissions are not allowed outside the assessment period"
+        )
+      end
+    end
+
+    context "when the submission is after the end date" do
+      let!(:course_hash) { create_course_with_users_as_hash }
+      let!(:expired_assessment) do
+        assessment_path = Rails.root.join(
+          "courses/#{course_hash[:course].name}/assessment_expired"
+        )
+        FileUtils.mkdir_p(assessment_path)
+        FileUtils.mkdir_p("#{assessment_path}/handin")
+        assessment = FactoryBot.create(
+          :assessment,
+          name: "assessment_expired",
+          course: course_hash[:course],
+          start_at: 3.days.ago,
+          due_at: 2.days.ago,
+          end_at: 1.day.ago,
+          allow_unofficial: true
+        )
+        assessment.save!
+        assessment
+      end
+
+      it "rejects a log submission for having invalid dates" do
+        user = course_hash[:students_cud].first
+        params = {
+          course_name: course_hash[:course].name,
+          name: expired_assessment.name,
+          user: user.email,
+          result: "test result"
+        }
+        post(:log_submit, params:)
+        expect(response).to have_http_status(:bad_request)
+        expect(response.body).to eq(
+          "ERROR: Submissions are not allowed outside the assessment period"
+        )
+      end
+    end
+  end
 end
