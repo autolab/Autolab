@@ -15,6 +15,9 @@ class SubmissionsController < ApplicationController
                                           tweak_total]
   before_action :get_submission_file, only: %i[download view]
 
+  protect_from_forgery with: :exception, except: %i[destroy_batch excuse_batch]
+  before_action :verify_authenticity_token, only: %i[destroy_batch excuse_batch], if: :json_request?
+
   action_auth_level :index, :instructor
   def index
     # cache ids instead of entire entries
@@ -79,7 +82,8 @@ class SubmissionsController < ApplicationController
                    scores: submission_id_to_score_data,
                    tweaks: }, status: :ok
   rescue StandardError => e
-    render json: { error: e.message }, status: :not_found
+    Rails.logger.error("Score details error: #{e.message}")
+    render json: { error: "Unable to retrieve submission details" }, status: :not_found
     nil
   end
 
@@ -221,37 +225,40 @@ class SubmissionsController < ApplicationController
       return
     end
 
+    # Verify all submissions belong to the current assessment (and therefore course), so that
+    # we know the user is an instructor for the course that the submissions belong to.
+    allowed = true
     submissions.each do |s|
-      if s.nil?
-        next
-      end
+      next if !s.nil? && s.assessment == @assessment
 
-      unless @cud.instructor || @cud.course_assistant || s.course_user_datum_id == @cud.id
-        flash[:error] =
-          "You do not have permission to delete #{s.course_user_datum.user.email}'s submission."
-        redirect_to(course_assessment_submissions_path(submissions[0].course_user_datum.course,
-                                                       submissions[0].assessment)) && return
-      end
-      if s.destroy
-        scount += 1
-      else
-        fcount += 1
-      end
+      flash[:error] = "You don't have permission to delete these submissions."
+      allowed = false
+      break
     end
-    if fcount == 0
-      flash[:success] =
-        "#{ActionController::Base.helpers.pluralize(scount,
-                                                    'submission')} destroyed.
-                                                    #{ActionController::Base.helpers.pluralize(
-                                                      fcount, 'submission'
-                                                    )} failed."
-    else
-      flash[:error] =
-        "#{ActionController::Base.helpers.pluralize(scount,
-                                                    'submission')} destroyed.
-                                                    #{ActionController::Base.helpers.pluralize(
-                                                      fcount, 'submission'
-                                                    )} failed."
+
+    if allowed
+      submissions.each do |s|
+        if s.destroy
+          scount += 1
+        else
+          fcount += 1
+        end
+      end
+      if fcount == 0
+        flash[:success] =
+          "#{ActionController::Base.helpers.pluralize(scount,
+                                                      'submission')} destroyed.
+                                                      #{ActionController::Base.helpers.pluralize(
+                                                        fcount, 'submission'
+                                                      )} failed."
+      else
+        flash[:error] =
+          "#{ActionController::Base.helpers.pluralize(scount,
+                                                      'submission')} destroyed.
+                                                      #{ActionController::Base.helpers.pluralize(
+                                                        fcount, 'submission'
+                                                      )} failed."
+      end
     end
     respond_to do |format|
       format.html { redirect_to [@course, @assessment, :submissions] }
@@ -259,7 +266,8 @@ class SubmissionsController < ApplicationController
     end
   end
 
-  # this is good
+  # page to show to instructor to confirm that they would like to
+  # remove a given submission for a student
   action_auth_level :destroyConfirm, :instructor
   def destroyConfirm; end
 
@@ -364,13 +372,19 @@ class SubmissionsController < ApplicationController
       return
     end
 
+    allowed = true
+    # Check permissions for all submissions before processing any
+    submissions.each do |s|
+      next if !s.nil? && s.assessment == @assessment
+
+      flash[:error] = "You don't have permission to download these submissions."
+      allowed = false
+      break
+    end
+
+    return unless allowed
+
     filedata = submissions.collect do |s|
-      unless @cud.instructor || @cud.course_assistant || s.course_user_datum_id == @cud.id
-        flash[:error] =
-          "You do not have permission to download #{s.course_user_datum.user.email}'s submission."
-        redirect_to(course_assessment_submissions_path(submissions[0].course_user_datum.course,
-                                                       submissions[0].assessment)) && return
-      end
       p = s.handin_file_path
       email = s.course_user_datum.user.email
       [p, download_filename(p, email)] if !p.nil? && File.exist?(p) && File.readable?(p)
@@ -389,7 +403,7 @@ class SubmissionsController < ApplicationController
               filename: "#{@course.name}_#{@course.semester}_#{@assessment.name}_submissions.zip")
   end
 
-  action_auth_level :submission_info, :instructor
+  action_auth_level :tweak_total, :instructor
   def tweak_total
     tweak =
       @submission.global_annotations.empty? ? nil : @submission.global_annotations.sum(:value)
@@ -888,6 +902,10 @@ class SubmissionsController < ApplicationController
   end
 
 private
+
+  def json_request?
+    request.format.json?
+  end
 
   def appropriate_redirect_path
     if @cud.course_assistant
