@@ -114,6 +114,8 @@ module AssessmentAutogradeCore
   # Returns the dave key
   #
   def save_daves(submissions)
+    # Generate the dave number/string, this is used when autograding is done.
+    # The key is not guaranteed to be unique, but it's gonna be unique.
     # This key is the only credential protecting the unauthenticated
     # autograde_done callback, so it must come from a CSPRNG.
     dave = SecureRandom.hex(32)

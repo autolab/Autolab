@@ -32,6 +32,21 @@ module AssessmentAutograde
       head(:not_found) && return
     end
 
+    # SECURITY: this route is unauthenticated, so the dave key is the ONLY thing
+    # proving the caller is Tango. Finished submissions have dave = NULL, so a
+    # missing/blank dave would otherwise match every graded submission in the DB.
+    dave = params[:dave].to_s
+    unless dave.match?(DAVE_KEY_FORMAT)
+      COURSE_LOGGER.log("autograde_done rejected: missing/malformed dave from #{request.remote_ip}")
+      head(:not_found) && return
+    end
+
+    unless tango_callback_ip_allowed?
+      COURSE_LOGGER.log("autograde_done rejected: IP #{request.remote_ip} " \
+                        "not in TANGO_CALLBACK_ALLOWED_IPS")
+      head(:not_found) && return
+    end
+
     ASSESSMENT_LOGGER.setAssessment(@assessment)
 
     # there can be multiple submission with the same dave if this was a group submission.
@@ -41,12 +56,20 @@ module AssessmentAutograde
       COURSE_LOGGER.log("autograde_done rejected: unknown dave from #{request.remote_ip}")
       head(:not_found) && return
     end
-    if params[:submission_id].present? && submissions.none? { |s|
-         s.id.to_s == params[:submission_id].to_s
-       }
-      COURSE_LOGGER.log("autograde_done rejected: submission_id #{params[:submission_id]} does not match dave")
+    submission_id = params[:submission_id].to_s
+    if submission_id.present? && submissions.none? { |s| s.id.to_s == submission_id }
+      COURSE_LOGGER.log("autograde_done rejected: submission_id #{submission_id} " \
+                        "does not match dave")
       head(:not_found) && return
     end
+
+    payload_source = if params[:file].respond_to?(:read)
+                       :multipart_file
+                     elsif request.raw_post.present?
+                       :raw_post
+                     else
+                       :request_body
+                     end
 
     feedback_str = case payload_source
                    when :multipart_file
