@@ -24,12 +24,17 @@
 }
 
 .ssm-prompts {
+  width: 100%;
   margin-bottom: 0;
 }
 
 .ssm-prompts td {
-  padding: 0.3em 1em 0.3em 0;
+  padding: 0.6em 1em 0.6em 0;
   vertical-align: middle;
+}
+
+.ssm-prompts td:last-child {
+  padding-right: 0;
 }
 
 // A command inside a sentence; the margin keeps the surrounding words from
@@ -51,6 +56,7 @@
 .ssm-prompt-value {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 0.5em;
 }
 
@@ -58,15 +64,111 @@
   padding-top: 1.5em;
 }
 
-// Transfer Files sits below the main connection steps on ACCESS, so it is
-// set apart and kept a little quieter.
-.ssm-transfer {
-  margin-top: 2.5em;
+.ssm-step + .ssm-step {
+  margin-top: 2em;
   padding-top: 1.5em;
   border-top: 1px solid #e0e0e0;
+}
 
-  pre {
-    font-size: 0.9em;
+.ssm-transfer pre {
+  font-size: 0.9em;
+}
+
+.ssm-transfer-options {
+  overflow: hidden;
+  transition: height 0.3s ease;
+}
+
+.ssm-transfer-option {
+  animation: ssm-fade-in 0.3s ease;
+}
+
+@keyframes ssm-fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.ssm-collapsible {
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+}
+
+.ssm-collapsible-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0.75em 1em;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-weight: bold;
+  text-align: left;
+  cursor: pointer;
+
+  transition: color 0.28s ease, background-color 0.28s ease;
+
+  &:focus {
+    background-color: transparent;
+  }
+
+  &:focus-visible {
+    outline: 2px solid #dd2222;
+    outline-offset: -2px;
+  }
+
+  &:hover {
+    color: #dd2222;
+    background-color: rgba(221, 34, 34, 0.05);
+  }
+}
+
+.ssm-collapsible {
+  transition: border-color 0.28s ease;
+
+  &:has(.ssm-collapsible-toggle:hover) {
+    border-color: rgba(221, 34, 34, 0.4);
+  }
+}
+
+.ssm-collapsible-arrow {
+  transition: transform 0.3s ease;
+}
+
+.ssm-collapsible-body {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.3s ease;
+}
+
+.ssm-collapsible-inner {
+  min-height: 0;
+  overflow: hidden;
+  visibility: hidden;
+  transition: visibility 0s linear 0.3s;
+}
+
+.ssm-collapsible-content {
+  padding: 0 1em 1em;
+}
+
+.ssm-collapsible.open {
+  .ssm-collapsible-arrow {
+    transform: rotate(180deg);
+  }
+
+  .ssm-collapsible-body {
+    grid-template-rows: 1fr;
+  }
+
+  .ssm-collapsible-inner {
+    visibility: visible;
+    transition-delay: 0s;
   }
 }
 
@@ -86,6 +188,22 @@
 
   .btn-flat.active {
     font-weight: bold;
-    border-bottom-color: currentColor;
+  }
+}
+
+.ssm-subnav {
+  position: relative;
+}
+
+.ssm-subnav-indicator {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background-color: #343434;
+
+  &.ready {
+    transition: left 0.3s ease, width 0.3s ease;
   }
 }

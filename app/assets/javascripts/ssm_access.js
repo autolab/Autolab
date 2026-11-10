@@ -193,9 +193,30 @@ function renderTransferCommands(username, instanceId, profile, regionFlag) {
 
 // Show one of the Transfer Files options on the ACCESS tab.
 function showTransferOption(optionId) {
+    const container = document.querySelector(".ssm-transfer-options");
+    const startHeight = container.offsetHeight;
+
     document.querySelectorAll(".ssm-transfer-option").forEach(function(panel) {
         panel.style.display = panel.id === optionId ? "" : "none";
     });
+
+    container.style.height = "";
+    const endHeight = container.offsetHeight;
+
+    if (startHeight !== endHeight) {
+        container.style.height = startHeight + "px";
+        container.offsetHeight;
+        container.style.height = endHeight + "px";
+
+        container.addEventListener("transitionend", function done(event) {
+            if (event.target !== container) {
+                return;
+            }
+
+            container.style.height = "";
+            container.removeEventListener("transitionend", done);
+        });
+    }
 
     document.querySelectorAll("[data-transfer-option]").forEach(function(button) {
         const selected = button.dataset.transferOption === optionId;
@@ -203,7 +224,36 @@ function showTransferOption(optionId) {
         button.classList.toggle("active", selected);
         button.setAttribute("aria-pressed", selected ? "true" : "false");
     });
+
+    moveTransferIndicator();
 }
+
+function toggleCollapsible(button) {
+    const open = button.closest(".ssm-collapsible").classList.toggle("open");
+
+    button.setAttribute("aria-expanded", open ? "true" : "false");
+
+    moveTransferIndicator();
+}
+
+function moveTransferIndicator() {
+    const indicator = document.querySelector(".ssm-subnav-indicator");
+    const active = document.querySelector("[data-transfer-option].active");
+
+    if (!indicator || !active || active.offsetWidth === 0) {
+        return;
+    }
+
+    indicator.style.left = active.offsetLeft + "px";
+    indicator.style.width = active.offsetWidth + "px";
+
+    if (!indicator.classList.contains("ready")) {
+        indicator.offsetWidth;
+        indicator.classList.add("ready");
+    }
+}
+
+window.addEventListener("resize", moveTransferIndicator);
 
 // Picks up the username and instance ID from a Tango response when the
 // page was rendered without them.
