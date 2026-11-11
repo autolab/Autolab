@@ -90,7 +90,7 @@ class ContainerImagesController < ApplicationController
       updated_status = resp["status"]
       @container_image.update!(status: updated_status, build_logs: resp["logs"])
       if updated_status == 2
-        @container_image.update!(image_uri: resp["image_uri"])
+        @container_image.mark_built!(resp["image_uri"])
       end
     rescue TangoClient::TangoException => e
       flash[:error] = "Error while refreshing docker image build status: #{e.message}"
@@ -127,7 +127,7 @@ private
           updated_status = updated_image["statusId"]
           image.update!(status: updated_status, build_logs: updated_image["logs"])
           if updated_status == 2
-            image.update!(image_uri: updated_image["ecrImageUri"])
+            image.mark_built!(updated_image["ecrImageUri"])
           end
         end
       end
@@ -139,15 +139,8 @@ private
   end
 
   def container_image_params;
-    params.require(:container_image).permit(
-      :name,
-      :status,
-      :image_uri,
-      :build_id,
-      :course_id,
-      :is_public,
-      :dockerfile,
-      :public_template_id
-    )
+    permitted = %i[name status image_uri build_id course_id is_public dockerfile]
+    permitted << :public_template_id if ContainerImage::TEMPLATES_ENABLED
+    params.require(:container_image).permit(*permitted)
   end
 end

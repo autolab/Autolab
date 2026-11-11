@@ -36,7 +36,9 @@ module CourseArchive
       rows = Records.read(root)
       rows = Selection.from_rows(rows, user_ids:, assessment_ids:)
       Records.validate!(rows)
-      Restore.new(root, rows).call(identifier:, display_name:, instructor_email:)
+      course = Restore.new(root, rows).call(identifier:, display_name:, instructor_email:)
+      ImageRebuild.call(course)
+      course
     end
   end
 end
@@ -48,3 +50,4 @@ require_relative "course_archive/records"
 require_relative "course_archive/content"
 require_relative "course_archive/import_files"
 require_relative "course_archive/restore"
+require_relative "course_archive/image_rebuild"

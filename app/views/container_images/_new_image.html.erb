@@ -6,7 +6,7 @@
                      help_text: "Name of Docker image. Use lowercase letters (a-z), numbers (0-9), " \
                        "underscores (_) or hyphens (-). Must start and end with a letter or " \
                        "number. Existing images with the same name are overwritten." %>
-    <% unless admin %>
+    <% if !admin && ContainerImage::TEMPLATES_ENABLED %>
       <div class="select-field-label">Template Autograder Image</div>
       <%= f.select :public_template_id,
                    options_from_collection_for_select(
