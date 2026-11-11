@@ -34,6 +34,8 @@ module Admin
         return
       end
 
+      @container_image.dockerfile_contents = dockerfile_content
+
       if @container_image.save
         begin
           resp = TangoClient.build_image(

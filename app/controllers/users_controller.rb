@@ -1,4 +1,5 @@
 require_relative "../services/unix_group_manager"
+require "tango_client"
 
 class UsersController < ApplicationController
   skip_before_action :set_course
@@ -547,7 +548,8 @@ class UsersController < ApplicationController
         @ssh_key.save!
         SshKey.provision_all_for_user(@user)
       end
-      flash[:success] = "SSH key added successfully. You can now SSH into the system."
+      flash[:success] = "SSH key added successfully. You can now use it for SSH and file " \
+                        "transfer through AWS Session Manager."
     rescue SshKey::ProvisioningError => e
       flash[:error] = "Failed to add SSH key: #{e.message}"
     rescue ActiveRecord::RecordInvalid => e
@@ -601,7 +603,186 @@ class UsersController < ApplicationController
     redirect_to(ssh_keys_user_path(user))
   end
 
+  action_auth_level :ssm_access, :instructor
+  def ssm_access
+    user = User.find_by(id: params[:user_id] || params[:id])
+    if user.nil?
+      flash[:error] = "User not found"
+      redirect_to(users_path) && return
+    end
+
+    # Only instructors can access via SSM
+    unless user.instructor? || current_user.administrator?
+      flash[:error] =
+        "Permission denied: AWS SSM access management is only available for course instructors."
+      redirect_to(user_path(user)) && return
+    end
+
+    # Users can only manage their own SSH keys, or admins can manage any instructor's keys
+    if user != current_user && !current_user.administrator?
+      flash[:error] = "Permission denied: you can only manage your own SSM access."
+      redirect_to(users_path) && return
+    end
+
+    @user = user
+    @username = user.unix_user
+    @default_username = @user.email
+    # Shown in the connection instructions, read from Tango's IAM config on
+    # every load. nil (e.g. Tango is down) hides them rather than guessing.
+    iam_config = begin
+      TangoClient.iam_config || {}
+    rescue StandardError => e
+      Rails.logger.error("Could not read IAM config from Tango: #{e.message}")
+      {}
+    end
+    @instance_id = iam_config["instanceId"].presence
+    @aws_region = iam_config["region"].presence
+    # SSH and file transfer over SSM need a key from the SSH Keys page.
+    @ssh_key_count = @user.ssh_keys.where(active: true).count
+  end
+
+  action_auth_level :create_iam_unix_user, :instructor
+  def create_iam_unix_user
+    user = User.find_by(id: params[:id])
+    if (error = ssm_access_error(user))
+      return render json: { error: }, status: :forbidden
+    end
+
+    username = UnixGroupManager.update_unix_user_mapping(user)
+
+    result = TangoClient.create_iam_user(
+      username,
+      username,
+      true
+    )
+
+    user.aws_job_id = result["jobId"]
+    user.aws_job_status = case result["statusId"]
+                          when 1
+                            "in_progress"
+                          when 2
+                            "success"
+                          when 255
+                            "failed"
+                          else
+                            "unknown"
+                          end
+
+    user.save!
+
+    render json: result
+  rescue StandardError => e
+    render json: { error: e.message }, status: :unprocessable_entity
+  end
+
+  action_auth_level :iam_unix_user_status, :instructor
+  def iam_unix_user_status
+    user = User.find_by(id: params[:id])
+    if (error = ssm_access_error(user))
+      return render json: { error: }, status: :forbidden
+    end
+
+    if user.aws_job_id.blank?
+      return render json: {
+        error: "No AWS job found for this user"
+      }, status: :not_found
+    end
+
+    result = TangoClient.iam_unix_user_status(user.aws_job_id)
+
+    user.aws_job_status = case result["statusId"]
+                          when 1
+                            "in_progress"
+                          when 2
+                            "success"
+                          when 255
+                            "failed"
+                          else
+                            "unknown"
+                          end
+
+    # The first poll to see the provision succeed: the Unix account exists
+    # now, so set up the course access that was skipped while it did not.
+    first_success = result["statusId"] == 2 && user.iam_user_created_at.blank?
+    user.iam_user_created_at = Time.current if first_success
+
+    user.save!
+
+    sync_instructor_course_access(user) if first_success
+
+    render json: result
+  rescue StandardError => e
+    render json: {
+      error: e.message
+    }, status: :unprocessable_entity
+  end
+
+  action_auth_level :regenerate_iam_access_key, :instructor
+  def regenerate_iam_access_key
+    user = User.find_by(id: params[:id])
+    if (error = ssm_access_error(user))
+      return render json: { error: }, status: :forbidden
+    end
+
+    unless user.iam_user_created_at.present?
+      return render json: {
+        error: "IAM user has not been created yet."
+      }, status: :unprocessable_entity
+    end
+
+    if user.aws_job_status == "in_progress"
+      return render json: {
+        error: "An AWS operation is already in progress."
+      }, status: :conflict
+    end
+
+    # Synchronous: Tango replaces the key and returns it in this response, so
+    # there is no job to record or poll.
+    result = TangoClient.regenerate_iam_access_key(user.unix_user)
+
+    render json: result
+  rescue StandardError => e
+    render json: {
+      error: e.message
+    }, status: :unprocessable_entity
+  end
+
 private
+
+  # Error message if the current user may not manage this user's IAM/Unix
+  # account, nil if they may. The same rules as ssm_access, for its JSON
+  # actions: this controller skips authenticate_for_action, so their
+  # action_auth_level is not enforced on its own.
+  def ssm_access_error(user)
+    return "User not found" if user.nil?
+
+    unless user.instructor? || current_user.administrator?
+      return "Permission denied: AWS SSM access management is only available " \
+             "for course instructors."
+    end
+
+    return nil if user == current_user || current_user.administrator?
+
+    "Permission denied: you can only manage your own SSM access."
+  end
+
+  # Add the user to their course groups and build ~/courses. Never raises: the
+  # status response it runs before can carry a one-time access key, which an
+  # error response would lose.
+  def sync_instructor_course_access(user)
+    user.course_user_data.where(instructor: true, dropped: [false, nil])
+        .includes(:course).find_each do |cud|
+      next if UnixGroupManager.update_course_staff_membership(cud.course, user, is_staff: true)
+
+      Rails.logger.error("Failed to add #{user.unix_user} to the Unix group for #{cud.course.name}")
+    end
+
+    return if UnixGroupManager.ensure_courses_directory(user, "/home/#{user.unix_user}")
+
+    Rails.logger.error("Failed to build ~/courses for #{user.unix_user}")
+  rescue StandardError => e
+    Rails.logger.error("sync_instructor_course_access failed for #{user.unix_user}: #{e.message}")
+  end
 
   # Given the path to a file, return the filename to use when the user downloads it
   # path should be of the form .../<ver>_<handin> or .../annotated_<ver>_<handin>

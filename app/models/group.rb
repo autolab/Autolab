@@ -1,4 +1,9 @@
 class Group < ApplicationRecord
+  COURSE_EXPORT_FIELDS = %i[
+    name created_at updated_at
+  ].freeze
+  COURSE_EXPORT_REFERENCES = {}.freeze
+
   has_many :assessment_user_data
   has_many :course_user_data, through: :assessment_user_data
   before_destroy :clear_members

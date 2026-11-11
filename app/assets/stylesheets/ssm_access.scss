@@ -1,0 +1,209 @@
+// Styles for users/ssm_access.html.erb
+
+.ssm-username {
+  font-size: 1.6em;
+  font-weight: bold;
+}
+
+.ssm-command {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  margin-bottom: 1em;
+}
+
+.ssm-command pre {
+  flex: 1;
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.ssm-section {
+  margin-top: 1.5em;
+}
+
+.ssm-prompts {
+  width: 100%;
+  margin-bottom: 0;
+}
+
+.ssm-prompts td {
+  padding: 0.6em 1em 0.6em 0;
+  vertical-align: middle;
+}
+
+.ssm-prompts td:last-child {
+  padding-right: 0;
+}
+
+// A command inside a sentence; the margin keeps the surrounding words from
+// running into its background.
+.ssm-inline-command {
+  margin: 0 0.3em;
+}
+
+.ssm-regenerate-button {
+  margin-top: 1.5em;
+}
+
+.ssm-credential-unavailable {
+  color: #757575;
+  font-style: italic;
+}
+
+// A value to enter at an aws configure prompt, with its COPY button.
+.ssm-prompt-value {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5em;
+}
+
+.ssm-panel {
+  padding-top: 1.5em;
+}
+
+.ssm-step + .ssm-step {
+  margin-top: 2em;
+  padding-top: 1.5em;
+  border-top: 1px solid #e0e0e0;
+}
+
+.ssm-transfer pre {
+  font-size: 0.9em;
+}
+
+.ssm-transfer-options {
+  overflow: hidden;
+  transition: height 0.3s ease;
+}
+
+.ssm-transfer-option {
+  animation: ssm-fade-in 0.3s ease;
+}
+
+@keyframes ssm-fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.ssm-collapsible {
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+}
+
+.ssm-collapsible-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0.75em 1em;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-weight: bold;
+  text-align: left;
+  cursor: pointer;
+
+  transition: color 0.28s ease, background-color 0.28s ease;
+
+  &:focus {
+    background-color: transparent;
+  }
+
+  &:focus-visible {
+    outline: 2px solid #dd2222;
+    outline-offset: -2px;
+  }
+
+  &:hover {
+    color: #dd2222;
+    background-color: rgba(221, 34, 34, 0.05);
+  }
+}
+
+.ssm-collapsible {
+  transition: border-color 0.28s ease;
+
+  &:has(.ssm-collapsible-toggle:hover) {
+    border-color: rgba(221, 34, 34, 0.4);
+  }
+}
+
+.ssm-collapsible-arrow {
+  transition: transform 0.3s ease;
+}
+
+.ssm-collapsible-body {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.3s ease;
+}
+
+.ssm-collapsible-inner {
+  min-height: 0;
+  overflow: hidden;
+  visibility: hidden;
+  transition: visibility 0s linear 0.3s;
+}
+
+.ssm-collapsible-content {
+  padding: 0 1em 1em;
+}
+
+.ssm-collapsible.open {
+  .ssm-collapsible-arrow {
+    transform: rotate(180deg);
+  }
+
+  .ssm-collapsible-body {
+    grid-template-rows: 1fr;
+  }
+
+  .ssm-collapsible-inner {
+    visibility: visible;
+    transition-delay: 0s;
+  }
+}
+
+.ssm-command-label {
+  margin: 0.5em 0 0.25em;
+  font-weight: bold;
+}
+
+.ssm-subnav {
+  margin-bottom: 1em;
+
+  .btn-flat {
+    text-transform: none;
+    border-bottom: 2px solid transparent;
+    border-radius: 0;
+  }
+
+  .btn-flat.active {
+    font-weight: bold;
+  }
+}
+
+.ssm-subnav {
+  position: relative;
+}
+
+.ssm-subnav-indicator {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background-color: #343434;
+
+  &.ready {
+    transition: left 0.3s ease, width 0.3s ease;
+  }
+}

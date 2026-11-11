@@ -7,6 +7,16 @@ require "association_cache"
 # submission of the user for an assessment.
 #
 class AssessmentUserDatum < ApplicationRecord
+  COURSE_EXPORT_FIELDS = %i[
+    created_at updated_at grade_type membership_status version_number
+  ].freeze
+  COURSE_EXPORT_REFERENCES = {
+    course_user_datum_id: :course_user_data,
+    assessment_id: :assessments,
+    latest_submission_id: :submissions,
+    group_id: :groups
+  }.freeze
+
   belongs_to :course_user_datum
   belongs_to :assessment
   belongs_to :latest_submission, class_name: "Submission"
@@ -275,7 +285,9 @@ protected
 
   def cgdub_cache_key
     # gets it into the YYYYMMDDHHMMSS form
-    dua = assessment.course.cgdub_dependencies_updated_at.utc.to_s(:number)
+    course = assessment.course
+    dependency_timestamp = course.cgdub_dependencies_updated_at || Time.at(0).utc
+    dua = dependency_timestamp.utc.to_s(:number)
 
     "cgdub/dua-#{dua}/u-#{course_user_datum_id}/a-#{assessment_id}"
   end

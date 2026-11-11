@@ -1,0 +1,554 @@
+<% iam_user_created = @user.iam_user_created_at.present? %>
+<% job_running = @user.aws_job_status.to_s == "in_progress" %>
+<%# Default tab: SET UP until the account exists or while a job runs, then
+    ACCESS. ?tab= (kept in sync by ssm_access.js) reopens the tab the user
+    was on, unless it is disabled because the account does not exist yet. %>
+<% requested_tab = "ssm-#{params[:tab]}" %>
+<% default_tab = if job_running || !iam_user_created
+                   "ssm-setup"
+                 elsif %w[ssm-setup ssm-access ssm-forgot].include?(requested_tab)
+                   requested_tab
+                 else
+                   "ssm-access"
+                 end %>
+<% aws_cli_install_url = "https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html" %>
+<% ssm_plugin_install_url = "https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html" %>
+<% ssm_docs_url = "https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager.html" %>
+
+<% content_for :stylesheets do %>
+  <%= stylesheet_link_tag "ssm_access" %>
+<% end %>
+
+<% content_for :javascripts do %>
+  <%= javascript_include_tag "ssm_access" %>
+<% end %>
+
+<h4>IAM & UNIX User Management</h4>
+
+<p>
+  Manage the AWS IAM user and corresponding Linux account for
+  <strong><%= @user.display_name %></strong>
+  (<%= @user.email %>).
+</p>
+
+<p>
+  You connect to the course EC2 instance through AWS Systems Manager Session
+  Manager (SSM), which opens a shell from the AWS CLI without SSH ports or
+  passwords. New to SSM? See
+  <a href="<%= ssm_docs_url %>" target="_blank" rel="noopener">What is Session Manager?</a>
+</p>
+
+<div
+  id="ssm-page"
+  class="row"
+  data-username="<%= @username %>"
+  data-instance-id="<%= @instance_id %>"
+  data-region="<%= @aws_region %>"
+  data-job-status="<%= @user.aws_job_status %>"
+  data-account-created="<%= iam_user_created %>"
+  data-status-url="<%= iam_unix_user_status_user_path(@user) %>">
+
+  <div class="col s12">
+    <%# ACCESS and FORGOT YOUR KEY? stay disabled until the account exists. %>
+    <ul class="tabs" id="ssm-tabs">
+      <li class="tab">
+        <a href="#ssm-setup" class="<%= "active" if default_tab == "ssm-setup" %>">SET UP</a>
+      </li>
+      <li class="tab <%= "disabled" unless iam_user_created %>" data-needs-account>
+        <a href="#ssm-access" class="<%= "active" if default_tab == "ssm-access" %>">ACCESS</a>
+      </li>
+      <li class="tab <%= "disabled" unless iam_user_created %>" data-needs-account>
+        <a href="#ssm-forgot" class="<%= "active" if default_tab == "ssm-forgot" %>">FORGOT YOUR KEY?</a>
+      </li>
+    </ul>
+  </div>
+
+  <div class="col s12">
+    <%# Shared by every tab, so a running operation is visible wherever the
+        user is. %>
+    <div
+      id="creation-error"
+      class="alert alert-danger"
+      style="display: none; margin-top: 1em;">
+    </div>
+
+    <div
+      id="creation-status"
+      class="alert alert-info"
+      style="display: none; margin-top: 1em;">
+      <strong id="status-title">In progress:</strong>
+      <span id="status-text">Starting...</span>
+    </div>
+  </div>
+
+  <%# ---------- TAB 1: SET UP ---------- %>
+  <div
+    id="ssm-setup"
+    class="col s12 ssm-panel"
+    style="<%= "display: none;" unless default_tab == "ssm-setup" %>">
+
+    <%# Shown until the account exists %>
+    <div
+      id="create-section"
+      style="<%= iam_user_created ? "display: none;" : "" %>">
+
+      <div class="alert alert-info">
+        <p>
+          This will create an AWS IAM user and a Linux user on the configured
+          EC2 instance.
+        </p>
+
+        <p>
+          <strong>An AWS access key will also be generated.</strong>
+          The secret access key is only shown once, when the account is
+          created, so make sure to save it before leaving this page.
+        </p>
+      </div>
+
+      <div class="form-group">
+        <label>Username</label>
+
+        <p class="form-control-static">
+          <% if @username.present? %>
+            <strong><%= @username %></strong>
+          <% else %>
+            <em>Assigned when the account is created</em>
+          <% end %>
+        </p>
+
+        <p class="help-block">
+          This username is used for both the AWS IAM user and Linux account.
+        </p>
+      </div>
+
+      <button
+        id="create-button"
+        type="button"
+        class="btn btn-danger"
+        data-url="<%= create_iam_unix_user_user_path(@user) %>">
+        CREATE USER
+      </button>
+    </div>
+
+    <%# Shown once the account exists %>
+    <div
+      id="setup-account-section"
+      style="<%= iam_user_created ? "" : "display: none;" %>">
+
+      <div class="alert alert-success">
+        <h5>Account Ready</h5>
+
+        <p>
+          <span class="ssm-username" data-ssm-username><%= @username %></span>
+        </p>
+
+        <p style="margin-bottom: 0;">
+          Your AWS IAM user and Linux account are ready and use this username.
+        </p>
+      </div>
+
+      <div class="ssm-section ssm-step">
+        <h6><strong>1. Prerequisites</strong></h6>
+
+        <ul class="browser-default">
+          <li>
+            <strong>AWS CLI</strong> &mdash;
+            <a href="<%= aws_cli_install_url %>" target="_blank" rel="noopener">
+              installation guide
+            </a>
+          </li>
+          <li>
+            <strong>Session Manager Plugin</strong> &mdash;
+            <a href="<%= ssm_plugin_install_url %>" target="_blank" rel="noopener">
+              installation guide
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="ssm-section ssm-step">
+        <h6><strong>2. Configure the AWS CLI</strong></h6>
+
+        <p>
+          Use a named AWS CLI profile instead of the default profile, so these
+          credentials do not replace any AWS credentials you already use.
+        </p>
+
+        <div class="ssm-command">
+          <pre><code id="cmd-configure"></code></pre>
+
+          <button
+            class="btn btn-default btn-sm"
+            type="button"
+            onclick="copyText('cmd-configure', this)">
+            COPY
+          </button>
+        </div>
+
+        <%# Shown whenever no key is on the page, e.g. after a refresh. %>
+        <p id="no-credentials-note">
+          Your secret access key was shown once, when it was created. If you no
+          longer have it, use
+          <a href="#ssm-forgot" onclick="selectTab('ssm-forgot'); return false;">FORGOT YOUR KEY?</a>
+          to generate a new one.
+        </p>
+
+        <div
+          id="credentials-panel"
+          class="alert alert-warning"
+          style="display: none;">
+          <strong>Save these credentials now.</strong>
+          AWS will not display the secret access key again.
+          If you lose it, you will need to generate a new access key.
+        </div>
+
+        <p>When prompted, enter:</p>
+
+        <%# The key rows show their value only while a new key is on the page;
+            otherwise they say it is gone and link to FORGOT YOUR KEY?. %>
+        <table class="ssm-prompts">
+          <tr>
+            <td><strong>AWS Access Key ID</strong></td>
+            <td>
+              <span class="ssm-credential-unavailable" data-credential-placeholder>
+                No longer shown &mdash;
+                <a href="#ssm-forgot" onclick="selectTab('ssm-forgot'); return false;">generate a new key</a>
+              </span>
+
+              <div class="ssm-prompt-value" data-credential-value style="display: none;">
+                <code id="access-key-id"></code>
+
+                <button
+                  class="btn btn-default btn-sm"
+                  type="button"
+                  onclick="copyText('access-key-id', this)">
+                  COPY
+                </button>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td><strong>AWS Secret Access Key</strong></td>
+            <td>
+              <span class="ssm-credential-unavailable" data-credential-placeholder>
+                No longer shown &mdash;
+                <a href="#ssm-forgot" onclick="selectTab('ssm-forgot'); return false;">generate a new key</a>
+              </span>
+
+              <div class="input-group" data-credential-value style="display: none;">
+                <input
+                  id="secret-access-key"
+                  class="form-control"
+                  type="password"
+                  autocomplete="off"
+                  readonly>
+
+                <span class="input-group-btn">
+                  <button
+                    id="show-secret-button"
+                    class="btn btn-default"
+                    type="button"
+                    onclick="toggleSecret()">
+                    SHOW
+                  </button>
+
+                  <button
+                    class="btn btn-default"
+                    type="button"
+                    onclick="copyValue('secret-access-key', this)">
+                    COPY
+                  </button>
+                </span>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td><strong>Default region name</strong></td>
+            <td>
+              <div id="prompt-region" class="ssm-prompt-value">
+                <code id="prompt-region-value"></code>
+
+                <button
+                  class="btn btn-default btn-sm"
+                  type="button"
+                  onclick="copyText('prompt-region-value', this)">
+                  COPY
+                </button>
+              </div>
+
+              <%# Tango's IAM config could not be read (or has no region). %>
+              <span id="prompt-region-missing" style="display: none;">
+                The AWS region of the instance (ask your Autolab administrator)
+              </span>
+            </td>
+          </tr>
+          <tr>
+            <td><strong>Default output format</strong></td>
+            <td>
+              <div class="ssm-prompt-value">
+                <code id="prompt-output">json</code>
+
+                <button
+                  class="btn btn-default btn-sm"
+                  type="button"
+                  onclick="copyText('prompt-output', this)">
+                  COPY
+                </button>
+              </div>
+            </td>
+          </tr>
+        </table>
+
+        <p class="ssm-section">
+          Then continue on the
+          <a href="#ssm-access" onclick="selectTab('ssm-access'); return false;">ACCESS</a>
+          tab.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <%# ---------- TAB 2: ACCESS ---------- %>
+  <div
+    id="ssm-access"
+    class="col s12 ssm-panel"
+    style="<%= "display: none;" unless default_tab == "ssm-access" %>">
+
+    <div class="ssm-section ssm-step">
+      <h6><strong>3. Transfer files (optional)</strong></h6>
+
+      <p>
+        Copy files between your computer and the instance with
+        <code>scp</code>. Skip this if you only need a terminal on the instance.
+      </p>
+
+      <div class="ssm-collapsible">
+        <button
+          type="button"
+          class="ssm-collapsible-toggle"
+          aria-expanded="false"
+          aria-controls="ssm-transfer-body"
+          onclick="toggleCollapsible(this)">
+          File transfer instructions
+          <i class="material-icons ssm-collapsible-arrow">expand_more</i>
+        </button>
+
+        <div id="ssm-transfer-body" class="ssm-collapsible-body">
+          <div class="ssm-collapsible-inner">
+            <div class="ssm-collapsible-content ssm-transfer">
+
+              <p>
+                File transfer runs SSH through Session Manager, so it also needs an
+                SSH key: add your public key on the
+                <%= link_to "SSH Keys", ssh_keys_user_path(@user) %> page, and keep the
+                private key at <code data-ssm-ssh-key></code> on your computer. If your
+                key is somewhere else, change the <code>-i</code> or
+                <code>IdentityFile</code> path in the commands below.
+              </p>
+
+              <% if @ssh_key_count.positive? %>
+                <p>
+                  <strong>SSH key:</strong>
+                  <%= pluralize(@ssh_key_count, "key") %> added.
+                  <%= link_to "Manage SSH keys", ssh_keys_user_path(@user) %>
+                </p>
+              <% else %>
+                <div class="card-panel amber lighten-5">
+                  <strong>No SSH key yet.</strong>
+                  Add one on the <%= link_to "SSH Keys", ssh_keys_user_path(@user) %>
+                  page before using these commands.
+                </div>
+              <% end %>
+
+              <p class="ssm-command-label">Check that your key works</p>
+
+              <div class="ssm-command">
+                <pre><code id="cmd-ssh-test"></code></pre>
+
+                <button
+                  class="btn btn-default btn-sm"
+                  type="button"
+                  onclick="copyText('cmd-ssh-test', this)">
+                  COPY
+                </button>
+              </div>
+
+              <div class="ssm-subnav">
+                <button
+                  type="button"
+                  class="btn-flat active"
+                  aria-pressed="true"
+                  data-transfer-option="ssm-transfer-config"
+                  onclick="showTransferOption('ssm-transfer-config')">
+                  Repeated Transfers
+                </button>
+
+                <button
+                  type="button"
+                  class="btn-flat"
+                  aria-pressed="false"
+                  data-transfer-option="ssm-transfer-once"
+                  onclick="showTransferOption('ssm-transfer-once')">
+                  One-time transfer
+                </button>
+
+                <span class="ssm-subnav-indicator"></span>
+              </div>
+
+              <div class="ssm-transfer-options">
+                <div
+                  id="ssm-transfer-config"
+                  class="ssm-transfer-option">
+
+                  <p>
+                    For frequent transfers, add the following SSH configuration to your
+                    local computer.
+                  </p>
+
+                  <div class="card-panel amber lighten-5">
+                    <strong>
+                      This configuration belongs on your local computer in
+                      <code>~/.ssh/config</code>, not on the EC2 instance.
+                    </strong>
+                  </div>
+
+                  <div class="ssm-command">
+                    <pre><code id="cmd-ssh-config"></code></pre>
+
+                    <button
+                      class="btn btn-default btn-sm"
+                      type="button"
+                      onclick="copyText('cmd-ssh-config', this)">
+                      COPY
+                    </button>
+                  </div>
+
+                  <p>Then transfer files with:</p>
+
+                  <p class="ssm-command-label">Upload</p>
+
+                  <div class="ssm-command">
+                    <pre><code id="cmd-scp-upload-short"></code></pre>
+
+                    <button
+                      class="btn btn-default btn-sm"
+                      type="button"
+                      onclick="copyText('cmd-scp-upload-short', this)">
+                      COPY
+                    </button>
+                  </div>
+
+                  <p class="ssm-command-label">Download</p>
+
+                  <div class="ssm-command">
+                    <pre><code id="cmd-scp-download-short"></code></pre>
+
+                    <button
+                      class="btn btn-default btn-sm"
+                      type="button"
+                      onclick="copyText('cmd-scp-download-short', this)">
+                      COPY
+                    </button>
+                  </div>
+                </div>
+
+                <div
+                  id="ssm-transfer-once"
+                  class="ssm-transfer-option"
+                  style="display: none;">
+
+                  <p>
+                    Use these commands if you only need to transfer files occasionally.
+                    No SSH configuration changes are required.
+                  </p>
+
+                  <p class="ssm-command-label">Upload</p>
+
+                  <div class="ssm-command">
+                    <pre><code id="cmd-scp-upload"></code></pre>
+
+                    <button
+                      class="btn btn-default btn-sm"
+                      type="button"
+                      onclick="copyText('cmd-scp-upload', this)">
+                      COPY
+                    </button>
+                  </div>
+
+                  <p class="ssm-command-label">Download</p>
+
+                  <div class="ssm-command">
+                    <pre><code id="cmd-scp-download"></code></pre>
+
+                    <button
+                      class="btn btn-default btn-sm"
+                      type="button"
+                      onclick="copyText('cmd-scp-download', this)">
+                      COPY
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ssm-section ssm-step">
+      <h6><strong>4. Start the SSM session</strong></h6>
+
+      <div class="ssm-command">
+        <pre><code id="cmd-start-session"></code></pre>
+
+        <button
+          class="btn btn-default btn-sm"
+          type="button"
+          onclick="copyText('cmd-start-session', this)">
+          COPY
+        </button>
+      </div>
+
+      <p id="instance-id-missing" style="display: none;">
+        <em>The instance ID is not configured. Ask your Autolab administrator for it.</em>
+      </p>
+    </div>
+  </div>
+
+  <%# ---------- TAB 3: FORGOT YOUR KEY? ---------- %>
+  <div
+    id="ssm-forgot"
+    class="col s12 ssm-panel"
+    style="<%= "display: none;" unless default_tab == "ssm-forgot" %>">
+
+    <p>
+      AWS does not allow an existing Secret Access Key to be displayed again.
+    </p>
+
+    <p>
+      If you no longer have access to your credentials, generate a new access
+      key. Your current access key is deleted and stops working.
+    </p>
+
+    <div class="alert alert-warning">
+      <p>
+        <strong>The new secret access key is only shown once,</strong>
+        so make sure to save it when it appears.
+      </p>
+
+      <p style="margin-bottom: 0;">
+        Afterwards, rerun
+        <code class="ssm-inline-command" data-ssm-configure-command></code>
+        with the new key.
+      </p>
+    </div>
+
+    <button
+      id="regenerate-button"
+      type="button"
+      class="btn btn-danger ssm-regenerate-button"
+      data-url="<%= regenerate_iam_access_key_user_path(@user) %>">
+      REGENERATE ACCESS KEY
+    </button>
+  </div>
+</div>

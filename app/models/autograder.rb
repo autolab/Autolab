@@ -3,6 +3,13 @@
 # with autograding properties for an assessment
 #
 class Autograder < ApplicationRecord
+  COURSE_EXPORT_FIELDS = %i[
+    autograde_timeout autograde_image release_score instance_type
+  ].freeze
+  COURSE_EXPORT_REFERENCES = {
+    assessment_id: :assessments
+  }.freeze
+
   belongs_to :assessment
 
   encrypts :access_key
