@@ -93,6 +93,7 @@ RSpec.describe FileManagerController, type: :controller do
   describe "#is_binary_file?" do
     it "treats MIME types descended from text/plain as text" do
       Dir.mktmpdir do |directory|
+        stub_const("FileManagerController::BASE_DIRECTORY", Pathname.new(directory))
         path = File.join(directory, "document.xml")
         File.write(path, "<?xml version=\"1.0\"?><document/>")
 
@@ -102,6 +103,7 @@ RSpec.describe FileManagerController, type: :controller do
 
     it "inspects content when the filename does not identify a MIME type" do
       Dir.mktmpdir do |directory|
+        stub_const("FileManagerController::BASE_DIRECTORY", Pathname.new(directory))
         text_path = File.join(directory, "extensionless")
         binary_path = File.join(directory, "binary")
         File.write(text_path, "plain text content")
@@ -109,6 +111,20 @@ RSpec.describe FileManagerController, type: :controller do
 
         expect(controller.send(:is_binary_file?, text_path)).to be(false)
         expect(controller.send(:is_binary_file?, binary_path)).to be(true)
+      end
+    end
+
+    it "rejects paths that resolve outside the courses directory" do
+      Dir.mktmpdir do |directory|
+        Dir.mktmpdir do |outside_directory|
+          stub_const("FileManagerController::BASE_DIRECTORY", Pathname.new(directory))
+          outside_path = File.join(outside_directory, "text.txt")
+          File.write(outside_path, "text")
+
+          expect do
+            controller.send(:is_binary_file?, outside_path)
+          end.to raise_error(ActionController::RoutingError, "Not Found")
+        end
       end
     end
   end

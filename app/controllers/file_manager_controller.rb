@@ -258,10 +258,16 @@ private
   end
 
   def is_binary_file?(path)
-    mime_type = Marcel::MimeType.for(Pathname.new(path), name: path)
+    file_path = Pathname.new(path).realpath
+    base_path = Pathname.new(BASE_DIRECTORY).realpath
+    unless Archive.in_dir?(file_path, base_path, strict: false)
+      raise ActionController::RoutingError, 'Not Found'
+    end
+
+    mime_type = Marcel::MimeType.for(file_path, name: file_path.to_s)
     return !Marcel::Magic.new(mime_type).text? unless mime_type == Marcel::MimeType::BINARY
 
-    content = File.binread(path).force_encoding(Encoding::UTF_8)
+    content = File.binread(file_path).force_encoding(Encoding::UTF_8)
     !content.valid_encoding? || content.match?(/[\x00-\x08\x0B\x0C\x0E-\x1F]/)
   end
 end
