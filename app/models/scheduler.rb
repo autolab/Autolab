@@ -4,6 +4,7 @@ class Scheduler < ApplicationRecord
   belongs_to :course
 
   validates :interval, numericality: true
+  validates :until, presence: true
   validates :action, presence: true
   validates_associated :course
 

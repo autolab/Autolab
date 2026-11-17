@@ -1,5 +1,10 @@
 require "rails_helper"
 
 RSpec.describe Scheduler, type: :model do
-  pending "add some examples to (or delete) #{__FILE__}"
+  it "requires an expiration time" do
+    scheduler = described_class.new(until: nil)
+
+    expect(scheduler).not_to be_valid
+    expect(scheduler.errors[:until]).to include("can't be blank")
+  end
 end
