@@ -98,7 +98,7 @@ module AssessmentHandinCore
 
     # group_key = group_name_submitter_email_handin_filename_timestamp
     group_key = "#{group.name}_#{@cud.user.email}_#{@assessment.handin_filename}_"
-    group_key += Time.current.utc.to_s(:number)
+    group_key += Time.current.utc.to_fs(:number)
 
     ActiveRecord::Base.transaction do
       group.course_user_data.each do |cud|

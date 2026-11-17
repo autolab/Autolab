@@ -1,9 +1,9 @@
 require "utilities"
 
 class RiskCondition < ApplicationRecord
-  serialize :parameters, Hash
-  enum condition_type: { no_condition_selected: 0, grace_day_usage: 1, grade_drop: 2,
-                         no_submissions: 3, low_grades: 4, extension_requests: 5 }
+  serialize :parameters, coder: YAML, type: Hash
+  enum :condition_type, { no_condition_selected: 0, grace_day_usage: 1, grade_drop: 2,
+                          no_submissions: 3, low_grades: 4, extension_requests: 5 }
 
   has_many :watchlist_instances, dependent: :destroy
   belongs_to :course

@@ -3,6 +3,17 @@ require "rails_helper"
 RSpec.describe Autograder, type: :model do
   subject(:autograder) { build(:autograder) }
 
+  it "persists access keys in the existing Lockbox ciphertext columns" do
+    record = create(:autograder, use_access_key: true,
+                                 access_key: "test-secret", access_key_id: "ABCDEFGHIJKLMNOP")
+
+    expect(record.access_key_ciphertext).to be_present
+    expect(record.access_key_ciphertext).not_to include("test-secret")
+    expect(record.access_key_id_ciphertext).to be_present
+    expect(record.reload.access_key).to eq("test-secret")
+    expect(record.access_key_id).to eq("ABCDEFGHIJKLMNOP")
+  end
+
   describe "validations" do
     it "rejects invalid instance types" do
       autograder.instance_type = "invalid-type"
