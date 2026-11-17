@@ -10,7 +10,7 @@ class ContainerImage < ApplicationRecord
            foreign_key: :public_template_id,
            dependent: :nullify
 
-  enum status: {
+  enum :status, {
     failed: 255,
     draft: 0,
     building: 1,

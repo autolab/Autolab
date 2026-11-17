@@ -145,7 +145,7 @@ Rails.application.routes.draw do
       post "run"
     end
 
-    resource :metrics, only: :index do
+    resource :metrics, only: [] do
       get "index"
       get "get_current_metrics"
       get "get_watchlist_instances"
@@ -157,7 +157,7 @@ Rails.application.routes.draw do
       post "update_watchlist_configuration"
     end
 
-    resource :dockers, only: :index do
+    resource :dockers, only: [] do
       get "index"
       post "uploadDockerImage"
     end

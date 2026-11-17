@@ -1,5 +1,6 @@
 class OauthDeviceFlowRequest < ApplicationRecord
-  belongs_to :oauth_application
+  belongs_to :oauth_application, class_name: "Doorkeeper::Application",
+                                 foreign_key: :application_id
 
   validates :device_code,     uniqueness: { on: :create }
   validates :user_code,       uniqueness: { on: :create }

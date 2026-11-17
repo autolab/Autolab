@@ -5,8 +5,8 @@
 class Autograder < ApplicationRecord
   belongs_to :assessment
 
-  encrypts :access_key
-  encrypts :access_key_id
+  has_encrypted :access_key
+  has_encrypted :access_key_id
 
   INSTANCE_TYPES = %w[
     t2.micro t2.small t2.medium t2.large t2.xlarge t2.2xlarge
