@@ -32,7 +32,17 @@ class FileManagerController < ApplicationController
       populate_directory(absolute_path, new_url)
       render 'file_manager/index'
     elsif File.file?(absolute_path) && check_instructor(absolute_path)
-      if File.size(absolute_path) > 1_000_000 || params[:download]
+      if params[:preview] && is_tar_file?(absolute_path)
+        begin
+          @tar_contents = list_tar_contents(absolute_path)
+          @path = path
+          @tar_file_name = File.basename(absolute_path)
+          render :tar_preview, formats: :html
+        rescue StandardError => e
+          flash[:error] = "Unable to read tar file: #{e.message}"
+          redirect_to file_manager_index_path(path: File.dirname(path))
+        end
+      elsif File.size(absolute_path) > 1_000_000 || params[:download]
         send_file absolute_path
       elsif !is_binary_file?(absolute_path)
         @path = path
@@ -101,33 +111,108 @@ class FileManagerController < ApplicationController
     flash[:error] = e.message
   end
 
+  def find_by_directory_path(absolute_path)
+    # Normalize the path to ensure consistent comparison
+    normalized_path = Pathname.new(absolute_path).cleanpath.to_s
+    # Find course where the directory_path matches the given absolute path
+    Course.find do |course|
+      course.directory_path.to_s == normalized_path
+    end
+  end
+
+  def find_by_folder_path(absolute_path)
+    # Normalize the path to ensure consistent comparison
+    normalized_path = Pathname.new(absolute_path).cleanpath.to_s
+
+    # Find assessment where the folder_path matches the given absolute path
+    Assessment.find do |assessment|
+      assessment.folder_path.to_s == normalized_path
+    end
+  end
+
+  def path_belongs_to_assessment?(absolute_path)
+    find_by_folder_path(absolute_path)
+  end
+
+  def path_belongs_to_course?(absolute_path)
+    find_by_directory_path(absolute_path)
+  end
+
+  def add_directory_to_tar(tar, dir_path, base_name = "")
+    Dir.entries(dir_path).each do |entry|
+      next if [".", ".."].include?(entry)
+
+      full_path = File.join(dir_path, entry)
+      tar_path = base_name.empty? ? entry : File.join(base_name, entry)
+      mode = File.stat(full_path).mode
+      if File.directory?(full_path)
+        # Add directory entry
+        tar.mkdir(tar_path, mode)
+        # Recursively add directory contents
+        add_directory_to_tar(tar, full_path, tar_path)
+      elsif File.file?(full_path)
+        # Add file entry
+        File.open(full_path, 'rb') do |file|
+          tar.add_file(tar_path, mode) do |tar_file|
+            tar_file.write(file.read)
+          end
+        end
+      elsif File.symlink?(full_path)
+        # Add symbolic link
+        target = File.readlink(full_path)
+        tar.add_symlink(tar_path, target, mode)
+      end
+    end
+  end
+
   def download_tar
     path = params[:path]&.split("/")&.drop(2)&.join("/")
     path = CGI.unescape(path)
     absolute_path = check_path_exist(path)
     if check_instructor(absolute_path)
-      if File.directory?(absolute_path)
+      course = path_belongs_to_course?(absolute_path)
+      assessment = path_belongs_to_assessment?(absolute_path)
+
+      if course.present?
+        tar_course = generate_tar(course)
+        send_data tar_course.string.force_encoding("binary"),
+                  filename: "#{course.name}.tar",
+                  type: "application/x-tar",
+                  disposition: "attachment"
+      elsif assessment.present?
         tar_stream = StringIO.new("")
-        Gem::Package::TarWriter.new(tar_stream) do |tar|
-          Dir[File.join(absolute_path.to_s, '**', '**')].each do |file|
-            mode = File.stat(file).mode
-            relative_path = file.sub(%r{^#{Regexp.escape(absolute_path.to_s)}/?}, '')
-            if File.directory?(file)
-              tar.mkdir relative_path, mode
-            else
-              tar.add_file relative_path, mode do |tar_file|
-                File.open(file, "rb") { |f| tar_file.write f.read }
-              end
-            end
-          end
+        Gem::Package::TarWriter.new(tar_stream) do |tar_assessment|
+          assessment.name
+          assessment.dump_yaml
+          filter = []
+          assessment.load_dir_to_tar(absolute_path.to_s, "", tar_assessment, filter, "")
         end
         tar_stream.rewind
         tar_stream.close
         send_data tar_stream.string.force_encoding("binary"),
-                  filename: "file_manager.tar",
+                  filename: "#{assessment.name}.tar",
+                  type: "application/x-tar",
+                  disposition: "attachment"
+      elsif File.file?(absolute_path)
+        # Individual file - send directly without zipping
+        send_file(absolute_path,
+                  filename: File.basename(absolute_path),
+                  disposition: 'attachment')
+      elsif File.directory?(absolute_path)
+        tar_stream = StringIO.new("")
+        Gem::Package::TarWriter.new(tar_stream) do |tar|
+          # Make base directory
+          mode = File.stat(absolute_path).mode
+          tar.mkdir(File.basename(absolute_path), mode)
+          add_directory_to_tar(tar, absolute_path, File.basename(absolute_path))
+        end
+        tar_stream.rewind
+        send_data tar_stream.string.force_encoding("binary"),
+                  filename: "#{File.basename(absolute_path)}.tar",
                   type: "application/x-tar",
                   disposition: "attachment"
       else
+        # Path exists but is neither a file nor directory (eg: symlink)
         send_file(absolute_path,
                   filename: File.basename(absolute_path),
                   disposition: 'attachment')
@@ -179,6 +264,55 @@ class FileManagerController < ApplicationController
     end
   end
 
+  def view_tar_file
+    tar_path = params[:tar_path]
+    file_path = params[:file_path]
+
+    absolute_tar_path = check_path_exist(tar_path)
+
+    unless check_instructor(absolute_tar_path)
+      flash[:error] = "You are not authorized to view this path"
+      redirect_to root_path
+      return
+    end
+
+    unless is_tar_file?(absolute_tar_path)
+      flash[:error] = "Not a valid tar file"
+      redirect_to file_manager_index_path(path: File.dirname(tar_path))
+      return
+    end
+
+    begin
+      file_content = extract_single_file_from_tar(absolute_tar_path, file_path)
+
+      if file_content.nil?
+        flash[:error] = "File not found in archive"
+        redirect_to file_manager_index_path(path: "#{tar_path}?preview=true")
+        return
+      end
+
+      is_binary = file_content.bytes.take(8192).any? { |byte|
+        byte.zero? || (byte < 32 && ![9, 10, 13].include?(byte))
+      }
+
+      if is_binary || file_content.bytesize > 1_000_000
+        send_data file_content,
+                  filename: File.basename(file_path),
+                  disposition: 'attachment'
+      else
+        @tar_path = tar_path
+        @file_path = file_path
+        @file = file_content.force_encoding('UTF-8')
+        @tar_file_name = File.basename(absolute_tar_path)
+        @file_name = file_path
+        render :tar_file_view, formats: :html
+      end
+    rescue StandardError => e
+      flash[:error] = "Unable to extract file: #{e.message}"
+      redirect_to file_manager_index_path(path: "#{tar_path}?preview=true")
+    end
+  end
+
 private
 
   def populate_directory(current_directory, current_url)
@@ -210,6 +344,11 @@ private
         type: (is_file ? :file : :directory),
         date: begin
           stat.mtime.strftime('%d %b %Y %H:%M')
+        rescue StandardError
+          '-'
+        end,
+        permissions: begin
+          sprintf('%o', stat.mode & 0o777)
         rescue StandardError
           '-'
         end,
@@ -262,5 +401,120 @@ private
   def is_binary_file?(path)
     mm = MimeMagic.by_path(path)
     mm.present? && !mm.text?
+  end
+
+  def is_tar_file?(path)
+    extension = File.extname(path).downcase
+    extension == '.tar' ||
+      extension == '.tgz' ||
+      extension == '.gz' && path.to_s.downcase.end_with?('.tar.gz')
+  end
+
+  def list_tar_contents(file_path)
+    contents = []
+
+    begin
+      if File.extname(file_path).downcase.in?(['.gz', '.tgz']) ||
+         file_path.to_s.downcase.end_with?('.tar.gz')
+        require 'zlib'
+        Zlib::GzipReader.open(file_path) do |gz|
+          tar_reader = Gem::Package::TarReader.new(gz)
+          tar_reader.rewind
+          tar_reader.each do |entry|
+            next if entry.full_name.include?('..')
+            next if entry.full_name.start_with?('/')
+
+            mode_str = begin
+              sprintf('%o', entry.header.mode)
+            rescue StandardError
+              '-'
+            end
+
+            mtime_val = begin
+              entry.header.mtime
+            rescue StandardError
+              nil
+            end
+
+            contents << {
+              name: entry.full_name,
+              size: entry.header.size,
+              type: if entry.directory?
+                      'directory'
+                    else
+                      (entry.file? ? 'file' : 'other')
+                    end,
+              mode: mode_str,
+              mtime: mtime_val
+            }
+          end
+        end
+      else
+        File.open(file_path, 'rb') do |file|
+          tar_reader = Gem::Package::TarReader.new(file)
+          tar_reader.rewind
+          tar_reader.each do |entry|
+            next if entry.full_name.include?('..')
+            next if entry.full_name.start_with?('/')
+
+            mode_str = begin
+              sprintf('%o', entry.header.mode)
+            rescue StandardError
+              '-'
+            end
+
+            mtime_val = begin
+              entry.header.mtime
+            rescue StandardError
+              nil
+            end
+
+            contents << {
+              name: entry.full_name,
+              size: entry.header.size,
+              type: if entry.directory?
+                      'directory'
+                    else
+                      (entry.file? ? 'file' : 'other')
+                    end,
+              mode: mode_str,
+              mtime: mtime_val
+            }
+          end
+        end
+      end
+    rescue StandardError => e
+      raise "Error reading tar file: #{e.message}"
+    end
+
+    contents
+  end
+
+  def extract_single_file_from_tar(tar_path, file_path)
+    if File.extname(tar_path).downcase.in?(['.gz', '.tgz']) ||
+       tar_path.to_s.downcase.end_with?('.tar.gz')
+      require 'zlib'
+      Zlib::GzipReader.open(tar_path) do |gz|
+        tar_reader = Gem::Package::TarReader.new(gz)
+        tar_reader.rewind
+        tar_reader.each do |entry|
+          if entry.full_name == file_path && entry.file?
+            return entry.read
+          end
+        end
+      end
+    else
+      File.open(tar_path, 'rb') do |file|
+        tar_reader = Gem::Package::TarReader.new(file)
+        tar_reader.rewind
+        tar_reader.each do |entry|
+          if entry.full_name == file_path && entry.file?
+            return entry.read
+          end
+        end
+      end
+    end
+
+    nil
   end
 end

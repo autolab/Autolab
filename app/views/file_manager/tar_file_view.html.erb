@@ -1,0 +1,84 @@
+<% content_for :stylesheets do %>
+  <%= stylesheet_link_tag "file_manager" %>
+  <%= stylesheet_link_tag "style" %>
+  <%= stylesheet_link_tag "highlight.css" %>
+<% end %>
+
+<% content_for :javascripts do %>
+  <%= javascript_include_tag "highlight.pack" %>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      document.querySelectorAll('pre code').forEach((block) => {
+        hljs.highlightBlock(block);
+      });
+    });
+  </script>
+<% end %>
+
+<div class="tar-file-view-container">
+  <h2>
+    <i class="material-icons" style="vertical-align: middle;">description</i>
+    File from Archive: <%= @file_name %>
+  </h2>
+
+  <div class="info-message">
+    <i class="material-icons" style="vertical-align: middle; margin-right: 5px;">info</i>
+    <span>Viewing file from: <strong><%= @tar_file_name %></strong> (extracted temporarily, not saved to filesystem)</span>
+  </div>
+
+  <div style="margin-bottom: 20px;">
+    <%= link_to "← Back to Archive Preview", "#{path_file_manager_index_path(@tar_path)}?preview=true", class: "btn" %>
+    <%= link_to "← Back to File Manager", path_file_manager_index_path(File.dirname(@tar_path)), class: "btn" %>
+  </div>
+
+  <div class="file-content-container">
+    <pre><code><%= @file %></code></pre>
+  </div>
+</div>
+
+<style>
+  .tar-file-view-container {
+    padding: 20px;
+  }
+
+  .tar-file-view-container h2 {
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .info-message {
+    padding: 10px 15px;
+    background-color: #e3f2fd;
+    border-left: 4px solid #2196F3;
+    margin-bottom: 20px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+  }
+
+  .info-message i {
+    color: #2196F3;
+  }
+
+  .file-content-container {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: #f8f9fa;
+    max-height: 70vh;
+    overflow: auto;
+  }
+
+  .file-content-container pre {
+    margin: 0;
+    padding: 15px;
+    background-color: #f8f9fa;
+  }
+
+  .file-content-container code {
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+</style>
