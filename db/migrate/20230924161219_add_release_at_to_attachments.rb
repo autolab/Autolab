@@ -1,6 +1,6 @@
 class AddReleaseAtToAttachments < ActiveRecord::Migration[6.0]
   def up
-    add_column :attachments, :release_at, :datetime, default: -> { 'CURRENT_TIMESTAMP' }
+    add_column :attachments, :release_at, :datetime
     Attachment.where(released: true).update_all(release_at: Time.current)
     Attachment.where(released: false).update_all(release_at: Time.current + 1.year)
   end
