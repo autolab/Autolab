@@ -1,6 +1,5 @@
 # Code for file manager adapted from: adrientoub/file-explorer
 require 'archive'
-require 'pathname'
 
 class FileManagerController < ApplicationController
   BASE_DIRECTORY = Rails.root.join('courses')

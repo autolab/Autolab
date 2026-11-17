@@ -1,7 +1,6 @@
 require "archive"
 require "csv"
 require "fileutils"
-require "pathname"
 require "statistics"
 
 class CoursesController < ApplicationController

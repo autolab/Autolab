@@ -243,7 +243,7 @@ class AssessmentUserDatum < ApplicationRecord
       end
       save!
     end
-    self.version_number
+    version_number
   end
 
   def leave_group
@@ -264,7 +264,7 @@ class AssessmentUserDatum < ApplicationRecord
                             end
       save!
     end
-    self.version_number
+    version_number
   end
 
 protected
