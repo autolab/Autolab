@@ -83,7 +83,7 @@ private
     params[:annotation][:submitted_by] = @current_user.email
     params.require(:annotation).permit(:filename, :position, :line, :submitted_by,
                                        :comment, :shared_comment, :global_comment, :value,
-                                       :problem_id, :submission_id, :coordinate)
+                                       :problem_id, :submission_id, :coordinate, :rubric_item_id)
   end
 
   def set_annotation
