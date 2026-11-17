@@ -1,7 +1,6 @@
 # Code for file manager adapted from: adrientoub/file-explorer
 require 'archive'
 require 'pathname'
-require 'mimemagic'
 
 class FileManagerController < ApplicationController
   BASE_DIRECTORY = Rails.root.join('courses')
@@ -260,7 +259,7 @@ private
   end
 
   def is_binary_file?(path)
-    mm = MimeMagic.by_path(path)
-    mm.present? && !mm.text?
+    mime_type = Marcel::MimeType.for(name: path)
+    mime_type.present? && !mime_type.start_with?("text/")
   end
 end
