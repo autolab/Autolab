@@ -40,6 +40,8 @@ class SubmissionsController < ApplicationController
     )
     @excused_cids = excused_students.pluck(:course_user_datum_id)
     @problems = @assessment.problems.to_a
+    @submission_scores = @submissions.index_with { 0 }
+    # @submission_styles = @submissions.index_with { |s| ignored_submission_style(s) }
   end
 
   action_auth_level :score_details, :instructor

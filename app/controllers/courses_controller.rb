@@ -86,38 +86,40 @@ class CoursesController < ApplicationController
 
   action_auth_level :manage, :instructor
   def manage
-    matrix = GradeMatrix.new @course, @cud
-    cols = {}
-    # extract assessment final scores
-    @course.assessments.each do |asmt|
-      next unless matrix.has_assessment? asmt.id
+    # Rails.logger.silence do
+      matrix = GradeMatrix.new @course, @cud
+      cols = {}
+      # extract assessment final scores
+      @course.assessments.each do |asmt|
+        next unless matrix.has_assessment? asmt.id
 
-      cells = matrix.cells_for_assessment asmt.id
-      final_scores = cells.map { |c| c["final_score"] }
-      cols[asmt.name] = ["asmt", asmt, final_scores]
-    end
+        cells = matrix.cells_for_assessment asmt.id
+        final_scores = cells.map { |c| c["final_score"] }
+        cols[asmt.name] = ["asmt", asmt, final_scores]
+      end
 
-    # category averages
-    @course.assessment_categories.each do |cat|
-      next unless matrix.has_category? cat
+      # category averages
+      @course.assessment_categories.each do |cat|
+        next unless matrix.has_category? cat
 
-      cols["#{cat} Average"] = ["avg", nil, matrix.averages_for_category(cat)]
-    end
+        cols["#{cat} Average"] = ["avg", nil, matrix.averages_for_category(cat)]
+      end
 
-    # course averages
-    cols["Course Average"] = ["avg", nil, matrix.course_averages]
+      # course averages
+      cols["Course Average"] = ["avg", nil, matrix.course_averages]
 
-    # calculate statistics
-    # send course_stats back in the form of
-    # name of average / assesment -> [type, asmt, statistics]
-    # where type = "asmt" or "avg" (assessment or average)
-    # asmt = assessment object or nil if an average of category / class
-    # statistics (statistics pertaining to asmt/avg (mean, median, std dev, etc))
-    @course_stats = {}
-    stat = Statistics.new
-    cols.each do |key, values|
-      @course_stats[key] = [values[0], values[1], stat.stats(values[2])]
-    end
+      # calculate statistics
+      # send course_stats back in the form of
+      # name of average / assesment -> [type, asmt, statistics]
+      # where type = "asmt" or "avg" (assessment or average)
+      # asmt = assessment object or nil if an average of category / class
+      # statistics (statistics pertaining to asmt/avg (mean, median, std dev, etc))
+      @course_stats = {}
+      stat = Statistics.new
+      cols.each do |key, values|
+        @course_stats[key] = [values[0], values[1], stat.stats(values[2])]
+      end
+    #end
   end
 
   action_auth_level :new, :administrator
@@ -236,16 +238,16 @@ class CoursesController < ApplicationController
       render(action: "new") && return
     end
 
-    begin
+#    begin
       tar_extract.rewind
       @newCourse = get_course_from_config(tar_extract)
       # save assessment directories
       save_assessments_from_tar(tar_extract)
       tar_extract.close
-    rescue StandardError => e
-      flash[:error] = "Error while extracting course to server -- #{e.message}."
-      render(action: "new") && return
-    end
+    #rescue StandardError => e
+      #flash[:error] = "Error while extracting course to server -- #{e.message}."
+     # render(action: "new") && return
+    #end
 
     unless @newCourse.save
       flash[:error] = "Course creation failed. Please review all fields below."
@@ -1301,10 +1303,9 @@ private
   end
 
   def get_course_from_config(tar_extract)
-    tar_extract.rewind
 
     tar_extract.each do |entry|
-      next unless entry.file? && entry.full_name.count('/') == 1
+      # next unless entry.file? && entry.full_name.count('/') == 1
       # there should only be one file in the main directory with .yml extension
       next unless File.extname(entry.full_name) == '.yml'
 
@@ -1330,6 +1331,7 @@ private
       end
       return course
     end
+    raise "No valid course config .yml found in archive"
   end
 
   def save_assessments_from_tar(tar_extract)
@@ -1357,6 +1359,7 @@ private
   # named after the course with a course yml file
   def valid_course_tar(tar_extract)
     course_name = nil
+    course_yml_path = nil
     course_yml_exists = false
     course_name_is_valid = true
     tar_extract.each do |entry|
@@ -1390,7 +1393,8 @@ private
           # validate syntax of config
           RubyVM::InstructionSequence.compile(config_source)
         end
-        course_yml_exists = true if pathname == "#{course_name}/#{course_name}.yml"
+        course_yml_path = File.join(course_name, course_name, "course_config.yml")
+        course_yml_exists = course_yml_exists || pathname == course_yml_path
       end
     end
     # it is possible that the course path does not match the
@@ -1404,7 +1408,7 @@ private
     if !(course_yml_exists && !course_name.nil?)
       flash[:error] = "Errors found in tarball:"
       if !course_yml_exists && !course_name.nil?
-        flash[:error] += "<br>Course yml file #{course_name}/#{course_name}.yml was not found"
+        flash[:error] += "<br>Course yml file #{course_name}/course_config.yml was not found: got " + course_name + "expected " + course_yml_path
       end
       flash[:html_safe] = true
     end

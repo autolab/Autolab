@@ -108,8 +108,7 @@ module ApplicationHelper
   end
 
   # TODO: fix during gradebook, handin history, etc. rewrite
-  def computed_score(link = nil, nil_to_dash = true)
-    value = yield
+  def computed_score(value, link = nil, nil_to_dash = true)
     value = value ? value.round(1) : value
     nil_to_dash && (value.nil?) ? raw("&ndash;") : value
   rescue ScoreComputationException => e
