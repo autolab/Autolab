@@ -258,7 +258,10 @@ private
   end
 
   def is_binary_file?(path)
-    mime_type = Marcel::MimeType.for(name: path)
-    mime_type.present? && !Marcel::Magic.new(mime_type).text?
+    mime_type = Marcel::MimeType.for(Pathname.new(path), name: path)
+    return !Marcel::Magic.new(mime_type).text? unless mime_type == Marcel::MimeType::BINARY
+
+    content = File.binread(path).force_encoding(Encoding::UTF_8)
+    !content.valid_encoding? || content.match?(/[\x00-\x08\x0B\x0C\x0E-\x1F]/)
   end
 end

@@ -92,7 +92,24 @@ RSpec.describe FileManagerController, type: :controller do
 
   describe "#is_binary_file?" do
     it "treats MIME types descended from text/plain as text" do
-      expect(controller.send(:is_binary_file?, "document.xml")).to be(false)
+      Dir.mktmpdir do |directory|
+        path = File.join(directory, "document.xml")
+        File.write(path, "<?xml version=\"1.0\"?><document/>")
+
+        expect(controller.send(:is_binary_file?, path)).to be(false)
+      end
+    end
+
+    it "inspects content when the filename does not identify a MIME type" do
+      Dir.mktmpdir do |directory|
+        text_path = File.join(directory, "extensionless")
+        binary_path = File.join(directory, "binary")
+        File.write(text_path, "plain text content")
+        File.binwrite(binary_path, "\x00\x01\x02")
+
+        expect(controller.send(:is_binary_file?, text_path)).to be(false)
+        expect(controller.send(:is_binary_file?, binary_path)).to be(true)
+      end
     end
   end
 
