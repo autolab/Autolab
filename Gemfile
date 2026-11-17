@@ -1,7 +1,7 @@
 source 'https://rubygems.org'
-ruby '3.2.2'
+ruby '4.0.9'
 
-gem 'rails', '=6.1.7.6'
+gem 'rails', '~> 8.1.4', '>= 8.1.4.1'
 
 # Use SCSS for stylesheets
 gem 'sass-rails', '>= 4.0.3'
@@ -22,7 +22,7 @@ gem 'terser', '>= 1.1.7'
 gem 'coffee-rails', '>= 4.0.0'
 
 # See https://github.com/sstephenson/execjs#readme for more supported runtimes
-gem 'mini_racer', '~> 0.6.3', platforms: :ruby
+gem 'mini_racer', '~> 0.22.2', platforms: :ruby
 
 # Use jquery as the JavaScript library
 gem 'jquery-rails'
@@ -42,7 +42,7 @@ gem 'dotenv-rails'
 # Enables Slack notifications
 gem 'slack-notifier'
 # E-mail autolab-dev on exceptions in production
-gem 'exception_notification', ">= 4.1.0"
+gem 'exception_notification', '~> 5.0'
 
 # Used by lib/tasks/autolab.rake to populate DB with dummy seed data
 gem 'rake', '>=10.3.2'
@@ -52,7 +52,7 @@ gem 'populator', '>=1.0.0'
 gem 'mysql2', '~>0.5'
 
 # Development server
-gem 'thin'
+gem 'thin', '~> 2.0'
 
 # External authentication
 gem 'devise', '>=4.5.0'
@@ -83,7 +83,7 @@ gem 'httparty'
 # Enables RSpec testing framework with Capybara and FactoryBot.
 gem 'capybara', group: [:development, :test]
 gem 'rack-test'
-gem 'rspec-rails', '>=3.5.0'
+gem 'rspec-rails', '~> 8.1'
 # To enable webdriver testing capabilities along with capybara
 gem 'selenium-webdriver', '>=4.16', group: :test
 gem "webrick", "~> 1.8"
@@ -133,12 +133,12 @@ group :development do
   gem 'yard'
 
   # sqlite3 adapter
-  gem 'sqlite3', '1.5.1'
+  gem 'sqlite3', '~> 2.1'
 end
 
 # Also install sqlite3 for docker installations
 if ENV['DEPLOY_METHOD'] == "docker"
-  gem 'sqlite3', '1.5.1'
+  gem 'sqlite3', '~> 2.1'
 end
 
 gem 'tzinfo-data'
@@ -173,7 +173,15 @@ gem "jwt"
 
 # Avoid "already initialized constant" errors (https://github.com/ruby/net-imap/issues/16)
 gem "net-http"
-gem 'uri', '0.10.3'
+gem 'uri'
+
+# Required by older gems; no longer a default gem in Ruby 3.4.
+gem 'mutex_m'
+
+# Ruby 4 no longer provides these as default gems.
+gem 'cgi'
+gem 'logger'
+gem 'ostruct'
 
 # To generate slugged urls
 gem 'friendly_id', '~> 5.5.0'

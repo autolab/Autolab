@@ -1,5 +1,5 @@
 class WatchlistInstance < ApplicationRecord
-  enum status: { pending: 0, contacted: 1, resolved: 2 }, _suffix: "watchlist"
+  enum :status, { pending: 0, contacted: 1, resolved: 2 }, suffix: "watchlist"
   belongs_to :course_user_datum
   belongs_to :course
   belongs_to :risk_condition

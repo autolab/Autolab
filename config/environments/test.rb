@@ -8,7 +8,8 @@ require "active_support/core_ext/integer/time"
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
 
-  config.cache_classes = false
+  # Keep class identities stable across controller and browser examples.
+  config.cache_classes = true
   config.action_view.cache_template_loading = true
 
   # Do not eager load code on boot. This avoids loading your whole application
@@ -28,7 +29,7 @@ Rails.application.configure do
   config.cache_store = :null_store
 
   # Raise exceptions instead of rendering exception templates.
-  config.action_dispatch.show_exceptions = false
+  config.action_dispatch.show_exceptions = :none
 
   # Disable request forgery protection in test environment.
   config.action_controller.allow_forgery_protection = false
