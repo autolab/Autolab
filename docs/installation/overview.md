@@ -4,6 +4,7 @@ There are 2 different ways to install Autolab and Tango:
 
   1. The simplest and fastest way to get up and running is to use our [Docker Compose installation](/installation/docker-compose/), which is ideal for most workloads. Both production-ready and testing deployments are available. This will set-up containers for Autolab, Tango, and other required services.
   2. You can also install Autolab manually. There are instructions for installing Autolab on [Ubuntu 22.04](/installation/ubuntu) and on [Mac OSX 10.11+](/installation/osx). The instructions for [installing Tango manually](/installation/tango) are the same for both environments.
+  3. (Beta) You can choose to build and run on AWS using our [AWS installation](aws.md). Autolab, Tango and other services still runs docker, but jobs are run in EC2 containers instead of docker containers.
 
 Most of our users prefer the Docker Compose installation method as it is simpler, production-ready, and comes deployed with MySQL and TLS/SSL. 
 
