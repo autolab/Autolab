@@ -90,6 +90,12 @@ RSpec.describe FileManagerController, type: :controller do
     end
   end
 
+  describe "#is_binary_file?" do
+    it "treats MIME types descended from text/plain as text" do
+      expect(controller.send(:is_binary_file?, "document.xml")).to be(false)
+    end
+  end
+
   describe "#index" do
     include_context "controllers shared context"
     context "when user is Autolab instructor" do

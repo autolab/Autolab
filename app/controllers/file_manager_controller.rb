@@ -259,6 +259,6 @@ private
 
   def is_binary_file?(path)
     mime_type = Marcel::MimeType.for(name: path)
-    mime_type.present? && !mime_type.start_with?("text/")
+    mime_type.present? && !Marcel::Magic.new(mime_type).text?
   end
 end
