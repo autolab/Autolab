@@ -120,10 +120,14 @@ RSpec.describe FileManagerController, type: :controller do
           stub_const("FileManagerController::BASE_DIRECTORY", Pathname.new(directory))
           outside_path = File.join(outside_directory, "text.txt")
           File.write(outside_path, "text")
+          symlink_path = File.join(directory, "link.txt")
+          File.symlink(outside_path, symlink_path)
 
-          expect do
-            controller.send(:is_binary_file?, outside_path)
-          end.to raise_error(ActionController::RoutingError, "Not Found")
+          [outside_path, symlink_path].each do |path|
+            expect do
+              controller.send(:is_binary_file?, path)
+            end.to raise_error(ActionController::RoutingError, "Not Found")
+          end
         end
       end
     end
