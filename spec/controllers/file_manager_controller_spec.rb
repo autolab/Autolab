@@ -133,6 +133,49 @@ RSpec.describe FileManagerController, type: :controller do
     end
   end
 
+  describe "#check_path_exist" do
+    before(:each) do
+      @base_dir = Dir.mktmpdir
+      stub_const("FileManagerController::BASE_DIRECTORY", Pathname.new(@base_dir))
+    end
+
+    after(:each) do
+      FileUtils.remove_entry_secure(@base_dir)
+    end
+
+    it "resolves existing nested files with spaces in their names" do
+      path = FileManagerController::BASE_DIRECTORY.join("course", "notes 1.txt")
+      FileUtils.mkdir_p(path.dirname)
+      File.write(path, "text")
+
+      expect(controller.send(:check_path_exist, "course/notes 1.txt")).to eq(path)
+    end
+
+    it "rejects traversal outside the courses directory" do
+      expect do
+        controller.send(:check_path_exist, "../outside.txt")
+      end.to raise_error(ArgumentError, "Should not be parent of root")
+    end
+
+    it "rejects missing files" do
+      expect do
+        controller.send(:check_path_exist, "missing.txt")
+      end.to raise_error(ActionController::RoutingError, "Not Found")
+    end
+
+    it "rejects symlinks that resolve outside the courses directory" do
+      Dir.mktmpdir do |outside_directory|
+        outside_path = File.join(outside_directory, "text.txt")
+        File.write(outside_path, "text")
+        File.symlink(outside_path, FileManagerController::BASE_DIRECTORY.join("link.txt"))
+
+        expect do
+          controller.send(:check_path_exist, "link.txt")
+        end.to raise_error(ActionController::RoutingError, "Not Found")
+      end
+    end
+  end
+
   describe "#index" do
     include_context "controllers shared context"
     context "when user is Autolab instructor" do
@@ -141,6 +184,51 @@ RSpec.describe FileManagerController, type: :controller do
       it_behaves_like "index_not_empty"
       it_behaves_like "rename_success"
       it_behaves_like "path_success"
+    end
+
+    context "when an instructor opens a course file" do
+      before(:each) do
+        sign_in(instructor_user)
+        @base_dir = Dir.mktmpdir
+        stub_const("FileManagerController::BASE_DIRECTORY", Pathname.new(@base_dir))
+        FileUtils.mkdir_p(File.join(@base_dir, @course.name))
+      end
+
+      after(:each) do
+        FileUtils.remove_entry_secure(@base_dir)
+      end
+
+      it "previews extensionless text" do
+        path = "#{@course.name}/README"
+        File.write(File.join(@base_dir, path), "Text preview")
+
+        get :index, params: { path: path }
+
+        expect(response).to have_http_status(:ok)
+        expect(response.headers["Content-Disposition"]).to be_nil
+        expect(response.body).to include("Text preview")
+      end
+
+      it "previews XML as escaped text" do
+        path = "#{@course.name}/document.xml"
+        File.write(File.join(@base_dir, path), "<?xml version=\"1.0\"?><document/>")
+
+        get :index, params: { path: path }
+
+        expect(response).to have_http_status(:ok)
+        expect(response.headers["Content-Disposition"]).to be_nil
+        expect(response.body).to include("&lt;document/&gt;")
+      end
+
+      it "downloads binary contents" do
+        path = "#{@course.name}/binary"
+        File.binwrite(File.join(@base_dir, path), "\x00\x01\x02")
+
+        get :index, params: { path: path }
+
+        expect(response).to have_http_status(:ok)
+        expect(response.headers["Content-Disposition"]).to start_with("attachment;")
+      end
     end
 
     context "when user is Autolab student" do
