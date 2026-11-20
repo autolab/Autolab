@@ -120,9 +120,12 @@ RSpec.describe "Instructor can create new assessment", type: :feature do
         # add an annotation with score adjustment
         find(:css, "div#line-0.code-line").hover
         find(:css, "button.add-button").click
-        fill_in("Comment", with: comment)
-        fill_in("Score", with: score_adjust)
-        click_on "Add annotation"
+        within ".new-annotation" do
+          find("textarea.comment").set(comment)
+          find("input.score").set(score_adjust)
+          click_on "Add annotation"
+        end
+        expect(page).to have_css(".annotation-box .comment", text: comment)
 
         # verify that score was changed
         # This test is flaky, so comment out for now

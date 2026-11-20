@@ -46,7 +46,7 @@
             when 0
               "Autograder"
             else
-              if @score.grader&.user then @score.grader.user.email end
+              @score.grader&.user&.email
             end
                       %>
         </p>

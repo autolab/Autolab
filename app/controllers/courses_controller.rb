@@ -1,7 +1,6 @@
 require "archive"
 require "csv"
 require "fileutils"
-require "pathname"
 require "statistics"
 
 class CoursesController < ApplicationController
@@ -711,7 +710,7 @@ class CoursesController < ApplicationController
 
     # Ensure that all files in Moss tmp dir are readable
     system("chmod -R a+r #{tmp_dir}")
-    ActiveRecord::Base.clear_active_connections!
+    ActiveRecord::Base.connection_handler.clear_active_connections!
     # Remove non text files when making a moss run
     Dir.chdir(Rails.root.join("script")) do
       system("./cleanMoss #{tmp_dir}")

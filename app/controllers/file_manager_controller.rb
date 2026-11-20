@@ -1,7 +1,5 @@
 # Code for file manager adapted from: adrientoub/file-explorer
 require 'archive'
-require 'pathname'
-require 'mimemagic'
 
 class FileManagerController < ApplicationController
   BASE_DIRECTORY = Rails.root.join('courses')
@@ -232,9 +230,23 @@ private
   end
 
   def check_path_exist(path)
-    @absolute_path = safe_expand_path(path)
+    requested_path = safe_expand_path(path)
     @relative_path = path
-    raise ActionController::RoutingError, 'Not Found' unless File.exist?(@absolute_path)
+    raise ActionController::RoutingError, 'Not Found' unless File.exist?(requested_path)
+
+    # Resolve each component from existing directory entries instead of using
+    # request data directly as a path for file reads and downloads.
+    components = requested_path.relative_path_from(BASE_DIRECTORY).each_filename
+    @absolute_path = components.reduce(Pathname.new(BASE_DIRECTORY)) do |directory, component|
+      next directory if component == "."
+
+      directory.children.find { |entry| entry.basename.to_s == component } ||
+        raise(ActionController::RoutingError, 'Not Found')
+    end
+    base_path = Pathname.new(BASE_DIRECTORY).realpath
+    unless Archive.in_dir?(@absolute_path.realpath, base_path, strict: false)
+      raise ActionController::RoutingError, 'Not Found'
+    end
 
     @absolute_path
   end
@@ -260,7 +272,16 @@ private
   end
 
   def is_binary_file?(path)
-    mm = MimeMagic.by_path(path)
-    mm.present? && !mm.text?
+    file_path = Pathname.new(path).realpath
+    base_path = Pathname.new(BASE_DIRECTORY).realpath
+    unless Archive.in_dir?(file_path, base_path, strict: false)
+      raise ActionController::RoutingError, 'Not Found'
+    end
+
+    mime_type = Marcel::MimeType.for(file_path, name: file_path.to_s)
+    return !Marcel::Magic.new(mime_type).text? unless mime_type == Marcel::MimeType::BINARY
+
+    content = File.binread(file_path).force_encoding(Encoding::UTF_8)
+    !content.valid_encoding? || content.match?(/[\x00-\x08\x0B\x0C\x0E-\x1F]/)
   end
 end
