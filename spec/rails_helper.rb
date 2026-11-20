@@ -46,8 +46,9 @@ RSpec.configure do |config|
   end
 
   Capybara.register_driver :headless_chrome do |app|
+    # Keep the split-pane annotation form usable regardless of Chrome's default window size.
     options = Selenium::WebDriver::Chrome::Options.new(
-      args: %w[headless no-sandbox disable-gpu disable-dev-shm-usage],
+      args: %w[headless no-sandbox disable-gpu disable-dev-shm-usage window-size=1440,1000],
     )
 
     Capybara::Selenium::Driver.new(
