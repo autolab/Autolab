@@ -7,7 +7,7 @@
 #     https://github.com/phusion/passenger-docker
 #
 #
-FROM phusion/passenger-ruby40:3.2.3
+FROM phusion/passenger-ruby40:3.2.4
 
 MAINTAINER Autolab Development Team "autolab-dev@andrew.cmu.edu"
 
