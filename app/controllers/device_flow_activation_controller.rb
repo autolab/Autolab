@@ -55,7 +55,7 @@ class DeviceFlowActivationController < ApplicationController
     # no error, store access_code
     req.grant_request(current_user.id, params[:code])
     flash[:success] = "Access granted"
-    redirect_to(action: :index) && return
+    redirect_to(root_path) && return
   end
 
 private
