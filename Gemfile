@@ -119,7 +119,7 @@ gem 'rack-ssl-enforcer'
 group :development do
   # Better Error Pages
   gem 'better_errors'
-  gem 'binding_of_caller' # enhances better_errors
+  gem 'binding_of_caller', '>= 2.0' # enhances better_errors
 
   # static code analyzer
   gem 'erb_lint', require: false
