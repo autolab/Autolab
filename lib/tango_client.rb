@@ -40,7 +40,7 @@ module TangoClient
       raise TangoException, "Tango returned negative status code: #{resp["statusMsg"]}"
     end
 
-    if resp.code != 200
+    if resp.code != 200 && resp.code != 202
       raise TangoException, "Tango returned HTTP code #{resp.code}"
     end
     
@@ -163,6 +163,66 @@ module TangoClient
     end
     parsed = resp.parsed_response
     parsed["images"]
+  end
+
+  def self.create_iam_user(iam_username, os_username, create_key = true)
+    resp = handle_exceptions do
+      url = "/iam/#{api_key}/users/"
+
+      body = {
+        iam_username: iam_username,
+        os_username: os_username,
+        create_key: create_key
+      }
+
+      ClientObj.post(
+        url,
+        body: body.to_json,
+        headers: { "Content-Type" => "application/json" }
+      )
+    end
+
+    resp.parsed_response
+  end
+
+  # Returns {"instanceId" => ..., "region" => ...} from Tango's IAM config.
+  def self.iam_config
+    resp = handle_exceptions do
+      url = "/iam/#{api_key}/config/"
+
+      ClientObj.get(
+        url,
+        headers: { "Content-Type" => "application/json" }
+      )
+    end
+
+    resp.parsed_response
+  end
+
+  def self.iam_unix_user_status(job_id)
+    resp = handle_exceptions do
+      url = "/iam/#{api_key}/jobs/#{job_id}/"
+
+      ClientObj.get(
+        url,
+        headers: { "Content-Type" => "application/json" }
+      )
+    end
+
+    resp.parsed_response
+  end
+
+  def self.regenerate_iam_access_key(iam_username)
+    resp = handle_exceptions do
+      url = "/iam/#{api_key}/users/#{iam_username}/key/"
+
+      ClientObj.post(
+        url,
+        headers: { "Content-Type" => "application/json" }
+      )
+    end
+
+    resp.parsed_response
   end
 
   def self.api_key

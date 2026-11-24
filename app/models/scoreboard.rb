@@ -2,6 +2,13 @@
 # Scoreboards belong to Assessments, and basically specify how the scoreboard should display
 #
 class Scoreboard < ApplicationRecord
+  COURSE_EXPORT_FIELDS = %i[
+    banner colspec include_instructors
+  ].freeze
+  COURSE_EXPORT_REFERENCES = {
+    assessment_id: :assessments
+  }.freeze
+
   belongs_to :assessment
 
   trim_field :banner, :colspec

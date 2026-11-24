@@ -3,6 +3,20 @@ require "association_cache"
 require "fileutils"
 require "utilities"
 class Assessment < ApplicationRecord
+  COURSE_EXPORT_FIELDS = %i[
+    due_at end_at start_at name description created_at updated_at display_name
+    handin_filename handin_directory max_grace_days handout writeup allow_unofficial
+    max_submissions disable_handins exam max_size version_threshold quiz quizData
+    remote_handin_path category_name group_size embedded_quiz_form_data embedded_quiz
+    github_submission_enabled allow_student_assign_group is_positive_grading
+    disable_network
+  ].freeze
+  COURSE_EXPORT_REFERENCES = {
+    course_id: :courses,
+    late_penalty_id: :score_adjustments,
+    version_penalty_id: :score_adjustments
+  }.freeze
+
   # Mass-assignment
   # attr_protected :name
 

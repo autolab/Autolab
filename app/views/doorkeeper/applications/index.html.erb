@@ -2,6 +2,8 @@
   <h1><%= t('.title') %></h1>
 </div>
 
+<% future_course_names = Course.where("end_date > ?", Time.current).order(:display_name).pluck(:name) %>
+
 <p><%= link_to t('.new'), new_oauth_application_path, class: 'btn btn-success' %></p>
 
 <table class="table table-striped">
@@ -9,6 +11,7 @@
   <tr>
     <th><%= t('.name') %></th>
     <th><%= t('.callback_url') %></th>
+    <th></th>
     <th></th>
     <th></th>
   </tr>
@@ -20,7 +23,53 @@
       <td><%= application.redirect_uri %></td>
       <td><%= link_to t('doorkeeper.applications.buttons.edit'), edit_oauth_application_path(application), class: 'btn btn-link' %></td>
       <td><%= render 'delete_form', application: %></td>
+      <td>
+        <button class="btn btn-link download-app-config"
+                data-app-name="<%= application.name %>"
+                data-client-id="<%= application.uid %>"
+                data-client-secret="<%= application.secret %>"
+                data-redirect-uri="<%= application.redirect_uri %>">
+          Download Config
+        </button>
+      </td>
     </tr>
   <% end %>
   </tbody>
 </table>
+
+<script>
+  document.querySelectorAll('.download-app-config').forEach(function(button) {
+    button.addEventListener('click', function() {
+      var redirectUri = this.dataset.redirectUri.trim();
+      var matchingUri = redirectUri.split(/\s+/).find(function(uri) {
+        return uri.endsWith('device_flow_auth_cb');
+      });
+
+      if (!matchingUri) {
+        alert('Cannot download config: Callback URL must end with "device_flow_auth_cb".');
+        return;
+      }
+
+      var matchingUrl = new URL(matchingUri);
+      var serverPrefix = matchingUrl.hostname.split('.').slice(0, 2).join('.');
+      var config = {
+        server_name: matchingUrl.hostname,
+        base_uri: matchingUrl.origin,
+        client_id: this.dataset.clientId,
+        client_secret: this.dataset.clientSecret,
+        redirect_uri: matchingUri,
+        courses: <%= raw json_escape(future_course_names.to_json) %>
+      };
+
+      var blob = new Blob([JSON.stringify(config, null, 4)], { type: 'application/json' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = serverPrefix + '.json';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    });
+  });
+</script>

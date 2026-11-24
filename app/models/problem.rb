@@ -3,6 +3,13 @@
 # for the Assessment.
 #
 class Problem < ApplicationRecord
+  COURSE_EXPORT_FIELDS = %i[
+    name description created_at updated_at max_score optional starred
+  ].freeze
+  COURSE_EXPORT_REFERENCES = {
+    assessment_id: :assessments
+  }.freeze
+
   trim_field :name
 
   # don't need :dependent => :destroy as of 2/18/13

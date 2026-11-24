@@ -8,6 +8,18 @@ require_relative "../services/filesystem_enforcer"
 # Submissions jointly belong to Assessments and CourseUserData
 #
 class Submission < ApplicationRecord
+  COURSE_EXPORT_FIELDS = %i[
+    version filename created_at updated_at notes mime_type special_type autoresult
+    detected_mime_type submitter_ip ignored dave embedded_quiz_form_answer group_key jobid
+    missing_problems
+  ].freeze
+  COURSE_EXPORT_REFERENCES = {
+    course_user_datum_id: :course_user_data,
+    assessment_id: :assessments,
+    submitted_by_id: :course_user_data,
+    tweak_id: :score_adjustments
+  }.freeze
+
   attr_accessor :header_position
 
   trim_field :filename, :notes, :mime_type

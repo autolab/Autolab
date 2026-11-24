@@ -5,6 +5,16 @@ require_relative "../services/unix_group_manager"
 require_relative "../services/filesystem_enforcer"
 
 class Course < ApplicationRecord
+  COURSE_EXPORT_FIELDS = %i[
+    name semester late_slack grace_days display_name start_date end_date disabled
+    exam_in_progress version_threshold cgdub_dependencies_updated_at gb_message website
+    access_code disable_on_end
+  ].freeze
+  COURSE_EXPORT_REFERENCES = {
+    late_penalty_id: :score_adjustments,
+    version_penalty_id: :score_adjustments
+  }.freeze
+
   trim_field :name, :semester, :display_name
   validates :name, uniqueness: { case_sensitive: false }
   validates :display_name, :start_date, :end_date, presence: true
@@ -937,7 +947,10 @@ private
 
     sync_users = requested_users.select do |username|
       exists = UnixGroupManager.user_exists?(username)
-      Rails.logger.info("Course #{name}: skipping non-existent Unix user #{username} for group sync") unless exists
+      unless exists
+        Rails.logger.info("Course #{name}: skipping non-existent Unix user " \
+                          "#{username} for group sync")
+      end
       exists
     end
 

@@ -1,4 +1,9 @@
 class ScoreAdjustment < ApplicationRecord
+  COURSE_EXPORT_FIELDS = %i[
+    kind value type
+  ].freeze
+  COURSE_EXPORT_REFERENCES = {}.freeze
+
   # attr_accessible :kind, :value
 
   validates :value, :kind, presence: true

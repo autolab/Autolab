@@ -126,6 +126,11 @@ Rails.application.routes.draw do
     get "ssh_keys", on: :member
     post "create_ssh_key", on: :member
     delete "destroy_ssh_key/:ssh_key_id", on: :member, to: "users#destroy_ssh_key", as: :destroy_ssh_key
+    # AWS SSM Management
+    get "ssm_access", on: :member
+    post "create_iam_unix_user", on: :member
+    get "iam_unix_user_status", on: :member
+    post "regenerate_iam_access_key", on: :member
   end
 
   resources :courses, param: :name do
@@ -293,7 +298,9 @@ Rails.application.routes.draw do
       patch "update_lti_settings"
       match "email", via: [:get, :post]
       get "export"
-      post "export_selected"
+      post "export", action: :export_selected
+      get "legacy_export"
+      post "legacy_export_selected"
       get "manage"
       get "moss"
       post "reload"
@@ -307,6 +314,7 @@ Rails.application.routes.draw do
     end
 
     collection do
+      post "complete_import"
       post "create_from_tar"
     end
   end
