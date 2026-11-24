@@ -533,7 +533,7 @@ PLATFORMS
 
 DEPENDENCIES
   better_errors
-  binding_of_caller
+  binding_of_caller (>= 2.0)
   bootstrap-sass (>= 3.4.1)
   bootstrap3-datetimepicker-rails (>= 4.17.47)
   browser-timezone-rails
