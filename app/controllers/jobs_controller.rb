@@ -213,7 +213,7 @@ protected
       if !@cud.instructor?
         # Students can see only their own job names
         job[:name] = "*" unless job[:name].ends_with? "_#{@cud.user.email}"
-      elsif !rjob["notifyURL"] || !(job[:course].eql? @cud.course.id.to_s)
+      elsif !rjob["notifyURL"] || !(job[:course].eql? @cud.course.name)
         job[:name] = "*"
       end
       # Instructors can see only their course's job names
@@ -279,7 +279,7 @@ protected
       duration = Time.parse(j["trace"].last.split("|")[0]).to_i -
                  Time.parse(j["trace"].first.split("|")[0]).to_i
 
-      if j["retries"] > 0 || trace.include?("fail") || trace.include?("error")
+      if j["retries"].to_i > 0 || trace.include?("fail") || trace.include?("error")
         status = "Running (error occured)"
         j["trace"].each do |tr|
           next unless tr.include?("fail") || tr.include?("error")
@@ -288,7 +288,7 @@ protected
           @plot_data[:job_errors][:job_name] << name
           @plot_data[:job_errors][:vm_pool] << pool
           @plot_data[:job_errors][:vm_id] << vmid
-          @plot_data[:job_errors][:retry_count] << j["retries"]
+          @plot_data[:job_errors][:retry_count] << j["retries"].to_i
           @plot_data[:job_errors][:duration] << duration
           @plot_data[:job_errors][:job_id] << jid
         end
@@ -316,7 +316,7 @@ protected
                  first.split("|")[0]).to_i
 
       warnings = false
-      if j["retries"] > 0 || trace.include?("fail") || trace.include?("error")
+      if j["retries"].to_i > 0 || trace.include?("fail") || trace.include?("error")
         j["trace"].each do |tr|
           next unless tr.include?("fail") || tr.include?("error")
 
@@ -324,7 +324,7 @@ protected
           @plot_data[:job_errors][:job_name] << name
           @plot_data[:job_errors][:vm_pool] << pool
           @plot_data[:job_errors][:vm_id] << vmid
-          @plot_data[:job_errors][:retry_count] << j["retries"]
+          @plot_data[:job_errors][:retry_count] << j["retries"].to_i
           @plot_data[:job_errors][:duration] << duration
           @plot_data[:job_errors][:job_id] << jid
         end
