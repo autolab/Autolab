@@ -64,8 +64,9 @@ module ControllerMacros
       f.write("module Updater def self.update(foo) 0 end end")
     end
     s = Course.find(cid).scheduler.new(action: "tmp/testscript.rb",
-                                       interval: 86_400, next: Time.zone.now)
-    s.save
+                                       interval: 86_400, next: 1.hour.from_now,
+                                       until: 1.day.from_now)
+    s.save!
     s
   end
 

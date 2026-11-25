@@ -318,7 +318,7 @@ module AssessmentHandin
     end
 
     validity = validateHandin(File.size(@tarfile_path),
-                              MimeMagic.by_magic(File.open(@tarfile_path)).type,
+                              Marcel::MimeType.for(File.open(@tarfile_path)),
                               @tarfile_path) # TODO probably want filename instead of path
 
     return handle_validity(validity)

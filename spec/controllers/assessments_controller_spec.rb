@@ -151,7 +151,7 @@ RSpec.describe AssessmentsController, type: :controller do
       it "handles bad tarfile" do
         post :import_asmt_from_tar, params: { course_name: course_2_hash[:course].name,
                                               name: course_2_hash[:assessment].name,
-                                              tarFile: nil }
+                                              tarFile: "" }
         expect(response).to have_http_status(302)
         expect(flash[:error]).to be_present
         expect(flash[:error]).to match(/Error while reading the tarball/m)

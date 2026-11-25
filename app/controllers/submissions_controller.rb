@@ -3,6 +3,7 @@ require "pdf"
 require "prawn"
 require "json"
 require "tempfile"
+require "stringio"
 
 class SubmissionsController < ApplicationController
   include ApplicationHelper
@@ -1014,8 +1015,11 @@ private
   end
 
   def is_binary_file?(file)
-    mm = MimeMagic.by_magic(file)
-    mm.present? && (!mm.text? && (mm.subtype != "pdf"))
+    mime_type = Marcel::MimeType.for(StringIO.new(file))
+    text_file = file.to_s.dup.force_encoding(Encoding::UTF_8).valid_encoding? &&
+                !file.to_s.include?("\0")
+    mime_type.present? && !text_file && !mime_type.start_with?("text/") &&
+      mime_type != "application/pdf"
   end
 
   def set_manage_submissions_breadcrumb

@@ -1,8 +1,8 @@
 FactoryBot.define do
   factory :assessment do
-    due_at { 2.weeks.from_now.to_s(:db) }
-    end_at { (2.weeks.from_now + 2.days).to_s(:db) }
-    start_at { 1.day.ago.to_s(:db) }
+    due_at { 2.weeks.from_now.to_fs(:db) }
+    end_at { (2.weeks.from_now + 2.days).to_fs(:db) }
+    start_at { 1.day.ago.to_fs(:db) }
 
     sequence(:name) { |n| "assessment_#{n}" }
     sequence(:display_name) { |n| "Assessment #{n}" }
@@ -14,8 +14,8 @@ FactoryBot.define do
     category_name { |n| "category_#{n}" }
     max_size { 1_024_000 }
     max_submissions { 10 }
-    created_at { 2.weeks.ago.to_s(:db) }
-    updated_at { 1.week.ago.to_s(:db) }
+    created_at { 2.weeks.ago.to_fs(:db) }
+    updated_at { 1.week.ago.to_fs(:db) }
     github_submission_enabled { true }
     is_positive_grading { true }
     group_size { 1 }

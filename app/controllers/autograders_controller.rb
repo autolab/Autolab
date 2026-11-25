@@ -1,8 +1,6 @@
 ##
 # Each Assessment can have an autograder, which is modified with this controller
 
-require 'pathname'
-
 class AutogradersController < ApplicationController
   before_action :set_assessment
   before_action :set_assessment_breadcrumb, only: [:edit]

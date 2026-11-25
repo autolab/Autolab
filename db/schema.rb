@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2024_04_06_174050) do
+ActiveRecord::Schema.define(version: 2026_11_24_000000) do
 
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
@@ -130,7 +130,7 @@ ActiveRecord::Schema.define(version: 2024_04_06_174050) do
     t.integer "course_id"
     t.integer "assessment_id"
     t.string "category_name", default: "General"
-    t.datetime "release_at", default: -> { "CURRENT_TIMESTAMP" }
+    t.datetime "release_at"
     t.string "slug"
     t.index ["assessment_id"], name: "index_attachments_on_assessment_id"
     t.index ["slug"], name: "index_attachments_on_slug", unique: true
@@ -326,7 +326,7 @@ ActiveRecord::Schema.define(version: 2024_04_06_174050) do
     t.integer "course_id"
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.datetime "until", default: -> { "CURRENT_TIMESTAMP" }
+    t.datetime "until", null: false
     t.boolean "disabled", default: false
   end
 

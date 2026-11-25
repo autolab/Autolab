@@ -47,7 +47,7 @@ class CourseUserDatum < ApplicationRecord
 
   def strip_html
     CourseUserDatum.content_columns.each do |column|
-      next unless column.type == :string || column.type == :text
+      next unless [:string, :text].include?(column.type)
 
       self[column.name] = self[column.name].gsub(/</, "") unless self[column.name].nil?
     end
@@ -253,7 +253,7 @@ class CourseUserDatum < ApplicationRecord
   # global grace left cache key
   def ggl_cache_key
     # gets it into the YYYYMMDDHHMMSS form
-    dua = course.cgdub_dependencies_updated_at.utc.to_s(:number)
+    dua = course.cgdub_dependencies_updated_at.utc.to_fs(:number)
 
     "ggl/dua-#{dua}/u-#{id}"
   end
