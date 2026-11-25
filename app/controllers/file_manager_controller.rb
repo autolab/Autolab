@@ -2,6 +2,26 @@
 require 'archive'
 
 class FileManagerController < ApplicationController
+  # Rack must stream the validated handle rather than reopen a pathname.
+  class DownloadBody
+    def initialize(file)
+      @file = file
+    end
+
+    def each
+      @file.rewind
+      while (chunk = @file.read(64 * 1024))
+        yield chunk
+      end
+    ensure
+      close
+    end
+
+    def close
+      @file.close unless @file.closed?
+    end
+  end
+
   BASE_DIRECTORY = Rails.root.join('courses')
   skip_before_action :set_course
   skip_before_action :authorize_user_for_course
@@ -30,16 +50,16 @@ class FileManagerController < ApplicationController
       populate_directory(absolute_path, new_url)
       render 'file_manager/index'
     elsif File.file?(absolute_path) && check_instructor(absolute_path)
-      if File.size(absolute_path) > 1_000_000 || params[:download]
-        send_file absolute_path
-      elsif !is_binary_file?(absolute_path)
-        @path = path
-        @file = absolute_path.read
-        render :file, formats: :html
-      else
-        send_file(absolute_path,
-                  filename: File.basename(absolute_path),
-                  disposition: 'attachment')
+      with_course_file(absolute_path) do |file|
+        if file.stat.size > 1_000_000 || params[:download] || binary_content?(file, absolute_path)
+          send_file_headers!(filename: absolute_path.basename.to_s, disposition: 'attachment')
+          self.response_body = DownloadBody.new(file.dup)
+        else
+          @path = path
+          file.rewind
+          @file = file.read.force_encoding(Encoding.default_external)
+          render :file, formats: :html
+        end
       end
     else
       flash[:error] = "You are not authorized to view this path"
@@ -272,16 +292,42 @@ private
   end
 
   def is_binary_file?(path)
-    file_path = Pathname.new(path).realpath
-    base_path = Pathname.new(BASE_DIRECTORY).realpath
-    unless Archive.in_dir?(file_path, base_path, strict: false)
-      raise ActionController::RoutingError, 'Not Found'
-    end
+    with_course_file(path) { |file| binary_content?(file, path) }
+  end
 
-    mime_type = Marcel::MimeType.for(file_path, name: file_path.to_s)
+  def with_course_file(path)
+    File.open(path, File::RDONLY | File::NONBLOCK) do |file|
+      file.binmode
+      file_path = opened_file_path(file)
+      base_path = Pathname.new(BASE_DIRECTORY).realpath
+      unless file.stat.file? && Archive.in_dir?(file_path, base_path, strict: false)
+        raise ActionController::RoutingError, 'Not Found'
+      end
+
+      yield file
+    end
+  rescue Errno::ENOENT, Errno::ENOTDIR, Errno::ELOOP
+    raise ActionController::RoutingError, 'Not Found'
+  end
+
+  def opened_file_path(file)
+    # Ask the OS about the handle, independent of later pathname changes.
+    if RUBY_PLATFORM.include?("darwin")
+      # macOS F_GETPATH (50) requires a MAXPATHLEN (1024 byte) buffer.
+      buffer = +"\0" * 1024
+      file.fcntl(50, buffer)
+      Pathname.new(buffer.split("\0", 2).first)
+    else
+      Pathname.new("/proc/self/fd/#{file.fileno}").realpath
+    end
+  end
+
+  def binary_content?(file, path)
+    mime_type = Marcel::MimeType.for(file, name: path.to_s)
     return !Marcel::Magic.new(mime_type).text? unless mime_type == Marcel::MimeType::BINARY
 
-    content = File.binread(file_path).force_encoding(Encoding::UTF_8)
+    file.rewind
+    content = file.read.force_encoding(Encoding::UTF_8)
     !content.valid_encoding? || content.match?(/[\x00-\x08\x0B\x0C\x0E-\x1F]/)
   end
 end
