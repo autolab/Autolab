@@ -83,7 +83,7 @@ Naming/AccessorMethodName:
 Naming/MethodName:
   Enabled: false
 
-Naming/PredicatePrefix:
+Naming/PredicateName:
   Enabled: false
   
 Naming/VariableNumber:

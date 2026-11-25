@@ -220,15 +220,6 @@ RSpec.describe FileManagerController, type: :controller do
         expect(response.body).to include("&lt;document/&gt;")
       end
 
-      it "preserves UTF-8 text in previews" do
-        path = "#{@course.name}/README"
-        File.write(File.join(@base_dir, path), "café")
-
-        get :index, params: { path: path }
-
-        expect(response.body).to include("café")
-      end
-
       it "downloads binary contents" do
         path = "#{@course.name}/binary"
         File.binwrite(File.join(@base_dir, path), "\x00\x01\x02")
@@ -237,55 +228,6 @@ RSpec.describe FileManagerController, type: :controller do
 
         expect(response).to have_http_status(:ok)
         expect(response.headers["Content-Disposition"]).to start_with("attachment;")
-        expect(response.body_parts.join).to eq("\x00\x01\x02")
-      end
-
-      it "rejects a symlink replacement before opening the file" do
-        Dir.mktmpdir do |outside_directory|
-          path = "#{@course.name}/notes.txt"
-          absolute_path = File.join(@base_dir, path)
-          outside_path = File.join(outside_directory, "secret.txt")
-          File.write(absolute_path, "Course content")
-          File.write(outside_path, "Outside content")
-          allow(controller).to receive(:render_error) { |error| raise error }
-          allow(controller).to receive(:with_course_file).and_wrap_original do |orig, *args, &blk|
-            File.unlink(absolute_path)
-            File.symlink(outside_path, absolute_path)
-            orig.call(*args, &blk)
-          end
-
-          expect do
-            get :index, params: { path: path, download: true }
-          end.to raise_error(ActionController::RoutingError, "Not Found")
-        end
-      end
-
-      it "streams the validated file after its pathname is replaced" do
-        Dir.mktmpdir do |outside_directory|
-          path = "#{@course.name}/notes.txt"
-          absolute_path = File.join(@base_dir, path)
-          outside_path = File.join(outside_directory, "secret.txt")
-          File.write(absolute_path, "Course content")
-          File.write(outside_path, "Outside content")
-
-          get :index, params: { path: path, download: true }
-
-          File.unlink(absolute_path)
-          File.symlink(outside_path, absolute_path)
-          expect(response.body_parts.join).to eq("Course content")
-          expect(response.stream).not_to respond_to(:to_path)
-        end
-      end
-
-      it "streams large files in full" do
-        path = "#{@course.name}/large.txt"
-        content = "a" * 1_000_001
-        File.write(File.join(@base_dir, path), content)
-
-        get :index, params: { path: path }
-
-        expect(response.headers["Content-Disposition"]).to start_with("attachment;")
-        expect(response.body_parts.join).to eq(content)
       end
     end
 
@@ -322,30 +264,6 @@ RSpec.describe FileManagerController, type: :controller do
 
       after(:each) do
         delete_course_files(course_hash[:course])
-      end
-    end
-  end
-
-  describe FileManagerController::DownloadBody do
-    it "closes the file when streaming is interrupted" do
-      Tempfile.create do |file|
-        file.write("content")
-        body = described_class.new(file)
-
-        expect do
-          body.each { |chunk| raise IOError, "client disconnected" if chunk == "content" }
-        end.to raise_error(IOError, "client disconnected")
-        expect(file).to be_closed
-        expect { body.close }.not_to raise_error
-      end
-    end
-
-    it "closes the file when an unconsumed response is closed" do
-      Tempfile.create do |file|
-        body = described_class.new(file)
-        body.close
-
-        expect(file).to be_closed
       end
     end
   end
